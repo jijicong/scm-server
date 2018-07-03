@@ -889,6 +889,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (!iRealIpService.isRealTimerService()){
             return;
         }
+
+        WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+        warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
+        List<WarehouseInfo> warehouseInfoTempList = warehouseInfoService.select(warehouseInfoTemp);
+        List<String> warehouseCodeList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoTempList){
+            warehouseCodeList.add(info.getCode());
+        }
+
         //1. 查询入库通知单，状态为待仓库反馈，部分收货的入库单,完成状态为未完成的
         // 更新入库单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
@@ -899,6 +908,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 //        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
 //        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         warehouseNoticeCriteria.andIn("status",stateArray);
+        warehouseNoticeCriteria.andNotIn("warehouseCode", warehouseCodeList);
         //数据中未完成的入库通知单
         warehouseNoticeCriteria.andEqualTo("finishStatus",WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
 //        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047973168");

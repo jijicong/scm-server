@@ -81,12 +81,14 @@ public class AllocateOrderResource {
         return ResultUtil.createSuccessResult("调拨单审核操作成功","");
 
     }
-    
+
+    //调拨单管理 查询/编辑    编辑时需校验仓库是否被停用，查询时不用校正
+    //调拨单审核 查询
     @GET
     @Path("editGet/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response allocateOrderEditGet(@PathParam("id") String orderId){
-    	return ResultUtil.createSuccessResult("根据id查询调拨单成功", allocateOrderBiz.allocateOrderEditGet(orderId));
+    public Response allocateOrderEditGet(@PathParam("id") String orderId,@QueryParam("flag") String flag){
+    	return ResultUtil.createSuccessResult("根据id查询调拨单成功", allocateOrderBiz.allocateOrderEditGet(orderId,flag));
     	
     }
     

@@ -290,7 +290,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailsUpdate);
         }
         //记录操作日志
-        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
 
     }
 

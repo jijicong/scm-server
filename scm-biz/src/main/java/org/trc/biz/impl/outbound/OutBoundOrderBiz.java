@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.DeliveryorderCreateRequest;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,6 +186,15 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Override
     public void updateOutboundDetail(){
         if (!iRealIpService.isRealTimerService()) return;
+
+        WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+        warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
+        List<WarehouseInfo> warehouseInfoTempList = warehouseInfoService.select(warehouseInfoTemp);
+        List<String> warehouseCodeList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoTempList){
+            warehouseCodeList.add(info.getCode());
+        }
+
         //获取所有为等待仓库发货发货单信息
         Example example = new Example(OutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
@@ -192,6 +202,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         list.add(OutboundOrderStatusEnum.WAITING.getCode());
         list.add(OutboundOrderStatusEnum.PART_OF_SHIPMENT.getCode());
         criteria.andIn("status", list);
+        criteria.andNotIn("warehouseCode", warehouseCodeList);
         List<OutboundOrder> outboundOrders = outBoundOrderService.selectByExample(example);
 
         //组装信息
@@ -407,14 +418,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     	if (StringUtils.isBlank(logisticsName)) {
     		return retMsg;
     	}
-    	LogisticsCompany queryLc = new LogisticsCompany();
-    	queryLc.setType(channelCode);
-    	queryLc.setCompanyName(logisticsName);
-        LogisticsCompany lc = logisticsCompanyService.selectOne(queryLc);
-        if (null == lc) {
-        	return retMsg;
-        }
-		return lc.getCompanyCode();
+        LogisticsCompany logisticsCompany = orderExtBiz.getLogisticsCompanyByName(LogisticsTypeEnum.TRC, logisticsName);
+		return logisticsCompany.getCompanyCode();
 	}
 
 	//更新itemOrder
@@ -1363,14 +1368,94 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             }
             //更新订单状态
             this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
-            //发货通知单下单结果通知渠道
-            scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
+            //发货单物流信息通知渠道
+            this.deliveryOrderLogisticNoticeChannel(outboundOrder, outboundDetailList, outboundDetailLogisticsList);
             //获取仓库名称
             WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
             //记录日志
             logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
                     LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(requsetUpdateStocks, outboundOrder.getOutboundOrderCode()), null);
         }
+    }
+
+    /**
+     * 发货单物流信息通知渠道
+     * @param outboundOrder
+     * @param outboundDetailList
+     * @param logisticsList
+     */
+    private void deliveryOrderLogisticNoticeChannel(OutboundOrder outboundOrder, List<OutboundDetail> outboundDetailList, List<OutboundDetailLogistics> logisticsList) {
+        try {
+            LogisticNoticeForm noitce = new LogisticNoticeForm();
+            //设置请求渠道的签名
+            TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
+            BeanUtils.copyProperties(trcParam, noitce);
+            // 获取店铺级订单号
+            noitce.setShopOrderCode(outboundOrder.getShopOrderCode());
+            // 信息类型 0-物流单号,1-配送信息
+            noitce.setType(LogsticsTypeEnum.WAYBILL_NUMBER.getCode());
+            Map<String, OutboundDetailLogistics> logisticsMap = new HashedMap();
+            for(OutboundDetailLogistics detailLogistics: logisticsList){
+                if(!logisticsMap.containsKey(detailLogistics.getWaybillNumber())){
+                    logisticsMap.put(detailLogistics.getWaybillNumber(), detailLogistics);
+                }
+            }
+            // 包裹信息列表
+            List<Logistic> logisticList = new ArrayList<>();
+            Set<Map.Entry<String, OutboundDetailLogistics>> entries = logisticsMap.entrySet();
+            for(Map.Entry<String, OutboundDetailLogistics> entry: entries){
+                //物流单号
+                String wayBill = entry.getKey();
+                OutboundDetailLogistics detailLogistics = entry.getValue();
+                //物流公司名称
+                String logisticsName = detailLogistics.getLogisticsCorporation();
+                //物流公司编号
+                String logisticsCode = detailLogistics.getLogisticsCode();
+                Logistic lsc = new Logistic();
+                lsc.setSupplierOrderCode(outboundOrder.getOutboundOrderCode());
+                lsc.setWaybillNumber(wayBill);
+                // 物流公司名称
+                lsc.setLogisticsCorporation(logisticsName);
+                // 物流公司编码
+                lsc.setLogisticsCorporationCode(generateLogisticsCode(logisticsName, outboundOrder.getChannelCode()));
+                lsc.setLogisticsStatus(SupplierOrderLogisticsStatusEnum.COMPLETE.getCode());//妥投
+                lsc.setLogisticInfo(new ArrayList<>());
+                //包裹对应商品信息
+                List<SkuInfo> skuList = new ArrayList<>();
+                for(OutboundDetailLogistics logistics: logisticsList){
+                    if(StringUtils.equals(wayBill, logistics.getWaybillNumber())){
+                        for(OutboundDetail detail: outboundDetailList){
+                            if(logistics.getOutboundDetailId().longValue() == detail.getId().longValue()){
+                                SkuInfo sku = new SkuInfo();
+                                sku.setSkuCode(detail.getSkuCode());
+                                sku.setSkuName(detail.getSkuName());
+                                sku.setNum(logistics.getItemNum().intValue());
+                                skuList.add(sku);
+                                break;
+                            }
+                        }
+                    }
+                }
+                lsc.setSkus(skuList);
+                logisticList.add(lsc);
+            }
+            noitce.setLogistics(logisticList);
+            //物流信息同步给渠道
+            String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC,
+                    RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(),
+                    RequestFlowStatusEnum.SEND_INITIAL.getCode(), JSONObject.toJSONString(noitce));
+            ToGlyResultDO toGlyResultDO = trcService.sendLogisticInfoNotice(noitce);
+            RequestFlow requestFlowUpdate = new RequestFlow();
+            requestFlowUpdate.setRequestNum(reqNum);
+            requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+            requestFlowUpdate.setStatus(statusMap.get(toGlyResultDO.getStatus()));
+            requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("发货单号:{},物流信息通知渠道异常：{}",
+                    outboundOrder.getOutboundOrderCode(), e.getMessage());
+        }
+
     }
 
 
