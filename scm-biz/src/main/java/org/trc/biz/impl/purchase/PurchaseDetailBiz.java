@@ -12,10 +12,15 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.warehouseNotice.WarehouseNotice;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.exception.PurchaseOrderDetailException;
 import org.trc.service.category.IBrandService;
 import org.trc.service.impl.goods.ItemsService;
+import org.trc.service.impl.purchase.WarehouseNoticeService;
+import org.trc.service.impl.warehouseNotice.WarehouseNoticeDetailsService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
@@ -45,6 +50,12 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
 
     @Autowired
     private ItemsService itemsService;
+
+    @Autowired
+    private WarehouseNoticeDetailsService warehouseNoticeDetailsService;
+
+    @Autowired
+    private WarehouseNoticeService warehouseNoticeService;
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
@@ -77,6 +88,9 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
         if(CollectionUtils.isEmpty(purchaseDetailList)){
             return new ArrayList<PurchaseDetail>();
         }
+
+        PurchaseOrder purchaseOrder = purchaseOrderService.selectByPrimaryKey(purchaseId);
+
         //品牌的名称
         List<Long> brandIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
@@ -91,6 +105,27 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
                 purchaseDetail.setTotalPurchaseAmountD(new BigDecimal(purchaseDetail.getTotalPurchaseAmount()).divide(new BigDecimal(100)));
             }else {
                 purchaseDetail.setTotalPurchaseAmountD(null);
+            }
+
+            //当采购单状态为入库通知状态才有 商品入库状态和仓库反馈入库信息
+            if(StringUtils.equals(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode(), purchaseOrder.getStatus())){
+                Example warehouseNoticeExample = new Example(WarehouseNotice.class);
+                warehouseNoticeExample.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+                List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(warehouseNoticeExample);
+                if(warehouseNotices != null && !warehouseNotices.isEmpty()){
+                    Example warehouseNoticeDetailsExample = new Example(WarehouseNoticeDetails.class);
+                    warehouseNoticeDetailsExample.createCriteria().andEqualTo("warehouseNoticeCode", warehouseNotices.get(0).getWarehouseNoticeCode());
+                    List<WarehouseNoticeDetails> details = warehouseNoticeDetailsService.selectByExample(warehouseNoticeDetailsExample);
+                    for (WarehouseNoticeDetails detail : details){
+                        if(StringUtils.equals(detail.getSkuCode(), purchaseDetail.getSkuCode())){
+                            purchaseDetail.setActualInstockTime(detail.getActualInstockTime());
+                            purchaseDetail.setStorageTime(detail.getStorageTime());
+                            purchaseDetail.setNormalStorageQuantity(detail.getNormalStorageQuantity());
+                            purchaseDetail.setDefectiveStorageQuantity(detail.getDefectiveStorageQuantity());
+                            break;
+                        }
+                    }
+                }
             }
         }
 
