@@ -699,7 +699,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                       AppResult<String> result, boolean isSuccess) {
         String status = "";
         WarehouseNotice updateNotice = new WarehouseNotice();
-        PurchaseOrder purchaseOrder = new PurchaseOrder();
         if (isSuccess) {
             updateNotice.setEntryOrderId(result.getResult().toString()); // 成功时接收仓储系统入库单编码
             status = WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode();
@@ -1033,13 +1032,14 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     private void updatePurchaseDetailReceiveStatus(WarehouseNotice warehouseNotice, List<WarehouseNoticeDetails> details) {
         for (WarehouseNoticeDetails detail : details){
-            PurchaseDetail purchaseDetail = new PurchaseDetail();
+
             Example purchaseDetailExample = new Example(PurchaseDetail.class);
             purchaseDetailExample.createCriteria().andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
             List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(purchaseDetailExample);
 
             for (PurchaseDetail pd : purchaseDetails){
-                if(detail.getSkuCode() == pd.getSkuCode()){
+                PurchaseDetail purchaseDetail = new PurchaseDetail();
+                if(StringUtils.equals(detail.getSkuCode(), pd.getSkuCode())){
                     if(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode().equals(detail.getStatus().toString())){
                         purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                     }else if(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode().equals(detail.getStatus().toString())){
@@ -1051,6 +1051,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 purchaseDetail.setId(pd.getId());
                 purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
                 purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
+                break;
             }
         }
     }
@@ -1406,20 +1407,25 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param noticeOrder
      */
     private void updatePurchaseDetailStatus(WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder) {
-        PurchaseDetail purchaseDetail = new PurchaseDetail();
-        purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
-
-        if(StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), String.valueOf(warehouseDetail.getStatus()))){
-            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        } else if (StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(), String.valueOf(warehouseDetail.getStatus()))){
-            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
-        } else {
-            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+        Example example1 = new Example(PurchaseDetail.class);
+        example1.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(example1);
+        for (PurchaseDetail p : purchaseDetails) {
+            if(StringUtils.equals(p.getSkuCode(), warehouseDetail.getSkuCode())){
+                PurchaseDetail purchaseDetail = new PurchaseDetail();
+                purchaseDetail.setId(p.getId());
+                purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+                if(StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), String.valueOf(warehouseDetail.getStatus()))){
+                    purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+                } else if (StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(), String.valueOf(warehouseDetail.getStatus()))){
+                    purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+                } else {
+                    purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+                }
+                purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
+                break;
+            }
         }
-
-        Example example = new Example(PurchaseDetail.class);
-        example.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
-        purchaseDetailService.updateByExampleSelective(purchaseDetail, example);
     }
 
     private String getExceptionLog(WarehouseNotice warehouseNotice, List<WarehouseNoticeDetails> warehouseNoticeDetailsList) {
