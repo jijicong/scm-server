@@ -544,6 +544,26 @@ public class SupplierBiz implements ISupplierBiz {
                 AssertUtil.notBlank(certificate.getBusinessLicence(), "营业执照不能为空");
                 AssertUtil.notBlank(certificate.getBusinessLicencePic(), "营业执照证件图片不能为空");
                 AssertUtil.notBlank(certificate.getOrganRegistraCodeCertificate(), "组织机构代码证不能为空");
+
+                //校验组织机构代码唯一性
+                if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){
+                    Certificate certificateTemp = new Certificate();
+                    certificateTemp.setOrganRegistraCodeCertificate(certificate.getOrganRegistraCodeCertificate());
+                    List<Certificate> certificateList = certificateService.select(certificateTemp);
+                    if(certificateList != null && certificateList.size() > 0){
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                    }
+                }else{
+                    Example example = new Example(Certificate.class);
+                    Example.Criteria criteria = example.createCriteria();
+                    criteria.andNotEqualTo("supplierCode", supplier.getSupplierCode());
+                    criteria.andEqualTo("organRegistraCodeCertificate", certificate.getOrganRegistraCodeCertificate());
+                    List<Certificate> certificateList = certificateService.selectByExample(criteria);
+                    if(certificateList != null && certificateList.size() > 0){
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                    }
+                }
+
                 AssertUtil.notBlank(certificate.getOrganRegistraCodeCertificatePic(), "组织机构代码证图片不能为空");
                 AssertUtil.notBlank(certificate.getTaxRegistrationCertificate(), "税务登记证不能为空");
                 AssertUtil.notBlank(certificate.getTaxRegistrationCertificatePic(), "税务登记证证件图片不能为空");
@@ -588,6 +608,26 @@ public class SupplierBiz implements ISupplierBiz {
             } else if (StringUtils.equals(SupplyConstants.Supply.Supplier.MULTI_CERTIFICATE_UNION, supplier.getCertificateTypeId())) {//多证合一
                 AssertUtil.notBlank(certificate.getMultiCertificateCombineNo(), "多证合一证号不能为空");
                 AssertUtil.notBlank(certificate.getMultiCertificateCombinePic(), "多证合一证件图片不能为空");
+
+                //校验多证合一证号唯一性
+                if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){
+                    Certificate certificateTemp = new Certificate();
+                    certificateTemp.setMultiCertificateCombineNo(certificate.getMultiCertificateCombineNo());
+                    List<Certificate> certificateList = certificateService.select(certificateTemp);
+                    if(certificateList != null && certificateList.size() > 0){
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                    }
+                }else{
+                    Example example = new Example(Certificate.class);
+                    Example.Criteria criteria = example.createCriteria();
+                    criteria.andNotEqualTo("supplierCode", supplier.getSupplierCode());
+                    criteria.andEqualTo("multiCertificateCombineNo", certificate.getMultiCertificateCombineNo());
+                    List<Certificate> certificateList = certificateService.selectByExample(criteria);
+                    if(certificateList != null && certificateList.size() > 0){
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                    }
+                }
+
             } else {
                 String msg = String.format("证件类型ID[%s]错误", supplier.getCertificateTypeId());
                 log.error(msg);
