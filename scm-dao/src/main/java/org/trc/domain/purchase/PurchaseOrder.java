@@ -2,7 +2,6 @@ package org.trc.domain.purchase;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.MoneySerializer;
 import org.trc.domain.BaseDO;
 
@@ -123,6 +122,12 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("senderAddress")
     @Length(max = 100, message = "发件方详细地址字母和数字不能超过100个")
     private String senderAddress;//发件方详细地址
+
+    /**
+     * v2.5 入库状态:0-等待入库,1-全部入库,2-部分入库,3-入库异常,其他情况为null
+     */
+    @FormParam("warehouseNoticeStatus")
+    private String warehouseNoticeStatus;
 
     @Transient
     private String senderProvinceName;
@@ -513,5 +518,13 @@ public class PurchaseOrder extends BaseDO{
 
     public void setSenderCityName(String senderCityName) {
         this.senderCityName = senderCityName;
+    }
+
+    public String getWarehouseNoticeStatus() {
+        return warehouseNoticeStatus;
+    }
+
+    public void setWarehouseNoticeStatus(String warehouseNoticeStatus) {
+        this.warehouseNoticeStatus = warehouseNoticeStatus;
     }
 }

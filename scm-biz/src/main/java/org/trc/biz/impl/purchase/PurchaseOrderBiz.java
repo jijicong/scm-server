@@ -28,6 +28,7 @@ import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.supplier.SupplierBrandExt;
+import org.trc.domain.taxrate.TaxRate;
 import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
@@ -48,6 +49,7 @@ import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.taxrate.TaxRateService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -120,6 +122,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
     private IPurchaseGroupUserService purchaseGroupUserService;
+
+    @Autowired
+    private TaxRateService taxRateService;
 
 
 
@@ -373,6 +378,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 return null;
             }
 
+        }
+
+        if(!StringUtils.isBlank(form.getWarehouseNoticeStatus())){
+            criteria.andEqualTo("warehouseNoticeStatus", form.getWarehouseNoticeStatus());
         }
 
         if (!StringUtils.isBlank(form.getPurchaseType())) {
@@ -780,6 +789,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getPurchasePriceD(),"采购商品进价不能为空!");
         AssertUtil.notNull(purchaseDetail.getPurchasingQuantity(),"采购商品数量不能为空!");
         AssertUtil.notBlank(purchaseDetail.getBatchCode(),"采购商品批次号不能为空!");
+        AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
     }
 
     private void checkPurchaseDetail(PurchaseDetail purchaseDetail){
@@ -791,6 +801,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getAllCategoryName(), "商品分类不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuCode(), "商品sku编码不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuName(), "商品sku名称不能为空");
+        AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
     }
 
     @Override
@@ -1396,19 +1407,18 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
-         /* //查询该采购单对应的采购商品
-        PurchaseDetail purchaseDetail = new PurchaseDetail();
-        purchaseDetail.setPurchaseId(purchaseOrder.getId());
-        purchaseDetailService.select(purchaseDetail);
 
-        //入库通知的商品表
-        WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
-        //warehouseNoticeDetails
-        //warehouseNoticeDetailsService*/
         //更新采购单的状态
         PurchaseOrder _purchaseOrder = new PurchaseOrder();
         _purchaseOrder.setId(order.getId());
         _purchaseOrder.setStatus(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
+
+        /**
+         * v2.5 初始入库状态
+         * 入库状态:0-等待入库,1-全部入库,2-部分入库,3-入库异常,4-其他情况
+         */
+        _purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.WAIT_RECEIVE.getCode());
+
         //待通知
         _purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());
         _purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
@@ -1432,6 +1442,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
 
+        /**
+         * v2.5 初始商品 入库状态
+         */
+        initPurchaseDetailReceiveStatus(purchaseDetails);
+
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode(), warehouseInfo.getChannelCode(),
                 warehouseInfo.getId(), warehouseInfo.getWarehouseOwnerId());
 
@@ -1441,6 +1456,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         } else {
             LOGGER.error(DistributeLockEnum.PURCHASE_ORDER.getCode() + "warahouseAdvice"+purchaseOrder.getId() + "解锁失败！");
         }
+
+    }
+
+    /**
+     * v2.5 初始商品 入库状态
+     * @param purchaseDetails
+     */
+    private void initPurchaseDetailReceiveStatus(List<PurchaseDetail> purchaseDetails) {
+        purchaseDetails.forEach((purchaseDetail) ->{
+            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.WAIT_RECEIVE.getCode());
+            purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+            purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
+        });
 
     }
 
@@ -1576,6 +1604,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         tmp.setId(purchaseOrder.getId());
         tmp.setStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
         tmp.setUpdateTime(Calendar.getInstance().getTime());
+        //同步采购单入库状态，其他情况为'null'
+        tmp.setWarehouseNoticeStatus("");
         //是否已经发起入库通知，设为""
         tmp.setEnterWarehouseNotice("");
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
@@ -1585,6 +1615,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
 
+        //同步采购单商品详情 入库状态，其他情况为'null'
+        updatePurchaseOrderDetailState(purchaseOrder);
 
         //更改入库通知单的状态;在修改状态之前。判断入库通知单的状态，是否为待发起入库通知/乐观锁
         WarehouseNotice warehouseNotice = new WarehouseNotice();
@@ -1631,6 +1663,20 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
     }
+
+    private void updatePurchaseOrderDetailState(PurchaseOrder purchaseOrder) {
+        Example example = new Example(PurchaseDetail.class);
+        example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+        List<PurchaseDetail> details = purchaseDetailService.selectByExample(example);
+        if(details != null && !details.isEmpty()){
+            details.forEach((purchaseDetail) -> {
+                purchaseDetail.setReceiveStatus("");
+                purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+                purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
+            });
+        }
+    }
+
     @Override
     public   List<String> associationSearch(String queryString) throws Exception{
         List<String> brandNameList = new ArrayList<>();
@@ -1734,7 +1780,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         skusCriteria.andIn("itemId", itemIds);
         skusCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         if(StringUtils.isNotBlank(skuCode)){
-            skusCriteria.andLike("skuCode", "%" + skuCode + "%");
+
+            skusCriteria.andIn("skuCode", Arrays.asList(skuCode.split(",")));
         }
         if(StringUtils.isNotBlank(skuName)){
             skusCriteria.andLike("skuName", "%" + skuName + "%");
@@ -1785,7 +1832,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
             warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
-                warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
+                warehouseItemCriteria.andIn("barCode", Arrays.asList(barCode.split(",")));
             }
             if(StringUtils.isNotBlank(itemNo)){
                 warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
@@ -1810,6 +1857,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         List<PurchaseDetail> purchaseDetailList = new ArrayList<>();
         for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
             PurchaseDetail detail = new PurchaseDetail();
+
+            //TODO 添加商品详情，采购税率
+            Example example = new Example(TaxRate.class);
+            example.createCriteria().andEqualTo("taxRateCode", TaxRateEnum.PURCHASE_RATE.getCode());
+            List<TaxRate> taxRates = taxRateService.selectByExample(example);
+            if(taxRates != null && !taxRates.isEmpty()){
+                detail.setTaxRate(taxRates.get(0).getTaxRate());
+            }
             detail.setSpuCode(warehouseItemInfo.getSpuCode());
             detail.setSkuCode(warehouseItemInfo.getSkuCode());
             detail.setBarCode(warehouseItemInfo.getBarCode());
@@ -1831,8 +1886,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         return purchaseDetailList;
     }
-
-
 
     @Override
     @PurchaseOrderCacheEvict
