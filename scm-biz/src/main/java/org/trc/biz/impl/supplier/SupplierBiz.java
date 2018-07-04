@@ -317,18 +317,24 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<Supplier> querySuppliers(SupplierForm supplierForm) throws Exception {
-        Supplier supplier = new Supplier();
-        BeanUtils.copyProperties(supplierForm, supplier);
+        //Supplier supplier = new Supplier();
+        //BeanUtils.copyProperties(supplierForm, supplier);
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(supplierForm.getStatus())){
             if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
-                supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
             }
-            supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            List<Supplier> supplierList =  supplierService.select(supplier);
+            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            if(!StringUtils.isBlank(supplierForm.getSupplierName())) {
+                criteria.andLike("supplierName", "%" + supplierForm.getSupplierName() + "%");
+            }
+            List<Supplier> supplierList =  supplierService.selectByExample(example);
 
             Example example2 = new Example(SupplierApply.class);
             Example.Criteria criteria2 = example2.createCriteria();
             criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
+
             List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
 
             if (!AssertUtil.collectionIsEmpty(supplierList)) {
@@ -347,10 +353,13 @@ public class SupplierBiz implements ISupplierBiz {
             return supplierList;
         }else {
             if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
-                supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
             }
-            supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            return supplierService.select(supplier);
+            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            if(!StringUtils.isBlank(supplierForm.getSupplierName())) {
+                criteria.andLike("supplierName", "%" + supplierForm.getSupplierName() + "%");
+            }
+            return supplierService.selectByExample(example);
         }
     }
 
