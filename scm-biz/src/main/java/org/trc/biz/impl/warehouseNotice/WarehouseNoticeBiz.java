@@ -1038,8 +1038,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(purchaseDetailExample);
 
             for (PurchaseDetail pd : purchaseDetails){
-                PurchaseDetail purchaseDetail = new PurchaseDetail();
                 if(StringUtils.equals(detail.getSkuCode(), pd.getSkuCode())){
+                    PurchaseDetail purchaseDetail = new PurchaseDetail();
                     if(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode().equals(detail.getStatus().toString())){
                         purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                     }else if(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode().equals(detail.getStatus().toString())){
@@ -1047,11 +1047,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     }else if(WarehouseNoticeStatusEnum.ALL_GOODS.getCode().equals(detail.getStatus().toString())){
                         purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
                     }
+                    purchaseDetail.setId(pd.getId());
+                    purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+                    purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
+                    break;
                 }
-                purchaseDetail.setId(pd.getId());
-                purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
-                purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
-                break;
             }
         }
     }
