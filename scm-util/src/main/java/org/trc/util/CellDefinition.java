@@ -1,6 +1,8 @@
 package org.trc.util;
 
 
+import org.apache.poi.hssf.util.HSSFColor;
+
 public class CellDefinition {
 
     public static final String TEXT = "TEXT";
@@ -19,9 +21,12 @@ public class CellDefinition {
 
     private String format;
 
+    private HSSFColor color;
+
     private int width;
 
-    public CellDefinition(String entry, String name, String format, int width){
+    public CellDefinition(String entry, String name, String format, HSSFColor color, int width){
+        this.color = color;
         this.entry = entry;
         this.name = name;
         this.format = format;
@@ -57,6 +62,18 @@ public class CellDefinition {
     }
 
     public void setWidth(short width) {
+        this.width = width;
+    }
+
+    public HSSFColor getColor() {
+        return color;
+    }
+
+    public void setColor(HSSFColor color) {
+        this.color = color;
+    }
+
+    public void setWidth(int width) {
         this.width = width;
     }
 

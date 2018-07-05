@@ -820,33 +820,40 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				userInfo.getUserId(), LogOperationEnum.NOTICE_WMS.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 	}
 	
-	
+
+	//flag  0查询 1编辑
 	@Override
-	public AllocateOrder allocateOrderEditGet(String orderId) {
+	public AllocateOrder allocateOrderEditGet(String orderId,String flag) {
 		AllocateOrder retOrder = allocateOrderService.selectByPrimaryKey(orderId);
 		if (retOrder == null) {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_EDIT_EXCEPTION, 
 					"未查到相关调拨单信息");
 		}
 		//编辑页面对调入仓库和调出仓库校验,
-		String outWarehouseCode = retOrder.getOutWarehouseCode();
-		String inWarehouseCode = retOrder.getInWarehouseCode();
-		Example example1 = new Example(WarehouseInfo.class);
-		Example.Criteria criteria1 = example1.createCriteria();
-		criteria1.andEqualTo("code",outWarehouseCode);
-		List<WarehouseInfo> warehouseInfos1 = warehouseInfoService.selectByExample(example1);
-		if(warehouseInfos1.get(0).getIsValid().equals("0")){
-			//启用状态为0，停用
-			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调出仓库"+warehouseInfos1.get(0).getWarehouseName()+"已停用,请修改");
-		}
-
-		Example example2 = new Example(WarehouseInfo.class);
-		Example.Criteria criteria2 = example2.createCriteria();
-		criteria2.andEqualTo("code",inWarehouseCode);
-		List<WarehouseInfo> warehouseInfos2 = warehouseInfoService.selectByExample(example2);
-		if(warehouseInfos2.get(0).getIsValid().equals("0")){
-			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调入仓库"+warehouseInfos2.get(0).getWarehouseName()+"已停用,请修改");
-		}
+//		String outWarehouseCode = retOrder.getOutWarehouseCode();
+//		String inWarehouseCode = retOrder.getInWarehouseCode();
+//		Example example1 = new Example(WarehouseInfo.class);
+//		Example.Criteria criteria1 = example1.createCriteria();
+//		criteria1.andEqualTo("code",outWarehouseCode);
+//		List<WarehouseInfo> warehouseInfos1 = warehouseInfoService.selectByExample(example1);
+//		if(warehouseInfos1.get(0).getIsValid().equals("0")){
+//			if(flag.equals("1")){
+//				//启用状态为0，停用
+//				throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调出仓库"+warehouseInfos1.get(0).getWarehouseName()+"已停用,请修改");
+//			}
+//
+//		}
+//
+//		Example example2 = new Example(WarehouseInfo.class);
+//		Example.Criteria criteria2 = example2.createCriteria();
+//		criteria2.andEqualTo("code",inWarehouseCode);
+//		List<WarehouseInfo> warehouseInfos2 = warehouseInfoService.selectByExample(example2);
+//		if(warehouseInfos2.get(0).getIsValid().equals("0")){
+//			if(flag.equals("1")){
+//				throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调入仓库"+warehouseInfos2.get(0).getWarehouseName()+"已停用,请修改");
+//			}
+//
+//		}
 
 
 		AllocateSkuDetail queryDetail = new AllocateSkuDetail();
@@ -862,10 +869,13 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				querySku.setInventoryType(detail.getInventoryType());
 				querySkuList.add(querySku);
 			}
-			if (!CollectionUtils.isEmpty(querySkuList)) {
-				Map<String, Long> inventryMap = inventoryQuery(retOrder.getOutWarehouseCode(), JSON.toJSONString(querySkuList));
-				detailList.forEach(item -> item.setInventoryNum(inventryMap.get(item.getSkuCode())));
+			if(ZeroToNineEnum.ONE.getCode().equals(flag)){//编辑时才查询实时库存
+				if (!CollectionUtils.isEmpty(querySkuList)) {
+					Map<String, Long> inventryMap = inventoryQuery(retOrder.getOutWarehouseCode(), JSON.toJSONString(querySkuList));
+					detailList.forEach(item -> item.setInventoryNum(inventryMap.get(item.getSkuCode())));
+				}
 			}
+
 			retOrder.setSkuDetailList(detailList);
 		}
 		allocateOrderExtService.setAllocateOrderWarehouseName(retOrder);

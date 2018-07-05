@@ -130,15 +130,15 @@ public class JingDongBizImpl implements IJingDongBiz {
     public Response exportBalanceDetail(BalanceDetailDO queryModel)throws Exception {
         try{
             List<BalanceDetailDTO> result = ijdService.exportBalanceDetail(queryModel);
-            CellDefinition tradeNo = new CellDefinition("tradeNo", "业务号", CellDefinition.TEXT, 8000);
-            CellDefinition pin = new CellDefinition("pin", "京东账号", CellDefinition.TEXT, 4000);
-            CellDefinition orderId = new CellDefinition("orderId", "京东订单号", CellDefinition.TEXT, 8000);
-            CellDefinition income = new CellDefinition("income", "收入", CellDefinition.NUM_0_00, 4000);
-            CellDefinition outcome = new CellDefinition("outcome", "支出", CellDefinition.NUM_0_00, 6000);
-            CellDefinition accountType = new CellDefinition("accountType", "账号类型", CellDefinition.TEXT, 6000);
-            CellDefinition createdDate = new CellDefinition("createdDate", "余额变动时间", CellDefinition.TEXT, 8000);
-            CellDefinition tradeTypeName = new CellDefinition("tradeTypeName", "业务类型", CellDefinition.TEXT, 8000);
-            CellDefinition notePub = new CellDefinition("notePub", "备注", CellDefinition.TEXT, 10000);
+            CellDefinition tradeNo = new CellDefinition("tradeNo", "业务号", CellDefinition.TEXT, null, 8000);
+            CellDefinition pin = new CellDefinition("pin", "京东账号", CellDefinition.TEXT, null, 4000);
+            CellDefinition orderId = new CellDefinition("orderId", "京东订单号", CellDefinition.TEXT, null, 8000);
+            CellDefinition income = new CellDefinition("income", "收入", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition outcome = new CellDefinition("outcome", "支出", CellDefinition.NUM_0_00, null, 6000);
+            CellDefinition accountType = new CellDefinition("accountType", "账号类型", CellDefinition.TEXT, null, 6000);
+            CellDefinition createdDate = new CellDefinition("createdDate", "余额变动时间", CellDefinition.TEXT, null, 8000);
+            CellDefinition tradeTypeName = new CellDefinition("tradeTypeName", "业务类型", CellDefinition.TEXT, null, 8000);
+            CellDefinition notePub = new CellDefinition("notePub", "备注", CellDefinition.TEXT, null, 10000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             cellDefinitionList.add(tradeNo);
@@ -174,34 +174,34 @@ public class JingDongBizImpl implements IJingDongBiz {
         try{
             List<OrderDetailDTO> result = ijdService.exportOrderDetail(queryModel);
 
-            CellDefinition errMsg = new CellDefinition("errMsg", "异常说明", CellDefinition.TEXT, 4000);
-            CellDefinition jingdongOrderCreateTime = new CellDefinition("jingdongOrderCreateTime", "京东订单生成时间", CellDefinition.TEXT, 6000);
-            CellDefinition parentOrderCode = new CellDefinition("parentOrderCode", "京东父订单编号", CellDefinition.TEXT, 4000);
-            CellDefinition orderCode = new CellDefinition("orderCode", "京东子订单编号", CellDefinition.TEXT, 4000);
-            CellDefinition itemSkuCode = new CellDefinition("itemSkuCode", "京东商品编号", CellDefinition.TEXT, 4000);
-            CellDefinition itemSkuName = new CellDefinition("itemSkuName", "京东商品名称", CellDefinition.TEXT, 16000);
-            CellDefinition firstClassify = new CellDefinition("firstClassify", "京东商品一级分类", CellDefinition.TEXT, 4000);
-            CellDefinition secondClassify = new CellDefinition("secondClassify", "京东商品二级分类", CellDefinition.TEXT, 4000);
-            CellDefinition thirdClassify = new CellDefinition("thirdClassify", "京东商品三级分类", CellDefinition.TEXT, 4000);
-            CellDefinition jdItemsNum = new CellDefinition("jdItemsNum", "京东商品发货数量", CellDefinition.NUM_0, 4000);
-            CellDefinition price = new CellDefinition("price", "京东商品单价", CellDefinition.NUM_0_00, 4000);
-            CellDefinition totalPrice = new CellDefinition("totalPrice", "京东商品总金额", CellDefinition.NUM_0_00, 4000);
-            CellDefinition freight = new CellDefinition("freight", "京东子订单运费", CellDefinition.NUM_0_00, 4000);
-            CellDefinition subTotalPrice = new CellDefinition("subTotalPrice", "京东子订单总金额", CellDefinition.NUM_0_00, 4000);
-            CellDefinition parentTotalPrice = new CellDefinition("parentTotalPrice", "京东父订单总金额", CellDefinition.NUM_0_00, 4000);
-            CellDefinition actualPay = new CellDefinition("actualPay", "账户实际支付金额", CellDefinition.NUM_0_00, 4000);
-            CellDefinition refund = new CellDefinition("refund", "账户实际退款金额", CellDefinition.NUM_0_00, 4000);
+            CellDefinition errMsg = new CellDefinition("errMsg", "异常说明", CellDefinition.TEXT, null, 4000);
+            CellDefinition jingdongOrderCreateTime = new CellDefinition("jingdongOrderCreateTime", "京东订单生成时间", CellDefinition.TEXT, null, 6000);
+            CellDefinition parentOrderCode = new CellDefinition("parentOrderCode", "京东父订单编号", CellDefinition.TEXT, null, 4000);
+            CellDefinition orderCode = new CellDefinition("orderCode", "京东子订单编号", CellDefinition.TEXT, null, 4000);
+            CellDefinition itemSkuCode = new CellDefinition("itemSkuCode", "京东商品编号", CellDefinition.TEXT, null, 4000);
+            CellDefinition itemSkuName = new CellDefinition("itemSkuName", "京东商品名称", CellDefinition.TEXT, null, 16000);
+            CellDefinition firstClassify = new CellDefinition("firstClassify", "京东商品一级分类", CellDefinition.TEXT, null, 4000);
+            CellDefinition secondClassify = new CellDefinition("secondClassify", "京东商品二级分类", CellDefinition.TEXT, null, 4000);
+            CellDefinition thirdClassify = new CellDefinition("thirdClassify", "京东商品三级分类", CellDefinition.TEXT, null, 4000);
+            CellDefinition jdItemsNum = new CellDefinition("jdItemsNum", "京东商品发货数量", CellDefinition.NUM_0, null, 4000);
+            CellDefinition price = new CellDefinition("price", "京东商品单价", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition totalPrice = new CellDefinition("totalPrice", "京东商品总金额", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition freight = new CellDefinition("freight", "京东子订单运费", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition subTotalPrice = new CellDefinition("subTotalPrice", "京东子订单总金额", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition parentTotalPrice = new CellDefinition("parentTotalPrice", "京东父订单总金额", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition actualPay = new CellDefinition("actualPay", "账户实际支付金额", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition refund = new CellDefinition("refund", "账户实际退款金额", CellDefinition.NUM_0_00, null, 4000);
 
-            CellDefinition channelOrderSubmitTime = new CellDefinition("channelOrderSubmitTime", "渠道订单提交时间", CellDefinition.TEXT, 6000);
-            CellDefinition channelPlatformOrder = new CellDefinition("channelPlatformOrder", "渠道平台订单号", CellDefinition.TEXT, 6000);
-            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "渠道店铺订单号", CellDefinition.TEXT, 6000);
-            CellDefinition orderItemCode = new CellDefinition("orderItemCode", "渠道商品订单号", CellDefinition.TEXT, 6000);
-            CellDefinition channelItemsNum = new CellDefinition("channelItemsNum", "客户购买商品数量", CellDefinition.NUM_0, 4000);
-            CellDefinition pay = new CellDefinition("pay", "客户实付商品金额", CellDefinition.NUM_0_00, 4000);
-            CellDefinition balanceCreateTime = new CellDefinition("balanceCreateTime", "余额变动时间", CellDefinition.TEXT, 8000);
-            CellDefinition state = new CellDefinition("state", "订单状态", CellDefinition.TEXT, 4000);
-            CellDefinition operate = new CellDefinition("operate", "了结状态", CellDefinition.TEXT, 4000);
-            CellDefinition remark = new CellDefinition("remark", "备注", CellDefinition.TEXT, 8000);
+            CellDefinition channelOrderSubmitTime = new CellDefinition("channelOrderSubmitTime", "渠道订单提交时间", CellDefinition.TEXT, null, 6000);
+            CellDefinition channelPlatformOrder = new CellDefinition("channelPlatformOrder", "渠道平台订单号", CellDefinition.TEXT, null, 6000);
+            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "渠道店铺订单号", CellDefinition.TEXT, null, 6000);
+            CellDefinition orderItemCode = new CellDefinition("orderItemCode", "渠道商品订单号", CellDefinition.TEXT, null, 6000);
+            CellDefinition channelItemsNum = new CellDefinition("channelItemsNum", "客户购买商品数量", CellDefinition.NUM_0, null, 4000);
+            CellDefinition pay = new CellDefinition("pay", "客户实付商品金额", CellDefinition.NUM_0_00, null, 4000);
+            CellDefinition balanceCreateTime = new CellDefinition("balanceCreateTime", "余额变动时间", CellDefinition.TEXT, null, 8000);
+            CellDefinition state = new CellDefinition("state", "订单状态", CellDefinition.TEXT, null, 4000);
+            CellDefinition operate = new CellDefinition("operate", "了结状态", CellDefinition.TEXT, null, 4000);
+            CellDefinition remark = new CellDefinition("remark", "备注", CellDefinition.TEXT, null, 8000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             cellDefinitionList.add(errMsg);

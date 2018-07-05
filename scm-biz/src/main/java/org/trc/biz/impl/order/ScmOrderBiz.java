@@ -10,6 +10,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,8 +93,6 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -3354,6 +3353,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             returnOrder.setSkus(getSkuInfo(_outboundDetailList));
             orderList.add(returnOrder);
         }
+        orderRes.setOrder(orderList);
         //通知渠道订单结果
         noticeChannelOrderResult(orderRes);
     }
@@ -3508,14 +3508,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     warehouseOrder.setLogisticsInfo(logisticsInfo);
                 }
             }
-            CellDefinition warehouseOrderCode = new CellDefinition("warehouseOrderCode", "供应商订单编号", CellDefinition.TEXT, 8000);
-            CellDefinition supplierName = new CellDefinition("supplierName", "供应商名称", CellDefinition.TEXT, 8000);
-            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "店铺订单号", CellDefinition.TEXT, 8000);
-            CellDefinition itemsNum = new CellDefinition("itemsNum", "商品总数量", CellDefinition.NUM_0, 8000);
-            CellDefinition payment = new CellDefinition("payment", "商品总金额(元)", CellDefinition.NUM_0_00, 8000);
-            CellDefinition payTime = new CellDefinition("payTime", "付款时间", CellDefinition.DATE_TIME, 8000);
-            CellDefinition supplierOrderStatus = new CellDefinition("supplierOrderStatus", "状态", CellDefinition.TEXT, 8000);
-            CellDefinition logisticsInfo = new CellDefinition("logisticsInfo", "反馈物流公司名称-反馈运单号", CellDefinition.TEXT, 16000);
+            CellDefinition warehouseOrderCode = new CellDefinition("warehouseOrderCode", "供应商订单编号", CellDefinition.TEXT, null, 8000);
+            CellDefinition supplierName = new CellDefinition("supplierName", "供应商名称", CellDefinition.TEXT, null,8000);
+            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "店铺订单号", CellDefinition.TEXT, null,8000);
+            CellDefinition itemsNum = new CellDefinition("itemsNum", "商品总数量", CellDefinition.NUM_0, null,8000);
+            CellDefinition payment = new CellDefinition("payment", "商品总金额(元)", CellDefinition.NUM_0_00, null,8000);
+            CellDefinition payTime = new CellDefinition("payTime", "付款时间", CellDefinition.DATE_TIME, null,8000);
+            CellDefinition supplierOrderStatus = new CellDefinition("supplierOrderStatus", "状态", CellDefinition.TEXT, null,8000);
+            CellDefinition logisticsInfo = new CellDefinition("logisticsInfo", "反馈物流公司名称-反馈运单号", CellDefinition.TEXT, null,16000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             cellDefinitionList.add(warehouseOrderCode);
@@ -4172,11 +4172,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 logistic.setWaybillNumber(logistic.getSupplierOrderCode());
                 logistic.setLogisticsCorporation(SupplyConstants.Order.SUPPLIER_JD_LOGISTICS_COMPANY2);
             }
-            LogisticsCompany logisticsCompany = new LogisticsCompany();
-            logisticsCompany.setType(channelCode);
-            logisticsCompany.setCompanyName(logistic.getLogisticsCorporation());
-            logisticsCompany = logisticsCompanyService.selectOne(logisticsCompany);
-            AssertUtil.notNull(logisticsCompany, String.format("根据type[%s]和companyName[%s]查询物流公司信息为空", channelCode, logistic.getLogisticsCorporation()));
+            LogisticsCompany logisticsCompany = orderExtBiz.getLogisticsCompanyByName(LogisticsTypeEnum.TRC, logistic.getLogisticsCorporation());
             logistic.setLogisticsCorporationCode(logisticsCompany.getCompanyCode());
             JSONArray skusArray = jbo.getJSONArray("skus");
             List<SkuInfo> skuInfoList = new ArrayList<SkuInfo>();
@@ -4756,7 +4752,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     for(SkuStock skuStock: skuStockList){
                         if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) &&
                                 StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId()) &&
-                                StringUtils.equals(skuStock.getWarehouseCode(), scmInventoryQueryResponse.getWarehouseCode())){
+                                StringUtils.equals(skuStock.getWarehouseCode(), scmInventoryQueryResponse.getLocalWarehouseCode())){
                             _skuStock = skuStock;
                             break;
                         }
@@ -5792,26 +5788,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrder.setPlatformOrderCode(warehouseOrderList.get(0).getPlatformOrderCode());
         platformOrder = platformOrderService.selectOne(platformOrder);
         AssertUtil.notNull(platformOrder, String.format("提交自采订单跟据平台订单编码%s查询平台订单信息为空", warehouseOrderList.get(0).getPlatformOrderCode()));
-        Set<String> shopOrderCodes = new HashSet<>();
+        Set<String> scmShopOrderCodes = new HashSet<>();
         Set<String> warehouseOrderCodes = new HashSet<>();
         for(WarehouseOrder warehouseOrder: warehouseOrderList){
-            shopOrderCodes.add(warehouseOrder.getShopOrderCode());
+            scmShopOrderCodes.add(warehouseOrder.getScmShopOrderCode());
             warehouseOrderCodes.add(warehouseOrder.getWarehouseOrderCode());
         }
         Example shopOrderExample = new Example(ShopOrder.class);
         Example.Criteria criteria = shopOrderExample.createCriteria();
-        criteria.andIn("shopOrderCode", shopOrderCodes);
+        criteria.andIn("scmShopOrderCode", scmShopOrderCodes);
         List<ShopOrder> shopOrderList = shopOrderService.selectByExample(shopOrderExample);
-        for(String shopOrderCode : shopOrderCodes){
+        for(String scmShopOrderCode : scmShopOrderCodes){
             boolean flag = false;
             for(ShopOrder shopOrder: shopOrderList){
-                if(StringUtils.equals(shopOrderCode, shopOrder.getShopOrderCode())){
+                if(StringUtils.equals(scmShopOrderCode, shopOrder.getScmShopOrderCode())){
                     flag = true;
                     break;
                 }
             }
             if(!flag){
-                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("提交自采订单跟据店铺订单编码%s查询店铺订单信息为空", shopOrderCode));
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("提交自采订单跟据系统订单号%s查询店铺订单信息为空", scmShopOrderCode));
             }
         }
         Example orderItemExample = new Example(OrderItem.class);
@@ -6495,12 +6491,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //校验导入表格标题
             checkTitle(titleResult);
             //校验导入文件信息，并获取信息
-            Map<String, String> contentResult = ImportExcel.readExcelContent2(uploadedInputStream, SupplyConstants.Symbol.COMMA);
-            if(StringUtils.equals("0", contentResult.get("count").toString())){
-                return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
+            Map<String, String> contentResult = null;
+            try{
+                contentResult = ImportExcel.readExcelContent2(uploadedInputStream, SupplyConstants.Symbol.COMMA);
+                if(StringUtils.equals("0", contentResult.get("count").toString())){
+                    return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
+                }
+            }catch (Exception e){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "导入订单数据包含不合规范的数据！请仔细检查数据确认完全正确后在提交！");
             }
+
             int count = Integer.parseInt(contentResult.get("count"));
-            if(count > 100){
+            if(count > 500){
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "每次导入订单数据不能超过500条！");
             }
             SellChannel sellChannel = new SellChannel();
@@ -6509,6 +6511,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
             AssertUtil.notNull(sellChannel, String.format("销售渠道%s不存在", sellCode));
             //获取导入订单sku明细
             List<ImportOrderInfo> importOrderInfoList = getImportOrderSkuDetail(aclUserAccreditInfo.getChannelCode(), sellCode, titleResult, contentResult, sellChannel);
+            //校验是否包含了代发商品
+            for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                if(importOrderInfo.getSkuCode().startsWith(SP1)){
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "暂不支持导入代发商品！");
+                }
+            }
             //检查导入订单是否重复导入
             //checkOrderRepeat(importOrderInfoList);
             Set<String> skuCodes = new HashSet<>();
@@ -6649,23 +6657,23 @@ public class ScmOrderBiz implements IScmOrderBiz {
             importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());//失败的订单
             List<ImportOrderInfo> list = importOrderInfoService.select(importOrderInfo);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
-            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, 4000);
-            CellDefinition orignalPaytimeStr = new CellDefinition("orignalPaytimeStr", PAY_TIME, CellDefinition.TEXT, 5000);
-            CellDefinition receiverName = new CellDefinition("receiverName", RECIVE_NAME, CellDefinition.TEXT, 3000);
-            CellDefinition receiverMobile = new CellDefinition("receiverMobile", RECIVE_MOBILE, CellDefinition.TEXT, 4000);
-            CellDefinition receiverProvince = new CellDefinition("receiverProvince", RECIVE_PROVINCE, CellDefinition.TEXT, 3000);
-            CellDefinition receiverCity = new CellDefinition("receiverCity", RECIVE_CITY, CellDefinition.TEXT, 3000);
-            CellDefinition receiverDistrict = new CellDefinition("receiverDistrict", RECIVE_DISTRICT, CellDefinition.TEXT, 3000);
-            CellDefinition receiverAddress = new CellDefinition("receiverAddress", RECIVE_ADDRESS, CellDefinition.TEXT, 8000);
-            CellDefinition skuCode = new CellDefinition("skuCode", SKU_CODE, CellDefinition.TEXT, 5000);
-            CellDefinition num = new CellDefinition("num", NUM, CellDefinition.TEXT, 4000);
-            CellDefinition price = new CellDefinition("price", PRICE, CellDefinition.TEXT, 5000);
-            CellDefinition payment = new CellDefinition("payment", PAYMENT, CellDefinition.TEXT, 4000);
-            CellDefinition postFee = new CellDefinition("postFee", POST_FEE, CellDefinition.TEXT, 4000);
-            CellDefinition priceTax = new CellDefinition("priceTax", PRICE_TAX, CellDefinition.TEXT, 4000);
-            CellDefinition buyerMessage = new CellDefinition("buyerMessage", BUYER_MESSAGE, CellDefinition.TEXT, 10000);
-            CellDefinition shopMemo = new CellDefinition("shopMemo", SHOP_MEMO, CellDefinition.TEXT, 10000);
-            CellDefinition errorMessage = new CellDefinition("errorMessage", ERROR_MESSAGE, CellDefinition.TEXT, 10000);
+            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, null, 4000);
+            CellDefinition orignalPaytimeStr = new CellDefinition("orignalPaytimeStr", PAY_TIME, CellDefinition.TEXT, null,5000);
+            CellDefinition receiverName = new CellDefinition("receiverName", RECIVE_NAME, CellDefinition.TEXT, null,3000);
+            CellDefinition receiverMobile = new CellDefinition("receiverMobile", RECIVE_MOBILE, CellDefinition.TEXT, null,4000);
+            CellDefinition receiverProvince = new CellDefinition("receiverProvince", RECIVE_PROVINCE, CellDefinition.TEXT, null,3000);
+            CellDefinition receiverCity = new CellDefinition("receiverCity", RECIVE_CITY, CellDefinition.TEXT, null,3000);
+            CellDefinition receiverDistrict = new CellDefinition("receiverDistrict", RECIVE_DISTRICT, CellDefinition.TEXT, null,3000);
+            CellDefinition receiverAddress = new CellDefinition("receiverAddress", RECIVE_ADDRESS, CellDefinition.TEXT, null,8000);
+            CellDefinition skuCode = new CellDefinition("skuCode", SKU_CODE, CellDefinition.TEXT, null,5000);
+            CellDefinition num = new CellDefinition("num", NUM, CellDefinition.TEXT, null,4000);
+            CellDefinition price = new CellDefinition("price", PRICE, CellDefinition.TEXT, null,5000);
+            CellDefinition payment = new CellDefinition("payment", PAYMENT, CellDefinition.TEXT, null,4000);
+            CellDefinition postFee = new CellDefinition("postFee", POST_FEE, CellDefinition.TEXT, null,4000);
+            CellDefinition priceTax = new CellDefinition("priceTax", PRICE_TAX, CellDefinition.TEXT, null,4000);
+            CellDefinition buyerMessage = new CellDefinition("buyerMessage", BUYER_MESSAGE, CellDefinition.TEXT, null,10000);
+            CellDefinition shopMemo = new CellDefinition("shopMemo", SHOP_MEMO, CellDefinition.TEXT, null,10000);
+            CellDefinition errorMessage = new CellDefinition("errorMessage", ERROR_MESSAGE, CellDefinition.TEXT, new HSSFColor.RED(), 10000);
             cellDefinitionList.add(shopOrderCode);
             cellDefinitionList.add(orignalPaytimeStr);
             cellDefinitionList.add(receiverName);

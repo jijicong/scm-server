@@ -740,7 +740,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
 
-            if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) > 0){
+            if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) >= 0){
                 totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
                 BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
                 //设置采购价格*100
@@ -1623,7 +1623,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.DROPPED.getCode()));
         Example example1 = new Example(WarehouseNoticeDetails.class);
         Example.Criteria criteria1 = example1.createCriteria();
-        criteria1.andEqualTo("warehouseNoticeCode", notice.getWarehouseNoticeCode());
+        criteria1.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
         int num2 =warehouseNoticeDetailsService.updateByExampleSelective(warehouseNoticeDetails, example1);
         if (num2 == 0) {
             String msg = String.format("作废%s采购单操作失败,入库通知单详情已经被执行操作", JSON.toJSONString(warehouseNotice));

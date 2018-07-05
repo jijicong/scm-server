@@ -361,7 +361,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
 				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())
 					&& !(AllocateOutOrderStatusEnum.CANCEL.getCode().equals(outOrder.getStatus()) 
-							&& !DateCheckUtil.checkDate(outOrder.getUpdateTime()))) {
+							&& ZeroToNineEnum.ONE.getCode().equals(outOrder.getIsCancel()) // 手工“取消出库”
+							&& (!DateCheckUtil.checkDate(outOrder.getUpdateTime())))) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");
 		}
 		WarehouseInfo queryWhi = new WarehouseInfo();
