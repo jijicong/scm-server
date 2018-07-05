@@ -1599,6 +1599,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public void cancelWarahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
+        /**
+         * v2.5
+         * 校验入库单状态，是否可以作废采购单
+         * 当入库通知单状态为[0-待通知收货,1-仓库接收失败,7-已取消]，才允许作废已执行入库通知的采购单
+         */
+        checkWarehouseStatus(purchaseOrder);
+
         //更改采购单的状态
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
@@ -1661,6 +1668,25 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             String msg = String.format("作废%s采购单操作失败,入库通知单详情已经被执行操作", JSON.toJSONString(warehouseNotice));
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * v2.5
+     * 校验入库单状态，是否可以作废
+     * 当入库通知单状态为[0-待通知收货,1-仓库接收失败,7-已取消]，才允许作废已执行入库通知的采购单
+     * @param purchaseOrder
+     */
+    private void checkWarehouseStatus(PurchaseOrder purchaseOrder) {
+        Example WarehouseNoticeExample = new Example(WarehouseNotice.class);
+        WarehouseNoticeExample.createCriteria().andEqualTo("purchase_order_code", purchaseOrder.getPurchaseOrderCode());
+        List<WarehouseNotice> warehouseNotices = iWarehouseNoticeService.selectByExample(WarehouseNoticeExample);
+        AssertUtil.notEmpty(warehouseNotices, "采购单对应入库通知单为空");
+        String status = warehouseNotices.get(0).getStatus();
+        if(!StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(), status)
+                || !StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), status)
+                || !StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(), status)){
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, "作废采购单失败，与入库通知单状态不符");
         }
     }
 
