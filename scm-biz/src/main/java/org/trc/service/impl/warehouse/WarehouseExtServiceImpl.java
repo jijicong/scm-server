@@ -40,7 +40,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
 
 
     @Override
-    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes) {
+    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes,String inventoryType) {
         //获取可用仓库信息
         List<WarehouseInfo> warehouseInfoList = getWarehouseInfo();
         List<String> warehouseInfoIds = new ArrayList<>();
@@ -49,11 +49,18 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         }
         //获取仓库绑定商品信息
         List<WarehouseItemInfo> warehouseItemInfoList = getWarehouseItemInfo(skuCodes, warehouseInfoIds);
+        return this.getWarehouseInventory(warehouseInfoList, warehouseItemInfoList, inventoryType);
+    }
+
+    @Override
+    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<WarehouseInfo> warehouseInfoList,
+                                                                 List<WarehouseItemInfo> warehouseItemInfoList, String inventoryType) {
         /**
          * 获取仓库库存
          */
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen = new ArrayList<>();
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListJingdong = new ArrayList<>();
+        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListZy = new ArrayList<>();
         for(WarehouseInfo warehouseInfo: warehouseInfoList){
             List<WarehouseItemInfo> tmpWarehouseItemInfoList = new ArrayList<>();
             WarehouseOwernSkuDO warehouseOwernSkuDO = new WarehouseOwernSkuDO();
@@ -65,22 +72,43 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
             if(tmpWarehouseItemInfoList.size() > 0){
                 warehouseOwernSkuDO.setWarehouseInfo(warehouseInfo);
                 warehouseOwernSkuDO.setWarehouseItemInfoList(tmpWarehouseItemInfoList);
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
-                    warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
-                }else{//京东仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
-                    warehouseOwernSkuDOListJingdong.add(warehouseOwernSkuDO);
+                if(StringUtils.equals(WarehouseOperateNatureEnum.OUTER_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//第三方仓库
+                    if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
+                        warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
+                        warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
+                    }else{//京东仓储
+                        warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
+                        warehouseOwernSkuDOListJingdong.add(warehouseOwernSkuDO);
+                    }
+                }else if(StringUtils.equals(WarehouseOperateNatureEnum.SELF_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//自营仓库
+                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
+                    warehouseOwernSkuDOListZy.add(warehouseOwernSkuDO);
                 }
             }
         }
 
         List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
         if(warehouseOwernSkuDOListQimen.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Qimen.getCode(), warehouseOwernSkuDOListQimen));
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Qimen.getCode(), warehouseOwernSkuDOListQimen,inventoryType));
         }
         if(warehouseOwernSkuDOListJingdong.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(), warehouseOwernSkuDOListJingdong));
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(), warehouseOwernSkuDOListJingdong,inventoryType));
+        }
+        if(warehouseOwernSkuDOListZy.size() > 0){
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Zy.getCode(), warehouseOwernSkuDOListZy,inventoryType));
+        }
+        if(!CollectionUtils.isEmpty(scmInventoryQueryResponseList)){
+            for(ScmInventoryQueryResponse response : scmInventoryQueryResponseList){
+                for(WarehouseItemInfo itemInfo: warehouseItemInfoList){
+                    if(StringUtils.equals(response.getOwnerCode(), itemInfo.getWarehouseOwnerId()) &&
+                            StringUtils.equals(response.getWarehouseCode(), itemInfo.getWmsWarehouseCode()) &&
+                            StringUtils.equals(response.getItemId(), itemInfo.getWarehouseItemId())){
+                        response.setItemCode(itemInfo.getSkuCode());
+                        response.setLocalWarehouseCode(itemInfo.getWarehouseCode());
+                        break;
+                    }
+                }
+            }
         }
         if(!CollectionUtils.isEmpty(scmInventoryQueryResponseList)){
             for(ScmInventoryQueryResponse response : scmInventoryQueryResponseList){
@@ -97,15 +125,25 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         return scmInventoryQueryResponseList;
     }
 
-    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOList){
+    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOList,String inventoryType){
         ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
         request.setWarehouseType(warehouseType);
         List<ScmInventoryQueryItem> scmInventoryQueryItemList = new ArrayList<>();
         for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOList){
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
                 ScmInventoryQueryItem item = new ScmInventoryQueryItem();
-                item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
-                item.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
+                if (WarehouseTypeEnum.Zy.getCode().equals(warehouseType)) {// 自营仓逻辑处理
+                	item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getCode());
+                	if (StringUtils.isNotBlank(inventoryType)) {
+                		item.setInventoryType(inventoryType);
+                		if (JingdongInventoryTypeEnum.SALE.getCode().equals(inventoryType)) {// 可销售暂时先默认设置为良品
+                			item.setInventoryStatus(JingdongInventoryStateEnum.GOOD.getCode());//良品
+                		}
+                	}
+                } else {
+                	item.setInventoryType(inventoryType);
+                	item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
+                }
                 item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
                 item.setItemCode(warehouseItemInfo.getSkuCode());
                 item.setItemId(warehouseItemInfo.getWarehouseItemId());
@@ -126,10 +164,11 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
      * 获取可用仓库信息
      * @return
      */
-    private List<WarehouseInfo> getWarehouseInfo(){
+    @Override
+    public List<WarehouseInfo> getWarehouseInfo(){
         WarehouseInfo warehouseInfo = new WarehouseInfo();
         warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
-        warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
+        //warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
         List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
         if(CollectionUtils.isEmpty(warehouseInfoList)){
             logger.error("没有查询到可用仓库");
@@ -143,7 +182,8 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
      * @param warehouseInfoIds
      * @return
      */
-    private List<WarehouseItemInfo> getWarehouseItemInfo(List<String> skuCodes, List<String> warehouseInfoIds){
+    @Override
+    public List<WarehouseItemInfo> getWarehouseItemInfo(List<String> skuCodes, List<String> warehouseInfoIds){
         if(CollectionUtils.isEmpty(skuCodes) || CollectionUtils.isEmpty(warehouseInfoIds)){
             return new ArrayList<>();
         }
@@ -154,6 +194,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         criteria.andIn("skuCode", skuCodes);
         criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
         criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        criteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
         //AssertUtil.notEmpty(warehouseItemInfoList, "还没有跟仓库绑定商品");
         if(CollectionUtils.isEmpty(warehouseItemInfoList)){
@@ -168,11 +209,16 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         warehouseInfo.setCode(warehouseCode);
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
         AssertUtil.notNull(warehouseInfo, String.format("根据仓库编码%s查询仓库信息为空", warehouseCode));
-        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
-            return WarehouseTypeEnum.Qimen;
-        }else{//京东仓储
-            return WarehouseTypeEnum.Jingdong;
+        if(StringUtils.equals(WarehouseOperateNatureEnum.OUTER_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//第三方仓库
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
+                return WarehouseTypeEnum.Qimen;
+            }else{//京东仓储
+                return WarehouseTypeEnum.Jingdong;
+            }
+        }else if(StringUtils.equals(WarehouseOperateNatureEnum.SELF_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//自营仓库
+            return WarehouseTypeEnum.Zy;
         }
+        return null;
     }
 
     @Override

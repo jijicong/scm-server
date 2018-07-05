@@ -6,6 +6,8 @@ import org.trc.custom.CustomDateSerializer;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
+import javax.ws.rs.FormParam;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -20,6 +22,9 @@ public class ExceptionOrderItem implements Serializable {
     private Long id;
     //拆单异常单编号
     private String exceptionOrderCode;
+    //系统订单编码
+    @Transient
+    private String scmShopOrderCode;
     //店铺订单编码
     private String shopOrderCode;
     //平台订单编码
@@ -49,6 +54,8 @@ public class ExceptionOrderItem implements Serializable {
     private Date createTime;
     // 更新时间
     private Date updateTime;
+
+    private String specInfo;
 
     public Long getId() {
         return id;
@@ -176,6 +183,22 @@ public class ExceptionOrderItem implements Serializable {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getSpecInfo() {
+        return specInfo;
+    }
+
+    public void setSpecInfo(String specInfo) {
+        this.specInfo = specInfo;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 
     @Override

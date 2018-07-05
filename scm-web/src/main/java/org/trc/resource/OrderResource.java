@@ -1,6 +1,8 @@
 package org.trc.resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.order.IScmOrderBiz;
@@ -19,6 +21,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -111,6 +114,23 @@ public class OrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryExceptionOrdersDetail(@PathParam("exceptionOrderCode") String exceptionOrderCode){
         return ResultUtil.createSuccessResult("根据拆单异常订单编码查询拆单异常订单详情成功", scmOrderBiz.queryExceptionOrdersDetail(exceptionOrderCode));
+    }
+
+    @POST
+    @Path(SupplyConstants.Order.ORDER_IMPORT)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/octet-stream")
+    public Response orderImport(@FormDataParam("sellCode") String sellCode, @FormDataParam("file") InputStream uploadedInputStream,
+                                @FormDataParam("file") FormDataContentDisposition fileDetail,@Context ContainerRequestContext requestContext) {
+        return scmOrderBiz.importOrder(sellCode, uploadedInputStream, fileDetail, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+
+    @GET
+    @Path(SupplyConstants.Order.DOWNLOAD_ERROR_ORDER+"/{orderCode}")
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/octet-stream")
+    public Response downloadErrorOrder(@PathParam("orderCode") String orderCode) throws Exception {
+        return scmOrderBiz.downloadErrorOrder(orderCode);
     }
 }
 

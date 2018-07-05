@@ -18,10 +18,16 @@ import java.util.List;
  */
 public class ShopOrder extends OrderBase {
 
+    private static final long serialVersionUID = 5954865299939357741L;
+
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
     // 店铺订单编码
     @NotEmpty
     @Length(max = 32)
@@ -34,10 +40,6 @@ public class ShopOrder extends OrderBase {
     @NotEmpty
     @Length(max = 32)
     private String channelCode;
-    // 销售渠道编码
-    @NotEmpty
-    @Length(max = 32)
-    private String sellCode;
     // 来源平台编码
     @NotEmpty
     @Length(max = 32)
@@ -120,6 +122,7 @@ public class ShopOrder extends OrderBase {
     private Date payTime;
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
     @NotEmpty
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
     // 发货时间
     @NotEmpty
@@ -140,6 +143,12 @@ public class ShopOrder extends OrderBase {
     private List<OrderExt> records;
     @Transient
     private List<OrderItem> orderItems;
+
+    /**
+     * 是否门店订单
+     */
+    @Transient
+    private boolean isStoreOrder;
 
     public ShopOrder() {
 
@@ -725,16 +734,6 @@ public class ShopOrder extends OrderBase {
         this.updateTime = updateTime;
     }
 
-    @Override
-    public Date getPayTime() {
-        return payTime;
-    }
-
-    @Override
-    public void setPayTime(Date payTime) {
-        this.payTime = payTime;
-    }
-
     public String getSupplierOrderStatus() {
         return supplierOrderStatus;
     }
@@ -743,11 +742,19 @@ public class ShopOrder extends OrderBase {
         this.supplierOrderStatus = supplierOrderStatus;
     }
 
-    public String getSellCode() {
-        return sellCode;
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
     }
 
-    public void setSellCode(String sellCode) {
-        this.sellCode = sellCode;
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public boolean getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(boolean storeOrder) {
+        isStoreOrder = storeOrder;
     }
 }

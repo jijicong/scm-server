@@ -30,6 +30,7 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -42,9 +43,11 @@ import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
-import org.trc.form.order.WarehouseOwernSkuDO;
 import org.trc.form.supplier.SupplierForm;
-import org.trc.form.warehouse.*;
+import org.trc.form.warehouse.ScmInventoryQueryResponse;
+import org.trc.form.warehouse.ScmItemSyncRequest;
+import org.trc.form.warehouse.ScmItemSyncResponse;
+import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.category.*;
@@ -57,8 +60,10 @@ import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.wms.IWmsItemInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.GoodsCacheEvict;
 import org.trc.util.cache.OutGoodsCacheEvict;
@@ -179,6 +184,10 @@ public class GoodsBiz implements IGoodsBiz {
     private IWarehouseApiService warehouseApiService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IWmsItemInfoService wmsItemInfoService;
+    @Autowired
+    private IWarehouseExtService warehouseExtService;
 
 
     @Override
@@ -396,7 +405,7 @@ public class GoodsBiz implements IGoodsBiz {
             skuCodes.add(skus.getSkuCode());
         }
         List<SkuStock> skuStockList = new ArrayList<>();
-        inventoryQueryResponseList= getWarehouseInventory(new ArrayList<>(skuCodes), warehouseInfoList,ZeroToNineEnum.ONE.getCode());
+        inventoryQueryResponseList= warehouseExtService.getWarehouseInventory(skuCodes,null);
         if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
             //sku计算库存总和
             for (String skuCode:skuCodes) {
@@ -425,13 +434,13 @@ public class GoodsBiz implements IGoodsBiz {
                     }
                     if (flag){
                         //判断库存类型,可销售
-                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())&&StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
+                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),JingdongInventoryTypeEnum.SALE.getCode())&&StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),JingdongInventoryStateEnum.GOOD.getCode())){
                             skuStock.setAvailableInventory((inventoryQueryResponse.getQuantity()==null?0:inventoryQueryResponse.getQuantity())+(skuStock.getAvailableInventory()==null?0:skuStock.getAvailableInventory()));
                         }
-                        //判断库存类型,仓库锁定
-                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())){
-                            skuStock.setLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getLockInventory()==null?0:skuStock.getLockInventory()));
-                        }
+//                        //判断库存类型,仓库锁定
+//                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),JingdongInventoryTypeEnum.WAREHOUSE_LOCK.getCode())){
+//                            skuStock.setLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getLockInventory()==null?0:skuStock.getLockInventory()));
+//                        }
                     }
                     skuStockList.add(skuStock);
                 }
@@ -871,15 +880,28 @@ public class GoodsBiz implements IGoodsBiz {
         warehouseItemInfo.setSpuCode(spuCode);
         warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+
+        //更新所有子仓库商品信息
+        WmsItemInfo wmsItemInfo = new WmsItemInfo();
+        wmsItemInfo.setSpuCode(spuCode);
+        List<WmsItemInfo> wmsItemInfoList = wmsItemInfoService.select(wmsItemInfo);
+
         //如果仓库不存在该spu信息则不更新
         if(warehouseItemInfoList == null || warehouseItemInfoList.size() < 1){
             return;
         }
 
+        boolean flag = false;
+        if(wmsItemInfoList != null && wmsItemInfoList.size() > 0){
+            flag = true;
+        }
+
         //获取需要修改的信息
         Map<Long, WarehouseItemInfo> warehouseItemInfoMap1 = new HashMap<>();
+        //子仓库需要修改的信息
+        Map<Long, WmsItemInfo> wmsItemInfoMapNeedChange = new HashMap<>();
 
-        List<Skus> updatelist = new ArrayList<Skus>();
+        List<Skus> updatelist = new ArrayList<>();
         if(warehouseItemInfoMap.containsKey("updateSkus")){
             updatelist = (List<Skus>)warehouseItemInfoMap.get("updateSkus");
         }
@@ -895,19 +917,45 @@ public class GoodsBiz implements IGoodsBiz {
                 if(StringUtils.equals(s.getSkuCode(), warehouseItemInfo1.getSkuCode())){
                     if(warehouseItemInfoMap1.containsKey(warehouseItemInfo1.getId())){
                         warehouseItemInfo1 = warehouseItemInfoMap1.get(warehouseItemInfo1.getId());
-                        warehouseItemInfo1.setItemName(s.getSkuName());
-                        warehouseItemInfo1.setBarCode(s.getBarCode());
-                        warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
-                        warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
-                    }else{
-                        warehouseItemInfo1.setItemName(s.getSkuName());
-                        warehouseItemInfo1.setBarCode(s.getBarCode());
-                        warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
-                        warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
                     }
+                    warehouseItemInfo1.setItemName(s.getSkuName());
+                    warehouseItemInfo1.setBarCode(s.getBarCode());
+                    warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
+                    warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
                 }
             }
         }
+
+        //更新子仓库商品信息
+        if(flag){
+            if(warehouseItemInfoMap.containsKey("brandId")){
+                Long brandId = (Long)warehouseItemInfoMap.get("brandId");
+                for(WmsItemInfo wmsItemInfoNeedChange : wmsItemInfoList){
+                    wmsItemInfoNeedChange.setBrandId(brandId);
+                    wmsItemInfoMapNeedChange.put(wmsItemInfoNeedChange.getId(), wmsItemInfoNeedChange);
+                }
+            }
+
+            for(WmsItemInfo wmsItemInfoNeedChange : wmsItemInfoList){
+                for(Skus s : updatelist){
+                    if(StringUtils.equals(s.getSkuCode(), wmsItemInfoNeedChange.getSkuCode())){
+                        if(wmsItemInfoMapNeedChange.containsKey(wmsItemInfoNeedChange.getId())){
+                            wmsItemInfoNeedChange = wmsItemInfoMapNeedChange.get(wmsItemInfoNeedChange.getId());
+                        }
+                        wmsItemInfoNeedChange.setSkuName(s.getSkuName());
+                        wmsItemInfoNeedChange.setBarCode(s.getBarCode());
+                        wmsItemInfoNeedChange.setSpecNatureInfo(s.getSpecInfo());
+                        wmsItemInfoMapNeedChange.put(wmsItemInfoNeedChange.getId(), wmsItemInfoNeedChange);
+                    }
+                }
+            }
+
+            for (Map.Entry<Long, WmsItemInfo> entry : wmsItemInfoMapNeedChange.entrySet()) {
+                WmsItemInfo wmsInfo = entry.getValue();
+                wmsItemInfoService.updateByPrimaryKey(wmsInfo);
+            }
+        }
+
 
         //更新仓库商品信息
         Map<Long, List<WarehouseItemInfo>> map = new HashMap<>();
@@ -959,6 +1007,9 @@ public class GoodsBiz implements IGoodsBiz {
     private ScmItemSyncRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(list.get(0).getWarehouseInfoId());
+        if(StringUtils.equals(warehouseInfo.getOperationalNature(), OperationalNatureEnum.SELF_SUPPORT.getCode())){
+            return null;
+        }
         if(StringUtils.equals(warehouseInfo.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
             return null;
         }
@@ -1381,6 +1432,9 @@ public class GoodsBiz implements IGoodsBiz {
         Items items1 = itemsService.selectByPrimaryKey(items.getId());
         if(!StringUtils.equals(items1.getItemNo(), items.getItemNo())){
             map.put("itemNo", items.getItemNo());
+        }
+        if(items1.getBrandId() != items.getBrandId()){
+            map.put("brandId", items.getBrandId());
         }
         int count = itemsService.updateByPrimaryKeySelective(items);
         if(count == 0){
@@ -2096,7 +2150,7 @@ public class GoodsBiz implements IGoodsBiz {
             skuCodes.add(s.getSkuCode());
             List<RequestSkuStock> skuStockList = new ArrayList<>();
             //所有库存类型
-            inventoryQueryResponseList= getWarehouseInventory(new ArrayList<>(skuCodes), warehouseInfoList,null);
+            inventoryQueryResponseList= warehouseExtService.getWarehouseInventory(skuCodes,null);
                 for (WarehouseInfo warehouse : warehouseInfoList) {
                     RequestSkuStock skuStock = new RequestSkuStock();
                     skuStock.setWarehouseName(warehouse.getWarehouseName());
@@ -2104,24 +2158,31 @@ public class GoodsBiz implements IGoodsBiz {
                         for (ScmInventoryQueryResponse inventoryQueryResponse : inventoryQueryResponseList) {
                             if (StringUtils.equals(warehouse.getWmsWarehouseCode(), inventoryQueryResponse.getWarehouseCode())) {
                                 //判断库存类型,可销售
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.MARKETABLE.getCode()) && StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())) {
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.SALE.getCode()) 
+                                		&& StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), JingdongInventoryStateEnum.GOOD.getCode())) {
                                     skuStock.setAvailableInventory((inventoryQueryResponse.getQuantity() == null ? 0 : inventoryQueryResponse.getQuantity()) + (skuStock.getAvailableInventory() == null ? 0 : skuStock.getAvailableInventory()));
+                                    if (null == inventoryQueryResponse.getQuantity() && null == skuStock.getAvailableInventory()) {
+                                        skuStock.setAvailableInventory(null);
+                                    }
                                 }
-                                //判断库存类型,仓库锁定
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())) {
-                                    skuStock.setWarehouseLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getWarehouseLockInventory() == null ? 0 : skuStock.getWarehouseLockInventory()));
-                                }
-                                //判断库存类型,临期锁定
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.ADVENT_LOCK.getCode())) {
-                                    skuStock.setAdventLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getAdventLockInventory() == null ? 0 : skuStock.getAdventLockInventory()));
-                                }
-                                //判断库存类型,盘点锁定
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.CHECK_LOCK.getCode())) {
-                                    skuStock.setCheckLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getCheckLockInventory() == null ? 0 : skuStock.getCheckLockInventory()));
-                                }
+//                                //判断库存类型,仓库锁定
+//                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.WAREHOUSE_LOCK.getCode())) {
+//                                    skuStock.setWarehouseLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getWarehouseLockInventory() == null ? 0 : skuStock.getWarehouseLockInventory()));
+//                                }
+//                                //判断库存类型,临期锁定
+//                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.ADVENT_LOCK.getCode())) {
+//                                    skuStock.setAdventLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getAdventLockInventory() == null ? 0 : skuStock.getAdventLockInventory()));
+//                                }
+//                                //判断库存类型,盘点锁定
+//                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.INVENTORY_LOCK.getCode())) {
+//                                    skuStock.setCheckLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getCheckLockInventory() == null ? 0 : skuStock.getCheckLockInventory()));
+//                                }
                                 //残品库存
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())) {
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), JingdongInventoryStateEnum.Quality.getCode())) {
                                     skuStock.setDefectiveInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getDefectiveInventory() == null ? 0 : skuStock.getDefectiveInventory()));
+                                    if (null == inventoryQueryResponse.getTotalNum() && null == skuStock.getDefectiveInventory()) {
+                                        skuStock.setDefectiveInventory(null);
+                                    }
                                 }
                             }
                         }
@@ -2171,7 +2232,6 @@ public class GoodsBiz implements IGoodsBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("id",warehouseInfoIds);
         criteria.andEqualTo("ownerWarehouseState",OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());
-        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
 
          warehouseInfoList = warehouseInfoService.selectByExample(example);
         return warehouseInfoList;
@@ -3360,96 +3420,6 @@ public class GoodsBiz implements IGoodsBiz {
         }
     }
 
-    /**
-     * 获取库存
-     * @param skuCodes
-     * @param warehouseInfoList
-     * @return
-     */
-    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes, List<WarehouseInfo> warehouseInfoList,String inventoryType){
-        if(CollectionUtils.isEmpty(skuCodes) || CollectionUtils.isEmpty(warehouseInfoList)){
-            return new ArrayList<>();
-        }
-        List<Long> warehouseInfoIds = new ArrayList<>();
-        for(WarehouseInfo warehouseInfo2: warehouseInfoList){
-            warehouseInfoIds.add(warehouseInfo2.getId());
-        }
-        //查询跟仓库绑定过的商品,其中没有绑定过的在后面的拆单时会归到异常订单里面
-        Example example = new Example(WarehouseItemInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("warehouseInfoId", warehouseInfoIds);
-        criteria.andIn("skuCode", skuCodes);
-        criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
-        criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
-        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
-        if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
-            return new ArrayList<>();
-        }
-        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen = new ArrayList<>();
-        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListJingdong = new ArrayList<>();
-        for(WarehouseInfo warehouseInfo: warehouseInfoList){
-            List<WarehouseItemInfo> tmpWarehouseItemInfoList = new ArrayList<>();
-            WarehouseOwernSkuDO warehouseOwernSkuDO = new WarehouseOwernSkuDO();
-            for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
-                if(warehouseItemInfo.getWarehouseInfoId().longValue() == warehouseInfo.getId().longValue()){
-                    tmpWarehouseItemInfoList.add(warehouseItemInfo);
-                }
-            }
-            if(tmpWarehouseItemInfoList.size() > 0){
-                warehouseOwernSkuDO.setWarehouseInfo(warehouseInfo);
-                warehouseOwernSkuDO.setWarehouseItemInfoList(tmpWarehouseItemInfoList);
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){
-                    //奇门仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
-                    warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
-                }else{
-                    //京东仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
-                    warehouseOwernSkuDOListJingdong.add(warehouseOwernSkuDO);
-                }
-            }
-        }
-
-        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
-        if(warehouseOwernSkuDOListQimen.size() > 0){
-        }
-        if(warehouseOwernSkuDOListJingdong.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(),inventoryType, warehouseOwernSkuDOListJingdong));
-        }
-
-        return scmInventoryQueryResponseList;
-    }
-    /**
-     * 获取正品仓库库存
-     * @param warehouseType
-     * @param warehouseOwernSkuDOList
-     * @return
-     */
-    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType,String inventoryType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOList){
-        ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
-        request.setWarehouseType(warehouseType);
-        List<ScmInventoryQueryItem> scmInventoryQueryItemList = new ArrayList<>();
-        for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOList){
-            for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
-                ScmInventoryQueryItem item = new ScmInventoryQueryItem();
-                item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
-                if (StringUtils.isNotBlank(inventoryType)){
-                    item.setInventoryType(inventoryType);//正品
-                }
-                item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
-                item.setItemCode(warehouseItemInfo.getSkuCode());
-                item.setItemId(warehouseItemInfo.getWarehouseItemId());
-                scmInventoryQueryItemList.add(item);
-            }
-        }
-        request.setScmInventoryQueryItemList(scmInventoryQueryItemList);
-        AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
-        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
-        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())){
-            scmInventoryQueryResponseList =JSON.parseArray(JSON.toJSONString(appResult.getResult()),ScmInventoryQueryResponse.class);
-        }
-        return scmInventoryQueryResponseList;
-    }
 
     /**
      * 条形码校验终极修改版
@@ -3568,18 +3538,18 @@ public class GoodsBiz implements IGoodsBiz {
             pageExport = externalGoodsPage(queryModel, pageExport, aclUserAccreditInfo);
             List<ExternalItemSku> externalItemSkuList =new ArrayList<>();
             externalItemSkuList = pageExport.getResult();
-            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
-            CellDefinition supplierName = new CellDefinition("supplierName", "供应商名称", CellDefinition.TEXT, 6000);
-            CellDefinition supplierSkuCode = new CellDefinition("supplierSkuCode", "供应商商品SKU编号", CellDefinition.TEXT, 6000);
-            CellDefinition itemName = new CellDefinition("itemName", "商品名称", CellDefinition.TEXT, 6000);
-            CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, 6000);
-            CellDefinition supplyPrice = new CellDefinition("supplyPriceYuan", "供货价(元)", CellDefinition.NUM_0_00, 6000);
-            CellDefinition marketReferencePrice = new CellDefinition("marketReferencePriceYuan", "市场参考价(元)", CellDefinition.NUM_0_00, 8000);
-            CellDefinition warehouse = new CellDefinition("warehouse", "仓库名称", CellDefinition.TEXT, 3000);
-            CellDefinition stock = new CellDefinition("stock", "库存", CellDefinition.TEXT, 2000);
-            CellDefinition state = new CellDefinition("state", "供应商商品状态", CellDefinition.TEXT, 2000);
-            CellDefinition notifyTime = new CellDefinition("notifyTime", "最近同步时间", CellDefinition.DATE_TIME, 6000);
-            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.DATE_TIME, 6000);
+            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, null, 6000);
+            CellDefinition supplierName = new CellDefinition("supplierName", "供应商名称", CellDefinition.TEXT, null, 6000);
+            CellDefinition supplierSkuCode = new CellDefinition("supplierSkuCode", "供应商商品SKU编号", CellDefinition.TEXT, null, 6000);
+            CellDefinition itemName = new CellDefinition("itemName", "商品名称", CellDefinition.TEXT, null, 6000);
+            CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, null, 6000);
+            CellDefinition supplyPrice = new CellDefinition("supplyPriceYuan", "供货价(元)", CellDefinition.NUM_0_00, null, 6000);
+            CellDefinition marketReferencePrice = new CellDefinition("marketReferencePriceYuan", "市场参考价(元)", CellDefinition.NUM_0_00, null, 8000);
+            CellDefinition warehouse = new CellDefinition("warehouse", "仓库名称", CellDefinition.TEXT, null, 3000);
+            CellDefinition stock = new CellDefinition("stock", "库存", CellDefinition.TEXT, null, 2000);
+            CellDefinition state = new CellDefinition("state", "供应商商品状态", CellDefinition.TEXT, null, 2000);
+            CellDefinition notifyTime = new CellDefinition("notifyTime", "最近同步时间", CellDefinition.DATE_TIME, null, 6000);
+            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.DATE_TIME, null, 6000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             cellDefinitionList.add(skuCode);
@@ -3630,17 +3600,17 @@ public class GoodsBiz implements IGoodsBiz {
             pageExport.setPageSize(Integer.MAX_VALUE);
             pageExport =  itemsSkusPage(queryModel, pageExport, aclUserAccreditInfo);
             List<Skus> skusList = pageExport.getResult();
-            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
-            CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, 6000);
-            CellDefinition spuCode = new CellDefinition("spuCode", "SPU编号", CellDefinition.TEXT, 6000);
-            CellDefinition propertyValue = new CellDefinition("propertyValue", "规格", CellDefinition.TEXT, 6000);
-            CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, 6000);
-            CellDefinition categoryName = new CellDefinition("categoryName", "类目", CellDefinition.TEXT, 8000);
-            CellDefinition brandName = new CellDefinition("brandName", "品牌", CellDefinition.TEXT, 3000);
-            CellDefinition availableInventory = new CellDefinition("availableInventory", "可用正品总库存", CellDefinition.TEXT, 2000);
-            CellDefinition realInventory = new CellDefinition("realInventory", "仓库锁定正品总库存", CellDefinition.TEXT, 2000);
-            CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, 6000);
-            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.DATE_TIME, 6000);
+            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, null, 6000);
+            CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 6000);
+            CellDefinition spuCode = new CellDefinition("spuCode", "SPU编号", CellDefinition.TEXT, null, 6000);
+            CellDefinition propertyValue = new CellDefinition("propertyValue", "规格", CellDefinition.TEXT, null, 6000);
+            CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, null, 6000);
+            CellDefinition categoryName = new CellDefinition("categoryName", "类目", CellDefinition.TEXT, null, 8000);
+            CellDefinition brandName = new CellDefinition("brandName", "品牌", CellDefinition.TEXT, null, 3000);
+            CellDefinition availableInventory = new CellDefinition("availableInventory", "可用正品总库存", CellDefinition.TEXT, null, 2000);
+            CellDefinition realInventory = new CellDefinition("realInventory", "仓库锁定正品总库存", CellDefinition.TEXT, null, 2000);
+            CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, null, 6000);
+            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.DATE_TIME, null, 6000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             cellDefinitionList.add(skuCode);

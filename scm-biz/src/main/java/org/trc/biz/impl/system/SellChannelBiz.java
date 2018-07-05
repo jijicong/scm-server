@@ -14,10 +14,7 @@ import org.trc.biz.system.ISellChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.SellChannelException;
 import org.trc.form.system.SellChannelFrom;
 import org.trc.service.System.ISellChannelService;
@@ -29,6 +26,7 @@ import org.trc.util.Pagenation;
 import org.trc.util.cache.SellChannelCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -99,14 +97,22 @@ public class SellChannelBiz implements ISellChannelBiz{
         if (null!=tmp){
            throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, "该销售渠道名称已存在!");
         }
+
         checkSaveSellChannel(sellChannel);
         SellChannel saveSellChannel = new SellChannel();
+        String sellType = sellChannel.getSellType();
         saveSellChannel.setSellCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
         saveSellChannel.setIsValid(ValidEnum.VALID.getCode());
         saveSellChannel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         saveSellChannel.setCreateOperator(aclUserAccreditInfo.getUserId());
         saveSellChannel.setSellName(sellChannel.getSellName());
-        saveSellChannel.setSellType(sellChannel.getSellType());
+        saveSellChannel.setSellType(sellType);
+        if(StringUtils.equals(sellChannel.getSellType(), SellChannelTypeEnum.STORE.getCode().toString())){
+            saveSellChannel.setStoreId(sellChannel.getStoreId());
+            if(isValidStoreId(sellChannel.getStoreId(), null)){
+                throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, "该门店ID已存在!");
+            }
+        }
         saveSellChannel.setRemark(sellChannel.getRemark());
         int count = sellChannelService.insert(saveSellChannel);
         if (count == 0) {
@@ -115,8 +121,28 @@ public class SellChannelBiz implements ISellChannelBiz{
             throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, msg);
         }
         String userId = aclUserAccreditInfo.getUserId();
-        sellChannel = sellChannelService.selectOne(sellChannel);
-        logInfoService.recordLog(sellChannel, String.valueOf(sellChannel.getId()), userId, LogOperationEnum.ADD.getMessage(), "", null);
+        SellChannel sellChannelTemp = new SellChannel();
+        sellChannelTemp.setSellName(sellChannel.getSellName());
+        sellChannelTemp = sellChannelService.selectOne(sellChannelTemp);
+        logInfoService.recordLog(sellChannel, String.valueOf(sellChannelTemp.getId()), userId, LogOperationEnum.ADD.getMessage(), "", null);
+
+    }
+
+    private boolean isValidStoreId(String storeId, Long id){
+        Example example = new Example(SellChannel.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("storeId", storeId);
+        if (id != null ) {
+            List<Long> ids = new ArrayList<>();
+            ids.add(id);
+            criteria.andNotIn("id", ids);
+        }
+        List<SellChannel> sellChannels = sellChannelService.selectByExample(example);
+        if(sellChannels != null && sellChannels.size() > 0){
+            return true;
+        }else{
+            return false;
+        }
 
     }
 
@@ -130,6 +156,7 @@ public class SellChannelBiz implements ISellChannelBiz{
                 throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_UPDATE_EXCEPTION, "该销售渠道名称已存在");
             }
         }
+        checkSaveSellChannel(sellChannel);
         sellChannel.setUpdateTime(Calendar.getInstance().getTime());
         int count = sellChannelService.updateByPrimaryKeySelective(sellChannel);
         if (count == 0) {
@@ -179,5 +206,11 @@ public class SellChannelBiz implements ISellChannelBiz{
     private void checkSaveSellChannel(SellChannel sellChannel){
         AssertUtil.notBlank(sellChannel.getSellName(), "销售渠道参数sellName不能为空");
         AssertUtil.notBlank(sellChannel.getSellType(), "销售渠道参数sellType不能为空");
+        if(StringUtils.equals(sellChannel.getSellType(), SellChannelTypeEnum.STORE.getCode().toString())){
+            AssertUtil.notBlank(sellChannel.getStoreId(), "销售渠道参数门店ID不能为空");
+            if(isValidStoreId(sellChannel.getStoreId(), sellChannel.getId())){
+                throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, "该门店ID已存在!");
+            }
+        }
     }
 }

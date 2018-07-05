@@ -28,4 +28,5 @@ public class WarehouseNoticeService extends BaseService<WarehouseNotice,Long> im
     public int selectCountWarehouseNotice(Map<String, Object> map) {
         return iWarehouseNoticeMapper.selectCountWarehouseNotice(map);
     }
+
 }

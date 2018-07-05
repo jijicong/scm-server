@@ -1,12 +1,12 @@
 package org.trc.service.impl.impower;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.impower.AclResource;
 import org.trc.mapper.impower.AclResourceMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IAclResourceService;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -15,7 +15,7 @@ import java.util.List;
 @Service("jurisdictionService")
 public class AclResourceService extends BaseService<AclResource, Long> implements IAclResourceService {
 
-    @Resource
+    @Autowired
     private AclResourceMapper aclResourceMapper;
 
     @Override

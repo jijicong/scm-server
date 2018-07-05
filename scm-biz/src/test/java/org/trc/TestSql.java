@@ -1,6 +1,8 @@
 package org.trc;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
@@ -11,6 +13,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.mapper.goods.ISkuStockMapper;
 import org.trc.mapper.outbound.IOutboundDetailMapper;
+import org.trc.spring.ConsumerConstant;
+import org.trc.util.DESUtil;
 import org.trc.util.lock.RedisLock;
 
 import com.alibaba.fastjson.JSON;
@@ -78,5 +82,26 @@ public class TestSql {
 	                }
 	            }).start();
 	        }
+	}
+	
+	
+	@Test
+	public void testEmptySql () {
+		OutboundDetail record = new OutboundDetail();
+//		record.setId(24L);
+		OutboundDetail selectOne = outboundDetailMapper.selectOne(record);
+	}
+	
+	@Test
+	public void testDecrypt () throws IOException, Exception {
+		String value = "!Y98G17i7olom+8OnYAOMtQ==!";
+		Pattern p = Pattern.compile("!(.*?)!");
+		Matcher m = p.matcher(value);
+		String deValue = "";
+		while (m.find()) {
+			deValue = DESUtil.decrypt(m.group(1), ConsumerConstant.DES_KEY);
 		}
+		System.out.println(deValue);
+	}
+	
 }

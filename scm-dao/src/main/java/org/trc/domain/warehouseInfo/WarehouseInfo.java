@@ -74,6 +74,21 @@ public class WarehouseInfo extends BaseDO {
     @Length(max = 50, message = "货主名称的编码字母和数字不能超过50个,汉字不能超过25个")
     private String ownerName;
 
+    //运营性质
+    @FormParam("operationalNature")
+    @Length(max = 1, message = "运营性质不能超过1个字节大小")
+    private String operationalNature;
+
+    //运营类型
+    @FormParam("operationalType")
+    @Length(max = 1, message = "营类型不能超过1个字节大小")
+    private String operationalType;
+
+    //门店仓对应销售渠道
+    @FormParam("storeCorrespondChannel")
+    @Length(max = 64, message = "门店仓对应销售渠道不能超过64个字节大小")
+    private String storeCorrespondChannel;
+
     //货主仓库状态 0--待通知 1--通知成功 2--通知失败
     @FormParam("ownerWarehouseState")
     private String ownerWarehouseState;
@@ -301,5 +316,29 @@ public class WarehouseInfo extends BaseDO {
 
     public void setIsThroughWms(Integer isThroughWms) {
         this.isThroughWms = isThroughWms;
+    }
+
+    public String getOperationalNature() {
+        return operationalNature;
+    }
+
+    public void setOperationalNature(String operationalNature) {
+        this.operationalNature = operationalNature;
+    }
+
+    public String getOperationalType() {
+        return operationalType;
+    }
+
+    public void setOperationalType(String operationalType) {
+        this.operationalType = operationalType;
+    }
+
+    public String getStoreCorrespondChannel() {
+        return storeCorrespondChannel;
+    }
+
+    public void setStoreCorrespondChannel(String storeCorrespondChannel) {
+        this.storeCorrespondChannel = storeCorrespondChannel;
     }
 }

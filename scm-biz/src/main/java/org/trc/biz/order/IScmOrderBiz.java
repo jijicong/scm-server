@@ -1,5 +1,6 @@
 package org.trc.biz.order;
 
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.ExceptionOrder;
 import org.trc.domain.order.PlatformOrder;
@@ -19,7 +20,9 @@ import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
+import javax.ws.rs.FormParam;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -185,8 +188,9 @@ public interface IScmOrderBiz {
     ResponseAck orderSubmitResultNotice(String orderInfo);
 
     /**
-     *提交自采订单
+     * 提交自采订单
      * @param warehouseOrders
+     * @param skuWarehouseMap
      * @return
      */
     ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrders, Map<String, List<SkuWarehouseDO>> skuWarehouseMap);
@@ -196,17 +200,31 @@ public interface IScmOrderBiz {
     void handlerOrderLogisticsInfo(SupplierOrderInfo supplierOrderInfo);
 
     /**
-     * 创建发货单
+     * 创建发货 单
      * @param outboundMap, 里面的key是采购单编码,OutboundForm是采购单对象和采购单明细列表
      * @return
      */
-    AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap);
+    AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap, boolean isReCreate);
 
     /**
      * 发货通知单下单结果通知渠道
      * @param shopOrderCode 店铺订单号
      */
     void outboundOrderSubmitResultNoticeChannel(String shopOrderCode);
+
+    /**
+     * 订单导入
+     * @param uploadedInputStream
+     * @param fileDetail
+     */
+    Response importOrder(String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 下载错误订单
+     * @param orderCode
+     * @return
+     */
+    Response downloadErrorOrder(String orderCode);
 
 
 }

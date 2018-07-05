@@ -100,6 +100,12 @@ public class WarehouseBiz implements IWarehouseBiz {
         if (!StringUtils.isBlank(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
+        if (!StringUtils.isBlank(form.getOperationalNature())) {
+            criteria.andEqualTo("operationalNature", form.getOperationalNature());
+        }
+        if (!StringUtils.isBlank(form.getOperationalType())) {
+            criteria.andEqualTo("operationalType", form.getOperationalType());
+        }
         example.orderBy("updateTime").desc();
         Pagenation<WarehouseInfo> pagenation = warehouseInfoService.pagination(example,page,form);
 
@@ -133,6 +139,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setCode(warehouseInfo.getCode());
             result.setIsValid(warehouseInfo.getIsValid());
             result.setRemark(warehouseInfo.getRemark()==null?"":warehouseInfo.getRemark());
+            result.setOperationalNature(warehouseInfo.getOperationalNature());
+            result.setOperationalType(warehouseInfo.getOperationalType());
             newList.add(result);
         }
 
@@ -262,6 +270,12 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo _warehouse = warehouseInfoService.selectByPrimaryKey(warehouse.getId());
         AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
 
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), _warehouse.getOperationalNature())){
+            String msg = "仓库为自营仓不允许修改！" ;
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
         if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
                 StringUtils.isEmpty(warehouse.getWmsWarehouseCode())){
             String msg = "奇门仓库编码不能为空！" ;
@@ -297,6 +311,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         Example example = new Example(WarehouseItemInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("warehouseInfoId", warehouse.getId());
+        criteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
         warehouseItemInfoService.updateByExampleSelective(warehouseItemInfoTemp, example);
 
     }
@@ -315,11 +330,14 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
-    public List<WarehouseInfo> findWarehouse() {
+    public List<WarehouseInfo> findWarehouse(boolean isValid) {
         WarehouseInfo warehouse = new WarehouseInfo();
+        if(isValid){
+            warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
+        }
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
         if (warehouseList == null) {
-            warehouseList = new ArrayList<WarehouseInfo>();
+            warehouseList = new ArrayList<>();
         }
         return warehouseList;
     }
@@ -332,7 +350,8 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo tmp = findWarehouseByName(warehouse.getWarehouseName());
         AssertUtil.isNull(tmp, String.format("仓库名称[name=%s]的数据已存在,请使用其他名称", warehouse.getWarehouseName()));
         ParamsUtil.setBaseDO(warehouse);
-        warehouse.setCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
+        String warehouseCode = serialUtilService.generateCode(LENGTH, SERIALNAME);
+        warehouse.setCode(warehouseCode);
         /*
         校验如果是保税仓，必须要是否支持清关的数据<否则，为不合理的，或者非法提交>
         如果是其它仓，不能接受是否支持清关的数据
@@ -353,11 +372,52 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
+        //校验运行性质字段是否符合要求
+        String operationalNature = warehouse.getOperationalNature();
+        String operationalType = warehouse.getOperationalType();
+        String storeCorrespondChannel = warehouse.getStoreCorrespondChannel();
+        if(StringUtils.isEmpty(operationalNature)){
+            String msg = "运营性质不能为空";
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
+        if(StringUtils.equals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
+            if(StringUtils.isEmpty(operationalType)){
+                String msg = "运营类型不能为空";
+                logger.error(msg);
+                throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+            }
+            warehouse.setWmsWarehouseCode(warehouseCode);
+            if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
+                if(StringUtils.isEmpty(storeCorrespondChannel)){
+                    String msg = "门店仓对应销售渠道不能为空";
+                    logger.error(msg);
+                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                }
+
+                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), warehouse.getIsValid())){
+                    WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+                    warehouseInfoTemp.setStoreCorrespondChannel(storeCorrespondChannel);
+                    warehouseInfoTemp.setIsValid(ZeroToNineEnum.ONE.getCode());
+                    List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.select(warehouseInfoTemp);
+                    if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                        String msg = "该销售渠道已对应相应的门店!";
+                        logger.error(msg);
+                        throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                    }
+                }
+            }
+            warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        }else{
+            warehouse.setOwnerWarehouseState(ZeroToNineEnum.ZERO.getCode());
+        }
+
         warehouse.setIsThroughWms(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         warehouse.setChannelCode(SupplyConstants.WarehouseConstant.CHANNEL_CODE);
         warehouse.setOwnerName(SupplyConstants.WarehouseConstant.OWNER_NAME);
         warehouse.setSkuNum(0);
-        warehouse.setOwnerWarehouseState("0");
+
 
         int count = warehouseInfoService.insert(warehouse);
         if (count == 0) {
@@ -404,6 +464,31 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo updateWarehouse = new WarehouseInfo();
         updateWarehouse.setId(warehouse.getId());
         String remark = null;
+
+        WarehouseInfo _warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouse.getId());
+
+        //校验运行性质字段是否符合要求
+        String operationalType = _warehouseInfo.getOperationalType();
+        String operationalNature = _warehouseInfo.getOperationalNature();
+        String storeCorrespondChannel = _warehouseInfo.getStoreCorrespondChannel();
+        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType) &&
+                StringUtils.equals(operationalNature, OperationalNatureEnum.SELF_SUPPORT.getCode().toString())){
+            if(StringUtils.equals(ValidEnum.NOVALID.getCode(), _warehouseInfo.getIsValid())){
+                Example example = new Example(WarehouseInfo.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("storeCorrespondChannel", storeCorrespondChannel);
+                criteria.andNotEqualTo("code", _warehouseInfo.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(example);
+
+                if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                    String msg = "该销售渠道已对应相应的门店!";
+                    logger.error(msg);
+                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
+                }
+            }
+        }
+
         if (warehouse.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateWarehouse.setIsValid(ValidEnum.NOVALID.getCode());
             remark = remarkEnum.VALID_OFF.getMessage();
@@ -452,6 +537,33 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo _warehouse = warehouseInfoService.selectByPrimaryKey(warehouse.getId());
         String remark = null;
         AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
+
+        //校验运行性质字段是否符合要求
+        String operationalType = warehouse.getOperationalType();
+        String storeCorrespondChannel = warehouse.getStoreCorrespondChannel();
+        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
+            if(StringUtils.isEmpty(storeCorrespondChannel)){
+                String msg = "门店仓对应销售渠道不能为空";
+                logger.error(msg);
+                throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+            }
+
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), warehouse.getIsValid())){
+                Example example = new Example(WarehouseInfo.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("storeCorrespondChannel", storeCorrespondChannel);
+                criteria.andNotEqualTo("code", warehouse.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(example);
+
+                if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                    String msg = "该销售渠道已对应相应的门店!";
+                    logger.error(msg);
+                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                }
+            }
+        }
+
         int count = warehouseInfoService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
             String msg = String.format("修改仓库%s数据库操作失败", JSON.toJSONString(warehouse));

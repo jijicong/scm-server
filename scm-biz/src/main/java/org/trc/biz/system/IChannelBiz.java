@@ -92,4 +92,12 @@ public interface IChannelBiz {
      * @return
      */
     List<SellChannel> querySellChannel();
+
+    List<SellChannel> querySellChannelByChannelCode(AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 查询当前登录用户所属业务线已关联的销售渠道
+     * @return
+     */
+    List<SellChannel> querySellChannelList(AclUserAccreditInfo aclUserAccreditInfo);
 }

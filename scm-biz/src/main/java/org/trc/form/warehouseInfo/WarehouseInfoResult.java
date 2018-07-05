@@ -54,6 +54,10 @@ public class WarehouseInfoResult implements Serializable {
 
     private String createOperator;
 
+    private String operationalNature;
+
+    private String operationalType;
+
     public Long getId() {
         return id;
     }
@@ -196,5 +200,21 @@ public class WarehouseInfoResult implements Serializable {
 
     public void setWmsWarehouseCode(String wmsWarehouseCode) {
         this.wmsWarehouseCode = wmsWarehouseCode;
+    }
+
+    public String getOperationalNature() {
+        return operationalNature;
+    }
+
+    public void setOperationalNature(String operationalNature) {
+        this.operationalNature = operationalNature;
+    }
+
+    public String getOperationalType() {
+        return operationalType;
+    }
+
+    public void setOperationalType(String operationalType) {
+        this.operationalType = operationalType;
     }
 }

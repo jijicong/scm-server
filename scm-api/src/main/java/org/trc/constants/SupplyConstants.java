@@ -23,7 +23,6 @@ public class SupplyConstants {
          * 等号
          */
         public static final String EQUAL = "=";
-
     }
 
     public static final class WarehouseConstant{
@@ -305,6 +304,8 @@ public class SupplyConstants {
          * 查询所有的销售渠道
          */
         public static final String SELL_CHANNEL_LIST= "channelList";
+        //查询业务线相关销售渠道
+        public static final String YWX_SELL_CHANNEL_LIST= "ywxSellChannelList";
     }
 
     /**
@@ -354,6 +355,17 @@ public class SupplyConstants {
         public static final String WAREHOUSE_VALID = "wharehouses";
         //仓库信息配置
         public static final String WAREHOUSE_CONFIG = "warehouseConfig";
+    }
+
+    public static final class LogisticsCorporation {
+        //根路径
+        public static final String ROOT = "system";
+        //分页查询
+        public static final String LOGISTICS_CORPORATION_PAGE = "logisticsCorporationPage";
+        //物流公司
+        public static final String LOGISTICS_CORPORATION = "logisticsCorporation";
+        //更新物流公司状态
+        public static final String UPDATE_STATE = "updateState";
     }
 
     /**
@@ -450,6 +462,10 @@ public class SupplyConstants {
         public static final String JURISDICTION_EDIT = "jurisdictionEdit";
         //页面资源
         public static final String JURISDICTION_HTML = "jurisdictionHtml";
+
+
+        //页面资源
+        public static final String HTML = "html";
 
 
     }
@@ -560,7 +576,18 @@ public class SupplyConstants {
         public static final String WAERHOUSE_NOTICE_INFO = "warehouseNoticeInfo";
         //入库通知明细查询
         public static final String WAREHOUSE_NOTICE_DETAIL = "warehouseNoticeDetail";
+        //入库通知单的取消收货
+        public static final String CANCEL = "cancel";
 
+    }
+    
+    /**
+     * 调拨单
+     */
+    public static final class AllocateOrder {
+//    	//根路径
+//    	public static final String ROOT = "allocateOrder";
+    	
     }
 
     /**
@@ -831,7 +858,29 @@ public class SupplyConstants {
         public static final String WAREHOUSE_ORDER_CODE = "CKDD";
         //仓库订单编码长度
         public static final Integer WAREHOUSE_ORDER_CODE_LENGTH = 7;
+        
+        //调拨单前缀
+        public static final String ALLOCATE_ORDER_CODE = "DBD";
+        //调拨单编码长度
+        public static final Integer ALLOCATE_ORDER_LENGTH = 5;
+        //调拨出库单前缀
+        public static final String ALLOCATE_ORDER_OUT_CODE = "DBCKTZ";
+        //调拨单出库单编码长度
+        public static final Integer ALLOCATE_ORDER_OUT_LENGTH = 5;
+        //调拨入库单前缀
+        public static final String ALLOCATE_ORDER_IN_CODE = "DBRKTZ";
+        //调拨单入库单编码长度
+        public static final Integer ALLOCATE_ORDER_IN_LENGTH = 5;
 
+        //导入订单前缀
+        public static final String IMPORT_ORDER_CODE = "DRDD";
+        //导入订单长度
+        public static final Integer IMPORT_ORDER_LENGTH = 5;
+
+        //导入订单前缀
+        public static final String SYSTEM_ORDER_CODE = "ZY";
+        //导入订单长度
+        public static final Integer SYSTEM_ORDER_LENGTH = 8;
 
         //序列号查询路径
         public static final String SERIAL = "serial";
@@ -971,6 +1020,19 @@ public class SupplyConstants {
     }
 
     /**
+     * 仓库匹配优先级
+     */
+    public static final class WarehousePriority {
+        public static final String ROOT = "warehousePriority";
+        //仓库匹配优先级列表查询
+        public static final String WAREHOUSE_PRIORITY_LIST = "warehousePriorityList";
+        //可用仓库列表查询
+        public static final String WAREHOUSE_LIST = "warehouseList";
+        //保存仓库匹配优先级
+        public static final String WAREHOUSE_PRIORITY = "warehousePriority";
+    }
+
+    /**
      * 出库通知单
      */
     public static final class OutboundOrder {
@@ -1010,6 +1072,104 @@ public class SupplyConstants {
          * 更新收货信息
          */
         public static final String UPDATE_RECEIVER_INFO = "updateReceiverInfo";
+    }
+
+    public static final class AllocateOutOrder {
+        public static final String ROOT = "allocateOutOrder";
+
+        public static final String ALLOCATE_OUT_ORDER_PAGE = "allocateOutOrderPage";
+
+        public static final String CLOSE = "close";
+
+        public static final String CANCEL_CLOSE = "cancelClose";
+
+        public static final String ALLOCATE_OUT_ORDER = "allocateOutOrder";
+        
+        public static final String ALLOCATE_ORDER_OUT_NOTICE = "allocateOrderOutNotice";
+        
+        public static final String ALLOCATE_ORDER_OUT_CANCEL = "allocateOrderOutCancel";
+
+        public static final String NOTICE_SEND_GOODS = "noticeSendGoods";
+    }
+
+    /**
+     * 调拨入库单
+     */
+    public static final class AllocateInOrder {
+        public static final String ROOT = "allocateInOrder";
+        //调拨入库单分页
+        public static final String ORDER_PAGE = "orderPage";
+        //调拨入库单详情查询
+        public static final String ORDER_DETAIL = "orderDetail";
+        //调拨入库单取消
+        public static final String ORDER_CANCEL = "orderCancel";
+        //调拨入库单关闭
+        public static final String ORDER_CLOSE = "orderClose";
+        //调拨入库单通知收货
+        public static final String NOTICE_RECIVE_GOODS = "noticeReciveGoods";
+
+    }
+
+
+    public static final class AclWmsUser {
+
+        public static final String ROOT = "aclWmsUser";
+
+        /**
+         * wms用户分页查询
+         */
+        public static final String ACL_WMS_USER_PAGE = "aclWmsUserPage";
+
+        /**
+         * wms用户编辑
+         */
+        public static final String ACL_WMS_USER_UPDATE = "aclWmsUserUpdate";
+
+        /**
+         * wms用户查询
+         */
+        public static final String ACL_WMS_USER_QUERY = "aclWmsUserQuery";
+
+        /**
+         * wms用户状态修改
+         */
+        public static final String ACL_WMS_USER_UPDATE_STATE = "aclWmsUserUpdate/state";
+
+        /**
+         * wms用户新增
+         */
+        public static final String ACL_WMS_USER_SAVE = "aclWmsUserSave";
+
+        /***
+         * 查询自营仓库
+         */
+        public static final String ACL_WMS_USER_WAREHOUSE = "aclWmsUserWarehouse";
+
+        /**
+         * 查询WMS资源
+         */
+        public static final String ACL_WMS_USER_RESOURCE = "aclWmsUserResource";
+
+        /**
+         * 手机号校验
+         */
+        public static final String ACL_WMS_USER_PHONE = "aclWmsUserPhone";
+
+        /**
+         * 查询wms权限树
+         */
+        public static final String ACL_WMS_TREE = "aclWmsTree";
+
+        /**
+         * 查询wms新增
+         */
+        public static final String ACL_WMS_SAVE = "aclWmsSave";
+
+        /**
+         * 查询wms编辑
+         */
+        public static final String ACL_WMS_UPDATE = "aclWmsUpdate";
+
     }
 
     /**
@@ -1052,6 +1212,11 @@ public class SupplyConstants {
         public static final String EXCEPTION_ORDER_PAGE = "exceptionOrderPage";
         //根据拆单异常订单编码查询拆单异常订单详情路径
         public static final String EXCEPTION_ORDER_DETAIL = "exceptionOrder/exceptionOrderCode";
+
+        //导入订单路径
+        public static final String ORDER_IMPORT = "orderImport";
+        //下载错误订单路径
+        public static final String DOWNLOAD_ERROR_ORDER = "downloadErrorOrder";
     }
 
     /**
@@ -1067,8 +1232,6 @@ public class SupplyConstants {
         public final static String WAREHOUSE_STOCK_LESS = "指定仓库“%s”库存不足";
         //同一仓库/供应商中存在库存不足的sku
         public final static String SKU_STOCK_LESS_OF_WAREHOUSE = "同一仓库/供应商中存在库存不足的sku";
-
-
     }
 
 
@@ -1225,6 +1388,12 @@ public class SupplyConstants {
         public final static String JD_ADDRESS = "jd_address";
 
         public final static String WAREHOUSE_ITEM = "warehouse_item";
+        
+        //调拨单
+        public final static String ALLOCATE_ORDER = "allocate_order";
+
+        //调拨发货单
+        public final static String ALLOCATE_OUT_ORDER = "allocate_out_order";
 
     }
 

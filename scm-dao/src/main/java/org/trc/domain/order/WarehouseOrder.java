@@ -17,11 +17,16 @@ import java.util.List;
 /**
  * Created by Ding on 2017/6/21.
  */
-public class WarehouseOrder implements Serializable {
+public class WarehouseOrder extends OrderBaseDO {
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
 
     // 店铺订单编码
     private String warehouseOrderCode;
@@ -46,11 +51,6 @@ public class WarehouseOrder implements Serializable {
 
     // 渠道编码
     private String channelCode;
-
-    // 销售渠道编码
-    @NotEmpty
-    @Length(max = 32)
-    private String sellCode;
 
     // 来源平台编码
     private String platformCode;
@@ -160,6 +160,12 @@ public class WarehouseOrder implements Serializable {
      */
     @Transient
     private String showCancel;
+
+    /**
+     * 是否门店订单
+     */
+    @Transient
+    private boolean isStoreOrder;
 
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
@@ -655,19 +661,27 @@ public class WarehouseOrder implements Serializable {
         this.handCancelTime = handCancelTime;
     }
 
-    public String getSellCode() {
-        return sellCode;
-    }
-
-    public void setSellCode(String sellCode) {
-        this.sellCode = sellCode;
-    }
-
     public String getWarehouseCode() {
         return warehouseCode;
     }
 
     public void setWarehouseCode(String warehouseCode) {
         this.warehouseCode = warehouseCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public boolean getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(boolean storeOrder) {
+        isStoreOrder = storeOrder;
     }
 }

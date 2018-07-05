@@ -30,6 +30,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.ExcelException;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
 import org.trc.form.JDWmsConstantConfig;
@@ -48,6 +49,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.wms.IWmsItemInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.WarehouseCacheEvict;
 import org.trc.util.cache.WarehouseItemCacheEvict;
@@ -108,6 +110,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private JDWmsConstantConfig jDWmsConstantConfig;
+    @Autowired
+    private IWmsItemInfoService wmsItemInfoService;
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
 
@@ -279,6 +283,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<WarehouseItemInfo> list = page.getResult();
         for(WarehouseItemInfo info : list){
             String status = info.getNoticeStatus().toString();
+            String warehouseItemId = info.getWarehouseItemId();
+            if(StringUtils.isBlank(warehouseItemId)){
+                info.setWarehouseItemId("");
+            }
             if(StringUtils.isEquals(status, ZeroToNineEnum.TWO.getCode()) ||
                     StringUtils.isEquals(status, ZeroToNineEnum.THREE.getCode()) ||
                     StringUtils.isEquals(status, ZeroToNineEnum.FOUR.getCode())){
@@ -288,10 +296,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_ITEM)
-    public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page) {
+    //@Cacheable(value = SupplyConstants.Cache.WAREHOUSE_ITEM)
+    public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, String warehouseCode, Pagenation<WarehouseItemInfo> page) {
         AssertUtil.notNull(form, "查询仓库商品信息分页参数form不能为空");
-        AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
+        AssertUtil.notBlank(warehouseCode, "查询仓库商品信息分页参数warehouseCode不能为空");
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
@@ -302,7 +310,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         map.put("itemName", form.getItemName());
         map.put("noticeStatus", form.getNoticeStatus());
         map.put("barCode", form.getBarCode());
-        map.put("warehouseInfoId", warehouseInfoId);
+        map.put("warehouseCode", warehouseCode);
         map.put("start", page.getStart());
         map.put("pageSize", page.getPageSize());
         int count = warehouseItemInfoService.selectWarehouseItemInfoCount(map);
@@ -407,16 +415,17 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             example.orderBy("noticeStatus").asc();
             example.orderBy("updateTime").desc();
             List<WarehouseItemInfo> list = warehouseItemInfoService.selectByExample(example);
+
             List<WarehouseItemsResult> results = converItemsResult(list);
             //开始导出商品信息
             log.info("开始导出商品信息=========》");
-            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 4000);
-            CellDefinition itemName = new CellDefinition("itemName", "商品SKU名称", CellDefinition.TEXT, 4000);
-            CellDefinition specNatureInfo = new CellDefinition("specNatureInfo", "规格", CellDefinition.TEXT, 4000);
-            CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, 4000);
-            CellDefinition warehouseItemId = new CellDefinition("warehouseItemId", "仓库商品ID", CellDefinition.TEXT, 4000);
-            CellDefinition noticeStatus = new CellDefinition("noticeStatus", "通知仓库状态", CellDefinition.TEXT, 4000);
-            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.TEXT, 4000);
+            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, null, 4000);
+            CellDefinition itemName = new CellDefinition("itemName", "商品SKU名称", CellDefinition.TEXT, null, 4000);
+            CellDefinition specNatureInfo = new CellDefinition("specNatureInfo", "规格", CellDefinition.TEXT, null, 4000);
+            CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, null, 4000);
+            CellDefinition warehouseItemId = new CellDefinition("warehouseItemId", "仓库商品ID", CellDefinition.TEXT, null, 4000);
+            CellDefinition noticeStatus = new CellDefinition("noticeStatus", "通知仓库状态", CellDefinition.TEXT, null, 4000);
+            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.TEXT, null, 4000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             cellDefinitionList.add(skuCode);
@@ -489,6 +498,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         AssertUtil.isTrue(list2.size()==0,"商品名称不能为空");
         AssertUtil.isTrue(list3.size()==0,"商品sku编码不能为空");
+        String operationalNature = warehouseInfo.getOperationalNature();
         for (Skus sku:itemsList){
             WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
             warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
@@ -513,17 +523,61 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setWarehouseCode(warehouseInfo.getCode());
             warehouseItemInfo.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
             warehouseItemInfo.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
+            if(StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
+                warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.SUCCESS.getCode());
+                warehouseItemInfo.setWarehouseItemId(sku.getSkuCode());
+            }
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
         countSkuNum(warehouseInfoId);
         //新增库存表信息
-        this.saveSkuStock(list, warehouseInfo);
+        if(StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
+            saveSkuStockIsNotice(list, warehouseInfo);
+            //更新子系统商品
+            this.saveWmsItemInfo(list);
+        }else{
+            this.saveSkuStock(list, warehouseInfo);
+        }
+
         return ResultUtil.createSuccessResult("添加新商品成功","success");
     }
 
+    private void saveWmsItemInfo(List<WarehouseItemInfo> list){
+        List<WmsItemInfo> wmsItemInfos = new ArrayList<>();
+        for(WarehouseItemInfo info : list){
+            Items items = new Items();
+            items.setSpuCode(info.getSpuCode());
+            items = iItemsService.selectOne(items);
+
+            WmsItemInfo wmsItemInfo = new WmsItemInfo();
+            wmsItemInfo.setWarehouseCode(info.getWarehouseCode());
+            wmsItemInfo.setBrandId(items.getBrandId());
+            wmsItemInfo.setCategoryId(items.getCategoryId());
+            wmsItemInfo.setBarCode(info.getBarCode());
+            wmsItemInfo.setSkuCode(info.getSkuCode());
+            wmsItemInfo.setSpuCode(info.getSpuCode());
+            wmsItemInfo.setSkuName(info.getItemName());
+            wmsItemInfo.setSpecNatureInfo(info.getSpecNatureInfo());
+            wmsItemInfo.setOutSkuCode(info.getSkuCode());
+            wmsItemInfo.setRealInventory(0L);
+            wmsItemInfo.setLockDefectiveInventory(0L);
+            wmsItemInfo.setLockInventory(0L);
+            wmsItemInfo.setRealDefectiveInventory(0L);
+            wmsItemInfo.setLockAllocateInventory(0L);
+            wmsItemInfo.setLockAllocateDefectiveInventory(0L);
+            wmsItemInfo.setDefectiveOnWayInventory(0L);
+            wmsItemInfo.setOnWayInventory(0L);
+            wmsItemInfo.setFrozenInventory(0L);
+            wmsItemInfos.add(wmsItemInfo);
+        }
+        if(wmsItemInfos.size() > 0){
+            wmsItemInfoService.insertList(wmsItemInfos);
+        }
+    }
+
     private void saveSkuStock(List<WarehouseItemInfo> list, WarehouseInfo warehouseInfo){
-        List<SkuStock> skuStockList = new ArrayList<SkuStock>();
+        List<SkuStock> skuStockList = new ArrayList<>();
         SkuStock skuStock = null;
         for(WarehouseItemInfo warehouseItemInfo : list){
             skuStock = new SkuStock();
@@ -970,7 +1024,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             WarehouseItemInfo info = new WarehouseItemInfo();
             info.setWarehouseCode(warehouseCode);
             info.setSkuCode(synItem.getItemCode());
-            info.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+            info.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
             info = warehouseItemInfoService.selectOne(info);
             if( SUCCESS.equals(synItem.getCode())){
                 itemMap.put(String.valueOf(info.getId()), synItem.getItemId());
@@ -1240,15 +1294,15 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             List<ExcelException> list = excelExceptionService.select(e);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             if(StringUtils.isEquals(list.get(0).getType(), ZeroToNineEnum.ONE.getCode())){
-                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
-                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
+                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, null, 8000);
+                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, null, 8000);
 
                 cellDefinitionList.add(skuCode);
                 cellDefinitionList.add(exception);
             }else{
-                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
-                CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, 8000);
-                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
+                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, null, 8000);
+                CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, null, 8000);
+                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, null, 8000);
 
                 cellDefinitionList.add(skuCode);
                 cellDefinitionList.add(itemId);
@@ -1448,7 +1502,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
         warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
         warehouseItemInfo.setWarehouseItemId(warehouseItemId);
-        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
         if(warehouseItemInfoList != null && warehouseItemInfoList.size() > 0){
             return true;

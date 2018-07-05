@@ -42,7 +42,7 @@ public class WarehouseNoticeForm extends QueryModel {
     @QueryParam("supplierName")
     @Length(max = 64)
     private String supplierName;
-    
+
     //仓储系统入库单编码,入库单申请时返回
     @QueryParam("entryOrderId")
     @Length(max = 32)

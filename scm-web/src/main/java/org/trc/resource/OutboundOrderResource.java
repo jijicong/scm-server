@@ -51,7 +51,7 @@ public class OutboundOrderResource {
     @Path(SupplyConstants.OutboundOrder.WAREHOUSE_LIST_ALL)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<WarehouseInfo> findWarehouseList() {
-        return ResultUtil.createSucssAppResult("查询仓库成功!", warehouseBiz.findWarehouse());
+        return ResultUtil.createSucssAppResult("查询仓库成功!", warehouseBiz.findWarehouse(false));
     }
 
     //发货通知单创建

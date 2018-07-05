@@ -1,20 +1,11 @@
 package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.text.Text;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -26,13 +17,9 @@ import org.trc.domain.System.ChannelExt;
 import org.trc.domain.System.ChannelSellChannel;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.ChannelException;
 import org.trc.form.system.ChannelForm;
-import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
 import org.trc.service.System.IChannelSellChannelService;
 import org.trc.service.System.IChannelService;
@@ -40,18 +27,13 @@ import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
-import org.trc.util.TransportClientUtil;
 import org.trc.util.cache.ChannelCacheEvict;
 import tk.mybatis.mapper.entity.Example;
-
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -79,15 +61,12 @@ public class ChannelBiz implements IChannelBiz {
     private ISerialUtilService serialUtilService;
 
     @Autowired
-    private IPageNationService pageNationService;
-    @Autowired
     private ILogInfoService logInfoService;
 
     @Autowired
     private ISellChannelService sellChannelService;
     @Autowired
     private IChannelSellChannelService channelSellChannelService;
-
 
 
     @Override
@@ -326,6 +305,60 @@ public class ChannelBiz implements IChannelBiz {
         List<SellChannel> sellChannelList = sellChannelService.queryAllSellChannel();
         AssertUtil.notEmpty(sellChannelList,"销售渠道查询结果为空");
         return sellChannelList;
+    }
+
+    @Override
+    public List<SellChannel> querySellChannelByChannelCode(AclUserAccreditInfo aclUserAccreditInfo) {
+//        long channelId = aclUserAccreditInfo.getChannelId();
+//        ChannelSellChannel channelSellChannel  = new ChannelSellChannel();
+//        channelSellChannel.setChannelId(channelId);
+//        List<ChannelSellChannel> channelSellChannelList=  channelSellChannelService.select(channelSellChannel);
+//        List<Long> sellChannelIdList =  new ArrayList<>();
+//        for (ChannelSellChannel sellChannel:channelSellChannelList){
+//            sellChannelIdList.add(sellChannel.getSellChannelId());
+//        }
+
+//        Example example = new Example(WarehouseInfo.class);
+//        Example.Criteria criteria = example.createCriteria();
+//        criteria.andIsNotNull("storeCorrespondChannel");
+//        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
+//        Set<String> storeCorrespondChannels = new HashSet<>();
+//        if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+//            for(WarehouseInfo info : warehouseInfoList){
+//                storeCorrespondChannels.add(info.getStoreCorrespondChannel());
+//            }
+//        }
+
+        List<SellChannel> sellChannelList = new ArrayList<>();
+//        if (!AssertUtil.collectionIsEmpty(sellChannelIdList)) {
+            Example exampleSell = new Example(SellChannel.class);
+            Example.Criteria criteriaSell = exampleSell.createCriteria();
+//            criteriaSell.andIn("id", sellChannelIdList);
+//            criteriaSell.andNotIn("sellCode", storeCorrespondChannels);
+            criteriaSell.andEqualTo("sellType", SellChannelTypeEnum.STORE.getCode());
+            sellChannelList = sellChannelService.selectByExample(exampleSell);
+//        }
+        return sellChannelList;
+    }
+
+    @Override
+    public List<SellChannel> querySellChannelList(AclUserAccreditInfo aclUserAccreditInfo) {
+        String channelCode = aclUserAccreditInfo.getChannelCode();
+        AssertUtil.notBlank(channelCode, "当前登录用户所属业务线为空");
+        ChannelSellChannel channelSellChannel = new ChannelSellChannel();
+        channelSellChannel.setChannelCode(channelCode);
+        List<ChannelSellChannel> channelSellChannelList = channelSellChannelService.select(channelSellChannel);
+        Set<String> sellCodes = new HashSet<>();
+        for(ChannelSellChannel sellChannel: channelSellChannelList){
+            sellCodes.add(sellChannel.getSellChannelCode());
+        }
+        if(CollectionUtils.isEmpty(sellCodes)){
+            return new ArrayList<>();
+        }
+        Example example = new Example(SellChannel.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("sellCode", sellCodes);
+        return sellChannelService.selectByExample(example);
     }
 
 

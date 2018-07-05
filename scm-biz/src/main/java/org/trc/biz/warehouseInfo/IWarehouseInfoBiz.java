@@ -67,12 +67,10 @@ public interface IWarehouseInfoBiz {
 
     /**
      * 仓库商品信息分页查询
-     *
-     * @param query
      * @param page
      * @return
      */
-    Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page);
+    Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, String warehouseCode, Pagenation<WarehouseItemInfo> page);
 
     /**
      * 删除仓库商品信息

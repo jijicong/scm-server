@@ -38,7 +38,7 @@ public enum OutboundOrderStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static OutboundOrderStatusEnum getClearanceEnumByName(String name){
+	public static OutboundOrderStatusEnum getOutboundOrderStatusEnumByName(String name){
 		for(OutboundOrderStatusEnum validEnum : OutboundOrderStatusEnum.values()){
 			if(StringUtils.equals(name, validEnum.getName())){
 				return validEnum;
@@ -56,7 +56,7 @@ public enum OutboundOrderStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static OutboundOrderStatusEnum getClearanceEnumByCode(String code){
+	public static OutboundOrderStatusEnum getOutboundOrderStatusEnumByCode(String code){
 		for(OutboundOrderStatusEnum validEnum : OutboundOrderStatusEnum.values()){
 			if(StringUtils.equals(validEnum.getCode(), code)){
 				return validEnum;

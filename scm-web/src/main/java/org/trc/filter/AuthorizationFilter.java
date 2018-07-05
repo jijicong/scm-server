@@ -1,5 +1,6 @@
 package org.trc.filter;
 
+import com.tairanchina.beego.api.exception.AuthenticateException;
 import com.tairanchina.csp.foundation.common.sdk.CommonConfig;
 import com.tairanchina.csp.foundation.sdk.CSPKernelSDK;
 import com.tairanchina.csp.foundation.sdk.dto.TokenDeliverDTO;
@@ -20,6 +21,7 @@ import org.trc.enums.UserTypeEnum;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonConfigUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -97,6 +99,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
                 TokenDeliverDTO tokenInfo = getCSPKernelSDK(token,url);
+                try {
                     AclUserAccreditInfo aclUserAccreditInfo =null;
                     if (null != tokenInfo) {
                         String userId = tokenInfo.getUserId();
@@ -145,11 +148,16 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                                 log.info("url:{}不需要验证放行成功",url);
                             }
                         }
-                    } else {
-                        log.info("获取tokenInfo失败,需要重新登录");
-                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
-                        requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                     }
+                } catch (AuthenticateException e) {
+                    //token失效需要用户重新登录
+                    log.error("message:{},e:{}",e.getMessage(),e);
+                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
+                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                } catch (Exception e) {
+                    log.error("message:{},e:{}",e.getMessage(),e);
+                    requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                }
             } else {
                 //未获取到token返回登录页面
                 log.info("页面token不存在,需要重新登录");
@@ -164,6 +172,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
                 TokenDeliverDTO tokenInfo = getCSPKernelSDK(token,url);
+                try {
                     if (null != tokenInfo) {
                         String userId = tokenInfo.getUserId();
                         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
@@ -177,11 +186,16 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                             requestContext.setProperty(SupplyConstants.Authorization.USER_ID, userId);
                             requestContext.setProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO, aclUserAccreditInfo);
                         }
-                    } else {
-                        log.info("获取tokenInfo失败,需要重新登录");
-                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
-                        requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                     }
+                } catch (AuthenticateException e) {
+                    //token失效需要用户重新登录
+                    log.error("message:{},e:{}", e.getMessage(), e);
+                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
+                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                } catch (Exception e) {
+                    log.error("message:{},e:{}", e.getMessage(), e);
+                    requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                }
             } else {
                 //未获取到token返回登录页面
                 log.info("页面token不存在,需要重新登录");
@@ -256,7 +270,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         basicConfig.setUrl(applyUri);
         basicConfig.setAppId(applyId);
         basicConfig.setAppSecret(applySecret);
-        CSPKernelSDK sdk = CSPKernelSDK.instance(config);
+    	CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri, applyId, applySecret);
         TokenDeliverDTO tokenInfo = sdk.user.tenantValidate(token, url, config).getBody();
         return tokenInfo;
     }

@@ -1,39 +1,28 @@
 package org.trc.resource;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.biz.impl.warehouseNotice.WarehouseNoticeBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.enums.DistributeLockEnum;
 import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ResultEnum;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 import org.trc.util.lock.RedisLock;
+
+import javax.annotation.Resource;
+import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by sone on 2017/7/11.
@@ -99,7 +88,7 @@ public class WarehouseNoticeResource {
     			e.printStackTrace();
     		}
     	}
-        return ResultUtil.createSuccessResult("发送通知收货成功","");
+        return ResultUtil.createSuccessResult("操作成功","");
 
     }
 
@@ -138,7 +127,7 @@ public class WarehouseNoticeResource {
     			e.printStackTrace();
     		}
     	}
-        return ResultUtil.createSuccessResult("发送通知收货成功","");
+        return ResultUtil.createSuccessResult("操作成功","");
 
     }
 
@@ -157,7 +146,7 @@ public class WarehouseNoticeResource {
     }
 
     /**
-     * 根据入库单code获取入库单商品明细
+     * 根据入库单code获取入库单商品明细0
      * @param warehouseNotice
      * @return
      * @throws Exception
@@ -169,5 +158,39 @@ public class WarehouseNoticeResource {
         //"根据入库通知单的id，查询入库明细成功",
         return ResultUtil.createSuccessPageResult(warehouseNoticeBiz.warehouseNoticeDetailList(warehouseNotice));
     }
+
+    /**
+	 * 入库通知单：取消收货flag=0 ;重新收货flag=1
+	 */
+	@PUT
+	@Path(SupplyConstants.WarehouseNotice.CANCEL)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response cancel(@PathParam("warehouseNoticeCode")String warehouseNoticeCode,@FormParam("flag") String flag,@FormParam("cancelReason") String cancelReason,@Context ContainerRequestContext requestContext){
+		String identifier = "";
+		AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+		identifier=redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode()+"cancel"+
+		warehouseNoticeCode,0,10000);
+		if (StringUtils.isBlank(identifier)){
+			throw new RuntimeException("重复操作！");
+		}
+		try {
+			warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
+		}
+		finally {
+			try {
+				if(redisLock.releaseLock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode()+"cancel"+
+						warehouseNoticeCode,identifier)){
+					logger.info("warehouseNoticeCode:{}入库通知，解锁成功，identifier:{}",warehouseNoticeCode,identifier);
+				}else {
+					logger.error("warehouseNoticeCode:{}入库通知，解锁失败，identifier:{}",warehouseNoticeCode,identifier);
+				}
+			}catch (Exception e){
+				logger.error("warehouseNoticeCode:{}入库通知，解锁失败，identifier:{},err:{}",warehouseNoticeCode,identifier,e.getMessage());
+				e.printStackTrace();
+			}
+		}
+
+		return ResultUtil.createSuccessResult("操作成功","");
+	}
 
 }

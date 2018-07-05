@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * Created by hzwdx on 2017/6/26.
  */
-public class OrderBase implements Serializable{
+public class OrderBase extends OrderBaseDO{
 
     // 用户id
     @Transient

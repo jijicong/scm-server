@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.trc.mapper.allocateOrder.AllocateSkuDetailMapper" >
+  <resultMap id="BaseResultMap" type="org.trc.domain.allocateOrder.AllocateSkuDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="allocate_order_code" property="allocateOrderCode" jdbcType="VARCHAR" />
+    <result column="sku_name" property="skuName" jdbcType="VARCHAR" />
+    <result column="sku_code" property="skuCode" jdbcType="VARCHAR" />
+    <result column="spec_nature_info" property="specNatureInfo" jdbcType="VARCHAR" />
+    <result column="bar_code" property="barCode" jdbcType="VARCHAR" />
+    <result column="brand_code" property="brandCode" jdbcType="VARCHAR" />
+    <result column="brand_name" property="brandName" jdbcType="VARCHAR" />
+    <result column="inventory_type" property="inventoryType" jdbcType="VARCHAR" />
+    <result column="plan_allocate_num" property="planAllocateNum" jdbcType="BIGINT" />
+    <result column="real_out_num" property="realOutNum" jdbcType="BIGINT" />
+    <result column="out_status" property="outStatus" jdbcType="VARCHAR" />
+    <result column="real_in_num" property="realInNum" jdbcType="BIGINT" />
+    <result column="nornal_in_num" property="nornalInNum" jdbcType="BIGINT" />
+    <result column="defect_in_num" property="defectInNum" jdbcType="BIGINT" />
+    <result column="in_status" property="inStatus" jdbcType="VARCHAR" />
+    <result column="create_operator" property="createOperator" jdbcType="VARCHAR" />
+    <result column="is_deleted" property="isDeleted" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+    <update id="updateSkuDetailList"  parameterType="java.util.List" >
+        <foreach collection="list" item="skuDetail" index="index" open="" close=";" separator=";">
+            update allocate_sku_detail
+            <set>
+                <if test="skuDetail.inventoryType != null and skuDetail.inventoryType != ''">
+                    inventory_type = #{skuDetail.inventoryType},
+                </if>
+                <if test="skuDetail.planAllocateNum != null">
+                    plan_allocate_num = #{skuDetail.planAllocateNum},
+                </if>
+                <if test="skuDetail.updateTime != null">
+                    update_time = NOW(),
+                </if>
+                <if test="skuDetail.allocateOutStatus != null and skuDetail.allocateOutStatus != ''">
+                    allocate_out_status = #{skuDetail.allocateOutStatus},
+                </if>
+                <if test="skuDetail.allocateInStatus != null and skuDetail.allocateInStatus != ''">
+                    allocate_in_status = #{skuDetail.allocateInStatus},
+                </if>
+                <if test="skuDetail.outStatus != null and skuDetail.outStatus != ''">
+                    out_status = #{skuDetail.outStatus},
+                </if>
+                <if test="skuDetail.inStatus != null and skuDetail.inStatus != ''">
+                    in_status = #{skuDetail.inStatus},
+                </if>
+                <if test="skuDetail.realInNum != null">
+                    real_in_num = #{skuDetail.realInNum},
+                </if>
+                <if test="skuDetail.realOutNum != null">
+                    real_out_num = #{skuDetail.realOutNum},
+                </if>
+                <if test="skuDetail.nornalInNum != null">
+                    nornal_in_num = #{skuDetail.nornalInNum},
+                </if>
+                <if test="skuDetail.defectInNum != null">
+                    defect_in_num = #{skuDetail.defectInNum},
+                </if>
+                <if test="skuDetail.oldOutStatus != null and skuDetail.oldOutStatus != ''">
+                    old_out_status = #{skuDetail.oldOutStatus},
+                </if>
+                <if test="skuDetail.oldInStatus != null and skuDetail.oldInStatus != ''">
+                    old_in_status = #{skuDetail.oldInStatus}
+                </if>
+            </set>
+            where
+              id = #{skuDetail.id} and is_deleted = '0'
+        </foreach>
+    </update>
+    
+    <update id="deleteByIds"  parameterType="java.util.ArrayList" >
+    	update allocate_sku_detail
+    		set is_deleted = '1'
+ 		where id in
+        <foreach collection="array" item="id" index="index" open="(" close=")" separator=",">
+        	#{id}
+        </foreach>
+    </update>
+      
+</mapper>

@@ -7,6 +7,7 @@ import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -31,10 +32,14 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
+import org.trc.enums.warehouse.CancelOrderType;
+import org.trc.exception.ParamValidException;
 import org.trc.exception.WarehouseNoticeDetailException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.*;
+import org.trc.form.wms.WmsInNoticeDetailRequest;
+import org.trc.form.wms.WmsInNoticeRequest;
 import org.trc.service.IQimenService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
@@ -42,7 +47,9 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.jingdong.CommonService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
+import org.trc.service.jingdong.ICommonService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
@@ -56,7 +63,10 @@ import org.trc.util.cache.WarehouseNoticeCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.ws.rs.core.Response;
 import java.util.*;
+
+import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
 
 /**
  * @author sone
@@ -114,6 +124,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IWarehouseMockService warehouseMockService;
     @Autowired
     private IPurchaseGroupUserService purchaseGroupUserService;
+    @Autowired
+    private ICommonService commonService;
+    @Autowired
+    private IRealIpService realIpService;
 
     @Value("${mock.outer.interface}")
     private String mockOuterInterface;
@@ -133,7 +147,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     @Override
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
-    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, 
+    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form,
     		Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
@@ -182,7 +196,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (!StringUtils.isBlank(form.getEndDate())) {
             criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(form.getEndDate(), DateUtils.NORMAL_DATE_FORMAT, 1)));
         }
-        example.orderBy("status").asc();
+        example.setOrderByClause("instr('0,1',`status`) DESC");
         example.orderBy("updateTime").desc();
         Pagenation<WarehouseNotice> pagenation = warehouseNoticeService.pagination(example, page, form);
         
@@ -539,7 +553,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param userId
      * @param notice
      */
-    private void entryOrderCreate(WarehouseNotice notice, String userId) {
+    private void entryOrderCreate(WarehouseNotice notice, String userId)  {
         String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
         WarehouseTypeEnum warehouseTypeEnum = warehouseExtService.getWarehouseType(notice.getWarehouseCode());
@@ -549,13 +563,19 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setPurchaseOrderCode(notice.getPurchaseOrderCode());
         scmEntryOrderCreateRequest.setWarehouseCode(warehouseExtService.getWmsWarehouseCode(notice.getWarehouseCode()));
         scmEntryOrderCreateRequest.setOwnerCode(jDWmsConstantConfig.getDeptNo());
-        scmEntryOrderCreateRequest.setOrderType(JdPurchaseOrderTypeEnum.B2C.getCode());
+        scmEntryOrderCreateRequest.setPoType(JdPurchaseOrderTypeEnum.B2C.getCode());
         scmEntryOrderCreateRequest.setBillOfLading(notice.getTakeGoodsNo());
         scmEntryOrderCreateRequest.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
-        scmEntryOrderCreateRequest.setSupplierName(notice.getSupplierName());
+
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(notice.getSupplierCode());
+        supplier = iSupplierService.selectOne(supplier);
+        scmEntryOrderCreateRequest.setSupplierName(supplier.getSupplierName());
+
+
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
-        scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
-        scmEntryOrderCreateRequest.setExpectEndTime(DateUtils.parseDateTime(notice.getEndReceiveDate()));
+        scmEntryOrderCreateRequest.setExpectStartTime(notice.getRequriedReceiveDate());
+        scmEntryOrderCreateRequest.setExpectEndTime(notice.getEndReceiveDate());
         scmEntryOrderCreateRequest.setRemark(notice.getRemark());
         //发货人信息
         scmEntryOrderCreateRequest.setSenderName(notice.getSender());
@@ -563,12 +583,26 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setSenderProvince(notice.getSenderProvince());
         scmEntryOrderCreateRequest.setSenderCity(notice.getSenderCity());
         scmEntryOrderCreateRequest.setSenderDetailAddress(notice.getSenderAddress());
+
+
         //收货人信息
         scmEntryOrderCreateRequest.setReciverName(notice.getReceiver());
         scmEntryOrderCreateRequest.setReciverProvince(notice.getReceiverProvince());
         scmEntryOrderCreateRequest.setReciverCity(notice.getReceiverCity());
         scmEntryOrderCreateRequest.setReciverDetailAddress(notice.getReceiverAddress());
         scmEntryOrderCreateRequest.setReciverMobile(notice.getReceiverNumber());
+        
+        //入库单联系人、号码
+        AclUserAccreditInfo info = new AclUserAccreditInfo();
+        try  {
+            info.setUserId(notice.getCreateOperator());
+            info = userAccreditInfoService.selectOne(info);
+            scmEntryOrderCreateRequest.setCreateOperatorName(info == null ? "" : info.getName());
+            scmEntryOrderCreateRequest.setCreateOperatorNumber(info == null ? "" : info.getPhone());
+        } catch (Exception e) {
+        	logger.error("仓库接收时，入库单联系人、号码获取异常：{}", e.getMessage());
+        }
+
 
         //入库单明细
         List<ScmEntryOrderItem> scmEntryOrderItemList = new ArrayList<>();
@@ -578,14 +612,58 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notEmpty(detailsList, String.format("发货通知单%s相关商品明细为空", noticeCode));
         for (WarehouseNoticeDetails details : detailsList) {
             ScmEntryOrderItem scmEntryOrderItem = new ScmEntryOrderItem();
+            
+            BeanUtils.copyProperties(details, scmEntryOrderItem);
+            scmEntryOrderItem.setPurchaseOrderCode(notice.getPurchaseOrderCode());
+            
             scmEntryOrderItem.setOwnerCode(details.getOwnerCode());
+            scmEntryOrderItem.setSkuCode(details.getSkuCode());
             scmEntryOrderItem.setItemCode(details.getSkuCode());
             scmEntryOrderItem.setItemId(details.getItemId());
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
+
+            scmEntryOrderItem.setBrandId(details.getBrandId());
+            Brand brand = brandService.selectByPrimaryKey(details.getBrandId());
+            if(brand!=null){
+                scmEntryOrderItem.setBrandName(brand.getName());
+            }else {
+                scmEntryOrderItem.setBrandName(null);
+            }
+
+
+            scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
+            if(details.getExpiredDay()==null){
+                scmEntryOrderItem.setExpireDay(null);
+            }else {
+                scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
+            }
+            //截止保质日期
+            scmEntryOrderItem.setExpireDate(DateUtils.dateToString(details.getExpiredDate(),DateUtils.NORMAL_DATE_FORMAT));
+
+            scmEntryOrderItem.setProductionCode(details.getProductionCode());
+            scmEntryOrderItem.setProductionDate(DateUtils.dateToString(details.getProductionDate(),DateUtils.NORMAL_DATE_FORMAT));
             scmEntryOrderItemList.add(scmEntryOrderItem);
+
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
+        
+		WarehouseInfo whi = new WarehouseInfo();
+		whi.setCode(notice.getWarehouseCode());
+		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+		AssertUtil.notNull(warehouse, "采购入库仓库不存在");
+		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+			scmEntryOrderCreateRequest.setWarehouseType("TRC");
+			//判断是第三方仓库还是自营仓库
+            scmEntryOrderCreateRequest.setWarehouseCode(whi.getCode());
+		} else if(OperationalNatureEnum.THIRD_PARTY.getCode().equals(warehouse.getOperationalNature())){
+
+			scmEntryOrderCreateRequest.setWarehouseType("JD");
+		} else{
+		    //没选择运营性质
+		    throw new WarehouseNoticeException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION,"请先选择运营仓库类型!");
+        }
+		
         AppResult<String> appResult = warehouseApiService.entryOrderCreate(scmEntryOrderCreateRequest);
         if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) { // 成功
             /**
@@ -598,7 +676,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         } else {
             // 仓库接收失败
             try {
-                logInfoService.recordLog(notice, notice.getId().toString(), userId,
+                logInfoService.recordLog(notice, notice.getId().toString(), whi.getWarehouseName(),
                         LogOperationEnum.WMS_RECEIVE_FAILED.getMessage(), appResult.getDatabuffer(), null);
             } catch (Exception e) {
                 logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
@@ -811,6 +889,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (!iRealIpService.isRealTimerService()){
             return;
         }
+
+        WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+        warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
+        List<WarehouseInfo> warehouseInfoTempList = warehouseInfoService.select(warehouseInfoTemp);
+        List<String> warehouseCodeList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoTempList){
+            warehouseCodeList.add(info.getCode());
+        }
+
         //1. 查询入库通知单，状态为待仓库反馈，部分收货的入库单,完成状态为未完成的
         // 更新入库单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
@@ -821,6 +908,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 //        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
 //        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         warehouseNoticeCriteria.andIn("status",stateArray);
+        warehouseNoticeCriteria.andNotIn("warehouseCode", warehouseCodeList);
         //数据中未完成的入库通知单
         warehouseNoticeCriteria.andEqualTo("finishStatus",WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
 //        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047973168");
@@ -835,6 +923,293 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }else {
             logger.info("未查询到符合条件的入库通知单！");
         }
+    }
+
+    @Override
+    public Response inFinishCallBack(WmsInNoticeRequest req) {
+        AssertUtil.notNull(req, "采购入库回调信息不能为空");
+        String noticeCode = req.getWarehouseNoticeCode();
+        //获取采购入库详情明细
+        WarehouseNoticeDetails noticeDetail = new WarehouseNoticeDetails();
+        noticeDetail.setWarehouseNoticeCode(noticeCode);
+        List<WarehouseNoticeDetails> details = warehouseNoticeDetailsService.select(noticeDetail);
+
+        String logMessage="";
+        List<String> exceptionDetail=new ArrayList<>();
+
+        List<WmsInNoticeDetailRequest> inNoticeDetailRequests = req.getInNoticeDetailRequests();
+        if(inNoticeDetailRequests!=null && inNoticeDetailRequests.size()>0){
+            for (WmsInNoticeDetailRequest inNoticeDetailRequest : inNoticeDetailRequests) {
+                for (WarehouseNoticeDetails detail : details) {
+                    if(StringUtils.equals(inNoticeDetailRequest.getSkuCode(),detail.getSkuCode())){
+                        Long normalStorageQuantity= inNoticeDetailRequest.getNormalStorageQuantity();
+                        Long defectiveStorageQuantity=inNoticeDetailRequest.getDefectiveStorageQuantity();
+                        Long actualStorageQuantity = inNoticeDetailRequest.getActualStorageQuantity();
+
+                        detail.setNormalStorageQuantity(normalStorageQuantity);
+                        detail.setDefectiveStorageQuantity(defectiveStorageQuantity);
+                        detail.setActualStorageQuantity(actualStorageQuantity);
+                        detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
+                        if(defectiveStorageQuantity==0){
+                            if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){
+                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
+                                logMessage += detail.getSkuCode() + ":" + "全部入库<br>";
+                            }else if (detail.getPurchasingQuantity().longValue() > normalStorageQuantity.longValue()){
+                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+                                logMessage += detail.getSkuCode() + ":" + "部分入库<br>";
+                            } else {
+                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                                logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
+                                exceptionDetail.add(detail.getSkuCode()+"正品入库数量大于实际采购数量");
+                            }
+
+                        }else{
+                            detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                            logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
+                            exceptionDetail.add(detail.getSkuCode()+"存在残品入库");
+                        }
+
+                    }
+                }
+            }
+        }
+        warehouseNoticeDetailsService.updateWarehouseNoticeLists(details);  //FIXME  方法有待改进
+        //更新入库通知单
+        WarehouseNotice warehouseNotice = new WarehouseNotice();
+//        warehouseNotice.setWarehouseNoticeCode(noticeCode);
+        Example example = new Example(WarehouseNotice.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseNoticeCode",noticeCode);
+        List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
+        warehouseNotice = warehouseNotices.get(0);
+        warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+        boolean flgExp = false;
+        boolean flgPart = false;
+        for (WarehouseNoticeDetails wnd : details) {
+        	if (WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode().equals(wnd.getStatus().toString())) {
+        		flgExp = true;
+        		break;
+        	} else if (WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode().equals(wnd.getStatus().toString())) {
+        		flgPart = true;
+        	}
+        }
+        if (flgExp) {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+        } else if (flgPart) {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
+        } else {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
+        }
+//        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+//            result = "入库完成";
+//        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+//        }else {
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+//        }
+        if(exceptionDetail.size()>0){
+            warehouseNotice.setExceptionCause("["+StringUtils.join(exceptionDetail, ",")+"]");
+        }
+        warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+
+        return ResultUtil.createSuccessResult("反填入库通知单成功","");
+    }
+
+    //入库通知 取消收货接口调用业务  flag标志:0取消收货和1重新收货
+    @Override
+    @Transactional(rollbackFor =Exception.class)
+    public void cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notBlank(cancelReason,"取消原因不能为空");
+        WarehouseNotice temp = new WarehouseNotice();
+        temp.setWarehouseNoticeCode(warehouseNoticeCode);
+
+        //入库通知单
+        WarehouseNotice warehouseNotice = warehouseNoticeService.selectOne(temp);
+        AssertUtil.notNull(warehouseNotice,String.format("根据入库通知单号%s查询入库通知单信息为空",warehouseNoticeCode));
+
+        //入库通知详情
+        LogOperationEnum logOperationEnum = null;
+        if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"当前入库通知单已经是取消状态!");
+        }
+        WarehouseNoticeDetails noticeDetails = new WarehouseNoticeDetails();
+        noticeDetails.setWarehouseNoticeCode(warehouseNoticeCode);
+        List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(noticeDetails);
+        AssertUtil.notEmpty(list,String.format("根据入库通知单号%s查询入库通知单明细为空",warehouseNotice));
+
+        //取消结果
+        String cancelResult="";
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(),flag)){//取消收货
+            logOperationEnum= LogOperationEnum.CANCEL_RECIVE_GOODS;
+            Map<String, String> map = new HashMap<>();
+            //调用入库通知取消操作
+            OrderCancelResultEnum resultEnum=cancelNotice(warehouseNotice,map);
+
+            if(OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)){
+                throw new RuntimeException("入库通知单取消失败："+map.get("msg"));
+            }else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)){
+                cancelResult= WarehouseNoticeStatusEnum.CANCELLING.getCode();
+            }else {
+                cancelResult=WarehouseNoticeStatusEnum.CANCELLATION.getCode();
+            }
+
+            //入库单状态
+            warehouseNotice.setStatus(cancelResult);
+            //入库单详情状态
+            for (WarehouseNoticeDetails detail : list) {
+                detail.setStatus(Integer.parseInt(cancelResult));
+            }
+            warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+            warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+        }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
+            if(!StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"入库通知单当前状态不能进行重新发货");
+            }
+            if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLING.getCode(),warehouseNotice.getStatus()) &&
+                    DateCheckUtil.checkDate(warehouseNotice.getUpdateTime())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前入库通知单取消时间过长，不能重新收货");
+            }
+            logOperationEnum= LogOperationEnum.RE_RECIVE_GOODS;
+
+            //执行重新收货
+            receiptAdviceInfo(warehouseNotice, aclUserAccreditInfo);
+
+        }
+
+        //记录操作日志
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason,null);
+
+    }
+
+    //取消收货 取消中状态定时任务
+    @Override
+    public void retryCancelOrder() {
+        if (!realIpService.isRealTimerService()) return;
+        WarehouseNotice orderTemp=new WarehouseNotice();
+        orderTemp.setStatus(WarehouseNoticeStatusEnum.CANCELLING.getCode());
+        List<WarehouseNotice> list = warehouseNoticeService.select(orderTemp);
+
+        List<ScmOrderCancelRequest> requests = new ArrayList<>();
+        for (WarehouseNotice warehouseNotice : list) {
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setCode(warehouseNotice.getWarehouseCode());
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+            if (warehouseInfoList==null|| warehouseInfoList.size()<1){
+                continue;
+            }
+             warehouseInfo = warehouseInfoList.get(0);
+            ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
+            scmOrderCancelRequest.setOrderCode(warehouseNotice.getWarehouseNoticeCode());
+            scmOrderCancelRequest.setWarehouseType("JD");
+            scmOrderCancelRequest.setOrderType(CancelOrderType.PURCHASE.getCode());
+            requests.add(scmOrderCancelRequest);
+        }
+
+        //调用接口
+        this.retryCancelOrder(requests);
+    }
+
+    private void retryCancelOrder (List<ScmOrderCancelRequest> requests){
+        try {
+            for (ScmOrderCancelRequest request : requests) {
+                new Thread(() ->{
+                    //调用接口
+                    AppResult<ScmOrderCancelResponse> responseAppResult=warehouseApiService.orderCancel(request);
+
+                    //回写数据
+                    try {
+                        this.updateCancelOrder(responseAppResult, request.getOrderCode());
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        logger.error("入库通知单号：{}，取消收货异常：{}",request.getOrderCode(),responseAppResult.getDatabuffer());
+                    }
+
+                }).start();
+            }
+        }catch (Exception e){
+            logger.error("取消收货失败",e);
+        }
+
+    }
+
+    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String orderCode){
+        try {
+            if (StringUtils.equals(appResult.getAppcode(), SUCCESS)){// 成功
+                WarehouseNotice warehouseNotice=new WarehouseNotice();
+                warehouseNotice.setWarehouseNoticeCode(orderCode);
+                warehouseNotice= warehouseNoticeService.selectOne(warehouseNotice);
+
+                ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
+                String flag = response.getFlag();
+                WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
+                warehouseNoticeDetails.setWarehouseNoticeCode(orderCode);
+                List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(warehouseNoticeDetails);
+
+                if (StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//取消成功
+                    //修改入库通知单和详情的状态
+                    warehouseNotice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+                    for (WarehouseNoticeDetails details : list) {
+                        details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.CANCELLATION.getCode()));
+                    }
+                    warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                    warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+
+                    //日志输出
+                    logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                            "admin","取消入库","取消结果：取消成功",null);
+                }else if (StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){//取消失败
+                    warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
+                    warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
+                    for (WarehouseNoticeDetails details : list) {
+                        details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode()));
+                    }
+                    warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                    warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+
+                    //日志输出
+                    logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                            "admin","取消入库","取消结果：取消失败"+response.getMessage(),null);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("入库通知单号：{}，取消入库通知异常：{}",orderCode,e.getMessage());
+        }
+
+    }
+
+    /**
+     * 入库单取消通知
+     */
+    private OrderCancelResultEnum cancelNotice(WarehouseNotice warehouseNotice,Map<String,String> errMsg){
+        OrderCancelResultEnum resultEnum = OrderCancelResultEnum.CANCEL_FAIL;// 取消失败
+        ScmOrderCancelRequest request = new ScmOrderCancelRequest();
+        request.setOrderType(CancelOrderType.PURCHASE.getCode());
+        // 自营仓 和 三方仓库 统一取warehouseNoticeCode
+        request.setOrderCode(warehouseNotice.getWarehouseCode());
+        commonService.getWarehoueType(warehouseNotice.getWarehouseCode(),request);
+
+        AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
+        if (StringUtils.equals(response.getAppcode(),ResponseAck.SUCCESS_CODE)){
+            ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
+            if (OrderCancelResultEnum.CANCEL_SUCC.code.equals(respResult.getFlag())) { // 取消成功
+                resultEnum = OrderCancelResultEnum.CANCEL_SUCC;
+            } else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
+                resultEnum = OrderCancelResultEnum.CANCELLING;
+            } else {//取消失败
+                errMsg.put("msg", respResult.getMessage());
+            }
+        }else {
+            errMsg.put("msg",response.getDatabuffer());
+            logger.error("入库通知单取消失败：",response.getDatabuffer());
+        }
+        return  resultEnum;
+
     }
 
     private void scmEntryOrder(List<WarehouseNotice> noticeList) {

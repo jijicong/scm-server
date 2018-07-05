@@ -476,7 +476,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         page.setTotalCount(purchaseDetailListCount);
         Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
         pagenation.setStart(page.getStart());
-        pagenation.setPageSize(page.getStart());
+        pagenation.setPageSize(page.getPageSize());
+        pagenation.setPageNo(page.getPageNo());
         pagenation.setTotalCount(purchaseDetailListCount);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
                 form.getItemNo(), form.getBrandName(), skus, pagenation);
@@ -737,7 +738,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
 
-            if(purchaseDetail.getTotalPurchaseAmountD() != null){
+            if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) >= 0){
                 totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
                 BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
                 //设置采购价格*100
@@ -1282,6 +1283,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId=aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+       // purchaseOrderLog.setUpdateTime(purchaseOrder.getUpdateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,AuditStatusEnum.COMMIT.getName(),null,ZeroToNineEnum.ZERO.getCode());
 
     }
@@ -1779,6 +1781,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andIn("skuCode", skuCodes);
             warehouseItemCriteria.andEqualTo("warehouseInfoId", warehouseInfoId);
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
+            warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
                 warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
             }

@@ -22,6 +22,11 @@ public class OrderItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
+
     // 渠道商品订单号
     @NotEmpty
     @Length(max = 32)
@@ -238,6 +243,14 @@ public class OrderItem implements Serializable {
 
     // 供货价,单位/元
     private BigDecimal supplyPrice;
+
+    // 交易备注
+    private String tradeMemo;
+
+    /**
+     * 是否门店订单:1-非门店,2-门店'
+     */
+    private Integer isStoreOrder;
 
     public OrderItem(){
 
@@ -1365,5 +1378,29 @@ public class OrderItem implements Serializable {
 
     public void setSupplyPrice(BigDecimal supplyPrice) {
         this.supplyPrice = supplyPrice;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public String getTradeMemo() {
+        return tradeMemo;
+    }
+
+    public void setTradeMemo(String tradeMemo) {
+        this.tradeMemo = tradeMemo;
+    }
+
+    public Integer getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(Integer isStoreOrder) {
+        this.isStoreOrder = isStoreOrder;
     }
 }

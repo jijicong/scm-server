@@ -27,8 +27,15 @@ public interface IWarehouseMockService {
     /**
      * 查询发货单包裹信息
      * @param orderPacksRequest
-     * @return
+     * @returns
      */
     AppResult<ScmOrderPacksResponse> orderPack(ScmOrderPacksRequest orderPacksRequest);
+
+    /**
+     * 获取取消信息
+     * @param request
+     * @return
+     */
+    AppResult<ScmOrderCancelResponse> orderCancel(ScmOrderCancelRequest request);
 
 }

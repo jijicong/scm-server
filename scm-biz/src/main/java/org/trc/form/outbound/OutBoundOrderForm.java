@@ -23,6 +23,15 @@ public class OutBoundOrderForm extends QueryModel {
     @Length(max = 32, message = "店铺订单编号长度不能超过32个")
     private String shopOrderCode;
 
+    @QueryParam("scmShopOrderCode")
+    @Length(max = 32, message = "系统订单号长度不能超过32个")
+    private String scmShopOrderCode;
+
+    //销售渠道编码
+    @QueryParam("sellCode")
+    @Length(max = 32, message = "销售渠道编码长度不能超过32个")
+    private String sellCode;
+
     //发货仓库id
     @QueryParam("warehouseId")
     private String warehouseId;
@@ -148,5 +157,21 @@ public class OutBoundOrderForm extends QueryModel {
 
     public void setWmsOrderCode(String wmsOrderCode) {
         this.wmsOrderCode = wmsOrderCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
     }
 }

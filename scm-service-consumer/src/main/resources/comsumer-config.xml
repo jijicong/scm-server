@@ -49,6 +49,12 @@
         <property name="deliveryOrderDetailQueryUrl" value="${wms.deleveryOrderDetail.url}"/>
         <property name="orderCancelUrl" value="${wms.orderCancel.url}"/>
         <property name="orderPackUrl" value="${wms.orderPack.url}"/>
+        <property name="allocateOrderOutUrl" value="${wms.allocateOrder.out.notice.url}"/>
+        <property name="allocateOrderInUrl" value="${wms.allocateOrder.in.notice.url}"/>
+        
+        <property name="allocateOrderOutCancelUrl" value="${wms.allocateOrder.out.cancel.url}"/>
+        <property name="allocateOrderInCancelUrl" value="${wms.allocateOrder.in.cancel.url}"/>
+        <property name="josAllocateOrderCreateUrl" value="${wms.jos.allocateOrder.create.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->

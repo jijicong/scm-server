@@ -1,6 +1,8 @@
 package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.GeneratedValue;
@@ -14,12 +16,16 @@ import java.util.List;
 /**
  * Created by hzcyn on 2017/11/13.
  */
-public class ExceptionOrder implements Serializable {
+public class ExceptionOrder extends OrderBaseDO {
 
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
     // 渠道编码
     private String channelCode;
     //拆单异常单编号
@@ -47,8 +53,6 @@ public class ExceptionOrder implements Serializable {
     private Date createTime;
     // 更新时间
     private Date updateTime;
-    //销售渠道编号
-    private String sellCode;
 
 
     /**
@@ -191,12 +195,12 @@ public class ExceptionOrder implements Serializable {
         this.platformOrder = platformOrder;
     }
 
-    public String getSellCode() {
-        return sellCode;
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
     }
 
-    public void setSellCode(String sellCode) {
-        this.sellCode = sellCode;
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 
     @Override
@@ -216,7 +220,6 @@ public class ExceptionOrder implements Serializable {
                 ", itemNum=" + itemNum +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
-                ", sellCode='" + sellCode + '\'' +
                 ", exceptionOrderItemList=" + exceptionOrderItemList +
                 ", platformOrder=" + platformOrder +
                 '}';
