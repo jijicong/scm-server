@@ -330,6 +330,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    @PurchaseGroupCacheEvict
     public void deletePurchaseCroupUserById(Long id) {
         AssertUtil.notNull(id,"采购组管理模块根据id查询采购组员失败，采购组员信息为空");
         PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
@@ -339,6 +340,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    @PurchaseGroupCacheEvict
     public void savePurchaseCroupUser(PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo) {
         //需判断用户是否有改变属性启停用状态如果有变更需要更改关联关系表
         List<PurchaseGroupUser> valueList = JSONArray.parseArray(purchaseGroupUser.getGridValue(), PurchaseGroupUser.class);
