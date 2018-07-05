@@ -1679,7 +1679,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      */
     private void checkWarehouseStatus(PurchaseOrder purchaseOrder) {
         Example WarehouseNoticeExample = new Example(WarehouseNotice.class);
-        WarehouseNoticeExample.createCriteria().andEqualTo("purchase_order_code", purchaseOrder.getPurchaseOrderCode());
+        WarehouseNoticeExample.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
         List<WarehouseNotice> warehouseNotices = iWarehouseNoticeService.selectByExample(WarehouseNoticeExample);
         AssertUtil.notEmpty(warehouseNotices, "采购单对应入库通知单为空");
         String status = warehouseNotices.get(0).getStatus();
@@ -1691,16 +1691,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     private void updatePurchaseOrderDetailState(PurchaseOrder purchaseOrder) {
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setReceiveStatus("");
+        purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(PurchaseDetail.class);
         example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
-        List<PurchaseDetail> details = purchaseDetailService.selectByExample(example);
-        if(details != null && !details.isEmpty()){
-            details.forEach((purchaseDetail) -> {
-                purchaseDetail.setReceiveStatus("");
-                purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
-                purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
-            });
-        }
+        purchaseDetailService.updateByExampleSelective(purchaseDetail, example);
     }
 
     @Override
