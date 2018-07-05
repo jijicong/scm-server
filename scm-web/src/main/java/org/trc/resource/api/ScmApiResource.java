@@ -59,7 +59,8 @@ public class ScmApiResource {
     @Path(SupplyConstants.Api.CONFIRM_USER_CHANNEL)
     public Response confirmUser(@QueryParam("channelCode") String channelCode,@Context ContainerRequestContext requestContext, @Context HttpServletRequest request){
         request.getSession().setAttribute("channelCode", channelCode);
-        return ResultUtil.createSuccessResult("设置业务线成功!","");
+
+        return ResultUtil.createSuccessResult("设置业务线成功!",request.getSession().getId());
     }
     @GET
     @Path(SupplyConstants.Api.CLEAR_SESSION)
