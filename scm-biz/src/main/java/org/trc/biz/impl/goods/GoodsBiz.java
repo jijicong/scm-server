@@ -806,6 +806,8 @@ public class GoodsBiz implements IGoodsBiz {
     private void saveItemsNotifyToBusinessPurchase(Items items, List<Skus> skusList){
         BusiItems busiItems = new BusiItems();
         BeanUtils.copyProperties(items, busiItems, "id");
+        busiItems.setScmIsValid(items.getIsValid());
+        busiItems.setIsValid(ValidEnum.VALID.getCode());
         busiItems.setId(GuidUtil.getNextUid("ITEM-"));
         List<BusiSkus> busiSkusList = new ArrayList<>();
         for(Skus skus: skusList){
@@ -814,6 +816,8 @@ public class GoodsBiz implements IGoodsBiz {
             if(null != skus.getMarketPrice()){
                 busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
             }
+            busiSkus.setScmIsValid(skus.getIsValid());
+            busiSkus.setIsValid(ValidEnum.VALID.getCode());
             busiSkus.setId(GuidUtil.getNextUid("SKU"));
             busiSkusList.add(busiSkus);
         }
@@ -936,7 +940,10 @@ public class GoodsBiz implements IGoodsBiz {
         if(null == busiItems || CollectionUtils.isEmpty(skusList)){
             return;
         }
+        String isValid = busiItems.getIsValid();
         BeanUtils.copyProperties(items, busiItems, "id");
+        busiItems.setScmIsValid(items.getIsValid());
+        busiItems.setIsValid(isValid);
         //设置企业购商品分类
         setBusinessPurchaseItemCategory(items.getCategoryId(), busiItems);
 
@@ -951,12 +958,15 @@ public class GoodsBiz implements IGoodsBiz {
         List<BusiSkus> addBusiSkusList = new ArrayList<>();
         List<BusiSkus> updateBusiSkusList = new ArrayList<>();
         for(BusiSkus busiSkus: busiSkusList){
+            String isValid2 = busiSkus.getIsValid();
             for(Skus skus: skusList){
                 if(StringUtils.equals(busiSkus.getSkuCode(), skus.getSkuCode())){
                     BeanUtils.copyProperties(skus, busiSkus, "id", "marketPrice");
                     if(null != skus.getMarketPrice()){
                         busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
                     }
+                    busiSkus.setScmIsValid(skus.getIsValid());
+                    busiSkus.setIsValid(isValid2);
                     updateBusiSkusList.add(busiSkus);
                     break;
                 }
@@ -976,6 +986,8 @@ public class GoodsBiz implements IGoodsBiz {
                 if(null != skus.getMarketPrice()){
                     busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
                 }
+                busiSkus.setScmIsValid(skus.getIsValid());
+                busiSkus.setIsValid(ValidEnum.VALID.getCode());
                 busiSkus.setId(GuidUtil.getNextUid("SKU"));
                 addBusiSkusList.add(busiSkus);
             }
@@ -2007,6 +2019,8 @@ public class GoodsBiz implements IGoodsBiz {
         //记录操作日志
         logInfoService.recordLog(items2,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+        //更新商品同步到企业购
+        updateItemsNotifyToBusinessPurchase(items2, updateSkus);
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
     }
 
@@ -2104,6 +2118,8 @@ public class GoodsBiz implements IGoodsBiz {
         itemsUpdateNoticeWarehouseItemInfo(skus2, _isValid);
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
+        //更新商品同步到企业购
+        updateItemsNotifyToBusinessPurchase(items, updateSkus);
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);

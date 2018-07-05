@@ -3,6 +3,7 @@ package org.trc.domain.goods;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
+
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
@@ -55,6 +56,10 @@ public class BusiSkus implements Serializable {
     @FormParam("isValid")
     @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
     private String isValid; //是否有效:0-否,1-是
+
+    @FormParam("scmIsValid")
+    @Length(max = 2, message = "供应链主系统是否有效编码字母和数字不能超过2个")
+    private String scmIsValid; //供应链主系统是否有效:0-无效,1-有效
 
     public String getId() {
         return id;
@@ -168,5 +173,11 @@ public class BusiSkus implements Serializable {
         this.isValid = isValid;
     }
 
+    public String getScmIsValid() {
+        return scmIsValid;
+    }
 
+    public void setScmIsValid(String scmIsValid) {
+        this.scmIsValid = scmIsValid;
+    }
 }
