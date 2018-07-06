@@ -69,11 +69,11 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findSuppliers(@Context ContainerRequestContext requestContext)  {
+    public Response findSuppliers(@Context ContainerRequestContext requestContext, @QueryParam("supplierName") String supplierName)  {
 
         String channelCode = ((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)).getChannelCode();
 
-        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByChannelCode(channelCode));
+        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByChannelCode(channelCode, supplierName));
 
     }
 
