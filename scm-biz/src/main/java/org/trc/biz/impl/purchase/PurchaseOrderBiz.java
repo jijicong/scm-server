@@ -442,7 +442,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode, supplierName.trim());
+        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode, supplierName);
         if(supplierList==null){
             supplierList = new ArrayList<Supplier>();
         }
