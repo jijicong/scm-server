@@ -421,7 +421,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
-    public List<Supplier> findSuppliersByChannelCode(String channelCode)  {
+    public List<Supplier> findSuppliersByChannelCode(String channelCode, String supplierName)  {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode ,"获取渠道编号失败");
         if (StringUtils.isBlank(channelCode)) {
@@ -429,7 +429,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode);
+        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode, supplierName.trim());
         if(supplierList==null){
             supplierList = new ArrayList<Supplier>();
         }
