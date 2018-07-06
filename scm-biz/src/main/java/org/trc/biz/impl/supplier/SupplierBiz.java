@@ -317,24 +317,20 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<Supplier> querySuppliers(SupplierForm supplierForm) throws Exception {
-        //Supplier supplier = new Supplier();
-        //BeanUtils.copyProperties(supplierForm, supplier);
+        Supplier supplier = new Supplier();
+        BeanUtils.copyProperties(supplierForm, supplier);
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(supplierForm.getStatus())){
             if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
-                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
             }
-            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
-            if(!StringUtils.isBlank(supplierForm.getSupplierName())) {
-                criteria.andLike("supplierName", "%" + supplierForm.getSupplierName() + "%");
-            }
-            List<Supplier> supplierList =  supplierService.selectByExample(example);
+            supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            List<Supplier> supplierList =  supplierService.select(supplier);
 
             Example example2 = new Example(SupplierApply.class);
             Example.Criteria criteria2 = example2.createCriteria();
             criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
-
             List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
 
             if (!AssertUtil.collectionIsEmpty(supplierList)) {
@@ -343,7 +339,7 @@ public class SupplierBiz implements ISupplierBiz {
                     Supplier supplierResult = supplierList.get(i);
                     for (SupplierApply  supplierApply:supplierApplyList) {
                         if (StringUtils.equals(supplierResult.getSupplierCode(),supplierApply.getSupplierCode())){
-                        isAudit = true;}
+                            isAudit = true;}
                     }
                     if (isAudit==false){
                         supplierList.remove(i);

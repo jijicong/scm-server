@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public interface IPurchaseOrderService extends IBaseService<PurchaseOrder,Long>{
 
-     List<Supplier> findSuppliersByChannelCode(String channelCode);
+     List<Supplier> findSuppliersByChannelCode(String channelCode, String supplierName);
 
      List<PurchaseDetail> selectItemsBySupplierCode(Map<String, Object> map);
 
