@@ -367,7 +367,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String purchaseName = form.getPurchaseName();//采购人name 的处理逻辑同供应商
         if(!StringUtils.isBlank(purchaseName)){
             Example exp = new Example(PurchaseGroupUser.class);
-            List<PurchaseGroupUser> purchaseGroupUserList = purchaseGroupUserService.selectByExample(exp.createCriteria().andEqualTo("name", purchaseName));
+            exp.createCriteria().andEqualTo("name", purchaseName);
+            List<PurchaseGroupUser> purchaseGroupUserList = purchaseGroupUserService.selectByExample(exp);
             if (purchaseGroupUserList!=null&& purchaseGroupUserList.size()>0){
                 List<String> names = new ArrayList<>();
                 for (PurchaseGroupUser purchaseGroupUser : purchaseGroupUserList) {
