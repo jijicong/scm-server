@@ -24,7 +24,7 @@ import java.util.Date;
 public class JerseyApiAop {
 
     private Logger  log = LoggerFactory.getLogger(JerseyApiAop.class);
-    //jersey保存操作方法前缀
+    // jersey保存操作方法前缀
     public static final String SAVE_METHOD_PREFIX = "save";
 
 

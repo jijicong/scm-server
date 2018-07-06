@@ -49,6 +49,7 @@ public class WarehouseNotice implements Serializable{
 
     @Transient //采购组名称
     private String purchaseGroupName;
+
     //'归属采购组编号',
     /*@NotEmpty*/
     @FormParam("purchaseGroupCode")
@@ -63,9 +64,12 @@ public class WarehouseNotice implements Serializable{
     @NotEmpty(message ="仓库编号不能为空")
     @Length(max = 32, message = "仓库的编码字母和数字不能超过32个,汉字不能超过16个")
     private String warehouseCode;
-    //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',
+
     @Transient
     private String warehouseName;
+
+    //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',//
+    //状态：0-待通知收货，1-待仓库反馈,2-仓库接收成功,3-全部入库,4-入库异常，5-部分入库，6-作废，7-已取消
     @FormParam("status")
     @NotEmpty(message ="状态不能为空")
     @Length(max = 2, message = "状态字母和数字不能超过2个")
@@ -105,17 +109,17 @@ public class WarehouseNotice implements Serializable{
     //'提运单号',
     @FormParam("takeGoodsNo")
     private String takeGoodsNo;
+
     // '要求到货日期,格式:yyyy-mm-dd',
-
     private String requriedReceiveDate;
+
     //'截止到货日期,格式:yyyy-mm-dd',
-
     private String endReceiveDate;
+
     //'备注',
-
     private String remark;
-    //'创建人',
 
+    //'创建人',
     private String createOperator;
     //'创建时间,格式yyyy-mm-dd hh:mi:ss',
     @JsonSerialize(using = CustomDateSerializer.class)

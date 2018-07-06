@@ -12,7 +12,7 @@
         warehouse_item_info
         WHERE
         is_delete=0
-        AND warehouse_info_id = #{warehouseInfoId}
+        AND warehouse_code = #{warehouseCode}
         <if test="skuCode != null and skuCode != ''">
             AND sku_code LIKE CONCAT('%', #{skuCode}, '%')
         </if>
@@ -42,7 +42,7 @@
         warehouse_item_info w
         WHERE
         w.is_delete=0
-        AND w.warehouse_info_id = #{warehouseInfoId}
+        AND w.warehouse_code = #{warehouseCode}
         <if test="skuCode != null and skuCode != ''">
             AND w.sku_code LIKE CONCAT('%', #{skuCode}, '%')
         </if>

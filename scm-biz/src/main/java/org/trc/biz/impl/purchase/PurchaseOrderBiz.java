@@ -749,7 +749,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
 
-            if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) > 0){
+            if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) >= 0){
                 totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
                 BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
                 //设置采购价格*100
@@ -1485,6 +1485,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setCategoryId(purchaseDetail.getCategoryId());
             details.setSkuCode(purchaseDetail.getSkuCode());
             details.setSkuName(purchaseDetail.getSkuName());
+            //采购商品税率
+            details.setTaxRate(purchaseDetail.getTaxRate());
             //details.setActualStorageQuantity(0L);//初始化0
             details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
             //details.setCreateTime(Calendar.getInstance().getTime());
@@ -1599,6 +1601,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public void cancelWarahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
+        /**
+         * v2.5
+         * 校验入库单状态，是否可以作废采购单
+         * 当入库通知单状态为[0-待通知收货,1-仓库接收失败,7-已取消]，才允许作废已执行入库通知的采购单
+         */
+        checkWarehouseStatus(purchaseOrder);
+
         //更改采购单的状态
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
@@ -1655,7 +1664,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.DROPPED.getCode()));
         Example example1 = new Example(WarehouseNoticeDetails.class);
         Example.Criteria criteria1 = example1.createCriteria();
-        criteria1.andEqualTo("warehouseNoticeCode", notice.getWarehouseNoticeCode());
+        criteria1.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
         int num2 =warehouseNoticeDetailsService.updateByExampleSelective(warehouseNoticeDetails, example1);
         if (num2 == 0) {
             String msg = String.format("作废%s采购单操作失败,入库通知单详情已经被执行操作", JSON.toJSONString(warehouseNotice));
@@ -1664,17 +1673,32 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
     }
 
+    /**
+     * v2.5
+     * 校验入库单状态，是否可以作废
+     * 当入库通知单状态为[0-待通知收货,1-仓库接收失败,7-已取消]，才允许作废已执行入库通知的采购单
+     * @param purchaseOrder
+     */
+    private void checkWarehouseStatus(PurchaseOrder purchaseOrder) {
+        Example WarehouseNoticeExample = new Example(WarehouseNotice.class);
+        WarehouseNoticeExample.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+        List<WarehouseNotice> warehouseNotices = iWarehouseNoticeService.selectByExample(WarehouseNoticeExample);
+        AssertUtil.notEmpty(warehouseNotices, "采购单对应入库通知单为空");
+        String status = warehouseNotices.get(0).getStatus();
+        if(!StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(), status)
+                || !StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), status)
+                || !StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(), status)){
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, "作废采购单失败，与入库通知单状态不符");
+        }
+    }
+
     private void updatePurchaseOrderDetailState(PurchaseOrder purchaseOrder) {
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setReceiveStatus("");
+        purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(PurchaseDetail.class);
         example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
-        List<PurchaseDetail> details = purchaseDetailService.selectByExample(example);
-        if(details != null && !details.isEmpty()){
-            details.forEach((purchaseDetail) -> {
-                purchaseDetail.setReceiveStatus("");
-                purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
-                purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
-            });
-        }
+        purchaseDetailService.updateByExampleSelective(purchaseDetail, example);
     }
 
     @Override

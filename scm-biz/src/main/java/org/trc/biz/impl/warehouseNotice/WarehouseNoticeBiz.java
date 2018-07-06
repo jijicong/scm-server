@@ -699,7 +699,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                       AppResult<String> result, boolean isSuccess) {
         String status = "";
         WarehouseNotice updateNotice = new WarehouseNotice();
-        PurchaseOrder purchaseOrder = new PurchaseOrder();
         if (isSuccess) {
             updateNotice.setEntryOrderId(result.getResult().toString()); // 成功时接收仓储系统入库单编码
             status = WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode();
@@ -890,6 +889,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (!iRealIpService.isRealTimerService()){
             return;
         }
+
+        WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+        warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
+        List<WarehouseInfo> warehouseInfoTempList = warehouseInfoService.select(warehouseInfoTemp);
+        List<String> warehouseCodeList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoTempList){
+            warehouseCodeList.add(info.getCode());
+        }
+
         //1. 查询入库通知单，状态为待仓库反馈，部分收货的入库单,完成状态为未完成的
         // 更新入库单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
@@ -900,6 +908,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 //        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
 //        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         warehouseNoticeCriteria.andIn("status",stateArray);
+        warehouseNoticeCriteria.andNotIn("warehouseCode", warehouseCodeList);
         //数据中未完成的入库通知单
         warehouseNoticeCriteria.andEqualTo("finishStatus",WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
 //        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047973168");
@@ -1033,13 +1042,14 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     private void updatePurchaseDetailReceiveStatus(WarehouseNotice warehouseNotice, List<WarehouseNoticeDetails> details) {
         for (WarehouseNoticeDetails detail : details){
-            PurchaseDetail purchaseDetail = new PurchaseDetail();
+
             Example purchaseDetailExample = new Example(PurchaseDetail.class);
             purchaseDetailExample.createCriteria().andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
             List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(purchaseDetailExample);
 
             for (PurchaseDetail pd : purchaseDetails){
-                if(detail.getSkuCode() == pd.getSkuCode()){
+                if(StringUtils.equals(detail.getSkuCode(), pd.getSkuCode())){
+                    PurchaseDetail purchaseDetail = new PurchaseDetail();
                     if(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode().equals(detail.getStatus().toString())){
                         purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                     }else if(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode().equals(detail.getStatus().toString())){
@@ -1047,10 +1057,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     }else if(WarehouseNoticeStatusEnum.ALL_GOODS.getCode().equals(detail.getStatus().toString())){
                         purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
                     }
+                    purchaseDetail.setId(pd.getId());
+                    purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+                    purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
+                    break;
                 }
-                purchaseDetail.setId(pd.getId());
-                purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
-                purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
             }
         }
     }
@@ -1058,7 +1069,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     //取消收货接口调用业务
     @Override
     @Transactional(rollbackFor =Exception.class)
-    public void cancel(String warehouseNoticeCode, String cancelReason) {
+    public void cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(cancelReason,"取消原因不能为空");
         WarehouseNotice temp = new WarehouseNotice();
         temp.setWarehouseNoticeCode(warehouseNoticeCode);
@@ -1068,6 +1079,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notNull(warehouseNotice,String.format("根据入库通知单号%s查询入库通知单信息为空",warehouseNoticeCode));
 
         //入库通知详情
+        LogOperationEnum logOperationEnum = null;
+        if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"当前入库通知单已经是取消状态!");
+        }
         WarehouseNoticeDetails noticeDetails = new WarehouseNoticeDetails();
         noticeDetails.setWarehouseNoticeCode(warehouseNoticeCode);
         List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(noticeDetails);
@@ -1075,35 +1090,46 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
         //取消结果
         String cancelResult="";
-        LogOperationEnum logOperationEnum = null;
-        if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"当前入库通知单已经是取消状态!");
-        }
-        logOperationEnum= LogOperationEnum.CANCEL_RECIVE_GOODS;
-        Map<String, String> map = new HashMap<>();
-        //调用入库通知取消操作
-        OrderCancelResultEnum resultEnum=cancelNotice(warehouseNotice,map);
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(),flag)){//取消收货
+            logOperationEnum= LogOperationEnum.CANCEL_RECIVE_GOODS;
+            Map<String, String> map = new HashMap<>();
+            //调用入库通知取消操作
+            OrderCancelResultEnum resultEnum=cancelNotice(warehouseNotice,map);
 
-        if(OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)){
-            throw new RuntimeException("入库通知单取消失败："+map.get("msg"));
-        }else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)){
-            cancelResult= WarehouseNoticeStatusEnum.CANCELLING.getCode();
-        }else {
-            cancelResult=WarehouseNoticeStatusEnum.CANCELLATION.getCode();
-        }
+            if(OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)){
+                throw new RuntimeException("入库通知单取消失败："+map.get("msg"));
+            }else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)){
+                cancelResult= WarehouseNoticeStatusEnum.CANCELLING.getCode();
+            }else {
+                cancelResult=WarehouseNoticeStatusEnum.CANCELLATION.getCode();
+            }
 
-        //入库单状态
-        warehouseNotice.setStatus(cancelResult);
-        //入库单详情状态
-        for (WarehouseNoticeDetails detail : list) {
-            detail.setStatus(Integer.parseInt(cancelResult));
+            //入库单状态
+            warehouseNotice.setStatus(cancelResult);
+            //入库单详情状态
+            for (WarehouseNoticeDetails detail : list) {
+                detail.setStatus(Integer.parseInt(cancelResult));
+            }
+            warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+            warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+        }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
+            if(!StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"入库通知单当前状态不能进行重新发货");
+            }
+            if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLING.getCode(),warehouseNotice.getStatus()) &&
+                    DateCheckUtil.checkDate(warehouseNotice.getUpdateTime())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前入库通知单取消时间过长，不能重新收货");
+            }
+            logOperationEnum= LogOperationEnum.RE_RECIVE_GOODS;
+
+            //执行重新收货
+            receiptAdviceInfo(warehouseNotice, aclUserAccreditInfo);
+
         }
-        warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
-        warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
 
         //记录操作日志
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                "admin",logOperationEnum.getMessage(),cancelReason,null);
+                aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason,null);
 
     }
 
@@ -1406,20 +1432,25 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param noticeOrder
      */
     private void updatePurchaseDetailStatus(WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder) {
-        PurchaseDetail purchaseDetail = new PurchaseDetail();
-        purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
-
-        if(StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), String.valueOf(warehouseDetail.getStatus()))){
-            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        } else if (StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(), String.valueOf(warehouseDetail.getStatus()))){
-            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
-        } else {
-            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+        Example example1 = new Example(PurchaseDetail.class);
+        example1.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(example1);
+        for (PurchaseDetail p : purchaseDetails) {
+            if(StringUtils.equals(p.getSkuCode(), warehouseDetail.getSkuCode())){
+                PurchaseDetail purchaseDetail = new PurchaseDetail();
+                purchaseDetail.setId(p.getId());
+                purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+                if(StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), String.valueOf(warehouseDetail.getStatus()))){
+                    purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+                } else if (StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(), String.valueOf(warehouseDetail.getStatus()))){
+                    purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+                } else {
+                    purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+                }
+                purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
+                break;
+            }
         }
-
-        Example example = new Example(PurchaseDetail.class);
-        example.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
-        purchaseDetailService.updateByExampleSelective(purchaseDetail, example);
     }
 
     private String getExceptionLog(WarehouseNotice warehouseNotice, List<WarehouseNoticeDetails> warehouseNoticeDetailsList) {

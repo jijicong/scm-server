@@ -99,7 +99,7 @@ public class OutboundOrder extends OrderBase {
 
     private String message;
 
-    private int newCode;
+    private Integer newCode;
 
     @Transient
     private String isTimeOut;

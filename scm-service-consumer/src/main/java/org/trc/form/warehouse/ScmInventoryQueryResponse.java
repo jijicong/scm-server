@@ -11,6 +11,11 @@ public class ScmInventoryQueryResponse{
     private String warehouseCode;
 
     /**
+     * 本地仓库编码
+     */
+    private String localWarehouseCode;
+
+    /**
      * 货主编码
      */
     private String ownerCode;
@@ -49,6 +54,14 @@ public class ScmInventoryQueryResponse{
      * 冻结库存
      */
     private Long lockQuantity;
+
+    public String getLocalWarehouseCode() {
+        return localWarehouseCode;
+    }
+
+    public void setLocalWarehouseCode(String localWarehouseCode) {
+        this.localWarehouseCode = localWarehouseCode;
+    }
 
     public String getWarehouseCode() {
         return warehouseCode;

@@ -296,10 +296,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_ITEM)
-    public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page) {
+    //@Cacheable(value = SupplyConstants.Cache.WAREHOUSE_ITEM)
+    public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, String warehouseCode, Pagenation<WarehouseItemInfo> page) {
         AssertUtil.notNull(form, "查询仓库商品信息分页参数form不能为空");
-        AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
+        AssertUtil.notBlank(warehouseCode, "查询仓库商品信息分页参数warehouseCode不能为空");
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
@@ -310,7 +310,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         map.put("itemName", form.getItemName());
         map.put("noticeStatus", form.getNoticeStatus());
         map.put("barCode", form.getBarCode());
-        map.put("warehouseInfoId", warehouseInfoId);
+        map.put("warehouseCode", warehouseCode);
         map.put("start", page.getStart());
         map.put("pageSize", page.getPageSize());
         int count = warehouseItemInfoService.selectWarehouseItemInfoCount(map);
@@ -419,13 +419,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             List<WarehouseItemsResult> results = converItemsResult(list);
             //开始导出商品信息
             log.info("开始导出商品信息=========》");
-            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 4000);
-            CellDefinition itemName = new CellDefinition("itemName", "商品SKU名称", CellDefinition.TEXT, 4000);
-            CellDefinition specNatureInfo = new CellDefinition("specNatureInfo", "规格", CellDefinition.TEXT, 4000);
-            CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, 4000);
-            CellDefinition warehouseItemId = new CellDefinition("warehouseItemId", "仓库商品ID", CellDefinition.TEXT, 4000);
-            CellDefinition noticeStatus = new CellDefinition("noticeStatus", "通知仓库状态", CellDefinition.TEXT, 4000);
-            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.TEXT, 4000);
+            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, null, 4000);
+            CellDefinition itemName = new CellDefinition("itemName", "商品SKU名称", CellDefinition.TEXT, null, 4000);
+            CellDefinition specNatureInfo = new CellDefinition("specNatureInfo", "规格", CellDefinition.TEXT, null, 4000);
+            CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, null, 4000);
+            CellDefinition warehouseItemId = new CellDefinition("warehouseItemId", "仓库商品ID", CellDefinition.TEXT, null, 4000);
+            CellDefinition noticeStatus = new CellDefinition("noticeStatus", "通知仓库状态", CellDefinition.TEXT, null, 4000);
+            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.TEXT, null, 4000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             cellDefinitionList.add(skuCode);
@@ -1294,15 +1294,15 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             List<ExcelException> list = excelExceptionService.select(e);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             if(StringUtils.isEquals(list.get(0).getType(), ZeroToNineEnum.ONE.getCode())){
-                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
-                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
+                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, null, 8000);
+                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, null, 8000);
 
                 cellDefinitionList.add(skuCode);
                 cellDefinitionList.add(exception);
             }else{
-                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
-                CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, 8000);
-                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
+                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, null, 8000);
+                CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, null, 8000);
+                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, null, 8000);
 
                 cellDefinitionList.add(skuCode);
                 cellDefinitionList.add(itemId);

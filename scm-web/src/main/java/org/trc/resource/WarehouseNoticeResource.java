@@ -160,18 +160,37 @@ public class WarehouseNoticeResource {
     }
 
     /**
-	 * 入库通知单：取消收货
+	 * 入库通知单：取消收货flag=0 ;重新收货flag=1
 	 */
-	@POST
-	@Path(SupplyConstants.WarehouseNotice.CANCEL)
+	@PUT
+	@Path(SupplyConstants.WarehouseNotice.CANCEL+"/{warehouseNoticeCode}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response cancel(@PathParam("warehouseNoticeCode")String warehouseNoticeCode,@FormParam("cancelReason") String cancelReason){
-		try {
-			warehouseNoticeBiz.cancel(warehouseNoticeCode,cancelReason);
-		}catch (RuntimeException e){
-			throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,"取消失败");
+	public Response cancel(@PathParam("warehouseNoticeCode")String warehouseNoticeCode,@FormParam("flag") String flag,@FormParam("cancelReason") String cancelReason,@Context ContainerRequestContext requestContext){
+		String identifier = "";
+		AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+		identifier=redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode()+"cancel"+
+		warehouseNoticeCode,0,10000);
+		if (StringUtils.isBlank(identifier)){
+			throw new RuntimeException("重复操作！");
 		}
-		return ResultUtil.createSuccessResult("取消成功","");
+		try {
+			warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
+		}
+		finally {
+			try {
+				if(redisLock.releaseLock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode()+"cancel"+
+						warehouseNoticeCode,identifier)){
+					logger.info("warehouseNoticeCode:{}入库通知，解锁成功，identifier:{}",warehouseNoticeCode,identifier);
+				}else {
+					logger.error("warehouseNoticeCode:{}入库通知，解锁失败，identifier:{}",warehouseNoticeCode,identifier);
+				}
+			}catch (Exception e){
+				logger.error("warehouseNoticeCode:{}入库通知，解锁失败，identifier:{},err:{}",warehouseNoticeCode,identifier,e.getMessage());
+				e.printStackTrace();
+			}
+		}
+
+		return ResultUtil.createSuccessResult("操作成功","");
 	}
 
 }
