@@ -366,8 +366,21 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         String purchaseName = form.getPurchaseName();//采购人name 的处理逻辑同供应商
         if(!StringUtils.isBlank(purchaseName)){
+            Example exp = new Example(PurchaseGroupUser.class);
+            exp.createCriteria().andLike("name", "%"+purchaseName+"%");
+            List<PurchaseGroupUser> purchaseGroupUserList = purchaseGroupUserService.selectByExample(exp);
+            if (purchaseGroupUserList!=null&& purchaseGroupUserList.size()>0){
+                List<String> userIds = new ArrayList<>();
+                for (PurchaseGroupUser purchaseGroupUser : purchaseGroupUserList) {
+                    userIds.add(purchaseGroupUser.getId().toString());
+                }
+                criteria.andIn("purchasePersonId",userIds);
+            }else {
+                return null;
+            }
 
-            List<AclUserAccreditInfo> aclUserAccreditInfos = userAccreditInfoService.selectUserByName(purchaseName);
+
+           /* List<AclUserAccreditInfo> aclUserAccreditInfos = userAccreditInfoService.selectUserByName(purchaseName);
             if(aclUserAccreditInfos!=null && aclUserAccreditInfos.size() >0){
                 List<String> userIds = new ArrayList<>();
                 for(AclUserAccreditInfo aclUserAccreditInfo:aclUserAccreditInfos){
@@ -376,7 +389,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 criteria.andIn("purchasePersonId",userIds);
             }else { //说明没有查到对应的采购人
                 return null;
-            }
+            }*/
 
         }
 

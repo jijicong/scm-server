@@ -11,6 +11,7 @@ public enum DistributeLockEnum {
     PURCHASE_ORDER("purchaseOrder", "采购单"),
     WAREHOUSE_NOTICE_CREATE("warehouseNoticeCreate_","入库通知"),
     ALLOCATE_OUT_ORDER("allocateOutOrder", "调拨出库"),
+    ALLOCATE_ORDER_AUDIT("allocateOrderAudit", "调拨单审核"),
     ALLOCATE_IN_ORDER("allocateInOrder", "调拨入库");
 
     private String code;
