@@ -35,18 +35,18 @@ public class SupplierAfterSaleInfo extends ScmDO{
     @FormParam("goodsReturnStrategy")
     @Length(max = 3072, message = "退货策略长度不能超过3072个")
     private String goodsReturnStrategy;
-    @FormParam("province")
+    @FormParam("saleProvince")
     @NotEmpty
     @Length(max = 32, message = "省编码长度不能超过32个")
-    private String province;
-    @FormParam("city")
+    private String saleProvince;
+    @FormParam("saleCity")
     @NotEmpty
     @Length(max = 32, message = "城市市编码长度不能超过32个")
-    private String city;
-    @FormParam("area")
+    private String saleCity;
+    @FormParam("saleArea")
     @NotEmpty
     @Length(max = 32, message = "区编码长度不能超过32个")
-    private String area;
+    private String saleArea;
 
     public Long getId() {
         return id;
@@ -104,27 +104,27 @@ public class SupplierAfterSaleInfo extends ScmDO{
         this.goodsReturnStrategy = goodsReturnStrategy == null ? null : goodsReturnStrategy.trim();
     }
 
-    public String getProvince() {
-        return province;
+    public String getSaleProvince() {
+        return saleProvince;
     }
 
-    public void setProvince(String province) {
-        this.province = province;
+    public void setSaleProvince(String saleProvince) {
+        this.saleProvince = saleProvince;
     }
 
-    public String getCity() {
-        return city;
+    public String getSaleCity() {
+        return saleCity;
     }
 
-    public void setCity(String city) {
-        this.city = city;
+    public void setSaleCity(String saleCity) {
+        this.saleCity = saleCity;
     }
 
-    public String getArea() {
-        return area;
+    public String getSaleArea() {
+        return saleArea;
     }
 
-    public void setArea(String area) {
-        this.area = area;
+    public void setSaleArea(String saleArea) {
+        this.saleArea = saleArea;
     }
 }
