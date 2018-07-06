@@ -163,7 +163,7 @@ public class WarehouseNoticeResource {
 	 * 入库通知单：取消收货flag=0 ;重新收货flag=1
 	 */
 	@PUT
-	@Path(SupplyConstants.WarehouseNotice.CANCEL)
+	@Path(SupplyConstants.WarehouseNotice.CANCEL+"/{warehouseNoticeCode}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response cancel(@PathParam("warehouseNoticeCode")String warehouseNoticeCode,@FormParam("flag") String flag,@FormParam("cancelReason") String cancelReason,@Context ContainerRequestContext requestContext){
 		String identifier = "";
