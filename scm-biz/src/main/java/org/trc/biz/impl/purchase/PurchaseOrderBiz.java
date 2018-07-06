@@ -370,11 +370,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             exp.createCriteria().andEqualTo("name", purchaseName);
             List<PurchaseGroupUser> purchaseGroupUserList = purchaseGroupUserService.selectByExample(exp);
             if (purchaseGroupUserList!=null&& purchaseGroupUserList.size()>0){
-                List<String> names = new ArrayList<>();
+                List<String> userIds = new ArrayList<>();
                 for (PurchaseGroupUser purchaseGroupUser : purchaseGroupUserList) {
-                    names.add(purchaseGroupUser.getName());
+                    userIds.add(purchaseGroupUser.getId().toString());
                 }
-                criteria.andIn("purchasePersonId",names);
+                criteria.andIn("purchasePersonId",userIds);
             }else {
                 return null;
             }
