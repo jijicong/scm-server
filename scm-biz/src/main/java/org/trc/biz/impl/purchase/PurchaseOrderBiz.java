@@ -1499,7 +1499,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setSkuCode(purchaseDetail.getSkuCode());
             details.setSkuName(purchaseDetail.getSkuName());
             //采购商品税率
-            details.setTaxRate(purchaseDetail.getTaxRate());
+            //details.setTaxRate(purchaseDetail.getTaxRate());
             //details.setActualStorageQuantity(0L);//初始化0
             details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
             //details.setCreateTime(Calendar.getInstance().getTime());

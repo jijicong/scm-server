@@ -1070,9 +1070,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     @Override
     @Transactional(rollbackFor =Exception.class)
     public void cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notBlank(cancelReason,"取消原因不能为空");
+        if(flag.equals(ZeroToNineEnum.ZERO.getCode())){//重新发货不需要取消原因
+            AssertUtil.notBlank(cancelReason,"取消原因不能为空");
+
+        }
         WarehouseNotice temp = new WarehouseNotice();
         temp.setWarehouseNoticeCode(warehouseNoticeCode);
+
 
         //入库通知单
         WarehouseNotice warehouseNotice = warehouseNoticeService.selectOne(temp);
@@ -1112,6 +1116,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
             warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
             warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+
+            //记录操作日志
+            logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason,null);
         }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
             if(!StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"入库通知单当前状态不能进行重新发货");
@@ -1125,11 +1133,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //执行重新收货
             receiptAdviceInfo(warehouseNotice, aclUserAccreditInfo);
 
+            //记录操作日志(重新发货不需要取消原因)
+            logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),null,null);
+
         }
 
-        //记录操作日志
-        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason,null);
+
 
     }
 

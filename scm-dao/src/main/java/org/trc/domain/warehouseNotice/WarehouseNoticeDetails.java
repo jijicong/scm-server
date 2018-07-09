@@ -112,7 +112,7 @@ public class WarehouseNoticeDetails implements Serializable{
     private Long skuStockId;
 
     //采购商品税率
-    @Column(name = "tax_rate")
+    /*@Column(name = "tax_rate")
     private BigDecimal taxRate;
 
     public BigDecimal getTaxRate() {
@@ -121,7 +121,7 @@ public class WarehouseNoticeDetails implements Serializable{
 
     public void setTaxRate(BigDecimal taxRate) {
         this.taxRate = taxRate;
-    }
+    }*/
 
     public Date getActualInstockTime() {
 		return actualInstockTime;
