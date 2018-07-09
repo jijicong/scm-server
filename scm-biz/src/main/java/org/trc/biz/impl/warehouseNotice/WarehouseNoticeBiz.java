@@ -1130,7 +1130,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
             logOperationEnum= LogOperationEnum.RE_RECIVE_GOODS;
 
-            //执行重新收货
+            //执行重新收货(需要重新生成入库单号，"_"区分)
             receiptAdviceInfo(warehouseNotice, aclUserAccreditInfo);
 
             //记录操作日志(重新发货不需要取消原因)
@@ -1248,7 +1248,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         ScmOrderCancelRequest request = new ScmOrderCancelRequest();
         request.setOrderType(CancelOrderType.PURCHASE.getCode());
         // 自营仓 和 三方仓库 统一取warehouseNoticeCode
-        request.setOrderCode(warehouseNotice.getWarehouseCode());
+        request.setOrderCode(warehouseNotice.getEntryOrderId());
         commonService.getWarehoueType(warehouseNotice.getWarehouseCode(),request);
 
         AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
