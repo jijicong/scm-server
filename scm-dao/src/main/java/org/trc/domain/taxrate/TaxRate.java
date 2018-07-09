@@ -7,7 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
 
 /**
