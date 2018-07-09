@@ -21,7 +21,6 @@ public class TaxRate extends CommonDO {
 
     //主键
     @Id
-    @PathParam("id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -34,6 +33,6 @@ public class TaxRate extends CommonDO {
     private BigDecimal taxRate;
 
     //描述
-    @FormParam("desc")
-    private String desc;
+    @FormParam("remark")
+    private String remark;
 }
