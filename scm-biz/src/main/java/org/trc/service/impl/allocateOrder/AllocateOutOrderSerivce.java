@@ -3,6 +3,7 @@ package org.trc.service.impl.allocateOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.mapper.allocateOrder.AllocateOutOrderMapper;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.impl.BaseService;
@@ -21,6 +22,7 @@ public class AllocateOutOrderSerivce extends BaseService<AllocateOutOrder, Long>
 		record.setFailedCause(errMsg);
 		record.setOutOrderSeq(orderSeq);
 		record.setWmsAllocateOutOrderCode(wmsAllocatOutCode);
+		record.setIsCancel(ZeroToNineEnum.ZERO.getCode());// 出库通知成功和失败，取消状态都设置成0
 		mapper.updateByPrimaryKeySelective(record);
 	}
 
