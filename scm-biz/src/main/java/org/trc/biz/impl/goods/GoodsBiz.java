@@ -807,7 +807,7 @@ public class GoodsBiz implements IGoodsBiz {
         BusiItems busiItems = new BusiItems();
         BeanUtils.copyProperties(items, busiItems, "id");
         busiItems.setScmIsValid(items.getIsValid());
-        busiItems.setIsValid(ValidEnum.VALID.getCode());
+        busiItems.setIsValid(ValidEnum.NOVALID.getCode());
         busiItems.setId(GuidUtil.getNextUid("ITEM-"));
         List<BusiSkus> busiSkusList = new ArrayList<>();
         for(Skus skus: skusList){
@@ -817,7 +817,7 @@ public class GoodsBiz implements IGoodsBiz {
                 busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
             }
             busiSkus.setScmIsValid(skus.getIsValid());
-            busiSkus.setIsValid(ValidEnum.VALID.getCode());
+            busiSkus.setIsValid(ValidEnum.NOVALID.getCode());
             busiSkus.setId(GuidUtil.getNextUid("SKU"));
             busiSkusList.add(busiSkus);
         }
@@ -937,7 +937,7 @@ public class GoodsBiz implements IGoodsBiz {
         BusiItems busiItems = new BusiItems();
         busiItems.setSpuCode(items.getSpuCode());
         busiItems = busiItemsService.selectOne(busiItems);
-        if(null == busiItems || CollectionUtils.isEmpty(skusList)){
+        if(null == busiItems){
             return;
         }
         String isValid = busiItems.getIsValid();
@@ -946,7 +946,10 @@ public class GoodsBiz implements IGoodsBiz {
         busiItems.setIsValid(isValid);
         //设置企业购商品分类
         setBusinessPurchaseItemCategory(items.getCategoryId(), busiItems);
-
+        busiItemsService.updateByPrimaryKeySelective(busiItems);
+        if(CollectionUtils.isEmpty(skusList)){
+            return;
+        }
         List<String> skuCodes = new ArrayList<>();
         for(Skus skus: skusList){
             skuCodes.add(skus.getSkuCode());
@@ -992,7 +995,6 @@ public class GoodsBiz implements IGoodsBiz {
                 addBusiSkusList.add(busiSkus);
             }
         }
-        busiItemsService.updateByPrimaryKeySelective(busiItems);
         if(addBusiSkusList.size() > 0){
             for(BusiSkus skus: addBusiSkusList){
                 busiSkusService.insert(skus);
