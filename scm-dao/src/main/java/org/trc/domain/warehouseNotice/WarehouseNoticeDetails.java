@@ -2,7 +2,6 @@ package org.trc.domain.warehouseNotice;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
-import org.trc.custom.MoneySerializer;
 import org.trc.custom.SimpleDateSerializer;
 
 import javax.persistence.*;
@@ -41,7 +40,7 @@ public class WarehouseNoticeDetails implements Serializable{
     private String allCategoryName;
     //'采购价,单位/分',
     @Column(name = "purchase_price")
-    private Long purchasePrice;
+    private BigDecimal purchasePrice;
     //采购价格转化成元
     @Transient
     private BigDecimal purchasePriceT;
@@ -83,8 +82,8 @@ public class WarehouseNoticeDetails implements Serializable{
     @Column(name = "expired_day")
     private Integer expiredDay;
     //采购总金额, 单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long purchaseAmount;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal purchaseAmount;
     //收货状态
     @Column(name = "status")
     private Integer status;
@@ -211,11 +210,11 @@ public class WarehouseNoticeDetails implements Serializable{
 		this.expiredDay = expiredDay;
 	}
 
-	public Long getPurchaseAmount() {
+	public BigDecimal getPurchaseAmount() {
 		return purchaseAmount;
 	}
 
-	public void setPurchaseAmount(Long purchaseAmount) {
+	public void setPurchaseAmount(BigDecimal purchaseAmount) {
 		this.purchaseAmount = purchaseAmount;
 	}
 
@@ -315,11 +314,11 @@ public class WarehouseNoticeDetails implements Serializable{
         this.categoryId = categoryId;
     }
 
-    public Long getPurchasePrice() {
+    public BigDecimal getPurchasePrice() {
         return purchasePrice;
     }
 
-    public void setPurchasePrice(Long purchasePrice) {
+    public void setPurchasePrice(BigDecimal purchasePrice) {
         this.purchasePrice = purchasePrice;
     }
 

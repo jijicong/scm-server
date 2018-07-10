@@ -97,8 +97,8 @@ public class PurchaseOrder extends BaseDO{
      @Transient
      private BigDecimal totalFeeD;//'采购总金额,单位/分',
      @FormParam("totalFee")
-     @JsonSerialize(using = MoneySerializer.class)
-     private Long totalFee;//'采购总金额,单位/分',
+     //@JsonSerialize(using = MoneySerializer.class)
+     private BigDecimal totalFee;//'采购总金额,单位/分',
      @FormParam("abnormalRemark")
      @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
      private String abnormalRemark;//入库异常说明*/
@@ -319,11 +319,11 @@ public class PurchaseOrder extends BaseDO{
         this.remark = remark;
     }
 
-    public Long getTotalFee() {
+    public BigDecimal getTotalFee() {
         return totalFee;
     }
 
-    public void setTotalFee(Long totalFee) {
+    public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
 

@@ -58,15 +58,15 @@ public class PurchaseDetail extends BaseDO{
     @Length(max = 64, message = "商品的所有分类字母和数字不能超过64个,汉字不能超过32个")
     private String allCategory;//所有分类
     @FormParam("purchasePrice")
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long purchasePrice;//采购单价
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal purchasePrice;//采购单价
     @Transient
     private BigDecimal purchasePriceD;
     @FormParam("purchasingQuantity")
     private Long purchasingQuantity;//采购总数量
     @FormParam("totalPurchaseAmount")
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long totalPurchaseAmount;//采购总金额
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal totalPurchaseAmount;//采购总金额
     @FormParam("barCode")
     private String barCode;//条形码
     @FormParam("itemNo")
@@ -287,11 +287,11 @@ public class PurchaseDetail extends BaseDO{
         this.allCategory = allCategory;
     }
 
-    public Long getPurchasePrice() {
+    public BigDecimal getPurchasePrice() {
         return purchasePrice;
     }
 
-    public void setPurchasePrice(Long purchasePrice) {
+    public void setPurchasePrice(BigDecimal purchasePrice) {
         this.purchasePrice = purchasePrice;
     }
 
@@ -303,11 +303,11 @@ public class PurchaseDetail extends BaseDO{
         this.purchasingQuantity = purchasingQuantity;
     }
 
-    public Long getTotalPurchaseAmount() {
+    public BigDecimal getTotalPurchaseAmount() {
         return totalPurchaseAmount;
     }
 
-    public void setTotalPurchaseAmount(Long totalPurchaseAmount) {
+    public void setTotalPurchaseAmount(BigDecimal totalPurchaseAmount) {
 
         this.totalPurchaseAmount = totalPurchaseAmount;
 

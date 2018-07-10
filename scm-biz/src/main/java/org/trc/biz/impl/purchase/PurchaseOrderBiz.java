@@ -587,7 +587,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 //        assertArgs(purchaseOrder);
         if(purchaseOrder.getTotalFeeD() != null){
-            purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
+            purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3));//设置总价格*100
         }
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
@@ -766,17 +766,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
 
             if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) >= 0){
-                totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
-                BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
-                //设置采购价格*100
-                purchaseDetail.setPurchasePrice(bd.longValue());
+                totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD().setScale(3));
+                //设置采购价格
+                purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().setScale(3));
             }else {
-                //设置采购价格*100
+                //设置采购价格
                 purchaseDetail.setPurchasePrice(null);
             }
             if(purchaseDetail.getTotalPurchaseAmountD()!=null){
-                //设置单品的总采购价*100
-                purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().multiply(new BigDecimal(100)).longValue());
+                //设置单品的总采购价
+                purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().setScale(3));
             } else{
                 //设置单品的总采购价*100
                 purchaseDetail.setTotalPurchaseAmount(null);
@@ -1216,8 +1215,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //校验仓库是否停用
         this.checkWarehouse(purchaseOrder.getWarehouseId());
-        //设置总价格*100
-        purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());
+        //设置总价格
+        purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3));
         purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
@@ -1463,7 +1462,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         /**
          * v2.5 初始商品 入库状态
          */
-        initPurchaseDetailReceiveStatus(purchaseDetails);
+        initPurchaseDetailReceiveStatus(warehouseNotice.getPurchaseOrderCode());
 
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode(), warehouseInfo.getChannelCode(),
                 warehouseInfo.getId(), warehouseInfo.getWarehouseOwnerId());
@@ -1479,15 +1478,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     /**
      * v2.5 初始商品 入库状态
-     * @param purchaseDetails
+     * @param purchaseOrderCode
      */
-    private void initPurchaseDetailReceiveStatus(List<PurchaseDetail> purchaseDetails) {
-        purchaseDetails.forEach((purchaseDetail) ->{
-            purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.WAIT_RECEIVE.getCode());
-            purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
-            purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
-        });
-
+    private void initPurchaseDetailReceiveStatus(String purchaseOrderCode) {
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.WAIT_RECEIVE.getCode());
+        purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+        Example example = new Example(PurchaseDetail.class);
+        example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrderCode);
+        purchaseDetailService.updateByExampleSelective(purchaseDetail, example);
     }
 
     private void insertWarehouseNoticeDetail(List<PurchaseDetail> purchaseDetailList , String warehouseNoticeCode,
@@ -1535,7 +1534,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
             }
             details.setSkuStockId(skuStock.getId());
-            details.setPurchaseAmount(purchaseDetail.getPurchasingQuantity() * purchaseDetail.getPurchasePrice());
+            details.setPurchaseAmount(purchaseDetail.getPurchasePrice().multiply(new BigDecimal(purchaseDetail.getPurchasingQuantity())));
             details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode()));
             details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
