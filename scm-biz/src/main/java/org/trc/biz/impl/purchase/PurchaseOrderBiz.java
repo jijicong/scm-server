@@ -1887,9 +1887,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }else {
                 warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
             }
-            if(warehouseItemInfoList.isEmpty() || warehouseItemInfoList == null){
-                return null;
-            }
         }
         if(CollectionUtils.isEmpty(warehouseItemInfoList)){
             if(!flag){
