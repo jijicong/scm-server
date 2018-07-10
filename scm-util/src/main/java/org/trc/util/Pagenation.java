@@ -1,6 +1,5 @@
 package org.trc.util;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.QueryParam;
 import java.io.Serializable;
@@ -14,7 +13,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 每页最大记录条数
      */
-    public static final int MAX_PAGE_SIZE = 300;
+    public static final int MAX_PAGE_SIZE = 2000;
 
     // -- 分页参数 --//
     /*
