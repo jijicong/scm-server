@@ -4900,7 +4900,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
         AssertUtil.isTrue(platformOrder.getItemNum() > 0, "买家购买的商品总数不能为空");
         //AssertUtil.isTrue(platformOrder.getTotalFee().compareTo(new BigDecimal(0))==0 || platformOrder.getTotalFee().compareTo(new BigDecimal(0))==1, "平台订单总金额应大于等于0");
-        AssertUtil.isTrue(platformOrder.getPayment().compareTo(new BigDecimal(0))==0 || platformOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"平台订单实付金额应大于等于0");
+        //AssertUtil.isTrue(platformOrder.getPayment().compareTo(new BigDecimal(0))==0 || platformOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"平台订单实付金额应大于等于0");
 
         List<String> skusList = new ArrayList<>();
         for(OrderItem orderItem: orderItems){
@@ -4972,7 +4972,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
         AssertUtil.isTrue(shopOrder.getItemNum() > 0, "店铺订单购买的商品总数不能为空");
         //AssertUtil.isTrue(shopOrder.getTotalFee().compareTo(new BigDecimal(0))==0 || shopOrder.getTotalFee().compareTo(new BigDecimal(0))==1, "店铺订单总金额应大于等于0");
-        AssertUtil.isTrue(shopOrder.getPayment().compareTo(new BigDecimal(0))==0 || shopOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"店铺订单实付金额应大于等于0");
+        //AssertUtil.isTrue(shopOrder.getPayment().compareTo(new BigDecimal(0))==0 || shopOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"店铺订单实付金额应大于等于0");
 
     }
 
@@ -4997,9 +4997,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notNull(orderItem.getCreateTime(), "平台订单创建时间不能为空");
 
         AssertUtil.isTrue(orderItem.getNum() > 0, "订单商品购买数量不能为空");
-        AssertUtil.isTrue(orderItem.getPrice().compareTo(new BigDecimal(0))==1, "订单商品价格应大于0");
+        //AssertUtil.isTrue(orderItem.getPrice().compareTo(new BigDecimal(0))==1, "订单商品价格应大于0");
         //AssertUtil.isTrue(orderItem.getTotalFee().compareTo(new BigDecimal(0))==0 || orderItem.getTotalFee().compareTo(new BigDecimal(0))==1, "订单商品总金额应大于等于0");
-        AssertUtil.isTrue(orderItem.getPayment().compareTo(new BigDecimal(0))==0 || orderItem.getPayment().compareTo(new BigDecimal(0))==1 ,"订单商品实付金额应大于等于0");
+        //AssertUtil.isTrue(orderItem.getPayment().compareTo(new BigDecimal(0))==0 || orderItem.getPayment().compareTo(new BigDecimal(0))==1 ,"订单商品实付金额应大于等于0");
         BigDecimal totalFee = orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum()));
         //AssertUtil.isTrue(totalFee.compareTo(orderItem.getTotalFee())==0, "订单商品价格*商品数量应等于订单应付金额totalFee");
     }
@@ -7162,10 +7162,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }else if(PRICE_TAX.equals(colum)){
                     importOrderInfo.setPriceTax(bigDecimal);
                 }
-                if(gtZeroCheck && bigDecimal.compareTo(new BigDecimal(0))<= 0){
+                /*if(gtZeroCheck && bigDecimal.compareTo(new BigDecimal(0))<= 0){
                     importOrderInfo.setFlag(false);
                     setImportOrderErrorMsg(importOrderInfo, colum+"必须大于0");
-                }
+                }*/
                 if(!CommonUtil.checkMoney(money)){
                     importOrderInfo.setFlag(false);
                     setImportOrderErrorMsg(importOrderInfo, colum+"不合规范");
