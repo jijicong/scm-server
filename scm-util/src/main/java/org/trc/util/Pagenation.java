@@ -13,7 +13,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 每页最大记录条数
      */
-    public static final int MAX_PAGE_SIZE = 2000;
+    public static final int MAX_PAGE_SIZE = 3000;
 
     // -- 分页参数 --//
     /*
