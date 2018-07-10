@@ -990,7 +990,7 @@ public class GoodsBiz implements IGoodsBiz {
                     busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
                 }
                 busiSkus.setScmIsValid(skus.getIsValid());
-                busiSkus.setIsValid(ValidEnum.VALID.getCode());
+                busiSkus.setIsValid(ValidEnum.NOVALID.getCode());
                 busiSkus.setId(GuidUtil.getNextUid("SKU"));
                 addBusiSkusList.add(busiSkus);
             }
