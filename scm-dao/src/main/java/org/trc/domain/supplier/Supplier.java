@@ -25,9 +25,6 @@ public class Supplier extends BaseDO{
     @NotEmpty
     @Length(max = 50, message = "供应商名称长度不能超过50个")
     private String supplierName;
-    @FormParam("supplierShortName")
-    @Length(max = 10, message = "供应商简称长度不能超过10个")
-    private String supplierShortName;
     @FormParam("supplierKindCode")
     @NotEmpty
     @Length(max = 32, message = "供应商性质编码长度不能超过32个")
@@ -273,13 +270,5 @@ public class Supplier extends BaseDO{
 
     public void setSupplierInterfaceId(String supplierInterfaceId) {
         this.supplierInterfaceId = supplierInterfaceId;
-    }
-
-    public String getSupplierShortName() {
-        return supplierShortName;
-    }
-
-    public void setSupplierShortName(String supplierShortName) {
-        this.supplierShortName = supplierShortName;
     }
 }
