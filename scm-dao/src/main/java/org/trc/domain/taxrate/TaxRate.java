@@ -7,7 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
 
 /**
@@ -21,7 +20,6 @@ public class TaxRate extends CommonDO {
 
     //主键
     @Id
-    @PathParam("id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -34,6 +32,6 @@ public class TaxRate extends CommonDO {
     private BigDecimal taxRate;
 
     //描述
-    @FormParam("desc")
-    private String desc;
+    @FormParam("remark")
+    private String remark;
 }

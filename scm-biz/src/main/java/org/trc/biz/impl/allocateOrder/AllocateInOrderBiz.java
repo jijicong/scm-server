@@ -332,8 +332,14 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 				}
 	        }
 	        request.setEntryOrderItemList(list);
-	        
-			request.setEntryOrderCode(allocateInOrder.getAllocateInOrderCode());// SCM采购入库通知单编号
+	        String entryOrderCode = allocateInOrder.getAllocateInOrderCode();// 入库单号
+			if (StringUtils.isNotBlank(allocateInOrder.getWmsAllocateInOrderCode())) { // 重新入库
+				Integer orderSeq = (allocateInOrder.getInOrderSeq() == null ? 0 : allocateInOrder.getInOrderSeq()) + 1;
+				entryOrderCode = allocateInOrder.getAllocateInOrderCode() + "_" + orderSeq;
+				request.setEntryOrderCode(entryOrderCode);//SCM采购重新入库通知单编号
+			} else {
+				request.setEntryOrderCode(entryOrderCode);//SCM采购入库通知单编号
+			}
 			request.setPoType(JdPurchaseOrderTypeEnum.B2B.getCode());
 			request.setOwnerCode(jDWmsConstantConfig.getDeptNo());//开放平台事业部编号, 货主id
 			request.setWarehouseCode(warehouseExtService.getWmsWarehouseCode(allocateInOrder.getInWarehouseCode()));// 开放平台库房编号
@@ -365,12 +371,16 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         String resultMsg = null;
         String errMsg = null;
         String wmsAllocatInCode = null;
+        Integer orderSeq = null;
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString();
 			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_SUCC.getMessage();
 			resultMsg = "调拨入库通知成功！";
 			ScmAllocateOrderInResponse rep = (ScmAllocateOrderInResponse) response.getResult();
 			wmsAllocatInCode = rep.getWmsAllocateOrderInCode();
+			if (StringUtils.isNotBlank(allocateInOrder.getWmsAllocateInOrderCode())) {// 重新入货
+				orderSeq = (allocateInOrder.getInOrderSeq() == null ? 0 : allocateInOrder.getInOrderSeq()) + 1;
+			}
 			succ = true;
 		} else {
 			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString();
@@ -379,7 +389,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 			errMsg = response.getDatabuffer();
 		}
 //		if (needUpdate) {
-			allocateInOrderService.updateInOrderById(status, allocateInOrder.getId(), errMsg, wmsAllocatInCode);
+			allocateInOrderService.updateInOrderById(status, allocateInOrder.getId(), errMsg, wmsAllocatInCode, orderSeq);
 			allocateSkuDetailService.updateInSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
 //		}
         logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whName,

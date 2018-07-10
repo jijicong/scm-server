@@ -147,6 +147,13 @@ public class SelectListResource {
     }
 
     @GET
+    @Path(SupplyConstants.SelectList.PURCHASE_ORDER_RECEIVE_STATUS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response querypurchaseOrderReceiveStatus(){
+        return ResultUtil.createSuccessResult("查询采购订单入库状态成功", PurchaseOrderWarehouseNoticeStatusEnum.toJSONArray());
+    }
+
+    @GET
     @Path(SupplyConstants.SelectList.WAREHOUSE_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
     public Response warehouseType() throws Exception{

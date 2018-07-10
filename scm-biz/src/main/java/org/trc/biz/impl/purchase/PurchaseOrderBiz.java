@@ -366,8 +366,21 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         String purchaseName = form.getPurchaseName();//采购人name 的处理逻辑同供应商
         if(!StringUtils.isBlank(purchaseName)){
+            Example exp = new Example(PurchaseGroupUser.class);
+            exp.createCriteria().andLike("name", "%"+purchaseName+"%");
+            List<PurchaseGroupUser> purchaseGroupUserList = purchaseGroupUserService.selectByExample(exp);
+            if (purchaseGroupUserList!=null&& purchaseGroupUserList.size()>0){
+                List<String> userIds = new ArrayList<>();
+                for (PurchaseGroupUser purchaseGroupUser : purchaseGroupUserList) {
+                    userIds.add(purchaseGroupUser.getId().toString());
+                }
+                criteria.andIn("purchasePersonId",userIds);
+            }else {
+                return null;
+            }
 
-            List<AclUserAccreditInfo> aclUserAccreditInfos = userAccreditInfoService.selectUserByName(purchaseName);
+
+           /* List<AclUserAccreditInfo> aclUserAccreditInfos = userAccreditInfoService.selectUserByName(purchaseName);
             if(aclUserAccreditInfos!=null && aclUserAccreditInfos.size() >0){
                 List<String> userIds = new ArrayList<>();
                 for(AclUserAccreditInfo aclUserAccreditInfo:aclUserAccreditInfos){
@@ -376,7 +389,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 criteria.andIn("purchasePersonId",userIds);
             }else { //说明没有查到对应的采购人
                 return null;
-            }
+            }*/
 
         }
 
@@ -429,7 +442,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode, supplierName.trim());
+        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode, supplierName);
         if(supplierList==null){
             supplierList = new ArrayList<Supplier>();
         }
@@ -953,7 +966,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
             // 作废 则表示已完成
             notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-            
+
+            //作废后，讲采购单状态传给入库通知（V2.5取消收货功能，用于前端区分取消收货的2种状态），入库通知单的采购单状态为7
+            notice.setPurchaseOrderStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
             notice.setUpdateTime(Calendar.getInstance().getTime());
             Example example = new Example(WarehouseNotice.class);
             Example.Criteria criteria = example.createCriteria();
@@ -1486,7 +1501,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setSkuCode(purchaseDetail.getSkuCode());
             details.setSkuName(purchaseDetail.getSkuName());
             //采购商品税率
-            details.setTaxRate(purchaseDetail.getTaxRate());
+            //details.setTaxRate(purchaseDetail.getTaxRate());
             //details.setActualStorageQuantity(0L);//初始化0
             details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
             //details.setCreateTime(Calendar.getInstance().getTime());

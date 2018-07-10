@@ -813,6 +813,8 @@ public class SupplyConstants {
         public static final String IS_CUSTOM_CLEARANCE = "clearance";
         //查询采购订单状态
         public static final String PURCHASE_ORDER_STATUS = "purchaseOrderStatus";
+        //查询采购单入库状态
+        public static final String PURCHASE_ORDER_RECEIVE_STATUS = "purchaseOrderReceiveStatus";
         //供应商
         public static final String SUPPLIER = "oneAgentSupplier";
         //采购订单的审核状态
