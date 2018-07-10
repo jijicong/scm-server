@@ -3607,7 +3607,7 @@ public class GoodsBiz implements IGoodsBiz {
             CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, null, 6000);
             CellDefinition categoryName = new CellDefinition("categoryName", "类目", CellDefinition.TEXT, null, 8000);
             CellDefinition brandName = new CellDefinition("brandName", "品牌", CellDefinition.TEXT, null, 3000);
-            CellDefinition availableInventory = new CellDefinition("availableInventory", "可用正品总库存", CellDefinition.TEXT, null, 2000);
+//            CellDefinition availableInventory = new CellDefinition("availableInventory", "可用正品总库存", CellDefinition.TEXT, null, 2000);
             CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, null, 6000);
             CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.DATE_TIME, null, 6000);
 
@@ -3619,7 +3619,7 @@ public class GoodsBiz implements IGoodsBiz {
             cellDefinitionList.add(barCode);
             cellDefinitionList.add(categoryName);
             cellDefinitionList.add(brandName);
-            cellDefinitionList.add(availableInventory);
+//            cellDefinitionList.add(availableInventory);
             cellDefinitionList.add(isValid);
             cellDefinitionList.add(updateTime);
 
