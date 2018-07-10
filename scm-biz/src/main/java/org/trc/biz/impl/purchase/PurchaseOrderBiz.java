@@ -491,20 +491,23 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
         AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
 
-        List<PurchaseDetail>  purchaseDetailListCheck2 = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
+        /*List<PurchaseDetail>  purchaseDetailListCheck2 = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
                 form.getItemNo(), form.getBrandName(), skus, null);
         int purchaseDetailListCount = purchaseDetailListCheck2.size();
         if(purchaseDetailListCount < 1){
             return new Pagenation<PurchaseDetail>();
         }
-        page.setTotalCount(purchaseDetailListCount);
+        page.setTotalCount(purchaseDetailListCount);*/
         Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
         pagenation.setStart(page.getStart());
         pagenation.setPageSize(page.getPageSize());
         pagenation.setPageNo(page.getPageNo());
-        pagenation.setTotalCount(purchaseDetailListCount);
+        //pagenation.setTotalCount(purchaseDetailListCount);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
-                form.getItemNo(), form.getBrandName(), skus, pagenation);
+                form.getItemNo(), form.getBrandName(), skus, pagenation, page);
+        if(purchaseDetailList == null){
+            return new Pagenation<PurchaseDetail>();
+        }
         try {
             handCategoryName(purchaseDetailList);
         } catch (Exception e) {
@@ -825,7 +828,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put(SUPPLIER_CODE,supplierCode);
         //List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, null, null, null, null,
-                null, null, null, null);
+                null, null, null, null, null);
         if(purchaseDetailList == null || purchaseDetailList.size()==0){
             //如果没有查到，有效的sku商品
             purchaseDetailList = new ArrayList<>();
@@ -854,8 +857,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, null, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
-                form.getItemNo(), form.getBrandName(), skus, null);
-        if(purchaseDetailList.size() == 0){
+                form.getItemNo(), form.getBrandName(), skus, null, null);
+        if(purchaseDetailList == null || purchaseDetailList.isEmpty()){
             String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
@@ -1744,10 +1747,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * @param brandName 品牌名称
      * @param filterSkuCode 需要过滤的sku编码,多个用逗号分隔
      * @param pagenation 分页对象
+     * @param page
      * @return
      */
     private List<PurchaseDetail> getPurchaseOrderItemsBySupplier(String supplierCode, String warehouseInfoId, String skuCode, String skuName, String barCode,
-                                           String itemNo, String brandName, String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation){
+                                                                 String itemNo, String brandName, String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation, Pagenation<PurchaseDetail> page){
         //是否条件查询的标记
         boolean flag = false;
         if(StringUtils.isNotBlank(skuCode) || StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(barCode) ||
@@ -1876,9 +1880,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
             if(null != pagenation){
                 pagenation = warehouseItemInfoService.pagination(warehouseItemExample, pagenation, new QueryModel());
+                page.setTotalCount(pagenation.getTotalCount());
                 warehouseItemInfoList = pagenation.getResult();
-            }else{
+            }else {
                 warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
+            }
+            if(warehouseItemInfoList.isEmpty() || warehouseItemInfoList == null){
+                return null;
             }
         }
         if(CollectionUtils.isEmpty(warehouseItemInfoList)){
