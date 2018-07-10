@@ -969,7 +969,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
             // 作废 则表示已完成
             notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-            
+
+            //作废后，讲采购单状态传给入库通知（V2.5取消收货功能，用于前端区分取消收货的2种状态），入库通知单的采购单状态为7
+            notice.setPurchaseOrderStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
             notice.setUpdateTime(Calendar.getInstance().getTime());
             Example example = new Example(WarehouseNotice.class);
             Example.Criteria criteria = example.createCriteria();
