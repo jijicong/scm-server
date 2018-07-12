@@ -3,6 +3,7 @@ package org.trc.application;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.trc.aop.ExceptionMapperSupport;
 import org.trc.filter.AuthorizationFilter;
 import org.trc.filter.ScoreRequestContextFilter;
 
@@ -17,6 +18,7 @@ public class ScoreApplication extends ResourceConfig {
         register(JacksonJsonProvider.class);
 
         register(MultiPartFeature.class);
+        register(ExceptionMapperSupport.class);
 
         packages("org.trc.resource");
     }

@@ -67,7 +67,7 @@
         <task:scheduled ref="allocateInOrderBiz" method="updateAllocateInDetail" cron="${allocate.in.detail}"/>
         <task:scheduled ref="allocateInOrderBiz" method="retryCancelOrder" cron="${allocate.in.cancel}"/>
         <task:scheduled ref="allocateOutOrderBiz" method="retryCancelOrder" cron="${allocate.out.cancel}"/>
-        <!-- <task:scheduled ref="warehouseNoticeBiz" method="retryCancelOrder" cron="${warehouse.notice.cancel}"/>-->
+        <task:scheduled ref="warehouseNoticeBiz" method="retryCancelOrder" cron="${warehouse.notice.cancel}"/>
     </task:scheduled-tasks>
 
 </beans>
