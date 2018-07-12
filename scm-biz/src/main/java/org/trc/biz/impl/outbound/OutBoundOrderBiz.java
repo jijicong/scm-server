@@ -1207,6 +1207,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundOrder.setRemark(remark);
                     outBoundOrderService.updateByPrimaryKey(outboundOrder);
 
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                            "发起取消", "取消原因:"+remark,
+                            null);
+
                     OutboundDetail outboundDetail = new OutboundDetail();
                     outboundDetail.setStatus(OutboundDetailStatusEnum.ON_CANCELED.getCode());
                     outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
