@@ -1096,9 +1096,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
         //入库通知详情
         LogOperationEnum logOperationEnum = null;
-        if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"当前入库通知单已经是取消状态!");
-        }
+
         WarehouseNoticeDetails noticeDetails = new WarehouseNoticeDetails();
         noticeDetails.setWarehouseNoticeCode(warehouseNoticeCode);
         List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(noticeDetails);
@@ -1107,6 +1105,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //取消结果
         String cancelResult="";
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(),flag)){//取消收货
+            if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"当前入库通知单已经是取消状态!");
+            }
             logOperationEnum= LogOperationEnum.CANCEL_RECIVE_GOODS;
             Map<String, String> map = new HashMap<>();
             //调用入库通知取消操作
