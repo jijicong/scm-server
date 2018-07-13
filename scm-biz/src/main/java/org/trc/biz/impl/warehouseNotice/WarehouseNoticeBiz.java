@@ -521,12 +521,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
 
         String userId = aclUserAccreditInfo.getUserId();
+        List<WarehouseNotice> noticeList = new ArrayList<>();
+        Example warehouseNoticeExample = new Example(WarehouseNotice.class);
+        Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
+        warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
         //判断是入库通知还是重新收货
         if (StringUtils.isBlank(warehouseNotice.getEntryOrderId())){//入库通知
-            List<WarehouseNotice> noticeList = new ArrayList<>();
-            Example warehouseNoticeExample = new Example(WarehouseNotice.class);
-            Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
-            warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
+
             List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
                     WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
             warehouseNoticeCriteria.andIn("status", statusList);
@@ -552,6 +553,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
 
         }else {//重新收货
+            List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),
+                    WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
+            warehouseNoticeCriteria.andIn("status", statusList);
+            noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
             if (!warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode())){
                 String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态不是取消状态,无法进行重新收货的操作", warehouseNotice.getWarehouseNoticeCode());
                 throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
@@ -1158,9 +1163,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
                     aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason,null);
         }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
-            if(!StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+           /* if(!StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"入库通知单当前状态不能进行重新发货");
-            }
+            }*/
             if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLING.getCode(),warehouseNotice.getStatus()) &&
                     DateCheckUtil.checkDate(warehouseNotice.getUpdateTime())){
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前入库通知单取消时间过长，不能重新收货");
