@@ -522,24 +522,45 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
         warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
-        List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
-                WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
-        warehouseNoticeCriteria.andIn("status", statusList);
-        noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
-        if (CollectionUtils.isEmpty(noticeList)) {
-            String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合入库条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
-            logger.error(msg);
-            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
-        }
-        String userId = aclUserAccreditInfo.getUserId();
 
-        try {
-            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
-                    LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
-        } catch (Exception e) {
-            logger.error("通知收货时，操作日志记录异常信息失败：{}", e.getMessage());
-            e.printStackTrace();
+        String userId = aclUserAccreditInfo.getUserId();
+        //判断是入库通知还是重新收货
+        if (StringUtils.isBlank(warehouseNotice.getEntryOrderId())){//入库通知
+            List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
+                    WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
+            warehouseNoticeCriteria.andIn("status", statusList);
+            noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
+            if (CollectionUtils.isEmpty(noticeList)) {
+                String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合入库条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
+                logger.error(msg);
+                throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+            }
+
+
+            try {
+                logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
+                        LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
+            } catch (Exception e) {
+                logger.error("通知收货时，操作日志记录异常信息失败：{}", e.getMessage());
+                e.printStackTrace();
+            }
+
+
+        }else {//重新收货
+            if (!warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode())){
+                String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态不是取消状态,无法进行重新收货的操作", warehouseNotice.getWarehouseNoticeCode());
+                throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+            }
+
+            try {
+                logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
+                        LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
+            } catch (Exception e) {
+                logger.error("重新收货时，操作日志记录异常信息失败：{}", e.getMessage());
+                e.printStackTrace();
+            }
         }
+
 
         WarehouseNotice tempNotice = noticeList.get(0);
         // 调用奇门接口，通知仓库创建入口通知单
