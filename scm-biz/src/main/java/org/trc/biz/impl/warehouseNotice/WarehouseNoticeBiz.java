@@ -518,14 +518,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (!CollectionUtils.isEmpty(purchaseOrders)) {
         	purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
         }
-    	List<WarehouseNotice> noticeList = new ArrayList<>();
-        Example warehouseNoticeExample = new Example(WarehouseNotice.class);
-        Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
-        warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
+
 
         String userId = aclUserAccreditInfo.getUserId();
         //判断是入库通知还是重新收货
         if (StringUtils.isBlank(warehouseNotice.getEntryOrderId())){//入库通知
+            List<WarehouseNotice> noticeList = new ArrayList<>();
+            Example warehouseNoticeExample = new Example(WarehouseNotice.class);
+            Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
+            warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
             List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
                     WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
             warehouseNoticeCriteria.andIn("status", statusList);
@@ -545,6 +546,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 e.printStackTrace();
             }
 
+            WarehouseNotice tempNotice = noticeList.get(0);
+            // 调用奇门接口，通知仓库创建入口通知单
+            entryOrderCreate(tempNotice, userId);
+
 
         }else {//重新收货
             if (!warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode())){
@@ -561,10 +566,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
         }
 
-
-        WarehouseNotice tempNotice = noticeList.get(0);
         // 调用奇门接口，通知仓库创建入口通知单
-        entryOrderCreate(tempNotice, userId);
+        entryOrderCreate(warehouseNotice, userId);
     }
 
 
