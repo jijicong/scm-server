@@ -556,7 +556,20 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private void entryOrderCreate(WarehouseNotice notice, String userId)  {
         String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
 
+        WarehouseInfo whi = new WarehouseInfo();
+        whi.setCode(notice.getWarehouseCode());
+        WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+        AssertUtil.notNull(warehouse, "采购入库仓库不存在");
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
+        //针对京东仓的重新收货逻辑
+        if(warehouse.getOperationalNature().equals(OperationalNatureEnum.THIRD_PARTY)){//第三方仓
+            if (StringUtils.isNotBlank(notice.getEntryOrderId())){//仓库反馈的入库单号不为空，重新收货
+                Long inOrderSeq =( notice.getInOrderSeq()==null ? 0: notice.getInOrderSeq())+1;
+                scmEntryOrderCreateRequest.setInOrderSeq(inOrderSeq);
+                noticeCode= noticeCode+"_"+inOrderSeq;
+            }
+        }
+
         WarehouseTypeEnum warehouseTypeEnum = warehouseExtService.getWarehouseType(notice.getWarehouseCode());
         scmEntryOrderCreateRequest.setWarehouseType(warehouseTypeEnum.getCode());
         //入库单信息
@@ -649,10 +662,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
 
-		WarehouseInfo whi = new WarehouseInfo();
-		whi.setCode(notice.getWarehouseCode());
-		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
-		AssertUtil.notNull(warehouse, "采购入库仓库不存在");
+
+
 		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
 			scmEntryOrderCreateRequest.setWarehouseType("TRC");
 			//判断是第三方仓库还是自营仓库

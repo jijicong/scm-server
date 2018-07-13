@@ -184,4 +184,9 @@ public class WarehouseNotice implements Serializable{
     //V2.5采购单作废后，传给入库通知单用于帮前端区分2种已取消状态
     private String purchaseOrderStatus; //采购单作废后，这里状态变为7已取消，否则为0
 
+    /**
+     * 采购入库单重新发货第几次序号-京东仓库重新发货用
+     */
+    @Column(name = "in_order_seq")
+    private Long inOrderSeq;
 }
