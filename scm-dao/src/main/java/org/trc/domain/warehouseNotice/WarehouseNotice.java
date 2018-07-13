@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.*;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.io.Serializable;
@@ -179,7 +180,8 @@ public class WarehouseNotice implements Serializable{
     private String finishStatus;
 
     @Column(name ="purchase_order_status")
-    //采购单作废后，传给入库通知单用于帮前端区分2种已取消状态
-    private String purchaseOrderStatus; //采购单作废后，这里状态变为7已取消，否则为空
+    @DefaultValue("0")
+    //V2.5采购单作废后，传给入库通知单用于帮前端区分2种已取消状态
+    private String purchaseOrderStatus; //采购单作废后，这里状态变为7已取消，否则为0
 
 }

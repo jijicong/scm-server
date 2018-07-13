@@ -555,6 +555,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     private void entryOrderCreate(WarehouseNotice notice, String userId)  {
         String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
+
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
         WarehouseTypeEnum warehouseTypeEnum = warehouseExtService.getWarehouseType(notice.getWarehouseCode());
         scmEntryOrderCreateRequest.setWarehouseType(warehouseTypeEnum.getCode());
@@ -647,7 +648,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
-        
+
 		WarehouseInfo whi = new WarehouseInfo();
 		whi.setCode(notice.getWarehouseCode());
 		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);

@@ -1612,6 +1612,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
     }
 
+    //采购单：作废
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @PurchaseOrderCacheEvict
@@ -1658,7 +1659,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
-        notice.setStatus(WarehouseNoticeStatusEnum.DROPPED.getCode());
+
+        //V2.5新增入库通知单的采购单状态，如该采购单被作废，入库通知单的2种已取消状态根据purchaseOrderStatus以示区分，并返回给前端
+        notice.setPurchaseOrderStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
+        notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());//V2.5需求，作废改为已取消
         // 作废 则表示已完成
         notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
         notice.setUpdateTime(Calendar.getInstance().getTime());
