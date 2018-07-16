@@ -526,7 +526,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
         warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
         //判断是入库通知还是重新收货
-        if (StringUtils.isBlank(warehouseNotice.getEntryOrderId())){//入库通知
+        //保险先查一遍
+        WarehouseNotice queryWarehouseNotice = warehouseNoticeService.selectByPrimaryKey(warehouseNotice.getId());
+        if (StringUtils.isBlank(queryWarehouseNotice.getEntryOrderId())){//入库通知
 
             List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
                     WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
@@ -547,18 +549,14 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 e.printStackTrace();
             }
 
-            WarehouseNotice tempNotice = noticeList.get(0);
-            // 调用奇门接口，通知仓库创建入口通知单
-            entryOrderCreate(tempNotice, userId);
-
 
         }else {//重新收货
             List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),
                     WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
             warehouseNoticeCriteria.andIn("status", statusList);
             noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
-            if (warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode())&&StringUtils.isNotBlank(noticeList.get(0).getEntryOrderId())){
-                String msg = String.format("改入库通知单[warehouseNoticeCode=%s]的已经入库成功过，重新收货调用过程中异常，不允许重新收货", warehouseNotice.getWarehouseNoticeCode());
+            if (!queryWarehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode())){
+                String msg = String.format("该入库通知单[warehouseNoticeCode=%s]的已经入库成功过，不允许重新收货", warehouseNotice.getWarehouseNoticeCode());
                 throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
             }
 
@@ -569,10 +567,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 logger.error("重新收货时，操作日志记录异常信息失败：{}", e.getMessage());
                 e.printStackTrace();
             }
-            WarehouseNotice tempNotice = noticeList.get(0);
-            // 调用奇门接口，通知仓库创建入口通知单
-            entryOrderCreate(tempNotice, userId);
+
         }
+        WarehouseNotice tempNotice = noticeList.get(0);
+        // 调用奇门接口，通知仓库创建入口通知单
+        entryOrderCreate(tempNotice, userId);
 
     }
 
@@ -595,6 +594,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if(warehouse.getOperationalNature().equals(OperationalNatureEnum.THIRD_PARTY)){//第三方仓
             if (StringUtils.isNotBlank(notice.getEntryOrderId())){//仓库反馈的入库单号不为空，重新收货
                 Long inOrderSeq =( notice.getInOrderSeq()==null ? 0: notice.getInOrderSeq())+1;
+                notice.setInOrderSeq(inOrderSeq);
+                warehouseNoticeService.updateByPrimaryKey(notice);
                 scmEntryOrderCreateRequest.setInOrderSeq(inOrderSeq);
                 noticeCode= noticeCode+"_"+inOrderSeq;
             }
