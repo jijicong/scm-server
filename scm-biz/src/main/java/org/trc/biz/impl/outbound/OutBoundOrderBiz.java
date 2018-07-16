@@ -276,6 +276,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 //记录日志
                 logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
                         "取消发货", "仓库平台取消发货", null);
+
+                // 发货单确认结果通知渠道
+                scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                 return ;
             }
 
@@ -1206,6 +1209,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
                     outboundOrder.setRemark(remark);
                     outBoundOrderService.updateByPrimaryKey(outboundOrder);
+
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                            "发起取消", "取消原因:"+remark,
+                            null);
 
                     OutboundDetail outboundDetail = new OutboundDetail();
                     outboundDetail.setStatus(OutboundDetailStatusEnum.ON_CANCELED.getCode());

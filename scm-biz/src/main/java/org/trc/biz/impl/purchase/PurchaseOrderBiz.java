@@ -1649,13 +1649,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         WarehouseNotice warehouseNotice = new WarehouseNotice();
         warehouseNotice.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
         warehouseNotice = iWarehouseNoticeService.selectOne(warehouseNotice);
-        if(!warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode())){
-            //说明入库通知单已经被推送给仓储,取消失败
-            // String msg = String.format("作废%s入库通知单操作失败", JSON.toJSONString(warehouseNotice));
-            String msg = "入库通知单已经被推送给仓储,取消失败";
-            LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
-        }
 
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
@@ -1669,7 +1662,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",warehouseNotice.getId());
-        criteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        //criteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
         int num = iWarehouseNoticeService.updateByExampleSelective(notice,example);
         if (num == 0) {
             String msg = String.format("作废%s采购单操作失败,入库通知单已经被执行操作", JSON.toJSONString(warehouseNotice));
@@ -1707,9 +1700,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notEmpty(warehouseNotices, "采购单对应入库通知单为空");
         String status = warehouseNotices.get(0).getStatus();
         if(!StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(), status)
-                || !StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), status)
-                || !StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(), status)){
-            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, "作废采购单失败，与入库通知单状态不符");
+                && !StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), status)
+                && !StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(), status)){
+            String msg = "入库通知单已经被推送给仓储,取消失败";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
     }
 

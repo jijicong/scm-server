@@ -2000,7 +2000,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        //orderCheck(orderObj);
+        orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -5046,7 +5046,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public List<WarehouseOrder> dealSelfPurcharseOrder(List<OrderItem> orderItems, ShopOrder shopOrder, List<SkuStock> skuStockList, Map<String,
             List<SkuWarehouseDO>> skuWarehouseMap, List<WarehouseInfo> storeWarehouseInfoList) {
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
-        if(null == skuWarehouseMap && CollectionUtils.isEmpty(skuStockList)){//企业购的订单
+        if(CollectionUtils.isEmpty(skuWarehouseMap) && CollectionUtils.isEmpty(skuStockList)){//企业购的订单
             return warehouseOrderList;
         }
         List<WarehouseInfo> warehouseList = new ArrayList<>();
