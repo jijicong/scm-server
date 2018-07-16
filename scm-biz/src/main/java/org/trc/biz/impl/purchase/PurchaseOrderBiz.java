@@ -969,8 +969,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             // 作废 则表示已完成
             notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
 
-            //作废后，讲采购单状态传给入库通知（V2.5取消收货功能，用于前端区分取消收货的2种状态），入库通知单的采购单状态为7
-            notice.setPurchaseOrderStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
             notice.setUpdateTime(Calendar.getInstance().getTime());
             Example example = new Example(WarehouseNotice.class);
             Example.Criteria criteria = example.createCriteria();
@@ -1653,9 +1651,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
 
-        //V2.5新增入库通知单的采购单状态，如该采购单被作废，入库通知单的2种已取消状态根据purchaseOrderStatus以示区分，并返回给前端
-        notice.setPurchaseOrderStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
-        notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());//V2.5需求，作废改为已取消
+        //V2.5新增入库通知单的采购单状态，如该采购单被作废，入库通知是作废6，如在入库通知管理，手动取消7，只是前端在入库通知的的显示都是取消状态
+        notice.setStatus(WarehouseNoticeStatusEnum.DROPPED.getCode());
         // 作废 则表示已完成
         notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
         notice.setUpdateTime(Calendar.getInstance().getTime());
