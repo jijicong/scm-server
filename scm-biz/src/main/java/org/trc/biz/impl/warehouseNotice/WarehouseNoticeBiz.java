@@ -569,8 +569,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 logger.error("重新收货时，操作日志记录异常信息失败：{}", e.getMessage());
                 e.printStackTrace();
             }
+            WarehouseNotice tempNotice = noticeList.get(0);
             // 调用奇门接口，通知仓库创建入口通知单
-            entryOrderCreate(warehouseNotice, userId);
+            entryOrderCreate(tempNotice, userId);
         }
 
     }
