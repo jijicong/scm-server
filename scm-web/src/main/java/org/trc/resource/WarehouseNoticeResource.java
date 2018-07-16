@@ -170,11 +170,12 @@ public class WarehouseNoticeResource {
 		AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
 		identifier=redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode()+"cancel"+
 		warehouseNoticeCode,0,10000);
+		Response resp=null;
 		if (StringUtils.isBlank(identifier)){
 			throw new RuntimeException("重复操作！");
 		}
 		try {
-			warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
+			resp=warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
 		}
 		finally {
 			try {
@@ -190,7 +191,7 @@ public class WarehouseNoticeResource {
 			}
 		}
 
-		return ResultUtil.createSuccessResult("操作成功","");
+		return resp;
 	}
 
 }
