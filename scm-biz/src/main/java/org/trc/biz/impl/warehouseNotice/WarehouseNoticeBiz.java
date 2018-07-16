@@ -1084,12 +1084,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param details
      */
     private void updatePurchaseDetailReceiveStatus(WarehouseNotice warehouseNotice, List<WarehouseNoticeDetails> details) {
+
+        Example purchaseDetailExample = new Example(PurchaseDetail.class);
+        purchaseDetailExample.createCriteria().andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(purchaseDetailExample);
+
         for (WarehouseNoticeDetails detail : details){
-
-            Example purchaseDetailExample = new Example(PurchaseDetail.class);
-            purchaseDetailExample.createCriteria().andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
-            List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(purchaseDetailExample);
-
             for (PurchaseDetail pd : purchaseDetails){
                 if(StringUtils.equals(detail.getSkuCode(), pd.getSkuCode())){
                     PurchaseDetail purchaseDetail = new PurchaseDetail();
