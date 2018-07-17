@@ -3347,7 +3347,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(OutboundDetail detail: outboundDetailList){
                 if(StringUtils.equals(detail.getOutboundOrderCode(), order.getOutboundOrderCode())){
                     _outboundDetailList.add(detail);
-                    break;
                 }
             }
             returnOrder.setSkus(getSkuInfo(_outboundDetailList));
