@@ -5046,7 +5046,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public List<WarehouseOrder> dealSelfPurcharseOrder(List<OrderItem> orderItems, ShopOrder shopOrder, List<SkuStock> skuStockList, Map<String,
             List<SkuWarehouseDO>> skuWarehouseMap, List<WarehouseInfo> storeWarehouseInfoList) {
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
-        if(null == skuWarehouseMap && CollectionUtils.isEmpty(skuStockList)){//企业购的订单
+        if(CollectionUtils.isEmpty(skuWarehouseMap) && CollectionUtils.isEmpty(skuStockList)){//企业购的订单
             return warehouseOrderList;
         }
         List<WarehouseInfo> warehouseList = new ArrayList<>();
