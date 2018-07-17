@@ -26,6 +26,7 @@ import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 import tk.mybatis.mapper.entity.Example;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,8 +118,13 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
                     List<WarehouseNoticeDetails> details = warehouseNoticeDetailsService.selectByExample(warehouseNoticeDetailsExample);
                     for (WarehouseNoticeDetails detail : details){
                         if(StringUtils.equals(detail.getSkuCode(), purchaseDetail.getSkuCode())){
-                            purchaseDetail.setActualInstockTime(detail.getActualInstockTime());
-                            purchaseDetail.setStorageTime(detail.getStorageTime());
+                            String storageTime = null;
+                            if(detail.getStorageTime() != null){
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                storageTime = format.format(detail.getStorageTime());
+                            }
+                            purchaseDetail.setStorageTime(storageTime);
+                            purchaseDetail.setActualStorageQuantity(detail.getActualStorageQuantity());
                             purchaseDetail.setNormalStorageQuantity(detail.getNormalStorageQuantity());
                             purchaseDetail.setDefectiveStorageQuantity(detail.getDefectiveStorageQuantity());
                             break;
