@@ -21,6 +21,7 @@ import java.util.Date;
 @Data
 public class WarehouseNotice implements Serializable{
 
+    private static final long serialVersionUID = -3697164237401747801L;
     @Id
     @PathParam("id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
