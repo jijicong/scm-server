@@ -109,6 +109,8 @@ public class PurchaseDetail extends BaseDO{
     @Transient
     private BigDecimal totalPurchaseAmountD;
 
+
+
     //是否具有质保期
     @Transient
     private String isQuality;
@@ -119,28 +121,28 @@ public class PurchaseDetail extends BaseDO{
      * v2.5
      */
     @Transient
-    private Date storageTime; //入库时间
-    @Transient
-    private Date actualInstockTime; //实际入库时间
+    private String storageTime; //入库时间
     @Transient
     private Long normalStorageQuantity; //正品入库数量
     @Transient
     private Long defectiveStorageQuantity;  //残次品入库数量
+    @Transient
+    private Long actualStorageQuantity; //实际入库数量
 
-    public Date getStorageTime() {
+    public Long getActualStorageQuantity() {
+        return actualStorageQuantity;
+    }
+
+    public void setActualStorageQuantity(Long actualStorageQuantity) {
+        this.actualStorageQuantity = actualStorageQuantity;
+    }
+
+    public String getStorageTime() {
         return storageTime;
     }
 
-    public void setStorageTime(Date storageTime) {
+    public void setStorageTime(String storageTime) {
         this.storageTime = storageTime;
-    }
-
-    public Date getActualInstockTime() {
-        return actualInstockTime;
-    }
-
-    public void setActualInstockTime(Date actualInstockTime) {
-        this.actualInstockTime = actualInstockTime;
     }
 
     public Long getNormalStorageQuantity() {
