@@ -84,6 +84,10 @@ public class Supplier extends BaseDO{
     @Length(max = 32, message = "供应商接口ID长度不能超过32个")
     private String supplierInterfaceId;
 
+    @FormParam("supplierShortCall")
+    @Length(max = 32, message = "供应商简称长度不能超过32个")
+    private String supplierShortCall;
+
     @Transient
     private String channelName;//供应商渠道名称
     @Transient
@@ -270,5 +274,13 @@ public class Supplier extends BaseDO{
 
     public void setSupplierInterfaceId(String supplierInterfaceId) {
         this.supplierInterfaceId = supplierInterfaceId;
+    }
+
+    public String getSupplierShortCall() {
+        return supplierShortCall;
+    }
+
+    public void setSupplierShortCall(String supplierShortCall) {
+        this.supplierShortCall = supplierShortCall;
     }
 }
