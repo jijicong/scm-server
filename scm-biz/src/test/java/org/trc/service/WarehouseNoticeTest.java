@@ -11,12 +11,13 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
-import org.trc.biz.impl.warehouseNotice.WarehouseNoticeBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
+import org.trc.form.wms.WmsInNoticeDetailRequest;
+import org.trc.form.wms.WmsInNoticeRequest;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
 @ContextConfiguration({"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
@@ -112,5 +113,29 @@ public class WarehouseNoticeTest extends AbstractJUnit4SpringContextTests {
     	noticeBiz.updateStock();
     }
     
-    
+    @Test
+    public void inFinishCallBackTest(){
+
+        WmsInNoticeRequest request = new WmsInNoticeRequest();
+        request.setWarehouseNoticeCode("CGRKTZ2018062000218");
+        List<WmsInNoticeDetailRequest> list = new ArrayList<>();
+        WmsInNoticeDetailRequest wms = new WmsInNoticeDetailRequest();
+        wms.setSkuCode("SP0201805190000768");
+        wms.setActualInstockTime(Calendar.getInstance().getTime());
+        wms.setActualStorageQuantity(100L);
+        wms.setDefectiveStorageQuantity(0L);
+        wms.setNormalStorageQuantity(100L);
+        list.add(wms);
+        WmsInNoticeDetailRequest wms2 = new WmsInNoticeDetailRequest();
+        wms2.setSkuCode("SP0201805160000759");
+        wms2.setActualInstockTime(Calendar.getInstance().getTime());
+        wms2.setActualStorageQuantity(100L);
+        wms2.setDefectiveStorageQuantity(0L);
+        wms2.setNormalStorageQuantity(100L);
+
+        list.add(wms2);
+
+        request.setInNoticeDetailRequests(list);
+        noticeBiz.inFinishCallBack(request);
+    }
 }
