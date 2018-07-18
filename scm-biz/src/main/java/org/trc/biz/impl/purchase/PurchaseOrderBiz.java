@@ -505,7 +505,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //pagenation.setTotalCount(purchaseDetailListCount);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
                 form.getItemNo(), form.getBrandName(), skus, pagenation, page);
-        if(purchaseDetailList == null){
+        if(CollectionUtils.isEmpty(purchaseDetailList)){
             return new Pagenation<PurchaseDetail>();
         }
         try {
