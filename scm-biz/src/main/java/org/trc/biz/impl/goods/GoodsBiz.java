@@ -2219,7 +2219,7 @@ public class GoodsBiz implements IGoodsBiz {
             criteria.andEqualTo("skuCode", skuCode);
         }
         SkuStock skuStock = new SkuStock();
-        skuStock.setIsValid(isValid);
+//        skuStock.setIsValid(isValid);
         skuStockService.updateByExampleSelective(skuStock, example);
     }
 

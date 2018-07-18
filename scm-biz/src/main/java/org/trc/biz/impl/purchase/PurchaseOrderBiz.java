@@ -89,6 +89,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Resource
     private IConfigBiz configBiz;
     @Resource
+    private IAclUserAccreditInfoService iAclUserAccreditInfoService;
+    @Resource
     private IWarehouseNoticeService iWarehouseNoticeService;
     @Resource
     private ISerialUtilService iSerialUtilService;
@@ -458,7 +460,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-//    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
         String supplierCode = form.getSupplierCode();
         String warehouseInfoId = form.getWarehouseInfoId();
