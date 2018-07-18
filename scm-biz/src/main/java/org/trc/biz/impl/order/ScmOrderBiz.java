@@ -2142,21 +2142,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //分离一件代发和自采商品
             List<OrderItem> orderItemList1 = new ArrayList<>();//自采商品
             for(OrderItem _orderItem: shopOrder.getOrderItems()){
-                for(OrderItem orderItem: selfPurcharseOrderItemList){
-                    if(StringUtils.equals(_orderItem.getScmShopOrderCode(), orderItem.getScmShopOrderCode()) &&
-                            StringUtils.equals(_orderItem.getSkuCode(), orderItem.getSkuCode())){
-                        /*boolean flag = false;
-                        for(ExceptionOrderItem exceptionOrderItem: exceptionOrderItemList){
-                            if(StringUtils.equals(_orderItem.getScmShopOrderCode(), exceptionOrderItem.getScmShopOrderCode()) &&
-                                    StringUtils.equals(_orderItem.getSkuCode(), exceptionOrderItem.getSkuCode())){
-                                flag = true;
-                                break;
-                            }
-                        }
-                        if(!flag){
+                if(StringUtils.equals(_orderItem.getSupplierOrderStatus(), OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode())){
+                    orderItemList1.add(_orderItem);
+                }else {
+                    for(OrderItem orderItem: selfPurcharseOrderItemList){
+                        if(StringUtils.equals(_orderItem.getScmShopOrderCode(), orderItem.getScmShopOrderCode()) &&
+                                StringUtils.equals(_orderItem.getSkuCode(), orderItem.getSkuCode())){
                             orderItemList1.add(_orderItem);
-                        }*/
-                        orderItemList1.add(_orderItem);
+                        }
                     }
                 }
             }
