@@ -110,18 +110,6 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
                 }
             }
         }
-        if(!CollectionUtils.isEmpty(scmInventoryQueryResponseList)){
-            for(ScmInventoryQueryResponse response : scmInventoryQueryResponseList){
-                for(WarehouseItemInfo itemInfo: warehouseItemInfoList){
-                    if(StringUtils.equals(response.getOwnerCode(), itemInfo.getWarehouseOwnerId()) &&
-                            StringUtils.equals(response.getWarehouseCode(), itemInfo.getWmsWarehouseCode()) &&
-                            StringUtils.equals(response.getItemId(), itemInfo.getWarehouseItemId())){
-                        response.setItemCode(itemInfo.getSkuCode());
-                        break;
-                    }
-                }
-            }
-        }
         return scmInventoryQueryResponseList;
     }
 
