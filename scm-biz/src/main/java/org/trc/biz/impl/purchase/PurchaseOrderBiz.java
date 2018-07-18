@@ -28,6 +28,7 @@ import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.supplier.SupplierBrandExt;
+import org.trc.domain.taxrate.TaxRate;
 import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
@@ -48,6 +49,7 @@ import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.taxrate.TaxRateService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -118,6 +120,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
     private IPurchaseGroupUserService purchaseGroupUserService;
+
+    @Autowired
+    private TaxRateService taxRateService;
 
 
 
@@ -359,8 +364,21 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         String purchaseName = form.getPurchaseName();//采购人name 的处理逻辑同供应商
         if(!StringUtils.isBlank(purchaseName)){
+            Example exp = new Example(PurchaseGroupUser.class);
+            exp.createCriteria().andLike("name", "%"+purchaseName+"%");
+            List<PurchaseGroupUser> purchaseGroupUserList = purchaseGroupUserService.selectByExample(exp);
+            if (purchaseGroupUserList!=null&& purchaseGroupUserList.size()>0){
+                List<String> userIds = new ArrayList<>();
+                for (PurchaseGroupUser purchaseGroupUser : purchaseGroupUserList) {
+                    userIds.add(purchaseGroupUser.getId().toString());
+                }
+                criteria.andIn("purchasePersonId",userIds);
+            }else {
+                return null;
+            }
 
-            List<AclUserAccreditInfo> aclUserAccreditInfos = userAccreditInfoService.selectUserByName(purchaseName);
+
+           /* List<AclUserAccreditInfo> aclUserAccreditInfos = userAccreditInfoService.selectUserByName(purchaseName);
             if(aclUserAccreditInfos!=null && aclUserAccreditInfos.size() >0){
                 List<String> userIds = new ArrayList<>();
                 for(AclUserAccreditInfo aclUserAccreditInfo:aclUserAccreditInfos){
@@ -369,8 +387,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 criteria.andIn("purchasePersonId",userIds);
             }else { //说明没有查到对应的采购人
                 return null;
-            }
+            }*/
 
+        }
+
+        if(!StringUtils.isBlank(form.getWarehouseNoticeStatus())){
+            criteria.andEqualTo("warehouseNoticeStatus", form.getWarehouseNoticeStatus());
         }
 
         if (!StringUtils.isBlank(form.getPurchaseType())) {
@@ -410,7 +432,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
-    public List<Supplier> findSuppliersByChannelCode(String channelCode)  {
+    public List<Supplier> findSuppliersByChannelCode(String channelCode, String supplierName)  {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode ,"获取渠道编号失败");
         if (StringUtils.isBlank(channelCode)) {
@@ -418,7 +440,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode);
+        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode, supplierName);
         if(supplierList==null){
             supplierList = new ArrayList<Supplier>();
         }
@@ -467,20 +489,23 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
         AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
 
-        List<PurchaseDetail>  purchaseDetailListCheck2 = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
+        /*List<PurchaseDetail>  purchaseDetailListCheck2 = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
                 form.getItemNo(), form.getBrandName(), skus, null);
         int purchaseDetailListCount = purchaseDetailListCheck2.size();
         if(purchaseDetailListCount < 1){
             return new Pagenation<PurchaseDetail>();
         }
-        page.setTotalCount(purchaseDetailListCount);
+        page.setTotalCount(purchaseDetailListCount);*/
         Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
         pagenation.setStart(page.getStart());
         pagenation.setPageSize(page.getPageSize());
         pagenation.setPageNo(page.getPageNo());
-        pagenation.setTotalCount(purchaseDetailListCount);
+        //pagenation.setTotalCount(purchaseDetailListCount);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
-                form.getItemNo(), form.getBrandName(), skus, pagenation);
+                form.getItemNo(), form.getBrandName(), skus, pagenation, page);
+        if(purchaseDetailList == null){
+            return new Pagenation<PurchaseDetail>();
+        }
         try {
             handCategoryName(purchaseDetailList);
         } catch (Exception e) {
@@ -560,7 +585,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 //        assertArgs(purchaseOrder);
         if(purchaseOrder.getTotalFeeD() != null){
-            purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
+            purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3));//设置总价格*100
         }
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
@@ -739,17 +764,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
 
             if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) >= 0){
-                totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
-                BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
-                //设置采购价格*100
-                purchaseDetail.setPurchasePrice(bd.longValue());
+                totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD().setScale(3));
+                //设置采购价格
+                purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().setScale(3));
             }else {
-                //设置采购价格*100
+                //设置采购价格
                 purchaseDetail.setPurchasePrice(null);
             }
             if(purchaseDetail.getTotalPurchaseAmountD()!=null){
-                //设置单品的总采购价*100
-                purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().multiply(new BigDecimal(100)).longValue());
+                //设置单品的总采购价
+                purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().setScale(3));
             } else{
                 //设置单品的总采购价*100
                 purchaseDetail.setTotalPurchaseAmount(null);
@@ -778,6 +802,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getPurchasePriceD(),"采购商品进价不能为空!");
         AssertUtil.notNull(purchaseDetail.getPurchasingQuantity(),"采购商品数量不能为空!");
         AssertUtil.notBlank(purchaseDetail.getBatchCode(),"采购商品批次号不能为空!");
+        AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
     }
 
     private void checkPurchaseDetail(PurchaseDetail purchaseDetail){
@@ -789,6 +814,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getAllCategoryName(), "商品分类不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuCode(), "商品sku编码不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuName(), "商品sku名称不能为空");
+        AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
     }
 
     @Override
@@ -799,7 +825,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put(SUPPLIER_CODE,supplierCode);
         //List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, null, null, null, null,
-                null, null, null, null);
+                null, null, null, null, null);
         if(purchaseDetailList == null || purchaseDetailList.size()==0){
             //如果没有查到，有效的sku商品
             purchaseDetailList = new ArrayList<>();
@@ -828,8 +854,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, null, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
-                form.getItemNo(), form.getBrandName(), skus, null);
-        if(purchaseDetailList.size() == 0){
+                form.getItemNo(), form.getBrandName(), skus, null, null);
+        if(purchaseDetailList == null || purchaseDetailList.isEmpty()){
             String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
@@ -940,7 +966,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
             // 作废 则表示已完成
             notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-            
+
             notice.setUpdateTime(Calendar.getInstance().getTime());
             Example example = new Example(WarehouseNotice.class);
             Example.Criteria criteria = example.createCriteria();
@@ -1185,8 +1211,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //校验仓库是否停用
         this.checkWarehouse(purchaseOrder.getWarehouseId());
-        //设置总价格*100
-        purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());
+        //设置总价格
+        purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3));
         purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
@@ -1394,19 +1420,18 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
-         /* //查询该采购单对应的采购商品
-        PurchaseDetail purchaseDetail = new PurchaseDetail();
-        purchaseDetail.setPurchaseId(purchaseOrder.getId());
-        purchaseDetailService.select(purchaseDetail);
 
-        //入库通知的商品表
-        WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
-        //warehouseNoticeDetails
-        //warehouseNoticeDetailsService*/
         //更新采购单的状态
         PurchaseOrder _purchaseOrder = new PurchaseOrder();
         _purchaseOrder.setId(order.getId());
         _purchaseOrder.setStatus(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
+
+        /**
+         * v2.5 初始入库状态
+         * 入库状态:0-等待入库,1-全部入库,2-部分入库,3-入库异常,4-其他情况
+         */
+        _purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.WAIT_RECEIVE.getCode());
+
         //待通知
         _purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());
         _purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
@@ -1430,6 +1455,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
 
+        /**
+         * v2.5 初始商品 入库状态
+         */
+        initPurchaseDetailReceiveStatus(warehouseNotice.getPurchaseOrderCode());
+
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode(), warehouseInfo.getChannelCode(),
                 warehouseInfo.getId(), warehouseInfo.getWarehouseOwnerId());
 
@@ -1440,6 +1470,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(DistributeLockEnum.PURCHASE_ORDER.getCode() + "warahouseAdvice"+purchaseOrder.getId() + "解锁失败！");
         }
 
+    }
+
+    /**
+     * v2.5 初始商品 入库状态
+     * @param purchaseOrderCode
+     */
+    private void initPurchaseDetailReceiveStatus(String purchaseOrderCode) {
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.WAIT_RECEIVE.getCode());
+        purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+        Example example = new Example(PurchaseDetail.class);
+        example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrderCode);
+        purchaseDetailService.updateByExampleSelective(purchaseDetail, example);
     }
 
     private void insertWarehouseNoticeDetail(List<PurchaseDetail> purchaseDetailList , String warehouseNoticeCode,
@@ -1455,6 +1498,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setCategoryId(purchaseDetail.getCategoryId());
             details.setSkuCode(purchaseDetail.getSkuCode());
             details.setSkuName(purchaseDetail.getSkuName());
+            //采购商品税率
+            //details.setTaxRate(purchaseDetail.getTaxRate());
             //details.setActualStorageQuantity(0L);//初始化0
             details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
             //details.setCreateTime(Calendar.getInstance().getTime());
@@ -1485,7 +1530,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
             }
             details.setSkuStockId(skuStock.getId());
-            details.setPurchaseAmount(purchaseDetail.getPurchasingQuantity() * purchaseDetail.getPurchasePrice());
+            details.setPurchaseAmount(purchaseDetail.getPurchasePrice().multiply(new BigDecimal(purchaseDetail.getPurchasingQuantity())));
             details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode()));
             details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
@@ -1563,17 +1608,27 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
     }
 
+    //采购单：作废
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @PurchaseOrderCacheEvict
     public void cancelWarahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
+        /**
+         * v2.5
+         * 校验入库单状态，是否可以作废采购单
+         * 当入库通知单状态为[0-待通知收货,1-仓库接收失败,7-已取消]，才允许作废已执行入库通知的采购单
+         */
+        checkWarehouseStatus(purchaseOrder);
+
         //更改采购单的状态
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
         tmp.setUpdateTime(Calendar.getInstance().getTime());
+        //同步采购单入库状态，其他情况为'null'
+        tmp.setWarehouseNoticeStatus("");
         //是否已经发起入库通知，设为""
         tmp.setEnterWarehouseNotice("");
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
@@ -1583,21 +1638,18 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
 
+        //同步采购单商品详情 入库状态，其他情况为'null'
+        updatePurchaseOrderDetailState(purchaseOrder);
 
         //更改入库通知单的状态;在修改状态之前。判断入库通知单的状态，是否为待发起入库通知/乐观锁
         WarehouseNotice warehouseNotice = new WarehouseNotice();
         warehouseNotice.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
         warehouseNotice = iWarehouseNoticeService.selectOne(warehouseNotice);
-        if(!warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode())){
-            //说明入库通知单已经被推送给仓储,取消失败
-            // String msg = String.format("作废%s入库通知单操作失败", JSON.toJSONString(warehouseNotice));
-            String msg = "入库通知单已经被推送给仓储,取消失败";
-            LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
-        }
 
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
+
+        //V2.5新增入库通知单的采购单状态，如该采购单被作废，入库通知是作废6，如在入库通知管理，手动取消7，只是前端在入库通知的的显示都是取消状态
         notice.setStatus(WarehouseNoticeStatusEnum.DROPPED.getCode());
         // 作废 则表示已完成
         notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
@@ -1605,7 +1657,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",warehouseNotice.getId());
-        criteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        //criteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
         int num = iWarehouseNoticeService.updateByExampleSelective(notice,example);
         if (num == 0) {
             String msg = String.format("作废%s采购单操作失败,入库通知单已经被执行操作", JSON.toJSONString(warehouseNotice));
@@ -1629,6 +1681,37 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
     }
+
+    /**
+     * v2.5
+     * 校验入库单状态，是否可以作废
+     * 当入库通知单状态为[0-待通知收货,1-仓库接收失败,7-已取消]，才允许作废已执行入库通知的采购单
+     * @param purchaseOrder
+     */
+    private void checkWarehouseStatus(PurchaseOrder purchaseOrder) {
+        Example WarehouseNoticeExample = new Example(WarehouseNotice.class);
+        WarehouseNoticeExample.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+        List<WarehouseNotice> warehouseNotices = iWarehouseNoticeService.selectByExample(WarehouseNoticeExample);
+        AssertUtil.notEmpty(warehouseNotices, "采购单对应入库通知单为空");
+        String status = warehouseNotices.get(0).getStatus();
+        if(!StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(), status)
+                && !StringUtils.equals(WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), status)
+                && !StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(), status)){
+            String msg = "入库通知单已经被推送给仓储,取消失败";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+    private void updatePurchaseOrderDetailState(PurchaseOrder purchaseOrder) {
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setReceiveStatus("");
+        purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
+        Example example = new Example(PurchaseDetail.class);
+        example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+        purchaseDetailService.updateByExampleSelective(purchaseDetail, example);
+    }
+
     @Override
     public   List<String> associationSearch(String queryString) throws Exception{
         List<String> brandNameList = new ArrayList<>();
@@ -1659,10 +1742,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * @param brandName 品牌名称
      * @param filterSkuCode 需要过滤的sku编码,多个用逗号分隔
      * @param pagenation 分页对象
+     * @param page
      * @return
      */
     private List<PurchaseDetail> getPurchaseOrderItemsBySupplier(String supplierCode, String warehouseInfoId, String skuCode, String skuName, String barCode,
-                                           String itemNo, String brandName, String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation){
+                                                                 String itemNo, String brandName, String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation, Pagenation<PurchaseDetail> page){
         //是否条件查询的标记
         boolean flag = false;
         if(StringUtils.isNotBlank(skuCode) || StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(barCode) ||
@@ -1732,7 +1816,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         skusCriteria.andIn("itemId", itemIds);
         skusCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         if(StringUtils.isNotBlank(skuCode)){
-            skusCriteria.andLike("skuCode", "%" + skuCode + "%");
+
+            skusCriteria.andIn("skuCode", Arrays.asList(skuCode.split(",")));
         }
         if(StringUtils.isNotBlank(skuName)){
             skusCriteria.andLike("skuName", "%" + skuName + "%");
@@ -1783,15 +1868,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
             warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
-                warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
+                warehouseItemCriteria.andIn("barCode", Arrays.asList(barCode.split(",")));
             }
             if(StringUtils.isNotBlank(itemNo)){
                 warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
             }
             if(null != pagenation){
                 pagenation = warehouseItemInfoService.pagination(warehouseItemExample, pagenation, new QueryModel());
+                page.setTotalCount(pagenation.getTotalCount());
                 warehouseItemInfoList = pagenation.getResult();
-            }else{
+            }else {
                 warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
             }
         }
@@ -1808,6 +1894,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         List<PurchaseDetail> purchaseDetailList = new ArrayList<>();
         for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
             PurchaseDetail detail = new PurchaseDetail();
+
+            //TODO 添加商品详情，采购税率
+            Example example = new Example(TaxRate.class);
+            example.createCriteria().andEqualTo("taxRateCode", TaxRateEnum.PURCHASE_RATE.getCode());
+            List<TaxRate> taxRates = taxRateService.selectByExample(example);
+            if(taxRates != null && !taxRates.isEmpty()){
+                detail.setTaxRate(taxRates.get(0).getTaxRate());
+            }
             detail.setSpuCode(warehouseItemInfo.getSpuCode());
             detail.setSkuCode(warehouseItemInfo.getSkuCode());
             detail.setBarCode(warehouseItemInfo.getBarCode());
@@ -1829,8 +1923,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         return purchaseDetailList;
     }
-
-
 
     @Override
     @PurchaseOrderCacheEvict

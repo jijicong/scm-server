@@ -163,18 +163,19 @@ public class WarehouseNoticeResource {
 	 * 入库通知单：取消收货flag=0 ;重新收货flag=1
 	 */
 	@PUT
-	@Path(SupplyConstants.WarehouseNotice.CANCEL)
+	@Path(SupplyConstants.WarehouseNotice.CANCEL+"/{warehouseNoticeCode}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response cancel(@PathParam("warehouseNoticeCode")String warehouseNoticeCode,@FormParam("flag") String flag,@FormParam("cancelReason") String cancelReason,@Context ContainerRequestContext requestContext){
 		String identifier = "";
 		AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
 		identifier=redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode()+"cancel"+
 		warehouseNoticeCode,0,10000);
+		Response resp=null;
 		if (StringUtils.isBlank(identifier)){
 			throw new RuntimeException("重复操作！");
 		}
 		try {
-			warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
+			resp=warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
 		}
 		finally {
 			try {
@@ -190,7 +191,7 @@ public class WarehouseNoticeResource {
 			}
 		}
 
-		return ResultUtil.createSuccessResult("操作成功","");
+		return resp;
 	}
 
 }

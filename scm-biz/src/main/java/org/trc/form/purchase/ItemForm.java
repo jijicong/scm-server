@@ -16,7 +16,7 @@ public class ItemForm extends QueryModel{
     @Length(max = 128)
     private String skuName;
     /**
-     * 商品SKU-CODE
+     * 商品SKU-CODE, 多个用,分隔
      */
     @QueryParam("skuCode")
     @Length(max = 32)
@@ -34,7 +34,7 @@ public class ItemForm extends QueryModel{
     @Length(max = 32)
     private String itemNo;
     /**
-     * 条形码
+     * 条形码, 多个用,分隔
      */
     @QueryParam("barCode")
     @Length(max = 64)

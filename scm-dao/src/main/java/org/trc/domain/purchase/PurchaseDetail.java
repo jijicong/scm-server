@@ -55,15 +55,15 @@ public class PurchaseDetail extends BaseDO{
     @Length(max = 64, message = "商品的所有分类字母和数字不能超过64个,汉字不能超过32个")
     private String allCategory;//所有分类
     @FormParam("purchasePrice")
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long purchasePrice;//采购单价
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal purchasePrice;//采购单价
     @Transient
     private BigDecimal purchasePriceD;
     @FormParam("purchasingQuantity")
     private Long purchasingQuantity;//采购总数量
     @FormParam("totalPurchaseAmount")
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long totalPurchaseAmount;//采购总金额
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal totalPurchaseAmount;//采购总金额
     @FormParam("barCode")
     private String barCode;//条形码
     @FormParam("itemNo")
@@ -90,14 +90,73 @@ public class PurchaseDetail extends BaseDO{
     private String specNatureInfo;//规格
     @FormParam("warehouseItemId")
     private String warehouseItemId;
+
+    /**
+     * v2.5 商品入库状态 0-等待入库,1-全部入库,2-部分入库,3-入库异常,其他情况为null
+     */
+    @FormParam("receiveStatus")
+    private String receiveStatus;
+
+    /**
+     * v2.5 税率
+     */
+    @FormParam("taxrate")
+    private BigDecimal taxRate;
+
     @Transient
     private BigDecimal totalPurchaseAmountD;
+
+
 
     //是否具有质保期
     @Transient
     private String isQuality;
     @Transient
     private Long qualityDay;
+
+    /**
+     * v2.5
+     */
+    @Transient
+    private String storageTime; //入库时间
+    @Transient
+    private Long normalStorageQuantity; //正品入库数量
+    @Transient
+    private Long defectiveStorageQuantity;  //残次品入库数量
+    @Transient
+    private Long actualStorageQuantity; //实际入库数量
+
+    public Long getActualStorageQuantity() {
+        return actualStorageQuantity;
+    }
+
+    public void setActualStorageQuantity(Long actualStorageQuantity) {
+        this.actualStorageQuantity = actualStorageQuantity;
+    }
+
+    public String getStorageTime() {
+        return storageTime;
+    }
+
+    public void setStorageTime(String storageTime) {
+        this.storageTime = storageTime;
+    }
+
+    public Long getNormalStorageQuantity() {
+        return normalStorageQuantity;
+    }
+
+    public void setNormalStorageQuantity(Long normalStorageQuantity) {
+        this.normalStorageQuantity = normalStorageQuantity;
+    }
+
+    public Long getDefectiveStorageQuantity() {
+        return defectiveStorageQuantity;
+    }
+
+    public void setDefectiveStorageQuantity(Long defectiveStorageQuantity) {
+        this.defectiveStorageQuantity = defectiveStorageQuantity;
+    }
 
     public BigDecimal getPurchasePriceD() {
         return purchasePriceD;
@@ -227,11 +286,11 @@ public class PurchaseDetail extends BaseDO{
         this.allCategory = allCategory;
     }
 
-    public Long getPurchasePrice() {
+    public BigDecimal getPurchasePrice() {
         return purchasePrice;
     }
 
-    public void setPurchasePrice(Long purchasePrice) {
+    public void setPurchasePrice(BigDecimal purchasePrice) {
         this.purchasePrice = purchasePrice;
     }
 
@@ -243,11 +302,11 @@ public class PurchaseDetail extends BaseDO{
         this.purchasingQuantity = purchasingQuantity;
     }
 
-    public Long getTotalPurchaseAmount() {
+    public BigDecimal getTotalPurchaseAmount() {
         return totalPurchaseAmount;
     }
 
-    public void setTotalPurchaseAmount(Long totalPurchaseAmount) {
+    public void setTotalPurchaseAmount(BigDecimal totalPurchaseAmount) {
 
         this.totalPurchaseAmount = totalPurchaseAmount;
 
@@ -323,6 +382,22 @@ public class PurchaseDetail extends BaseDO{
 
     public void setQualityDay(Long qualityDay) {
         this.qualityDay = qualityDay;
+    }
+
+    public String getReceiveStatus() {
+        return receiveStatus;
+    }
+
+    public void setReceiveStatus(String receiveStatus) {
+        this.receiveStatus = receiveStatus;
+    }
+
+    public BigDecimal getTaxRate() {
+        return taxRate;
+    }
+
+    public void setTaxRate(BigDecimal taxRate) {
+        this.taxRate = taxRate;
     }
 }
 

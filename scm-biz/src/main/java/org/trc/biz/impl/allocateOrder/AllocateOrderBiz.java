@@ -32,7 +32,6 @@ import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.AllocateOrderException;
 import org.trc.exception.AllocateOutOrderException;
-import org.trc.exception.WarehouseInfoException;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.form.AllocateOrder.QuerySkuInventory;
@@ -59,6 +58,8 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service("allocateOrderBiz")
 public class AllocateOrderBiz implements IAllocateOrderBiz {
@@ -973,21 +974,12 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	public Pagenation<AllocateSkuDetail> querySkuList(AllocateItemForm form, 
 			Pagenation<AllocateSkuDetail> page, String skus) {
 
-        List<AllocateSkuDetail>  totalSkuList = querySkuListPage(form, skus, null);
-        int totalCount = totalSkuList.size();
-        if (totalCount < 1) {
-            return new Pagenation<AllocateSkuDetail>();
-        }
-        page.setTotalCount(totalCount);
         Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
         pagenation.setPageNo(page.getPageNo());
         pagenation.setStart(page.getStart());
         pagenation.setPageSize(page.getPageSize());
-        pagenation.setTotalCount(totalCount);
-        List<AllocateSkuDetail>  skuList = querySkuListPage(form, skus, pagenation);
-
+        List<AllocateSkuDetail>  skuList = querySkuListPage(form, skus, pagenation, page);
         page.setResult(skuList);
-
         return page;
 	}
 	
@@ -1009,8 +1001,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 
 
 
-	private List<AllocateSkuDetail> querySkuListPage(AllocateItemForm form, 
-			String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation) {
+	private List<AllocateSkuDetail> querySkuListPage(AllocateItemForm form,
+													 String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation, Pagenation<AllocateSkuDetail> page) {
 		String skuCode = form.getSkuCode();
 		String skuName = form.getSkuName();
 		String barCode = form.getBarCode();
@@ -1164,21 +1156,21 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                     throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,
                             "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
                 }
-            } else {
-            	Example tmpExample = new Example(WarehouseItemInfo.class);
-            	Example.Criteria tmpCriteria = tmpExample.createCriteria();
-            	
-            	tmpCriteria.andIn("id", itemInfoIdList);
-            	tmpCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
-            	
-            	if (null != pagenation) {
-            		pagenation = warehouseItemInfoService.pagination(tmpExample, pagenation, new QueryModel());
-            		warehouseItemInfoList = pagenation.getResult();
-            	} else {
-            		warehouseItemInfoList = warehouseItemInfoService.selectByExample(tmpExample);
-            	}
             }
-            
+
+			Example tmpExample = new Example(WarehouseItemInfo.class);
+			Example.Criteria tmpCriteria = tmpExample.createCriteria();
+
+			tmpCriteria.andIn("id", itemInfoIdList);
+			tmpCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
+
+			if (null != pagenation) {
+				pagenation = warehouseItemInfoService.pagination(tmpExample, pagenation, new QueryModel());
+				page.setTotalCount(pagenation.getTotalCount());
+				warehouseItemInfoList = pagenation.getResult();
+			}else {
+				warehouseItemInfoList = warehouseItemInfoService.selectByExample(tmpExample);
+			}
         }
         if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
             if (!flag) {
@@ -1206,8 +1198,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                 logger.error(String.format("查询分类%s名称异常", categoryId), e);
             }
         }
-        
-        for (Skus skus: skusList) {
+
+		for (Skus skus: skusList) {
             for(Items items: itemsList){
                 if(skus.getItemId().longValue() == items.getId().longValue()){
                     skus.setCategoryId(items.getCategoryId());
@@ -1230,7 +1222,6 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                 }
             }
         }
-        
         return getAllocateSkuDetails(warehouseItemInfoList, skusList);
 	}
 	
@@ -1363,7 +1354,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	public Map<String, Long> inventoryQuery(String warehouseCode, String skus) {
        // List<String> skuList = Arrays.asList(skus.split(SupplyConstants.Symbol.COMMA))
 		List<QuerySkuInventory> queryList = JSONArray.parseArray(skus, QuerySkuInventory.class);
-		List<String> skuList = queryList.stream().map(item -> item.getSkuCode()).collect(Collectors.toList());
+		List<String> skuList = queryList.stream().map(item -> item.getSkuCode()).collect(toList());
 		Map<String, String> queryMap = queryList.stream()
 				.collect(Collectors.toMap(QuerySkuInventory::getSkuCode, QuerySkuInventory::getInventoryType));
 		
