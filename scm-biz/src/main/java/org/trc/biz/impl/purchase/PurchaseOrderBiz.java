@@ -36,6 +36,7 @@ import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.PurchaseOrderDetailException;
 import org.trc.exception.PurchaseOrderException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.purchase.ItemForm;
@@ -742,6 +743,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         BigDecimal totalPrice = new BigDecimal(0);
 
         for (PurchaseDetail purchaseDetail : purchaseDetailList) {
+            this.checkPurchaseDetail(purchaseDetail);
+
             String skuCode = purchaseDetail.getSkuCode();
             if(skuCode == null){
                 String msg = "采购商品保存,数据错误";
@@ -766,10 +769,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) >= 0){
                 totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD().setScale(3));
                 //设置采购价格
-                purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().setScale(3));
-            }else {
-                //设置采购价格
-                purchaseDetail.setPurchasePrice(null);
+                if(purchaseDetail.getPurchasePriceD() != null && purchaseDetail.getPurchasePriceD().compareTo(BigDecimal.ZERO) >= 0){
+                    purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().setScale(3));
+                } else {
+                    purchaseDetail.setPurchasePrice(null);
+                }
             }
             if(purchaseDetail.getTotalPurchaseAmountD()!=null){
                 //设置单品的总采购价
@@ -782,7 +786,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             purchaseDetail.setPurchaseId(orderId);
             purchaseDetail.setPurchaseOrderCode(code);
             purchaseDetail.setCreateOperator(createOperator);
-            this.checkPurchaseDetail(purchaseDetail);
             ParamsUtil.setBaseDO(purchaseDetail);
         }
         int count = 0;
@@ -803,6 +806,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getPurchasingQuantity(),"采购商品数量不能为空!");
         AssertUtil.notBlank(purchaseDetail.getBatchCode(),"采购商品批次号不能为空!");
         AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
+
+        if(purchaseDetail.getTaxRate().doubleValue() < 0 || purchaseDetail.getTaxRate().doubleValue() > 100){
+            throw new PurchaseOrderDetailException(ExceptionEnum.GOODS_SAVE_EXCEPTION, "采购税率范围需满足0~100");
+        }
     }
 
     private void checkPurchaseDetail(PurchaseDetail purchaseDetail){
@@ -815,6 +822,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getSkuCode(), "商品sku编码不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuName(), "商品sku名称不能为空");
         AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
+
+        if(purchaseDetail.getTaxRate().doubleValue() < 0 || purchaseDetail.getTaxRate().doubleValue() > 100){
+            throw new PurchaseOrderDetailException(ExceptionEnum.GOODS_SAVE_EXCEPTION, "采购税率范围需满足0~100");
+        }
     }
 
     @Override
