@@ -15,6 +15,7 @@ import java.util.Date;
 @Table(name = "warehouse_notice_details")
 public class WarehouseNoticeDetails implements Serializable{
 
+    private static final long serialVersionUID = 4965049151059317121L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

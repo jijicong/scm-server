@@ -547,16 +547,16 @@ public class SupplierBiz implements ISupplierBiz {
                     certificateTemp.setOrganRegistraCodeCertificate(certificate.getOrganRegistraCodeCertificate());
                     List<Certificate> certificateList = certificateService.select(certificateTemp);
                     if(certificateList != null && certificateList.size() > 0){
-                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("组织机构代码证证件号已存在，请确认该供应商是否已存在！"));
                     }
                 }else{
                     Example example = new Example(Certificate.class);
                     Example.Criteria criteria = example.createCriteria();
                     criteria.andNotEqualTo("supplierCode", supplier.getSupplierCode());
                     criteria.andEqualTo("organRegistraCodeCertificate", certificate.getOrganRegistraCodeCertificate());
-                    List<Certificate> certificateList = certificateService.selectByExample(criteria);
+                    List<Certificate> certificateList = certificateService.selectByExample(example);
                     if(certificateList != null && certificateList.size() > 0){
-                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("组织机构代码证件号已存在，请确认该供应商是否已存在！"));
                     }
                 }
 
@@ -611,16 +611,16 @@ public class SupplierBiz implements ISupplierBiz {
                     certificateTemp.setMultiCertificateCombineNo(certificate.getMultiCertificateCombineNo());
                     List<Certificate> certificateList = certificateService.select(certificateTemp);
                     if(certificateList != null && certificateList.size() > 0){
-                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("多证合一证件号已存在，请确认该供应商是否已存在！"));
                     }
                 }else{
                     Example example = new Example(Certificate.class);
                     Example.Criteria criteria = example.createCriteria();
                     criteria.andNotEqualTo("supplierCode", supplier.getSupplierCode());
                     criteria.andEqualTo("multiCertificateCombineNo", certificate.getMultiCertificateCombineNo());
-                    List<Certificate> certificateList = certificateService.selectByExample(criteria);
+                    List<Certificate> certificateList = certificateService.selectByExample(example);
                     if(certificateList != null && certificateList.size() > 0){
-                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("该证件号已存在，请确认该供应商是否已存在！"));
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("多证合一证件号已存在，请确认该供应商是否已存在！"));
                     }
                 }
 
