@@ -1081,6 +1081,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         purchaseOrderExample.createCriteria().andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
         purchaseOrderService.updateByExampleSelective(purchaseOrder, purchaseOrderExample);
 
+
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                warehouseNotice.getWarehouseName(),LogOperationEnum.RECIVE_GOODS_IN.getMessage(),logMessage,null);
+
         return ResultUtil.createSuccessResult("反填入库通知单成功","");
     }
 
