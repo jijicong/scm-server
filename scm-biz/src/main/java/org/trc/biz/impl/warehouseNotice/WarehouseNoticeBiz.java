@@ -715,6 +715,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
              *   2.更新入库明细表中的商品为待仓库反馈状态
              *   3.更新相应sku的在途库存数
              **/
+            try {
+                logInfoService.recordLog(notice, notice.getId().toString(), warehouse.getWarehouseName(),
+                        LogOperationEnum.OUTBOUND_RECEIVE_SUCCESS.getMessage(), null, null);
+            }catch (Exception e){
+                logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
+                e.printStackTrace();
+            }
             postEntryOrderCreate(notice, detailsList, appResult, true);
         } else {
             // 仓库接收失败
@@ -727,7 +734,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
 
             postEntryOrderCreate(notice, detailsList, appResult, false);
-            //throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, result.getDatabuffer());
         }
 
     }
