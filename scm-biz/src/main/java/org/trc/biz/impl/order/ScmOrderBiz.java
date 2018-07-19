@@ -2000,7 +2000,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        orderCheck(orderObj);
+        //orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -2054,7 +2054,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: shopOrderList){
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
                 tmpOrderItemList.add(orderItem);
-                allSelfPurcharseOrderItemList.add(orderItem);
                 if (orderItem.getSkuCode().startsWith(SP0) &&
                         !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
                     selfPurcharseOrderItemList.add(orderItem);
@@ -2062,6 +2061,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){//非门店订单
                         _skuCodes.add(orderItem.getSkuCode());
                     }
+                    allSelfPurcharseOrderItemList.add(orderItem);
                 }
                 if (orderItem.getSkuCode().startsWith(SP1)) {
                     supplierOrderItemList.add(orderItem);
