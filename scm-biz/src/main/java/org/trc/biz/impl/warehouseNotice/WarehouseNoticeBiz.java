@@ -719,7 +719,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         } else {
             // 仓库接收失败
             try {
-                logInfoService.recordLog(notice, notice.getId().toString(), whi.getWarehouseName(),
+                logInfoService.recordLog(notice, notice.getId().toString(), warehouse.getWarehouseName(),
                         LogOperationEnum.WMS_RECEIVE_FAILED.getMessage(), appResult.getDatabuffer(), null);
             } catch (Exception e) {
                 logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
@@ -1111,7 +1111,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     //取消收货接口调用业务
     @Override
-    @Transactional(rollbackFor =Exception.class)
+    @WarehouseNoticeCacheEvict
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor =Exception.class)
     public Response cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo) {
         if(flag.equals(ZeroToNineEnum.ZERO.getCode())){//重新发货不需要取消原因
             AssertUtil.notBlank(cancelReason,"取消原因不能为空");
