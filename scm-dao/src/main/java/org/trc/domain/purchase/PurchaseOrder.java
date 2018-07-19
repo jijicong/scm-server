@@ -135,6 +135,17 @@ public class PurchaseOrder extends BaseDO{
     @Transient
     private String senderCityName;
 
+    @Transient
+    private String noticeStatus;
+
+    public String getNoticeStatus() {
+        return noticeStatus;
+    }
+
+    public void setNoticeStatus(String noticeStatus) {
+        this.noticeStatus = noticeStatus;
+    }
+
     public String getHandlerPriorityName() {
         return handlerPriorityName;
     }
