@@ -992,7 +992,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         detail.setNormalStorageQuantity(normalStorageQuantity);
                         detail.setDefectiveStorageQuantity(defectiveStorageQuantity);
                         detail.setActualStorageQuantity(actualStorageQuantity);
-                        detail.setStorageTime(inNoticeDetailRequest.getActualInstockTime());
+                        //子系统回调并未返回该字段，理论上是当前时间
+                        detail.setStorageTime(Calendar.getInstance().getTime());
                         if(defectiveStorageQuantity==0){
                             if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){
                                 detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));

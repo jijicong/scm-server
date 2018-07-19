@@ -64,6 +64,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -586,7 +587,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 //        assertArgs(purchaseOrder);
         if(purchaseOrder.getTotalFeeD() != null){
-            purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3));//设置总价格*100
+            purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3, RoundingMode.HALF_UP));//设置总价格*100
         }
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
@@ -767,17 +768,17 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
 
             if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) >= 0){
-                totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD().setScale(3));
+                totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD().setScale(3, RoundingMode.HALF_UP));
                 //设置采购价格
                 if(purchaseDetail.getPurchasePriceD() != null && purchaseDetail.getPurchasePriceD().compareTo(BigDecimal.ZERO) >= 0){
-                    purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().setScale(3));
+                    purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().setScale(3, RoundingMode.HALF_UP));
                 } else {
                     purchaseDetail.setPurchasePrice(null);
                 }
             }
             if(purchaseDetail.getTotalPurchaseAmountD()!=null){
                 //设置单品的总采购价
-                purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().setScale(3));
+                purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().setScale(3, RoundingMode.HALF_UP));
             } else{
                 //设置单品的总采购价*100
                 purchaseDetail.setTotalPurchaseAmount(null);
@@ -1223,7 +1224,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //校验仓库是否停用
         this.checkWarehouse(purchaseOrder.getWarehouseId());
         //设置总价格
-        purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3));
+        purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().setScale(3, RoundingMode.HALF_UP));
         purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
