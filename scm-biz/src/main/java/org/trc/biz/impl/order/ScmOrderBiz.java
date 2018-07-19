@@ -2046,6 +2046,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(shopOrderList.size() == 0){
             return getEmptyOrderReturnMap(new HashMap<>());
         }
+        List<OrderItem> allSelfPurcharseOrderItemList = new ArrayList<>();//所有自采商品
         List<OrderItem> selfPurcharseOrderItemList = new ArrayList<>();//自采商品
         List<String> skuCodes = new ArrayList<>();
         List<String> _skuCodes = new ArrayList<>();
@@ -2053,6 +2054,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: shopOrderList){
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
                 tmpOrderItemList.add(orderItem);
+                allSelfPurcharseOrderItemList.add(orderItem);
                 if (orderItem.getSkuCode().startsWith(SP0) &&
                         !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
                     selfPurcharseOrderItemList.add(orderItem);
@@ -2076,9 +2078,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Map<String, List<SkuWarehouseDO>> skuWarehouseMap = null;//sku和仓库可用库存关系,一个sku对应多个仓库可用库存
         //校验失败的商品
         List<ExceptionOrderItem> exceptionOrderItemList = new ArrayList<>();
-        if(selfPurcharseOrderItemList.size() > 0){
+        if(allSelfPurcharseOrderItemList.size() > 0){
             //设置自采商品spu编码
-            setSelfPurcharesSpuInfo(shopOrderList, selfPurcharseOrderItemList);
+            setSelfPurcharesSpuInfo(shopOrderList, allSelfPurcharseOrderItemList, selfPurcharseOrderItemList);
+        }
+        if(selfPurcharseOrderItemList.size() > 0){
             //获取自采商品仓库库存
             List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
             List<WarehouseInfo> warehouseInfoList = warehouseExtService.getWarehouseInfo();
@@ -2684,9 +2688,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 设置自采商品spu编码
      * @param selfPurcharseOrderItemList
      */
-    private void setSelfPurcharesSpuInfo(List<ShopOrder> shopOrderList, List<OrderItem> selfPurcharseOrderItemList){
+    private void setSelfPurcharesSpuInfo(List<ShopOrder> shopOrderList, List<OrderItem> allSelfPurcharseOrderItemList, List<OrderItem> selfPurcharseOrderItemList){
         List<String> skuCodes = new ArrayList<>();
-        for(OrderItem orderItem: selfPurcharseOrderItemList){
+        for(OrderItem orderItem: allSelfPurcharseOrderItemList){
             if(orderItem.getSkuCode().startsWith(SP0)){
                 skuCodes.add(orderItem.getSkuCode());
             }
