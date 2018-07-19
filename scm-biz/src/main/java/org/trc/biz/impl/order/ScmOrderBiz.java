@@ -2054,14 +2054,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: shopOrderList){
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
                 tmpOrderItemList.add(orderItem);
-                if (orderItem.getSkuCode().startsWith(SP0) &&
-                        !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
-                    selfPurcharseOrderItemList.add(orderItem);
-                    skuCodes.add(orderItem.getSkuCode());
-                    if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){//非门店订单
-                        _skuCodes.add(orderItem.getSkuCode());
-                    }
+                if (orderItem.getSkuCode().startsWith(SP0)) {
                     allSelfPurcharseOrderItemList.add(orderItem);
+                    if(!StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())){
+                        selfPurcharseOrderItemList.add(orderItem);
+                        skuCodes.add(orderItem.getSkuCode());
+                        if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){//非门店订单
+                            _skuCodes.add(orderItem.getSkuCode());
+                        }
+                    }
                 }
                 if (orderItem.getSkuCode().startsWith(SP1)) {
                     supplierOrderItemList.add(orderItem);
