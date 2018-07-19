@@ -146,7 +146,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    //@Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form,
     		Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
@@ -292,8 +292,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param requestText
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @WarehouseNoticeCacheEvict
+    @Transactional(rollbackFor = Exception.class)
     public void updateInStock(String requestText) {
         EntryorderConfirmRequest confirmRequest;
         XStream xstream = new XStream();
