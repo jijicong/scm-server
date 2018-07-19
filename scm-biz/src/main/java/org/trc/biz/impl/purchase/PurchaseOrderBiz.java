@@ -232,6 +232,18 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                     purchaseOrder.setWarehouseName(entityWarehouse.getWarehouseName());
                 }
             }
+            /**
+             * v2.5 当采购单状态为入库通知状态，对应采购入库通知的状态=“待通知收货”或“仓库接收失败”或“已取消”：才具备作废操作
+             */
+            if(StringUtils.equals(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode(), purchaseOrder.getStatus())){
+                Example example = new Example(WarehouseNotice.class);
+                example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+                List<WarehouseNotice> warehouseNotices = iWarehouseNoticeService.selectByExample(example);
+                if(!CollectionUtils.isEmpty(warehouseNotices)){
+                    WarehouseNotice warehouseNotice = warehouseNotices.get(0);
+                    purchaseOrder.setNoticeStatus(warehouseNotice.getStatus());
+                }
+            }
         }
 
     }
