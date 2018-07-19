@@ -3427,7 +3427,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @return
      */
     private String getNoticeOrderStatusByOutboundStatus(String outboundStatus){
-        if(outboundStatus.equals(OutboundOrderStatusEnum.WAITING.getCode())){
+        if(outboundStatus.equals(OutboundOrderStatusEnum.WAITING.getCode()) || outboundStatus.equals(OutboundOrderStatusEnum.ALL_GOODS.getCode())){
             return NoticeChannelStatusEnum.SUCCESS.getCode();
         }else if(outboundStatus.equals(OutboundOrderStatusEnum.CANCELED.getCode()) || outboundStatus.equals(OutboundOrderStatusEnum.ON_CANCELED.getCode())){
             return NoticeChannelStatusEnum.CANCEL.getCode();
