@@ -137,8 +137,20 @@ public class PurchaseOrder extends BaseDO{
 
     @Transient
     private String noticeStatus;
+    
+    //审核意见  20180720 add
+    @Transient
+    private String auditOpinion;
 
-    public String getNoticeStatus() {
+    public String getAuditOpinion() {
+		return auditOpinion;
+	}
+
+	public void setAuditOpinion(String auditOpinion) {
+		this.auditOpinion = auditOpinion;
+	}
+
+	public String getNoticeStatus() {
         return noticeStatus;
     }
 
