@@ -2,24 +2,20 @@ package org.trc.biz.impl.purchase;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.sun.tools.internal.xjc.runtime.ZeroOneBooleanAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUser;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
 import org.trc.enums.*;
-import org.trc.exception.CategoryException;
 import org.trc.exception.PurchaseGroupException;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.service.config.ILogInfoService;
@@ -29,7 +25,6 @@ import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import org.trc.util.cache.PurchaseGroupCacheEvict;
@@ -38,8 +33,6 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import static javafx.beans.binding.Bindings.select;
 
 /**
  * Created by sone on 2017/5/19.
@@ -92,7 +85,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode)  {
 
         AssertUtil.notBlank(purchaseGroupCode,"根据采购组编码查询采购组人员的参数code为空");

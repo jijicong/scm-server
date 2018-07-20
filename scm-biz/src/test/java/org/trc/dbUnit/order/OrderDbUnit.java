@@ -5,11 +5,15 @@ import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.dbUnit.order.form.*;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.enums.SupplierOrderTypeEnum;
+import org.trc.enums.TrcActionTypeEnum;
+import org.trc.form.*;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
@@ -20,6 +24,7 @@ import org.trc.service.ITrcService;
 import org.trc.service.order.IWarehouseOrderService;
 import org.trc.service.util.IRealIpService;
 import org.trc.util.AssertUtil;
+import org.trc.util.ParamsUtil;
 import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
 
@@ -39,6 +44,8 @@ public class OrderDbUnit extends BaseTest{
     private IScmOrderBiz scmOrderBiz;
     @Autowired
     private IWarehouseOrderService warehouseOrderService;
+    @Autowired
+    private ITrcService trcService;
 
     private static final String TABLE_PLATFORM_ORDER= "platform_order";
     private static final String TABLE_SHOP_ORDER= "shop_order";
@@ -486,6 +493,33 @@ public class OrderDbUnit extends BaseTest{
         String sign = SHAEncrypt.SHA256(encryptStr);
         orderForm.setSign(sign);
         return JSON.toJSONString(orderForm);
+    }
+
+    @Test
+    public void testNotice(){
+        ChannelOrderResponse response = new ChannelOrderResponse();
+        response.setPlatformOrderCode("1807191016304531173");
+        response.setShopOrderCode("1807191016304541173");
+        response.setOrderType(SupplierOrderTypeEnum.ZC.getCode());//自采订单
+        List<SupplierOrderReturn> orders = new ArrayList<>();
+        SupplierOrderReturn orderReturn = new SupplierOrderReturn();
+        orderReturn.setState("200");
+        orderReturn.setSupplyOrderCode("ZY2018071900057329");
+        List<SkuInfo> skus = new ArrayList<>();
+        SkuInfo skuInfo = new SkuInfo();
+        skuInfo.setSkuName("企业购无人");
+        skuInfo.setNum(1);
+        skuInfo.setSkuCode("SP0201901210001510");
+        skus.add(skuInfo);
+        orderReturn.setSkus(skus);
+        orders.add(orderReturn);
+        response.setOrder(orders);
+        //设置请求渠道的签名
+        TrcParam trcParam = ParamsUtil.generateTrcSign("gyl-tairan", TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
+        BeanUtils.copyProperties(trcParam, response);
+
+
+        trcService.sendOrderSubmitResultNotice(response);
     }
 
 
