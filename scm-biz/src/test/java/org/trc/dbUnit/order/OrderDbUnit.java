@@ -15,7 +15,6 @@ import org.trc.enums.SupplierOrderTypeEnum;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.form.*;
 import org.trc.form.JDModel.ReturnTypeDO;
-import org.trc.form.LogisticNoticeForm;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.BaseTest;
