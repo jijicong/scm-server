@@ -146,7 +146,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    //@Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form,
     		Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
@@ -292,8 +292,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param requestText
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @WarehouseNoticeCacheEvict
+    @Transactional(rollbackFor = Exception.class)
     public void updateInStock(String requestText) {
         EntryorderConfirmRequest confirmRequest;
         XStream xstream = new XStream();
@@ -715,11 +714,18 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
              *   2.更新入库明细表中的商品为待仓库反馈状态
              *   3.更新相应sku的在途库存数
              **/
+            try {
+                logInfoService.recordLog(notice, notice.getId().toString(), warehouse.getWarehouseName(),
+                        LogOperationEnum.OUTBOUND_RECEIVE_SUCCESS.getMessage(), null, null);
+            }catch (Exception e){
+                logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
+                e.printStackTrace();
+            }
             postEntryOrderCreate(notice, detailsList, appResult, true);
         } else {
             // 仓库接收失败
             try {
-                logInfoService.recordLog(notice, notice.getId().toString(), whi.getWarehouseName(),
+                logInfoService.recordLog(notice, notice.getId().toString(), warehouse.getWarehouseName(),
                         LogOperationEnum.WMS_RECEIVE_FAILED.getMessage(), appResult.getDatabuffer(), null);
             } catch (Exception e) {
                 logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
@@ -727,7 +733,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
 
             postEntryOrderCreate(notice, detailsList, appResult, false);
-            //throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, result.getDatabuffer());
         }
 
     }
@@ -1076,6 +1081,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         purchaseOrderExample.createCriteria().andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
         purchaseOrderService.updateByExampleSelective(purchaseOrder, purchaseOrderExample);
 
+
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                warehouseNotice.getWarehouseName(),LogOperationEnum.RECIVE_GOODS_IN.getMessage(),logMessage,null);
+
         return ResultUtil.createSuccessResult("反填入库通知单成功","");
     }
 
@@ -1112,7 +1121,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     //取消收货接口调用业务
     @Override
-    @Transactional(rollbackFor =Exception.class)
+    @WarehouseNoticeCacheEvict
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor =Exception.class)
     public Response cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo) {
         if(flag.equals(ZeroToNineEnum.ZERO.getCode())){//重新发货不需要取消原因
             AssertUtil.notBlank(cancelReason,"取消原因不能为空");
@@ -1350,6 +1360,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     noticeOrder = warehouseNoticeService.selectOne(noticeOrder);
                     //查询到入库通知单,查询到关联的入库通知单详情
                     if (null != noticeOrder) {
+
+                        //入库商品日志
+                        String logMessage = "";
+
                         //记录部分收货的通知单详情
                         List<WarehouseNoticeDetails> partialNoticeDetailList = new ArrayList<>();
                         //异常入库的通知单详情
@@ -1379,7 +1393,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                  * v2.5
                                  * 同步采购单商品详情 入库状态
                                  */
-                                updatePurchaseDetailStatus(warehouseDetail, noticeOrder);
+                                updatePurchaseDetailStatus(warehouseDetail, noticeOrder, logMessage);
 
                                 //更新库存
                                 updateSkuStockTable(warehouseNotice, warehouseDetail, stockMap.get("defectiveQ") - oldDefectiveQ, stockMap.get("normalQ") - oldNormalQ);
@@ -1467,7 +1481,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         } else {
                             try {
                                 logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
-                                        "warehouse", WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), "", null);
+                                        "warehouse", WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
                             } catch (Exception e) {
                                 logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e.getMessage());
                             }
@@ -1486,7 +1500,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param warehouseDetail
      * @param noticeOrder
      */
-    private void updatePurchaseDetailStatus(WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder) {
+    private void updatePurchaseDetailStatus(WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder, String logMessage) {
         Example example1 = new Example(PurchaseDetail.class);
         example1.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
         List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(example1);
@@ -1497,10 +1511,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 purchaseDetail.setUpdateTime(Calendar.getInstance().getTime());
                 if(StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), String.valueOf(warehouseDetail.getStatus()))){
                     purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+                    logMessage += warehouseDetail.getSkuCode() + ":" + "入库异常<br>";
                 } else if (StringUtils.equals(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(), String.valueOf(warehouseDetail.getStatus()))){
                     purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+                    logMessage += warehouseDetail.getSkuCode() + ":" + "部分入库<br>";
                 } else {
                     purchaseDetail.setReceiveStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+                    logMessage += warehouseDetail.getSkuCode() + ":" + "全部入库<br>";
                 }
                 purchaseDetailService.updateByPrimaryKeySelective(purchaseDetail);
                 break;

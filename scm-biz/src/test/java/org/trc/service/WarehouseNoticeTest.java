@@ -11,9 +11,13 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
+import org.trc.domain.purchase.PurchaseDetail;
+import org.trc.form.purchase.ItemForm;
 import org.trc.form.wms.WmsInNoticeDetailRequest;
 import org.trc.form.wms.WmsInNoticeRequest;
+import org.trc.util.Pagenation;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -105,6 +109,9 @@ public class WarehouseNoticeTest extends AbstractJUnit4SpringContextTests {
     
     @Autowired
     private IWarehouseNoticeBiz noticeBiz;
+
+    @Autowired
+    private IPurchaseOrderBiz purchaseOrderBiz;
     /**
      * 定时任务查询满足条件的入库单，更新入库单状态
      */
@@ -137,5 +144,22 @@ public class WarehouseNoticeTest extends AbstractJUnit4SpringContextTests {
 
         request.setInNoticeDetailRequests(list);
         noticeBiz.inFinishCallBack(request);
+    }
+
+    @Test
+    public void findPurchaseDetailTest(){
+
+        ItemForm itemForm = new ItemForm();
+        itemForm.setSupplierCode("GYS000166");
+        itemForm.setWarehouseInfoId("59");
+        itemForm.setSkuCode("SP0201805190000768, SP0201805190000768");
+        itemForm.setIsValid("1");
+
+        Pagenation<PurchaseDetail> pagenation = new Pagenation<>();
+        pagenation.setPageNo(1);
+        pagenation.setPageSize(10);
+        pagenation.setStart(0);
+        Pagenation<PurchaseDetail> detail = purchaseOrderBiz.findPurchaseDetail(itemForm, pagenation, "");
+        System.out.println(JSON.toJSONString(detail.getResult()));
     }
 }

@@ -1004,7 +1004,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
             }
-            logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
+            logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),"该采购单被作废",ZeroToNineEnum.ZERO.getCode());
         }
     }
 
@@ -1692,7 +1692,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
-        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),"系统",LogOperationEnum.CANCEL.getMessage(),null,null);
 
         //更改明细信息
         WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
@@ -1894,7 +1894,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
             warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
-                warehouseItemCriteria.andIn("barCode", Arrays.asList(barCode.split(",")));
+                List<String> barCodes = Arrays.asList(barCode.split(","));
+                for (String bc : barCodes){
+                    warehouseItemCriteria.andCondition("FIND_IN_SET(" + bc + ", `bar_code`)");
+                }
             }
             if(StringUtils.isNotBlank(itemNo)){
                 warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
