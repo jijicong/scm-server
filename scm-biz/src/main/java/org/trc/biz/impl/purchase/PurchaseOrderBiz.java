@@ -1123,6 +1123,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 purchaseOrder.setHandlerPriorityName(dict.getName());
             }
         }
+        /**
+         * 获取审核意见 20180720 
+         **/
+        PurchaseOrderAudit record = new PurchaseOrderAudit();
+        record.setPurchaseOrderId(id);
+		PurchaseOrderAudit audit = iPurchaseOrderAuditService.selectOne(record);
+		if (audit != null) {
+			purchaseOrder.setAuditOpinion(audit.getAuditOpinion());
+		}
 
         this.setArea(purchaseOrder);
         return purchaseOrder;
