@@ -1176,7 +1176,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
             //记录操作日志
             logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason,null);
+                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason+";"+resultEnum.name,null);
             return ResultUtil.createSuccessResult("取消收货成功","");
         }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
             if(StringUtils.isBlank(warehouseNotice.getEntryOrderId())){
