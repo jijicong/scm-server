@@ -1894,7 +1894,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
             warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
-                warehouseItemCriteria.andIn("barCode", Arrays.asList(barCode.split(",")));
+                List<String> barCodes = Arrays.asList(barCode.split(","));
+                for (String bc : barCodes){
+                    warehouseItemCriteria.andCondition("FIND_IN_SET(" + bc + ", `bar_code`)");
+                }
             }
             if(StringUtils.isNotBlank(itemNo)){
                 warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
