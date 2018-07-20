@@ -1176,7 +1176,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
             //记录操作日志
             logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason,null);
+                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason+";"+resultEnum.name,null);
             return ResultUtil.createSuccessResult("取消收货成功","");
         }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
             if(StringUtils.isBlank(warehouseNotice.getEntryOrderId())){
@@ -1186,7 +1186,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     DateCheckUtil.checkDate(warehouseNotice.getUpdateTime())){
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前入库通知单取消时间过长，不能重新收货");
             }
-            logOperationEnum= LogOperationEnum.RE_RECIVE_GOODS;
+            logOperationEnum= LogOperationEnum.NOTICE_RECIVE_GOODS;//日志这里也叫通知收货
 
             //执行重新收货(需要重新生成入库单号，"_"区分)
             receiptAdviceInfo(warehouseNotice, aclUserAccreditInfo);
