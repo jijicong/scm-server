@@ -1081,9 +1081,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         purchaseOrderExample.createCriteria().andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
         purchaseOrderService.updateByExampleSelective(purchaseOrder, purchaseOrderExample);
 
-
+        WarehouseInfo whi = new WarehouseInfo();
+        whi.setCode(warehouseNotice.getWarehouseCode());
+        WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                warehouseNotice.getWarehouseName(),LogOperationEnum.RECIVE_GOODS_IN.getMessage(),logMessage,null);
+                warehouse.getWarehouseName(),LogOperationEnum.RECIVE_GOODS_IN.getMessage(),logMessage,null);
 
         return ResultUtil.createSuccessResult("反填入库通知单成功","");
     }
@@ -1467,12 +1469,16 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
                         }
 
+                        WarehouseInfo whi = new WarehouseInfo();
+                        whi.setCode(warehouseNotice.getWarehouseCode());
+                        WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+
                         //更新完成 记录日志
                         if (StringUtils.equals(warehouseNotice.getStatus(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
                             //获取异常日志
                             try {
                                 logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
-                                        "warehouse",
+                                        warehouse.getWarehouseName(),
                                         WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName()
                                         , getExceptionLog(warehouseNotice, warehouseNoticeDetailsList), null);
                             } catch (Exception e) {
@@ -1481,7 +1487,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         } else {
                             try {
                                 logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
-                                        "warehouse", WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
+                                        warehouse.getWarehouseName(), WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
                             } catch (Exception e) {
                                 logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e.getMessage());
                             }
