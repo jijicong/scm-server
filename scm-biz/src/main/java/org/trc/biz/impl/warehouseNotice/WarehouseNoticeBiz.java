@@ -1085,8 +1085,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         whi.setCode(warehouseNotice.getWarehouseCode());
         WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                warehouse.getWarehouseName(),LogOperationEnum.RECIVE_GOODS_IN.getMessage(),logMessage,null);
+                warehouse.getWarehouseName(), LogOperationEnum.RECIVE_GOODS_IN.getMessage(), logMessage,null);
 
+        PurchaseOrder po = new PurchaseOrder();
+        po.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
+        PurchaseOrder purchaseOrderLog = purchaseOrderService.selectOne(po);
+        if(purchaseOrderLog != null){
+            logInfoService.recordLog(purchaseOrderLog, purchaseOrderLog.getId().toString(),
+                    warehouse.getWarehouseName(), LogOperationEnum.RECIVE_GOODS_IN.getMessage(), logMessage,null);
+        }
         return ResultUtil.createSuccessResult("反填入库通知单成功","");
     }
 
