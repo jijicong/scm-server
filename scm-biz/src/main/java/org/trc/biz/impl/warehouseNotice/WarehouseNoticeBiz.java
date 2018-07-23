@@ -1130,7 +1130,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     //取消收货接口调用业务
     @Override
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor =Exception.class)
+    @Transactional(rollbackFor =Exception.class)
     public void cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo) {
         if(flag.equals(ZeroToNineEnum.ZERO.getCode())){//重新发货不需要取消原因
             AssertUtil.notBlank(cancelReason,"取消原因不能为空");
