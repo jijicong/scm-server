@@ -175,7 +175,7 @@ public class WarehouseNoticeResource {
 			throw new RuntimeException("重复操作！");
 		}
 		try {
-			warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
+			resp=warehouseNoticeBiz.cancel(warehouseNoticeCode,flag,cancelReason,aclUserAccreditInfo);
 		}
 		finally {
 			try {
@@ -191,7 +191,7 @@ public class WarehouseNoticeResource {
 			}
 		}
 
-	      return ResultUtil.createSuccessResult("取消收货操作成功", "");
+	      return resp;
 	}
 
 }
