@@ -59,7 +59,7 @@ public interface IWarehouseNoticeBiz {
      */
     Response inFinishCallBack(WmsInNoticeRequest req);
 
-    Response cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo);
+    void cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo);
 
     void retryCancelOrder();
 }
