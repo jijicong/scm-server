@@ -1839,6 +1839,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             if(!flag){
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
             }
+            return new ArrayList<PurchaseDetail>();
         }
 
         //查询供应商相关SKU
