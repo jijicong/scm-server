@@ -1904,9 +1904,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
                 List<String> barCodes = Arrays.asList(barCode.split(","));
-                for (String bc : barCodes){
-                    warehouseItemCriteria.andCondition("FIND_IN_SET(" + bc + ", `bar_code`)");
-                }
+                String conditionSql = setConditionSql(barCodes);
+                warehouseItemCriteria.andCondition(conditionSql);
             }
             if(StringUtils.isNotBlank(itemNo)){
                 warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
@@ -1926,6 +1925,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
         }
         return getPurchaseDetails(warehouseItemInfoList, skusList);
+    }
+
+    private String setConditionSql(List<String> barCodes) {
+        StringBuffer sql = new StringBuffer("(");
+        for (String bc : barCodes){
+            sql.append("FIND_IN_SET('" + bc + "', `bar_code`) OR ");
+        }
+        String substring = sql.substring(0, sql.lastIndexOf(")") + 1);
+        return substring + ")";
     }
 
     private List<PurchaseDetail> getPurchaseDetails(List<WarehouseItemInfo> warehouseItemInfoList, List<Skus> skusList){
