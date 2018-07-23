@@ -1128,10 +1128,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
     }
 
-    //取消收货接口调用业务
+    //取消收货接口调用业务,取消0，重新收货1
     @Override
-    @WarehouseNoticeCacheEvict
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor =Exception.class)
+    @Transactional(rollbackFor =Exception.class)
     public Response cancel(String warehouseNoticeCode,String flag, String cancelReason,AclUserAccreditInfo aclUserAccreditInfo) {
         if(flag.equals(ZeroToNineEnum.ZERO.getCode())){//重新发货不需要取消原因
             AssertUtil.notBlank(cancelReason,"取消原因不能为空");
@@ -1184,7 +1183,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //记录操作日志
             logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
                     aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason+";"+resultEnum.name,null);
-            return ResultUtil.createSuccessResult("取消收货成功","");
+            return ResultUtil.createSuccessResult("取消收货操作成功", "");
         }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
             if(StringUtils.isBlank(warehouseNotice.getEntryOrderId())){
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"仓库没有反馈入库单号，当前入库单号不能进行重新发货");
@@ -1201,9 +1200,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //记录操作日志(重新发货不需要取消原因)
             logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
                     aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),null,null);
+            return ResultUtil.createSuccessResult("重新收货操作成功", "");
 
+        }else {
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"取消收货flag值传参异常");
         }
-      return   ResultUtil.createSuccessResult("重新收货操作成功","");
 
     }
 
