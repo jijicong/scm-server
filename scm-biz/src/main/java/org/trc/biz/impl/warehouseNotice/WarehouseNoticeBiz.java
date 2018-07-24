@@ -169,7 +169,16 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             criteria.andEqualTo("purchaseType", form.getPurchaseType());
         }
         if (!StringUtils.isBlank(form.getWarehouseNoticeStatus())) {
-            criteria.andEqualTo("status", String.valueOf(form.getWarehouseNoticeStatus()));
+            if (StringUtils.equals(form.getWarehouseNoticeStatus(),ZeroToNineEnum.SEVEN.getCode())){
+                List list=new ArrayList();
+                list.add("6");
+                list.add("7");
+                criteria.andIn("status",list);
+
+            }else {
+                criteria.andEqualTo("status", String.valueOf(form.getWarehouseNoticeStatus()));
+            }
+
         }
         //采购单编号
         if (!StringUtils.isBlank(form.getWarehouseNoticeCode())) {

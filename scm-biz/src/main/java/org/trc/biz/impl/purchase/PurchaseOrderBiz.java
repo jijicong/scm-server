@@ -408,7 +408,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         if(!StringUtils.isBlank(form.getWarehouseNoticeStatus())){
-            criteria.andEqualTo("warehouseNoticeStatus", form.getWarehouseNoticeStatus());
+            if(StringUtils.equals(form.getWarehouseNoticeStatus(), PurchaseOrderWarehouseNoticeStatusEnum.OTHER.getCode())){
+                criteria.andCondition("warehouse_notice_status = '' OR warehouse_notice_status is null");
+            }else {
+                criteria.andEqualTo("warehouseNoticeStatus", form.getWarehouseNoticeStatus());
+            }
         }
 
         if (!StringUtils.isBlank(form.getPurchaseType())) {

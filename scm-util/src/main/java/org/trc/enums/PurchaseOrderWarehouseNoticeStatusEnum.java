@@ -12,7 +12,8 @@ public enum PurchaseOrderWarehouseNoticeStatusEnum {
     WAIT_RECEIVE("0", "等待入库"),
     ALL_GOODS("1","全部入库"),
     RECEIVE_PARTIAL_GOODS("2","部分入库"),
-    RECEIVE_GOODS_EXCEPTION("3","入库异常");
+    RECEIVE_GOODS_EXCEPTION("3","入库异常"),
+    OTHER("4","其他");
 
     private String code;
     private String name;
