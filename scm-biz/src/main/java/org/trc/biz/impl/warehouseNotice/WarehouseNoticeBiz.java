@@ -170,8 +170,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         if (!StringUtils.isBlank(form.getWarehouseNoticeStatus())) {
             if (StringUtils.equals(form.getWarehouseNoticeStatus(),ZeroToNineEnum.SEVEN.getCode())){
-                criteria.andCondition("status",ZeroToNineEnum.SEVEN);
-                criteria.andCondition("status",ZeroToNineEnum.SIX);
+                List list=new ArrayList();
+                list.add("6");
+                list.add("7");
+                criteria.andIn("status",list);
 
             }else {
                 criteria.andEqualTo("status", String.valueOf(form.getWarehouseNoticeStatus()));
