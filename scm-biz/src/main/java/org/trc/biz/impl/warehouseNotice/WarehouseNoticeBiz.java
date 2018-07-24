@@ -1281,7 +1281,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
                 String flag = response.getFlag();
                 WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
-                warehouseNoticeDetails.setWarehouseNoticeCode(orderCode);
+                warehouseNoticeDetails.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
                 List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(warehouseNoticeDetails);
 
                 if (StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//取消成功
