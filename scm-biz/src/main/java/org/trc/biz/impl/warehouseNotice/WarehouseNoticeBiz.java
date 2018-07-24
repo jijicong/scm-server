@@ -1263,7 +1263,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         try {
             if (StringUtils.equals(appResult.getAppcode(), SUCCESS)){// 成功
                 WarehouseNotice warehouseNotice=new WarehouseNotice();
-                warehouseNotice.setWarehouseNoticeCode(orderCode);
+                warehouseNotice.setEntryOrderId(orderCode);
                 warehouseNotice= warehouseNoticeService.selectOne(warehouseNotice);
 
                 ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
@@ -1300,7 +1300,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
         }catch (Exception e){
             e.printStackTrace();
-            logger.error("入库通知单号：{}，取消入库通知异常：{}",orderCode,e.getMessage());
+            logger.error("入库通知单号：{}，取消入库通知异常：{}",orderCode,e);
         }
 
     }
@@ -1490,14 +1490,14 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                         WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName()
                                         , getExceptionLog(warehouseNotice, warehouseNoticeDetailsList), null);
                             } catch (Exception e) {
-                                logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e.getMessage());
+                                logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e);
                             }
                         } else {
                             try {
                                 logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
                                         warehouse.getWarehouseName(), WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
                             } catch (Exception e) {
-                                logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e.getMessage());
+                                logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e);
                             }
                         }
                     } else {
