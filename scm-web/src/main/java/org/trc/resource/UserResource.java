@@ -3,6 +3,8 @@ package org.trc.resource;
 import org.springframework.stereotype.Component;
 import org.trc.constants.SupplyConstants;
 
+import io.swagger.annotations.Api;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -13,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 
 @Path("/user")
 @Component
+@Api(value = "用户资源")
 public class UserResource {
 
 //    @Autowired
