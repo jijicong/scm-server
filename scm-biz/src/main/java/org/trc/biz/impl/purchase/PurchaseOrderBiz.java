@@ -1705,7 +1705,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
-        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),"系统",LogOperationEnum.CANCEL.getMessage(),null,null);
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),"系统",LogOperationEnum.CANCEL.getMessage(),"对应采购单被作废",null);
 
         //更改明细信息
         WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
