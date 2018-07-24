@@ -1292,7 +1292,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
                     //日志输出
                     logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                            "admin","取消入库","取消结果：取消成功",null);
+                            "admin",LogOperationEnum.CANCEL_RECIVE_GOODS.getMessage(),"取消结果：取消成功",null);
                 }else if (StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){//取消失败
                     warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
                     warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
@@ -1304,7 +1304,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
                     //日志输出
                     logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                            "admin","取消入库","取消结果：取消失败"+response.getMessage(),null);
+                            "admin",LogOperationEnum.CANCEL_RECIVE_GOODS.getMessage(),"取消结果：取消失败"+response.getMessage(),null);
                 }
             }
         }catch (Exception e){
