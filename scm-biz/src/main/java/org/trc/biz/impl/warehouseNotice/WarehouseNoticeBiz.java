@@ -1224,9 +1224,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             if (warehouseInfoList==null|| warehouseInfoList.size()<1){
                 continue;
             }
-             warehouseInfo = warehouseInfoList.get(0);
+           //  warehouseInfo = warehouseInfoList.get(0);
             ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
-            scmOrderCancelRequest.setOrderCode(warehouseNotice.getWarehouseNoticeCode());
+            scmOrderCancelRequest.setOrderCode(warehouseNotice.getEntryOrderId());
             scmOrderCancelRequest.setWarehouseType("JD");
             scmOrderCancelRequest.setOrderType(CancelOrderType.PURCHASE.getCode());
             requests.add(scmOrderCancelRequest);
