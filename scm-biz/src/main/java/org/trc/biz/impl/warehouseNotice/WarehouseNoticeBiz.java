@@ -1024,6 +1024,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         }else{
                             detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
                             logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
+                            if (detail.getPurchasingQuantity().longValue() <normalStorageQuantity.longValue()){
+                                exceptionDetail.add(detail.getSkuCode()+"正品入库数量大于实际采购数量");
+                            }
                             exceptionDetail.add(detail.getSkuCode()+"存在残品入库");
                         }
 
@@ -1031,7 +1034,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 }
             }
         }
-        warehouseNoticeDetailsService.updateWarehouseNoticeLists(details);  //FIXME  方法有待改进
+        warehouseNoticeDetailsService.updateWarehouseNoticeLists(details);
         //更新入库通知单
         WarehouseNotice warehouseNotice = new WarehouseNotice();
 //        warehouseNotice.setWarehouseNoticeCode(noticeCode);
@@ -1278,7 +1281,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
                 String flag = response.getFlag();
                 WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
-                warehouseNoticeDetails.setWarehouseNoticeCode(orderCode);
+                warehouseNoticeDetails.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
                 List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(warehouseNoticeDetails);
 
                 if (StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//取消成功
