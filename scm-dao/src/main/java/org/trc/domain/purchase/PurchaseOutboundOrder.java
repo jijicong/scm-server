@@ -6,6 +6,7 @@ import org.trc.domain.BaseDO;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 
 @Table(name = "purchase_outbound_order")
@@ -177,6 +178,9 @@ public class PurchaseOutboundOrder extends BaseDO {
     @ApiModelProperty("退货详细地址")
     @Column(name = "receiver_address")
     private String receiverAddress;
+
+    @Transient
+    private String supplierName;
 
     ///**
     // * 是否有效:0-无效,1-有效
@@ -653,7 +657,15 @@ public class PurchaseOutboundOrder extends BaseDO {
         this.receiverAddress = receiverAddress;
     }
 
-    ///**
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
+    }
+
+///**
     // * 获取是否有效:0-无效,1-有效
     // *
     // * @return is_valid - 是否有效:0-无效,1-有效
