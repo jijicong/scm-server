@@ -1385,7 +1385,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 		//91状态，取消成功
                 		warehouseNotice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
                 		warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-                		warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                		
+                        WarehouseNoticeDetails detail = new WarehouseNoticeDetails();
+                        detail.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
+                        List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(detail);
+                        for (WarehouseNoticeDetails details : list) {
+                            details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.CANCELLATION.getCode()));
+                        }
+                        warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                        warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
                 		continue;
                 	}
                     if (!StringUtils.equals(entryOrderDetail.getStatus(), "70")) {
