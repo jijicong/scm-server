@@ -992,7 +992,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         List<WarehouseNoticeDetails> details = warehouseNoticeDetailsService.select(noticeDetail);
 
         String logMessage="";
-        List<String> exceptionDetail=new ArrayList<>();
+        List<String> exceptionDetail1=new ArrayList<>();
+        List<String> exceptionDetail2=new ArrayList<>();
 
         List<WmsInNoticeDetailRequest> inNoticeDetailRequests = req.getInNoticeDetailRequests();
         if(inNoticeDetailRequests!=null && inNoticeDetailRequests.size()>0){
@@ -1018,16 +1019,19 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             } else {
                                 detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
                                 logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
-                                exceptionDetail.add(detail.getSkuCode()+"正品入库数量大于实际采购数量");
+                                exceptionDetail2.add(detail.getSkuCode());
+                               // exceptionDetail.add(detail.getSkuCode()+"正品入库数量大于实际采购数量");
                             }
 
                         }else{
                             detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
                             logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
                             if (detail.getPurchasingQuantity().longValue() <normalStorageQuantity.longValue()){
-                                exceptionDetail.add(detail.getSkuCode()+"正品入库数量大于实际采购数量");
+                                //exceptionDetail.add(detail.getSkuCode()+"正品入库数量大于实际采购数量");
+                                exceptionDetail2.add(detail.getSkuCode());
                             }
-                            exceptionDetail.add(detail.getSkuCode()+"存在残品入库");
+                           // exceptionDetail.add(detail.getSkuCode()+"存在残品入库");
+                            exceptionDetail1.add(detail.getSkuCode());
                         }
 
                     }
@@ -1071,19 +1075,17 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         	warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
             purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
         }
-//        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
-//            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
-//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
-//            result = "入库完成";
-//        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
-//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-//        }else {
-//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
-//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
-//        }
-        if(exceptionDetail.size()>0){
-            warehouseNotice.setExceptionCause("["+StringUtils.join(exceptionDetail, ",")+"]");
+
+        if(exceptionDetail1.size()>0||exceptionDetail2.size()>0){
+            if (exceptionDetail1.size()==0){
+                warehouseNotice.setExceptionCause("②["+ StringUtils.join(exceptionDetail2,",")+"]正品入库数量大于实际采购数量");
+            }else if (exceptionDetail2.size()==0){
+                warehouseNotice.setExceptionCause("①["+ StringUtils.join(exceptionDetail1,",")+"]存在残品入库");
+            }else {
+                warehouseNotice.setExceptionCause("①["+ StringUtils.join(exceptionDetail1,",")+"]存在残品入库"+
+                        "②["+ StringUtils.join(exceptionDetail2,",")+"]正品入库数量大于实际采购数量");
+            }
+
         }
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
