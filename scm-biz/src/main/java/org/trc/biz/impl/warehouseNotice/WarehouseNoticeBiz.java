@@ -1312,7 +1312,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
                     //日志输出
                     logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                            "admin",LogOperationEnum.CANCEL_RECIVE_GOODS.getMessage(),"取消结果：取消失败"+response.getMessage(),null);
+                            "admin",LogOperationEnum.CANCEL_RECIVE_GOODS.getMessage(),"取消结果：取消失败，"+response.getMessage(),null);
                 }
             }
         }catch (Exception e){
