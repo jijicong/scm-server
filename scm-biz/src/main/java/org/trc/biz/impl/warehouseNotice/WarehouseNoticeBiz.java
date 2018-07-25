@@ -1175,10 +1175,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             logOperationEnum= LogOperationEnum.CANCEL_RECIVE_GOODS;
             Map<String, String> map = new HashMap<>();
             //调用入库通知取消操作
-            OrderCancelResultEnum resultEnum=cancelNotice(warehouseNotice,map);
+            OrderCancelResultEnum resultEnum = cancelNotice(warehouseNotice, map);
 
             if(OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)){
-                throw new RuntimeException("入库通知单取消失败："+map.get("msg"));
+            	
+            	//取消失败记录日志20180725 add
+                logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                        aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), "取消原因：" + cancelReason + ";失败原因：" + map.get("msg"), null);
+                
+                throw new RuntimeException("入库通知单取消失败：" + map.get("msg"));
             }else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)){
                 cancelResult= WarehouseNoticeStatusEnum.CANCELLING.getCode();
             }else {
@@ -1196,7 +1201,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
             //记录操作日志
             logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),cancelReason+";"+resultEnum.name,null);
+                    aclUserAccreditInfo.getUserId(),logOperationEnum.getMessage(),"取消原因：" + cancelReason + ";取消结果：" + resultEnum.name,null);
             return ResultUtil.createSuccessResult("取消收货操作成功", "");
         }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
             if(StringUtils.isBlank(warehouseNotice.getEntryOrderId())){
@@ -1309,7 +1314,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
                     //日志输出
                     logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
-                            "admin",LogOperationEnum.CANCEL_RECIVE_GOODS.getMessage(),"取消结果：取消失败"+response.getMessage(),null);
+                            "admin",LogOperationEnum.CANCEL_RECIVE_GOODS.getMessage(),"取消结果：取消失败，"+response.getMessage(),null);
                 }
             }
         }catch (Exception e){
@@ -1338,6 +1343,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             } else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
                 resultEnum = OrderCancelResultEnum.CANCELLING;
             } else {//取消失败
+            	//resultEnum = OrderCancelResultEnum.CANCEL_FAIL;
                 errMsg.put("msg", respResult.getMessage());
             }
         }else {
