@@ -4,14 +4,14 @@ package org.trc.enums.warehouse;
  * Created by hzliuw on 2018/7/25.
  */
 public enum PurchaseOutboundNoticeStatusEnum {
-    TO_BE_NOTIFIED(0, "待通知出库"),
-    ON_WAREHOUSE_TICKLING(1, "出库仓接收成功"),
-    WAREHOUSE_RECEIVE_FAILED(1, "出库仓接收失败"),
-    PASS(1, "出库完成"),
-    RECEIVE_EXCEPTION(1, "出库异常"),
-    CANCEL(1, "已取消");
+    TO_BE_NOTIFIED("0", "待通知出库"),
+    ON_WAREHOUSE_TICKLING("1", "出库仓接收成功"),
+    WAREHOUSE_RECEIVE_FAILED("2", "出库仓接收失败"),
+    PASS("3", "出库完成"),
+    RECEIVE_EXCEPTION("4", "出库异常"),
+    CANCEL("5", "已取消");
 
-    public static PurchaseOutboundNoticeStatusEnum queryNameByCode(Integer code){
+    public static PurchaseOutboundNoticeStatusEnum queryNameByCode(String code){
         for(PurchaseOutboundNoticeStatusEnum sourceEnum: PurchaseOutboundNoticeStatusEnum.values()){
             if (sourceEnum.getCode().equals(code)){
                 return sourceEnum;
@@ -20,19 +20,19 @@ public enum PurchaseOutboundNoticeStatusEnum {
         return null;
     }
 
-    private Integer code;
+    private String code;
     private String name;
 
-    PurchaseOutboundNoticeStatusEnum(Integer code, String name) {
+    PurchaseOutboundNoticeStatusEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }
 
-    public Integer getCode() {
+    public String getCode() {
         return code;
     }
 
-    public void setCode(Integer code) {
+    public void setCode(String code) {
         this.code = code;
     }
 

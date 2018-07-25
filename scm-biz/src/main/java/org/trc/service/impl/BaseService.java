@@ -1,13 +1,10 @@
 package org.trc.service.impl;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.util.StringUtil;
-import com.tairanchina.beego.api.model.Page;
-import javafx.scene.control.Pagination;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.trc.cache.Cacheable;
 import org.trc.service.IBaseService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
@@ -40,11 +37,11 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
                 setPageOrder(example, queryModel.getOrderBys()[i], queryModel.getOrders()[i]);
             }
         }
-        int totalCount = mapper.selectCountByExample(example);
-        PageHelper.startPage(pagenation.getPageNo(), pagenation.getPageSize());
+        //int totalCount = mapper.selectCountByExample(example);
+        Page<T> page = PageHelper.startPage(pagenation.getPageNo(), pagenation.getPageSize());
         List<T> list = mapper.selectByExample(example);
-        pagenation.setTotalCount(totalCount);
-        pagenation.setResult(list);
+        pagenation.setTotalCount(page.getTotal());
+        pagenation.setResult(page.getResult());
         return pagenation;
     }
 

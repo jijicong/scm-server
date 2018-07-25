@@ -37,19 +37,19 @@ public class PurchaseOutboundOrderForm extends QueryModel {
     private String warehouseName;
 
     /**
-     *  退货类型
+     *  退货类型1-正品，2-残品
      */
     @QueryParam("returnOrderType")
     private String returnOrderType;
 
     /**
-     *  单据状态
+     *  单据状态:0-暂存,1-提交审核,2-审核驳回,3-审核通过,4-出库通知,5-作废
      */
     @QueryParam("status")
     private String status;
 
     /**
-     * 出库状态
+     * 出库状态:1-等待出库，2-出库完成，3-出库异常，4-其他
      */
     @QueryParam("outboundStatus")
     private String outboundStatus;
