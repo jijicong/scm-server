@@ -1384,6 +1384,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         //如果不是70的完成状态,当前采购单入库详情就跳过处理
                         continue;
                     }
+                    if (StringUtils.equals(entryOrderDetail.getStatus(), "91")) {
+                        //91状态，取消成功
+                        warehouseNotice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+                        warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+                        warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                        continue;
+                    }
                     /* 定位到入库通知单 */
                     WarehouseNotice noticeOrder = new WarehouseNotice();
                     noticeOrder.setEntryOrderId(entryOrderDetail.getPoOrderNo());
