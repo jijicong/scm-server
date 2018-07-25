@@ -120,8 +120,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
     private IPurchaseGroupUserService purchaseGroupUserService;
-
-
+    @Autowired
+    private IPurchaseBoxInfoService purchaseBoxInfoService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -1375,6 +1375,17 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(order,"根据主键查询该采购单为空");
         if(!StringUtils.equals(order.getStatus(), PurchaseOrderStatusEnum.PASS.getCode())){
             String msg = "保存入库通知单数据库操作失败,入库单状态不为审核通过！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+
+        //判断是否维护装箱信息完成
+        order.getBoxInfoStatus();
+        PurchaseBoxInfo purchaseBoxInfo = new PurchaseBoxInfo();
+        purchaseBoxInfo.setPurchaseOrderCode(order.getPurchaseOrderCode());
+        List<PurchaseBoxInfo> purchaseBoxInfoList = purchaseBoxInfoService.select(purchaseBoxInfo);
+        if(purchaseBoxInfoList == null || purchaseBoxInfoList.size() < 1){
+            String msg = "请先完成“装箱信息”维护!";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }

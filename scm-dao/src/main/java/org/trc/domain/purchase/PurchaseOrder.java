@@ -19,6 +19,9 @@ import java.math.BigDecimal;
  * Created by sone on 2017/5/25.
  */
 public class PurchaseOrder extends BaseDO{
+
+    private static final Long serialVersionUID = 1L;
+
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -129,6 +132,22 @@ public class PurchaseOrder extends BaseDO{
 
     @Transient
     private String senderCityName;
+
+    @FormParam("logisticsCorporationName")
+    //物流公司名称
+    private String logisticsCorporationName;
+
+    @FormParam("logisticsCode")
+    //物流公司编号
+    private String logisticsCode;
+
+    @FormParam("packingType")
+    //装箱方式
+    private String packingType;
+
+    @FormParam("boxInfoStatus")
+    //装箱信息状态：0-未完成，1-已完成
+    private String boxInfoStatus;
 
     public String getHandlerPriorityName() {
         return handlerPriorityName;
@@ -513,5 +532,37 @@ public class PurchaseOrder extends BaseDO{
 
     public void setSenderCityName(String senderCityName) {
         this.senderCityName = senderCityName;
+    }
+
+    public String getLogisticsCorporationName() {
+        return logisticsCorporationName;
+    }
+
+    public void setLogisticsCorporationName(String logisticsCorporationName) {
+        this.logisticsCorporationName = logisticsCorporationName;
+    }
+
+    public String getLogisticsCode() {
+        return logisticsCode;
+    }
+
+    public void setLogisticsCode(String logisticsCode) {
+        this.logisticsCode = logisticsCode;
+    }
+
+    public String getPackingType() {
+        return packingType;
+    }
+
+    public void setPackingType(String packingType) {
+        this.packingType = packingType;
+    }
+
+    public String getBoxInfoStatus() {
+        return boxInfoStatus;
+    }
+
+    public void setBoxInfoStatus(String boxInfoStatus) {
+        this.boxInfoStatus = boxInfoStatus;
     }
 }
