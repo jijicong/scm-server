@@ -1385,6 +1385,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 		//91状态，取消成功
                 		warehouseNotice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
                 		warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+                		warehouseNotice.setUpdateTime(new Date());
                 		
                         WarehouseNoticeDetails detail = new WarehouseNoticeDetails();
                         detail.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
