@@ -1394,6 +1394,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         }
                         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
                         warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+                        
+                        WarehouseInfo whi = new WarehouseInfo();
+                        whi.setCode(warehouseNotice.getWarehouseCode());
+                        WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+                        //日志
+                        logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), warehouse.getWarehouseName(),
+                        		LogOperationEnum.CANCEL_RECIVE_GOODS.getMessage(),"第三方仓取消，取消结果:取消成功", null);
                 		continue;
                 	}
                     if (!StringUtils.equals(entryOrderDetail.getStatus(), "70")) {
