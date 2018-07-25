@@ -40,6 +40,12 @@ public class PurchaseOrderForm extends QueryModel{
     @QueryParam("purchaseType")
     private String purchaseType;
 
+    /**
+     * 采购组
+     */
+    @QueryParam("purchaseGroup")
+    private String  purchaseGroup;
+
     public String getPurchaseOrderCode() {
         return purchaseOrderCode;
     }
@@ -78,6 +84,14 @@ public class PurchaseOrderForm extends QueryModel{
 
     public void setPurchaseType(String purchaseType) {
         this.purchaseType = purchaseType;
+    }
+
+    public String getPurchaseGroup() {
+        return purchaseGroup;
+    }
+
+    public void setPurchaseGroup(String purchaseGroup) {
+        this.purchaseGroup = purchaseGroup;
     }
 
     @Override
