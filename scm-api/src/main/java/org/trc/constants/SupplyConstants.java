@@ -1397,5 +1397,11 @@ public class SupplyConstants {
 
     }
 
-
+    /**
+     *  v3.1 采购退货单
+     */
+    public static class PurchaseOutboundOrder{
+        public final static String ROOT = "purchaseOutboundOrder";
+        public final static String PAGE_LIST = "pagelist";
+    }
 }
