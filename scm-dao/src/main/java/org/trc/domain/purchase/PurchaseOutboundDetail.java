@@ -47,6 +47,10 @@ public class PurchaseOutboundDetail extends BaseDO {
     @Column(name = "sku_code")
     private String skuCode;
 
+    @ApiModelProperty("skuName")
+    @Column(name = "sku_name")
+    private String skuName;
+
     /**
      * 品牌id
      */
@@ -715,5 +719,13 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     public void setSpecNatureInfo(String specNatureInfo) {
         this.specNatureInfo = specNatureInfo;
+    }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
     }
 }

@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -10,7 +11,6 @@ import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
-import org.trc.domain.purchase.PurchaseOutboundOrderDataForm;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.AssertUtil;
@@ -71,8 +71,16 @@ public class PurchaseOutboundOrderResource {
     @ApiImplicitParams({
             @ApiImplicitParam()
     })
-    public Response savePurchaseOutboundOrder(@BeanParam PurchaseOutboundOrderDataForm form, @Context ContainerRequestContext requestContext) {
+    //public Response savePurchaseOutboundOrder(@BeanParam PurchaseOutboundOrderDataForm form, @Context ContainerRequestContext requestContext) {
+    public Response savePurchaseOutboundOrder(@BeanParam PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, PurchaseOutboundOrderStatusEnum.HOLD.getCode(), (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("保存采购退货单成功!", "");
+    }
+    @POST
+    @Path("/test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response test(@BeanParam PurchaseOutboundOrder form){
+        System.out.println(JSON.toJSONString(form));
+        return ResultUtil.createSuccessResult("success", JSON.toJSONString(form));
     }
 }
