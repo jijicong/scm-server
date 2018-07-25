@@ -1075,17 +1075,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         	warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
             purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
         }
-//        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
-//            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
-//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
-//            result = "入库完成";
-//        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
-//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-//        }else {
-//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
-//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
-//        }
+
         if(exceptionDetail1.size()>0||exceptionDetail2.size()>0){
             if (exceptionDetail1.size()==0){
                 warehouseNotice.setExceptionCause("②["+ StringUtils.join(exceptionDetail2,",")+"]正品入库数量大于实际采购数量");
@@ -1095,7 +1085,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 warehouseNotice.setExceptionCause("①["+ StringUtils.join(exceptionDetail1,",")+"]存在残品入库"+
                         "②["+ StringUtils.join(exceptionDetail2,",")+"]正品入库数量大于实际采购数量");
             }
-           // warehouseNotice.setExceptionCause("["+StringUtils.join(exceptionDetail, ",")+"]");
 
         }
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
