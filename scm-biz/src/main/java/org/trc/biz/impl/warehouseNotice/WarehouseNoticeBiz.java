@@ -818,6 +818,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", notice.getWarehouseNoticeCode());
         updateNotice.setStatus(status);
         updateNotice.setUpdateTime(Calendar.getInstance().getTime());
+        updateNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
         warehouseNoticeService.updateByExampleSelective(updateNotice, warehouseNoticeExample);
 
         // 更新入库明细表中的商品为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
@@ -967,7 +968,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 //        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         warehouseNoticeCriteria.andIn("status",stateArray);
         warehouseNoticeCriteria.andNotIn("warehouseCode", warehouseCodeList);
-        //数据中未完成的入库通知单
+        //数据中未完成的入库通知单（部分收货有两种状态：京东有可能是一次性部分收货的，其他仓库有可能多次部分收货。为了区分这种情况就加了这个部分收货的情况）
         warehouseNoticeCriteria.andEqualTo("finishStatus",WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
 //        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047973168");
         List<WarehouseNotice> warehouseNoticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
@@ -1178,16 +1179,17 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //调用入库通知取消操作
             OrderCancelResultEnum resultEnum = cancelNotice(warehouseNotice, map);
 
-            if(OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)){
+            if(OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)) {
             	
             	//取消失败记录日志20180725 add
                 logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
                         aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), "取消原因：" + cancelReason + ";失败原因：" + map.get("msg"), null);
                 
                 throw new RuntimeException("入库通知单取消失败：" + map.get("msg"));
-            }else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)){
+            } else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)) {
                 cancelResult= WarehouseNoticeStatusEnum.CANCELLING.getCode();
-            }else {
+                warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+            } else {
                 cancelResult=WarehouseNoticeStatusEnum.CANCELLATION.getCode();
             }
 
@@ -1299,6 +1301,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     for (WarehouseNoticeDetails details : list) {
                         details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.CANCELLATION.getCode()));
                     }
+                    warehouseNotice.setUpdateTime(new Date());
+                    warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
                     warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
                     warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
 
@@ -1311,6 +1315,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     for (WarehouseNoticeDetails details : list) {
                         details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode()));
                     }
+                    warehouseNotice.setUpdateTime(new Date());
+                    warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
                     warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
                     warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
 
