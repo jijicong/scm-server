@@ -4,7 +4,12 @@ import io.swagger.annotations.Api;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 import org.trc.biz.purchase.IPurchaseBoxInfoBiz;
+import org.trc.constants.SupplyConstants;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseBoxInfo;
+import org.trc.domain.purchase.PurchaseBoxInfoVO;
+import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
+import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BeanParam;
@@ -29,7 +34,10 @@ public class PurchaseBoxInfoResource {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response savePurchaseOrder(@BeanParam @Validated PurchaseBoxInfo purchaseBoxInfo, @Context ContainerRequestContext requestContext) {
-        return null;
+    public Response savePurchaseBoxInfo(@BeanParam @Validated PurchaseBoxInfoVO purchaseBoxInfoVO,
+                                        @Context ContainerRequestContext requestContext) {
+        purchaseBoxInfoBiz.savePurchaseBoxInfo(purchaseBoxInfoVO, PurchaseBoxInfoStatusEnum.UNFINISH.getCode(),
+                (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("暂存装箱信息成功","");
     }
 }
