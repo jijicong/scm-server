@@ -1193,6 +1193,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
             //入库单状态
             warehouseNotice.setStatus(cancelResult);
+            warehouseNotice.setUpdateTime(new Date());
             //入库单详情状态
             for (WarehouseNoticeDetails detail : list) {
                 detail.setStatus(Integer.parseInt(cancelResult));
