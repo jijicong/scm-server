@@ -19,6 +19,8 @@ public class ScoreApplication extends ResourceConfig {
         register(MultiPartFeature.class);
 
         packages("org.trc.resource");
+        packages("io.swagger.jaxrs.listing");
+        
     }
 
 }
