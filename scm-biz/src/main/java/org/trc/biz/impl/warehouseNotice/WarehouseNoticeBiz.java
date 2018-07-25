@@ -592,20 +592,21 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     private void entryOrderCreate(WarehouseNotice notice, String userId)  {
         String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
-
+        String originNotice = noticeCode;
         WarehouseInfo whi = new WarehouseInfo();
         whi.setCode(notice.getWarehouseCode());
         WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
         AssertUtil.notNull(warehouse, "采购入库仓库不存在");
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
         //针对京东仓的重新收货逻辑
-        if(warehouse.getOperationalNature().equals(OperationalNatureEnum.THIRD_PARTY)){//第三方仓
+        
+        if(warehouse.getOperationalNature().equals(OperationalNatureEnum.THIRD_PARTY.getCode())){//第三方仓
             if (StringUtils.isNotBlank(notice.getEntryOrderId())){//仓库反馈的入库单号不为空，重新收货
-                Long inOrderSeq =( notice.getInOrderSeq()==null ? 0: notice.getInOrderSeq())+1;
+                Long inOrderSeq =(notice.getInOrderSeq()==null ? 0: notice.getInOrderSeq()) + 1;
                 notice.setInOrderSeq(inOrderSeq);
                 warehouseNoticeService.updateByPrimaryKey(notice);
                 scmEntryOrderCreateRequest.setInOrderSeq(inOrderSeq);
-                noticeCode= noticeCode+"_"+inOrderSeq;
+                noticeCode = noticeCode+"_"+inOrderSeq;
             }
         }
 
@@ -660,9 +661,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //入库单明细
         List<ScmEntryOrderItem> scmEntryOrderItemList = new ArrayList<>();
         WarehouseNoticeDetails detail = new WarehouseNoticeDetails();
-        detail.setWarehouseNoticeCode(noticeCode);
+        detail.setWarehouseNoticeCode(originNotice);
         List<WarehouseNoticeDetails> detailsList = warehouseNoticeDetailsService.select(detail);
-        AssertUtil.notEmpty(detailsList, String.format("发货通知单%s相关商品明细为空", noticeCode));
+        AssertUtil.notEmpty(detailsList, String.format("发货通知单%s相关商品明细为空", originNotice));
         for (WarehouseNoticeDetails details : detailsList) {
             ScmEntryOrderItem scmEntryOrderItem = new ScmEntryOrderItem();
             
