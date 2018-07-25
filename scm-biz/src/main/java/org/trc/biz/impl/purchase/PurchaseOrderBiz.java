@@ -34,6 +34,7 @@ import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
+import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.PurchaseOrderException;
 import org.trc.exception.WarehouseNoticeException;
@@ -383,6 +384,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             criteria.andEqualTo("status", form.getPurchaseStatus());
         }else{
             criteria.andIn("status", STATUS_LIST);
+        }
+
+        if (!StringUtils.isBlank(form.getPurchaseGroup())) {
+            criteria.andEqualTo("purchaseGroupCode", form.getPurchaseGroup());
         }
 
         if (!StringUtils.isBlank(form.getStartDate())) {
@@ -1380,11 +1385,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //判断是否维护装箱信息完成
-        order.getBoxInfoStatus();
-        PurchaseBoxInfo purchaseBoxInfo = new PurchaseBoxInfo();
-        purchaseBoxInfo.setPurchaseOrderCode(order.getPurchaseOrderCode());
-        List<PurchaseBoxInfo> purchaseBoxInfoList = purchaseBoxInfoService.select(purchaseBoxInfo);
-        if(purchaseBoxInfoList == null || purchaseBoxInfoList.size() < 1){
+        String boxInfoStatus = order.getBoxInfoStatus();
+        if(boxInfoStatus == null || !StringUtils.equals(boxInfoStatus, PurchaseBoxInfoStatusEnum.FINISH.getCode())){
             String msg = "请先完成“装箱信息”维护!";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);

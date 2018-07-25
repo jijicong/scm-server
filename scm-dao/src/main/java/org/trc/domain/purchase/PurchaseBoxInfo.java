@@ -19,6 +19,7 @@ public class PurchaseBoxInfo extends BaseDO {
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     //主键
     private Long id;
 
