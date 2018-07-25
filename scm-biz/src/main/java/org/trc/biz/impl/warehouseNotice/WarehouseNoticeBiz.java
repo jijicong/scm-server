@@ -1381,15 +1381,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //处理库存信息
             if (!AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseList)) {
                 for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseList) {
+                	if (StringUtils.equals(entryOrderDetail.getStatus(), "91")) {
+                		//91状态，取消成功
+                		warehouseNotice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+                		warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+                		warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                		continue;
+                	}
                     if (!StringUtils.equals(entryOrderDetail.getStatus(), "70")) {
                         //如果不是70的完成状态,当前采购单入库详情就跳过处理
-                        continue;
-                    }
-                    if (StringUtils.equals(entryOrderDetail.getStatus(), "91")) {
-                        //91状态，取消成功
-                        warehouseNotice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
-                        warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-                        warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
                         continue;
                     }
                     /* 定位到入库通知单 */
