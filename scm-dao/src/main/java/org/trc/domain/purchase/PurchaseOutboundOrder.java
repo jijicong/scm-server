@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Table(name = "purchase_outbound_order")
 public class PurchaseOutboundOrder extends BaseDO {
@@ -181,6 +182,17 @@ public class PurchaseOutboundOrder extends BaseDO {
 
     @Transient
     private String supplierName;
+
+    @Transient
+    private List<PurchaseOutboundDetail> purchaseOutboundDetailList;
+
+    public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
+        return purchaseOutboundDetailList;
+    }
+
+    public void setPurchaseOutboundDetailList(List<PurchaseOutboundDetail> purchaseOutboundDetailList) {
+        this.purchaseOutboundDetailList = purchaseOutboundDetailList;
+    }
 
     ///**
     // * 是否有效:0-无效,1-有效
