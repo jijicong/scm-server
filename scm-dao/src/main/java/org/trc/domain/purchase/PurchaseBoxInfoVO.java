@@ -3,9 +3,13 @@ package org.trc.domain.purchase;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Size;
 import javax.ws.rs.FormParam;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by hzcyn on 2018/7/25.
@@ -20,9 +24,10 @@ public class PurchaseBoxInfoVO implements Serializable {
     @ApiModelProperty("采购单单号")
     private String purchaseOrderCode;
 
-    @FormParam("gridValue")
+    @NotEmpty(message = "装箱信息详情不能为空")
     @ApiModelProperty("装箱信息")
-    private String gridValue;
+    @Valid
+    private List<PurchaseBoxInfo> purchaseBoxInfoList;
 
     @FormParam("logisticsCorporationName")
     @ApiModelProperty("物流公司名称")
@@ -34,5 +39,7 @@ public class PurchaseBoxInfoVO implements Serializable {
 
     @FormParam("packingType")
     @ApiModelProperty("装箱方式")
+    @NotEmpty(message = "装箱方式不能为空")
+    @Size(max=50, message = "装箱方式过长")
     private String packingType;
 }

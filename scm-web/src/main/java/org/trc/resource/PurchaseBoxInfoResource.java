@@ -34,7 +34,7 @@ public class PurchaseBoxInfoResource {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response savePurchaseBoxInfo(@BeanParam @Validated PurchaseBoxInfoVO purchaseBoxInfoVO,
+    public Response savePurchaseBoxInfo(@BeanParam PurchaseBoxInfoVO purchaseBoxInfoVO,
                                         @Context ContainerRequestContext requestContext) {
         purchaseBoxInfoBiz.savePurchaseBoxInfo(purchaseBoxInfoVO, PurchaseBoxInfoStatusEnum.UNFINISH.getCode(),
                 (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));

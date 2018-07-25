@@ -9,8 +9,10 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.math.BigDecimal;
 
 /**
  * Created by hzcyn on 2018/7/24.
@@ -69,5 +71,8 @@ public class PurchaseBoxInfo extends BaseDO {
     @ApiModelProperty("备注")
     @Length(max = 100, message = "备注字母和数字不能超过100个")
     private String remark;
+
+    @Transient
+    private BigDecimal senderProvinceName;
 
 }
