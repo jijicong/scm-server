@@ -20,6 +20,7 @@ public class ScoreApplication extends ResourceConfig {
 
         packages("org.trc.resource");
         packages("io.swagger.jaxrs.listing");
+        
     }
 
 }
