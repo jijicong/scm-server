@@ -10,6 +10,7 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
@@ -41,11 +42,14 @@ public class PurchaseBoxInfo extends BaseDO {
 
     @FormParam("amountPerBox")
     @ApiModelProperty("每箱数量")
+    @Max(value = 100000, message = "每箱数量不能超过100000")
+    @Min(value = 0, message = "每箱数量不能小于0")
     private Long amountPerBox;
 
     @FormParam("boxNumber")
     @Length(max = 15, message = "箱号字母和数字不能超过15个")
     @ApiModelProperty("箱号")
+    @NotEmpty(message = "箱号为必填项")
     private String boxNumber;
 
     @FormParam("boxAmount")
@@ -85,5 +89,9 @@ public class PurchaseBoxInfo extends BaseDO {
     @ApiModelProperty("备注")
     @Length(max = 100, message = "备注字母和数字不能超过100个")
     private String remark;
+
+    @Transient
+    @ApiModelProperty("操作状态(0-未修改,1-新增,2-修改,3-删除)")
+    private String status;
 
 }

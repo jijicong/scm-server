@@ -7,16 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseBoxInfoBiz;
+import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseBoxInfo;
 import org.trc.domain.purchase.PurchaseBoxInfoVO;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
 import org.trc.exception.PurchaseBoxInfoException;
+import org.trc.service.config.IDictService;
 import org.trc.service.impl.config.LogInfoService;
 import org.trc.service.purchase.IPurchaseBoxInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
@@ -24,10 +24,7 @@ import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by hzcyn on 2018/7/25.
@@ -37,6 +34,8 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
 
     private Logger logger = LoggerFactory.getLogger(PurchaseBoxInfoBiz.class);
 
+    public static final String PACKING_TYPE = "packingType";
+
     @Autowired
     private IPurchaseBoxInfoService purchaseBoxInfoService;
     @Autowired
@@ -45,6 +44,8 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
     private LogInfoService logInfoService;
     @Autowired
     private IPurchaseDetailService purchaseDetailService;
+    @Autowired
+    private IDictService dictService;
 
     /**
      * 保存装箱信息
@@ -70,6 +71,17 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
             throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
         }
 
+        //单据状态"为“暂存”、“提交审核”、“审核驳回”、“审核通过”时才允许操作
+        String purchaseOrderStatus = purchaseOrder.getStatus();
+        if(!(PurchaseOrderStatusEnum.HOLD.equals(purchaseOrderStatus) ||
+                PurchaseOrderStatusEnum.AUDIT.equals(purchaseOrderStatus) ||
+                PurchaseOrderStatusEnum.REJECT.equals(purchaseOrderStatus) ||
+                PurchaseOrderStatusEnum.PASS.equals(purchaseOrderStatus))){
+            String msg = "单据状态为“暂存”、“提交审核”、“审核驳回”、“审核通过”时才允许操作";
+            logger.error(msg);
+            throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
+        }
+
         //保存采购单中装箱信息信息
         PurchaseOrder purchaseOrderUpdate = new PurchaseOrder();
         purchaseOrderUpdate.setId(purchaseOrder.getId());
@@ -89,6 +101,7 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
         List<PurchaseBoxInfo> purchaseBoxInfoList = purchaseBoxInfoVO.getPurchaseBoxInfoList();
         if(StringUtils.equals(PurchaseBoxInfoStatusEnum.FINISH.getCode(), status)){
             this.checkPurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseOrderCode);
+            this.savePackingType(purchaseBoxInfoVO.getPackingType(), purchaseOrder.getCreateOperator());
         }
         this.savePurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseOrder.getCreateOperator());
 
@@ -99,12 +112,80 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
     }
 
     /**
+     * 获取包装方式
+     * @return
+     */
+    @Override
+    public List<Dict> findPackingType() {
+        List<Dict> dictList = null;
+        try{
+            Dict dict = new Dict();
+            dict.setTypeCode(PACKING_TYPE);
+            dictList = dictService.select(dict);
+        }catch (Exception e){
+            dictList = new ArrayList<>();
+        }
+        return dictList;
+    }
+
+    /**
+     * 获取装箱信息
+     * @param code
+     * @return
+     */
+    @Override
+    public List<PurchaseBoxInfo> findPackingBoxInfo(String code) {
+        //校验信息完整性
+        AssertUtil.notBlank(code,"采购单编码为空");
+
+        //获取装箱信息
+        PurchaseBoxInfo purchaseBoxInfo = new PurchaseBoxInfo();
+        purchaseBoxInfo.setPurchaseOrderCode(code);
+        purchaseBoxInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<PurchaseBoxInfo> purchaseBoxInfoList = purchaseBoxInfoService.select(purchaseBoxInfo);
+        if(purchaseBoxInfoList == null){
+            purchaseBoxInfoList = new ArrayList<>();
+        }
+        return purchaseBoxInfoList;
+    }
+
+    /**
+     * 保存包装方式
+     * @param packingType
+     * @param createOperator
+     */
+    private void savePackingType(String packingType,String createOperator){
+        Dict dict = new Dict();
+        dict.setTypeCode(PACKING_TYPE);
+        List<Dict> dictList = dictService.select(dict);
+        boolean flag = true;
+        for(Dict dictTemp : dictList){
+            if(StringUtils.equals(packingType, dictTemp.getName())){
+                flag = false;
+            }
+        }
+
+        if(flag){
+            Dict save = new Dict();
+            ParamsUtil.setBaseDO(save);
+            save.setTypeCode(PACKING_TYPE);
+            save.setValue(packingType);
+            save.setName(packingType);
+            save.setCreateOperator(createOperator);
+            dictService.insert(save);
+        }
+    }
+
+    /**
      * 校验装箱信息是否符合规则
      * @param purchaseBoxInfoList
      */
     private void checkPurchaseBoxInfoDetail(List<PurchaseBoxInfo> purchaseBoxInfoList, String code){
         Map<String, Long> amountMap = new HashMap<>();
         for (PurchaseBoxInfo purchaseBoxInfo : purchaseBoxInfoList) {
+            if(RecordStatusEnum.DELETE.getCode().equals(purchaseBoxInfo.getStatus())){
+                continue;
+            }
             String skuCode = purchaseBoxInfo.getSkuCode();
             if(amountMap.containsKey(skuCode)){
                 amountMap.put(skuCode, amountMap.get(skuCode) + purchaseBoxInfo.getAmount());
@@ -145,11 +226,28 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
      * @param createOperator
      */
     private void savePurchaseBoxInfoDetail(List<PurchaseBoxInfo> purchaseBoxInfoList, String createOperator){
+        int count = 0;
         for (PurchaseBoxInfo purchaseBoxInfo : purchaseBoxInfoList) {
-            purchaseBoxInfo.setCreateOperator(createOperator);
-            ParamsUtil.setBaseDO(purchaseBoxInfo);
+            if (RecordStatusEnum.ADD.getCode().equals(purchaseBoxInfo.getStatus())) {
+                ParamsUtil.setBaseDO(purchaseBoxInfo);
+                purchaseBoxInfo.setCreateOperator(createOperator);
+                purchaseBoxInfoService.insert(purchaseBoxInfo);
+                count += 1;
+            }
+            if (RecordStatusEnum.DELETE.getCode().equals(purchaseBoxInfo.getStatus())) {
+                PurchaseBoxInfo delete = new PurchaseBoxInfo();
+                delete.setId(purchaseBoxInfo.getId());
+                delete.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                delete.setUpdateTime(Calendar.getInstance().getTime());
+                purchaseBoxInfoService.updateByPrimaryKeySelective(delete);
+                count += 1;
+            }
+            if (RecordStatusEnum.UPDATE.getCode().equals(purchaseBoxInfo.getStatus())) {
+                purchaseBoxInfo.setUpdateTime(Calendar.getInstance().getTime());
+                purchaseBoxInfoService.updateByPrimaryKeySelective(purchaseBoxInfo);
+                count += 1;
+            }
         }
-        int count = purchaseBoxInfoService.insertList(purchaseBoxInfoList);
         if (count<1){
             String msg = "装箱信息保存,数据库操作失败";
             logger.error(msg);
