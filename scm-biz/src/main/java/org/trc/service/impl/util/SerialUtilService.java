@@ -42,13 +42,31 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
     }
     //获得前缀不固定的流水号
     public String generateRandomCode(int length,String flag,String ...names){ //需要其它的前缀，直接在后面添加
-        int number = this.selectNumber(flag);//获得将要使用的流水号
-        String code = SerialUtil.getMoveOrderNo(length,number,names);//获得需要的code编码
-        int assess= this.updateSerialByName(flag,number);//修改流水的长度
-        if (assess < 1) {
-            String msg = CommonUtil.joinStr("保存编号数据库操作失败").toString();
-            log.error(msg);
-            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+        AssertUtil.notEmpty(names, "生成序列号传入的序列号生成规则名称不能为空");
+        String code = "";
+        String lockKey = DistributeLockEnum.SERIAL_GENERATE.getCode() + "serialGenerate-"+names[0];
+        String identifier = redisLock.Lock(lockKey, 5000, 2000);
+        if (StringUtils.isBlank(identifier)){
+            throw new RedisLockException(CommonExceptionEnum.REDIS_LOCK_ERROR, String.format("序列号%s生成失败", names[0]));
+        }
+        try{
+            int number = this.selectNumber(flag);//获得将要使用的流水号
+            code = SerialUtil.getMoveOrderNo(length,number,names);//获得需要的code编码
+            int assess= this.updateSerialByName(flag,number);//修改流水的长度
+            if (assess < 1) {
+                String msg = CommonUtil.joinStr("保存编号数据库操作失败").toString();
+                log.error(msg);
+                throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+            }
+        }catch (Exception e){
+            log.error(String.format("序列号%s生成异常", names[0]), e);
+        }finally {
+            //释放锁
+            if (redisLock.releaseLock(lockKey, identifier)) {
+                log.info("锁" +lockKey + "已释放！");
+            } else {
+                log.error("锁" +lockKey + "解锁失败！");
+            }
         }
         return code;
     }
