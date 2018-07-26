@@ -12,7 +12,8 @@ public enum DistributeLockEnum {
     WAREHOUSE_NOTICE_CREATE("warehouseNoticeCreate_","入库通知"),
     ALLOCATE_OUT_ORDER("allocateOutOrder", "调拨出库"),
     ALLOCATE_ORDER_AUDIT("allocateOrderAudit", "调拨单审核"),
-    ALLOCATE_IN_ORDER("allocateInOrder", "调拨入库");
+    ALLOCATE_IN_ORDER("allocateInOrder", "调拨入库"),
+    SERIAL_GENERATE("serialGenerate", "序列号生成");
 
     private String code;
     private String name;

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.category.ICategoryBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
@@ -14,8 +15,12 @@ import org.trc.enums.ValidEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.TestException;
 import org.trc.service.BaseTest;
+import org.trc.service.util.ISerialUtilService;
+import org.trc.util.DateUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -188,5 +193,29 @@ public class categoryDbUnit extends BaseTest {
         aclUserAccreditInfo.setIsValid("1");
         aclUserAccreditInfo.setIsDeleted("0");
         return aclUserAccreditInfo;
+    }
+
+    @Autowired
+    private ISerialUtilService serialUtilService;
+
+
+    @Test
+    public void testRedisLock(){
+        for(int i=0; i<100; i++){
+            new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            String scmShopOrderCode = serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+                            System.out.println("订单号："+scmShopOrderCode);
+                        }
+                    }
+            ).start();
+        }
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
