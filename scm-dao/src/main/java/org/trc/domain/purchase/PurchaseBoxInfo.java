@@ -4,15 +4,17 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
-import java.math.BigDecimal;
 
 /**
  * Created by hzcyn on 2018/7/24.
@@ -29,9 +31,9 @@ public class PurchaseBoxInfo extends BaseDO {
     //主键
     private Long id;
 
-    @FormParam("purchaseDetailId")
-    @ApiModelProperty("采购单详情主键")
-    private Long purchaseDetailId;
+    @FormParam("skuCode")
+    @ApiModelProperty("sku编码")
+    private String skuCode;
 
     @FormParam("purchaseOrderCode")
     @ApiModelProperty("采购单单号")
@@ -48,31 +50,40 @@ public class PurchaseBoxInfo extends BaseDO {
 
     @FormParam("boxAmount")
     @ApiModelProperty("箱数")
+    @Max(value = 100000, message = "箱数不能超过100000")
+    @Min(value = 0, message = "箱数不能小于0")
     private Long boxAmount;
 
     @FormParam("amount")
     @ApiModelProperty("总数")
+    @Max(value = 100000, message = "总数不能超过100000")
+    @Min(value = 0, message = "总数不能小于0")
     private Long amount;
 
     @FormParam("grossWeight")
     @ApiModelProperty("毛重")
-    private Long grossWeight;
+    @NotEmpty(message = "毛重为必填项")
+    @Length(max = 20, message = "毛重数字不能超过20个")
+    @Pattern(regexp = "^\\d+(\\.\\d{1,2})?$", message = "毛重为2位小数位浮点数")
+    private String grossWeight;
 
     @FormParam("cartonSize")
-    @Length(max = 50, message = "外箱尺寸字母和数字不能超过50个")
+    @Length(max = 20, message = "外箱尺寸字母和数字不能超过20个")
+    @NotEmpty(message = "外箱尺寸为必填项")
     @ApiModelProperty("外箱尺寸")
+    @Pattern(regexp = "^[\\d.*]?$", message = "外箱尺寸只能填数字.*")
     private String cartonSize;
 
     @FormParam("volume")
     @ApiModelProperty("体积")
-    private Long volume;
+    @NotEmpty(message = "体积为必填项")
+    @Length(max = 20, message = "体积数字不能超过20个")
+    @Pattern(regexp = "^\\d+(\\.\\d{1,4})?$", message = "体积为4位小数位浮点数")
+    private String volume;
 
     @FormParam("remark")
     @ApiModelProperty("备注")
     @Length(max = 100, message = "备注字母和数字不能超过100个")
     private String remark;
-
-    @Transient
-    private BigDecimal senderProvinceName;
 
 }

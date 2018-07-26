@@ -33,11 +33,22 @@ public class PurchaseBoxInfoResource {
     private IPurchaseBoxInfoBiz purchaseBoxInfoBiz;
 
     @POST
+    @Path("save")
     @Produces(MediaType.APPLICATION_JSON)
     public Response savePurchaseBoxInfo(@BeanParam PurchaseBoxInfoVO purchaseBoxInfoVO,
                                         @Context ContainerRequestContext requestContext) {
         purchaseBoxInfoBiz.savePurchaseBoxInfo(purchaseBoxInfoVO, PurchaseBoxInfoStatusEnum.UNFINISH.getCode(),
                 (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("暂存装箱信息成功","");
+    }
+
+    @POST
+    @Path("finish")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response savePurchaseBoxInfoFinish(@BeanParam PurchaseBoxInfoVO purchaseBoxInfoVO,
+                                        @Context ContainerRequestContext requestContext) {
+        purchaseBoxInfoBiz.savePurchaseBoxInfo(purchaseBoxInfoVO, PurchaseBoxInfoStatusEnum.FINISH.getCode(),
+                (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("装箱信息完成成功","");
     }
 }
