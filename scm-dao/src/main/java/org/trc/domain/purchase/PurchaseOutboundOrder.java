@@ -3,19 +3,18 @@ package org.trc.domain.purchase;
 import io.swagger.annotations.ApiModelProperty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Table(name = "purchase_outbound_order")
 public class PurchaseOutboundOrder extends BaseDO {
+
     /**
      * ID
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
