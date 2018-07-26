@@ -7,8 +7,10 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
+import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
@@ -75,13 +77,16 @@ public class PurchaseOutboundOrderResource {
      * 根据采购退货单Id查询采购退货单
      */
     @GET
-    @Path("getOrder/{id}")
+    @Path("getorder/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("根据采购退货单Id查询采购退货单")
     public Response getPurchaseOutboundOrder(@ApiParam(name = "采购退货单Id") @PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(id));
     }
 
+    /**
+     * 修改采购退货单
+     */
     @PUT
     @Path("/update/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -103,6 +108,16 @@ public class PurchaseOutboundOrderResource {
         return ResultUtil.createSuccessResult("提交审核采购退货单成功!", "");
     }
 
+    /**
+     * 获取采购退货单商品详情
+     */
+    @GET
+    @Path("/getdetail")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("获取采购退货单商品详情")
+    public Response getPurchaseOutboundOrderDetail(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<PurchaseDetail> page, @QueryParam("skus") String skus) {
+        return ResultUtil.createSuccessResult("根据供应商编码查询所有的有效商品成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
+    }
 
     @POST
     @Path("/test")

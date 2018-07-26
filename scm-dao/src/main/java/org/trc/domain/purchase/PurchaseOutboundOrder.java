@@ -4,12 +4,14 @@ import io.swagger.annotations.ApiModelProperty;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
+import javax.ws.rs.FormParam;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Table(name = "purchase_outbound_order")
 public class PurchaseOutboundOrder extends BaseDO {
 
+    private static final long serialVersionUID = 6937654773349480215L;
     /**
      * ID
      */
@@ -22,6 +24,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("采购退货单编号")
     @Column(name = "purchase_outbound_order_code")
+    @FormParam("purchaseOutboundOrderCode")
     private String purchaseOutboundOrderCode;
 
     /**
@@ -29,6 +32,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("采购渠道ID")
     @Column(name = "channel_id")
+    @FormParam("channelId")
     private Long channelId;
 
     /**
@@ -36,6 +40,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("采购渠道编号")
     @Column(name = "channel_code")
+    @FormParam("channelCode")
     private String channelCode;
 
     /**
@@ -43,6 +48,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("供应商ID")
     @Column(name = "supplier_id")
+    @FormParam("supplierId")
     private Long supplierId;
 
     /**
@@ -50,6 +56,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("供应商编号")
     @Column(name = "supplier_code")
+    @FormParam("supplierCode")
     private String supplierCode;
 
     /**
@@ -57,6 +64,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("采购合同ID")
     @Column(name = "contract_id")
+    @FormParam("contractId")
     private Long contractId;
 
     /**
@@ -64,10 +72,12 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货仓库ID")
     @Column(name = "warehouse_id")
+    @FormParam("warehouseId")
     private String warehouseId;
 
     @ApiModelProperty("purchasePersonId")
     @Column(name = "purchase_person_id")
+    @FormParam("purchasePersonId")
     private String purchasePersonId;
 
     /**
@@ -75,6 +85,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("收货地址")
     @Column(name = "receive_address")
+    @FormParam("receiveAddress")
     private String receiveAddress;
 
     /**
@@ -82,12 +93,14 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货仓库编号")
     @Column(name = "warehouse_code")
+    @FormParam("warehouseCode")
     private String warehouseCode;
 
     /**
      * 状态:0-暂存,1-提交审核,2-审核驳回,3-审核通过,4-出库通知,5-作废
      */
     @ApiModelProperty("状态:0-暂存,1-提交审核,2-审核驳回,3-审核通过,4-出库通知,5-作废")
+    @FormParam("status")
     private String status;
 
     /**
@@ -95,6 +108,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("对应出库单状态:1-等待出库，2-出库完成，3-出库异常，4-其他")
     @Column(name = "outbound_status")
+    @FormParam("outboundStatus")
     private String outboundStatus;
 
     /**
@@ -102,12 +116,14 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货总金额,单位/分")
     @Column(name = "total_fee")
+    @FormParam("totalFee")
     private BigDecimal totalFee;
 
     /**
      * 退货收货人
      */
     @ApiModelProperty("退货收货人")
+    @FormParam("receiver")
     private String receiver;
 
     /**
@@ -115,6 +131,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("仓库信息主键")
     @Column(name = "warehouse_info_id")
+    @FormParam("warehouseInfoId")
     private Long warehouseInfoId;
 
     /**
@@ -122,6 +139,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("仓库名称")
     @Column(name = "warehouse_name")
+    @FormParam("warehouseName")
     private String warehouseName;
 
     /**
@@ -129,6 +147,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货人手机号")
     @Column(name = "receiver_number")
+    @FormParam("receiverNumber")
     private String receiverNumber;
 
     /**
@@ -136,6 +155,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货类型1-正品，2-残品")
     @Column(name = "return_order_type")
+    @FormParam("returnOrderType")
     private String returnOrderType;
 
     /**
@@ -143,6 +163,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("提货方式1-到仓自提，2-京东配送，3-其他物流")
     @Column(name = "pick_type")
+    @FormParam("pickType")
     private String pickType;
 
     /**
@@ -150,12 +171,14 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货说明")
     @Column(name = "return_policy")
+    @FormParam("returnPolicy")
     private String returnPolicy;
 
     /**
      * 备注
      */
     @ApiModelProperty("备注")
+    @FormParam("remark")
     private String remark;
 
     /**
@@ -163,6 +186,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货省份")
     @Column(name = "receiver_province")
+    @FormParam("receiverProvince")
     private String receiverProvince;
 
     /**
@@ -170,6 +194,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货城市")
     @Column(name = "receiver_city")
+    @FormParam("receiverCity")
     private String receiverCity;
 
     /**
@@ -177,12 +202,17 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @ApiModelProperty("退货详细地址")
     @Column(name = "receiver_address")
+    @FormParam("receiverAddress")
     private String receiverAddress;
 
+    @ApiModelProperty("供应商名称")
     @Transient
+    @FormParam("supplierName")
     private String supplierName;
 
+    @ApiModelProperty("采购退货单退货商品详情")
     @Transient
+    @FormParam("purchaseOutboundDetailList")
     private List<PurchaseOutboundDetail> purchaseOutboundDetailList;
 
     public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
