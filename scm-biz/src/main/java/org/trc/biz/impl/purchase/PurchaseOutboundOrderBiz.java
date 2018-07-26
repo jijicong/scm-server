@@ -18,6 +18,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
 import org.trc.exception.PurchaseOrderException;
+import org.trc.exception.PurchaseOutboundOrderException;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkusService;
@@ -159,7 +160,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(form);
         if (i < 1) {
-
+            log.error("采购退货单更新异常, 采购退货单号:{}", form.getPurchaseOutboundOrderCode());
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, "采购退货单更新异常");
         }
         //删除退货单商品，重新添加
         Example example = new Example(PurchaseOutboundDetail.class);
@@ -167,6 +169,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         purchaseOutboundDetailService.deleteByExample(example);
 
         insertPurchaseOutboundDetail(form);
+
+        //修改操作日志
+        logInfoService.recordLog(form, form.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
     }
 
     /**
@@ -177,13 +182,15 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      */
     @Override
     public PurchaseOutboundOrder getPurchaseOutboundOrderById(Long id) {
-        AssertUtil.notNull(id,"根据采购退货单Id查询采购退货单失败，采购退货单Id为空");
+        AssertUtil.notNull(id, "根据采购退货单Id查询采购退货单失败，采购退货单Id为空");
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
-        AssertUtil.notNull(purchaseOutboundOrder,"采购单货单根据主键id查询失败，没有对应采购退货单");
+        AssertUtil.notNull(purchaseOutboundOrder, "采购单货单根据主键id查询失败，没有对应采购退货单");
 
-
-
-        return null;
+        Example example = new Example(PurchaseOutboundDetail.class);
+        example.createCriteria().andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
+        List<PurchaseOutboundDetail> purchaseOutboundDetails = purchaseOutboundDetailService.selectByExample(example);
+        purchaseOutboundOrder.setPurchaseOutboundDetailList(purchaseOutboundDetails);
+        return purchaseOutboundOrder;
     }
 
     private void checkWarehouse(String warehouseId) {
@@ -193,9 +200,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             warehouse.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             warehouse = warehouseInfoService.selectOne(warehouse);
             if (ZeroToNineEnum.ZERO.getCode().equals(warehouse.getIsValid())) {
-                String msg = String.format("仓库%s已被停用，请重新选择！", warehouse.getWarehouseName());
-                log.error(msg);
-                //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+                log.error("仓库:{}已被停用", warehouse.getWarehouseName());
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, warehouse.getWarehouseName() + "仓库已被停用");
             }
         }
     }
@@ -210,8 +216,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 AssertUtil.notNull(purchaseOutboundDetail.getBarCode(), "商品条形码不能为空");
                 AssertUtil.notNull(purchaseOutboundDetail.getSkuCode(), "商品sku编码不能为空");
                 AssertUtil.notNull(purchaseOutboundDetail.getSkuName(), "商品sku名称不能为空");
-                if (purchaseOutboundDetail.getPrice() == null || purchaseOutboundDetail.getPrice().compareTo(BigDecimal.ZERO) < 0) {
-                    //TODO 异常
+                if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                    throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货商品含税单价不能小于0");
                 }
             });
         }
@@ -241,7 +247,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         form.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
         int count = purchaseOutboundOrderService.insert(form);
         if (count < 1) {
-            // TODO 抛出异常
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "保存采购退货单失败");
         }
         insertPurchaseOutboundDetail(form);
         //记录操作日志
@@ -263,27 +269,32 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 skus = skusService.selectOne(skus);
                 AssertUtil.notNull(skus, "没有此商品信息");
                 if (ZeroToNineEnum.ZERO.getCode().equals(skus.getIsValid())) {
-                    String msg = String.format("商品%s已被停用，请先删除！", purchaseOutboundDetail.getSkuCode());
+                    String msg = String.format("商品%s已停用", purchaseOutboundDetail.getSkuCode());
                     log.error(msg);
-                    // TODO 抛出异常
+                    throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, msg);
                 }
-                //单价*数量
-                BigDecimal totalAmount = purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity()));
+
+                BigDecimal totalAmount = null;
+                if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
+                    //单价*数量
+                    totalAmount = purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity()));
+                }
 
                 purchaseOutboundDetail.setPurchaseOutboundOrderCode(form.getStatus());
-                purchaseOutboundDetail.setTotalAmount(totalAmount.setScale(3, RoundingMode.HALF_UP));
+                purchaseOutboundDetail.setPrice(purchaseOutboundDetail.getPrice() == null ? null : purchaseOutboundDetail.getPrice().setScale(3, RoundingMode.HALF_UP));
+                purchaseOutboundDetail.setTotalAmount(totalAmount == null ? null : totalAmount.setScale(3, RoundingMode.HALF_UP));
                 purchaseOutboundDetail.setCreateOperator(form.getCreateOperator());
                 ParamsUtil.setBaseDO(purchaseOutboundDetail);
             }
             int i = purchaseOutboundDetailService.insertList(purchaseOutboundDetailList);
             if (i < 1) {
-                // TODO 抛出异常
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "保存采购退货单详情异常");
             }
         }
     }
 
     /**
-     * TODO 提交审核校验必填参数
+     * 提交审核校验必填参数
      *
      * @param form
      */
@@ -298,12 +309,21 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
 
             if (purchaseOutboundDetail.getOutboundQuantity() == null || purchaseOutboundDetail.getOutboundQuantity() < 1) {
-                // TODO 抛出异常
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货数量不能小于0");
             }
             if (purchaseOutboundDetail.getTaxRate() == null
                     || purchaseOutboundDetail.getTaxRate().doubleValue() < 0
                     || purchaseOutboundDetail.getTaxRate().doubleValue() > 100) {
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货税率在0~100");
+            }
 
+            if (purchaseOutboundDetail.getPrice() == null || purchaseOutboundDetail.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货含税单价不能小于0");
+            }
+
+            //退货数量不能大于可退数量
+            if (purchaseOutboundDetail.getOutboundQuantity() > purchaseOutboundDetail.getCanBackQuantity()) {
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货数量不能大于当前可退数量");
             }
         }
 
@@ -376,7 +396,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             } catch (ParseException e) {
                 String msg = "采购订单列表查询,截止日期的格式不正确";
                 log.error(msg);
-                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_QUERY_EXCEPTION, msg);
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_QUERY_EXCEPTION, msg);
             }
             date = DateUtils.addDays(date, 1);
             form.setEndDate(sdf.format(date));
