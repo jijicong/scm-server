@@ -600,15 +600,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
         //针对京东仓的重新收货逻辑
         
-        if(warehouse.getOperationalNature().equals(OperationalNatureEnum.THIRD_PARTY.getCode())){//第三方仓
-            if (StringUtils.isNotBlank(notice.getEntryOrderId())){//仓库反馈的入库单号不为空，重新收货
-                Long inOrderSeq =(notice.getInOrderSeq()==null ? 0: notice.getInOrderSeq()) + 1;
-                notice.setInOrderSeq(inOrderSeq);
-                warehouseNoticeService.updateByPrimaryKey(notice);
-                scmEntryOrderCreateRequest.setInOrderSeq(inOrderSeq);
-                noticeCode = noticeCode+"_"+inOrderSeq;
-            }
-        }
+//        if(warehouse.getOperationalNature().equals(OperationalNatureEnum.THIRD_PARTY.getCode())){//第三方仓
+//            if (StringUtils.isNotBlank(notice.getEntryOrderId())){//仓库反馈的入库单号不为空，重新收货
+//                Long inOrderSeq =(notice.getInOrderSeq()==null ? 0: notice.getInOrderSeq()) + 1;
+//                notice.setInOrderSeq(inOrderSeq);
+//                warehouseNoticeService.updateByPrimaryKey(notice);
+//                scmEntryOrderCreateRequest.setInOrderSeq(inOrderSeq);
+//                noticeCode = noticeCode+"_"+inOrderSeq;
+//            }
+//        }
 
         WarehouseTypeEnum warehouseTypeEnum = warehouseExtService.getWarehouseType(notice.getWarehouseCode());
         scmEntryOrderCreateRequest.setWarehouseType(warehouseTypeEnum.getCode());
