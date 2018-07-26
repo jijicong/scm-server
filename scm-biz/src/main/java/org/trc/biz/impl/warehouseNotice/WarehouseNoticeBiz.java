@@ -563,10 +563,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
             warehouseNoticeCriteria.andIn("status", statusList);
             noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
-            if (!queryWarehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode())){
-                String msg = String.format("该入库通知单[warehouseNoticeCode=%s]的已经入库成功过，不允许重新收货", warehouseNotice.getWarehouseNoticeCode());
-                throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
-            }
+//            if (!queryWarehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode())){
+//                String msg = String.format("该入库通知单[warehouseNoticeCode=%s]的已经入库成功过，不允许重新收货", warehouseNotice.getWarehouseNoticeCode());
+//                throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+//            }
 
             try {
                 logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
