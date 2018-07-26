@@ -40,6 +40,6 @@ public class PurchaseBoxInfoVO implements Serializable {
     @FormParam("packingType")
     @ApiModelProperty("装箱方式")
     @NotEmpty(message = "装箱方式不能为空")
-    @Size(max=50, message = "装箱方式过长")
+    @Size(max=50, message = "装箱方式过长，超过50字符")
     private String packingType;
 }
