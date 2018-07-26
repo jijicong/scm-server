@@ -1,10 +1,7 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
@@ -68,18 +65,49 @@ public class PurchaseOutboundOrderResource {
     @Path("/save")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("保存采购退货单")
-    @ApiImplicitParams({
-            @ApiImplicitParam()
-    })
     //public Response savePurchaseOutboundOrder(@BeanParam PurchaseOutboundOrderDataForm form, @Context ContainerRequestContext requestContext) {
     public Response savePurchaseOutboundOrder(@BeanParam PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, PurchaseOutboundOrderStatusEnum.HOLD.getCode(), (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("保存采购退货单成功!", "");
     }
+
+    /**
+     * 根据采购退货单Id查询采购退货单
+     */
+    @GET
+    @Path("getOrder/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("根据采购退货单Id查询采购退货单")
+    public Response getPurchaseOutboundOrder(@ApiParam(name = "采购退货单Id") @PathParam("id") Long id) {
+        return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(id));
+    }
+
+    @PUT
+    @Path("/update/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("修改采购退货单")
+    public Response updatePurchaseOutboundOrder(@BeanParam PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
+        purchaseOutboundOrderBiz.updatePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("修改采购退货单成功!", "");
+    }
+
+    /**
+     * 提交采购退货单
+     */
+    @POST
+    @Path("/commit")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("提交审核采购退货单")
+    public Response commitAuditPurchaseOutboundOrder(@BeanParam PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
+        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("提交审核采购退货单成功!", "");
+    }
+
+
     @POST
     @Path("/test")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response test(@BeanParam PurchaseOutboundOrder form){
+    public Response test(@BeanParam PurchaseOutboundOrder form) {
         System.out.println(JSON.toJSONString(form));
         return ResultUtil.createSuccessResult("success", JSON.toJSONString(form));
     }
