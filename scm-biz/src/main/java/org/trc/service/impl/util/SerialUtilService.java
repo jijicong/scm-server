@@ -57,7 +57,7 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
         AssertUtil.notEmpty(names, "生成序列号传入的序列号生成规则名称不能为空");
         String code = "";
         String lockKey = DistributeLockEnum.SERIAL_GENERATE.getCode() + "serialGenerate-"+names[0];
-        String identifier = redisLock.Lock(lockKey, 5000, 10000);
+        String identifier = redisLock.Lock(lockKey, 5000, 2000);
         if (StringUtils.isBlank(identifier)){
             throw new RedisLockException(CommonExceptionEnum.REDIS_LOCK_ERROR, String.format("序列号%s生成失败", names[0]));
         }
