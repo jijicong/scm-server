@@ -17,7 +17,10 @@ import java.math.BigDecimal;
  * Created by sone on 2017/5/25.
  */
 public class PurchaseDetail extends BaseDO{
-    @PathParam("id")
+	
+	private static final long serialVersionUID = -7915245096652290335L;
+	
+	@PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
