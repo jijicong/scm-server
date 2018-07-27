@@ -7,6 +7,7 @@ import org.trc.form.goods.ItemGroupForm;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public interface IitemGroupBiz  {
 
     void editDetail(ItemGroup itemGroup);
 
-    void itemGroupSave(ItemGroup itemGroup);
+    void itemGroupSave(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo);
 
-    void itemGroupUserSave(ItemGroupUser itemGroupUser);
+    ItemGroup findItemGroupByName(String name);
 }

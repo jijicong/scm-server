@@ -27,7 +27,7 @@ public class ItemGroup extends BaseDO{
     private String itemGroupCode;
 
     @FormParam("itemGroupName")
-    @Length(max=32,message = "商品名称字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max=20,message = "商品名称字母和数字不能超过32个,汉字不能超过16个")
     private String itemGroupName;
 
     @FormParam("channelCode")
@@ -43,14 +43,14 @@ public class ItemGroup extends BaseDO{
     private String leaderName;
 
     @FormParam("memberUserId")
-    @Length(max=32,message = "组员id字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max=1024,message = "组员id字母和数字不能超过1024个,汉字不能超过512个")
     private String memberUserId;
 
     @FormParam("memberName")
-    @Length(max=32,message = "组员名称字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max=1024,message = "组员名称字母和数字不能超过1024个,汉字不能超过512个")
     private String memberName;
 
     @FormParam("remark")
-    @Length(max =1024, message = "商品组的备注字母和数字不能超过1024个,汉字不能超过512个")
+    @Length(max =400, message = "商品组的备注字母和数字不能超过400个,汉字不能超过个200")
     private  String remark;
 }

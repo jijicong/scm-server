@@ -1395,6 +1395,9 @@ public class SupplyConstants {
         //调拨发货单
         public final static String ALLOCATE_OUT_ORDER = "allocate_out_order";
 
+        //商品组
+        public final static String ITEM_GROUP = "item_group";
+
     }
 
     /**

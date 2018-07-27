@@ -19,6 +19,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Created by hzgjl on 2018/7/26.
@@ -44,22 +45,13 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_SAVE)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "新增商品组")
-    public Response itemGroupSave(@BeanParam ItemGroup itemGroup){
-        itemGroupBiz.itemGroupSave(itemGroup);
+    public Response itemGroupSave(@BeanParam ItemGroup itemGroup, @BeanParam List<ItemGroupUser> groupUserList, @Context ContainerRequestContext requestContext){
+        itemGroupBiz.itemGroupSave(itemGroup,groupUserList,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("商品组新增成功","");
 
     }
 
 
-    @POST
-    @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_SAVE)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "保存商品组员")
-    public Response itemGroupUserSave(@BeanParam ItemGroupUser itemGroupUser){
-        itemGroupBiz.itemGroupUserSave(itemGroupUser);
-        return ResultUtil.createSuccessResult("保存商品组员成功","");
-
-    }
 
 
 
