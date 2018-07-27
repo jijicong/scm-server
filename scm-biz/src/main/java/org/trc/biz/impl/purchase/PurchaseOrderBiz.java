@@ -1222,7 +1222,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
+
+        //获取操作前所有采购单详情
+        PurchaseDetail purchaseDetailOld = new PurchaseDetail();
+        purchaseDetailOld.setPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetailListOld = purchaseDetailService.select(purchaseDetailOld);
+
         purchaseDetailService.deletePurchaseDetailByPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
+
         Object obj =aclUserAccreditInfo.getUserId();
         AssertUtil.notNull(obj,"采购单更新失败,获取授权信息失败");
         purchaseOrderAddData.setCreateOperator((String) obj);
@@ -1246,6 +1253,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
         }
+
+        //获取操作后采购单详情
+
 
         //修改操作日志
         String userId= aclUserAccreditInfo.getUserId();
