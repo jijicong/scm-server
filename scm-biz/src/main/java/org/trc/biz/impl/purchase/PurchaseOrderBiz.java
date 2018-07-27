@@ -1255,7 +1255,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //获取操作后采购单详情
+        PurchaseDetail purchaseDetailNew = new PurchaseDetail();
+        purchaseDetailNew.setPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetailListNew = purchaseDetailService.select(purchaseDetailNew);
 
+        //修改装箱信息
+        this.updatePurchaseBoxInfo(purchaseDetailListOld, purchaseDetailListNew, purchaseOrder);
 
         //修改操作日志
         String userId= aclUserAccreditInfo.getUserId();
@@ -1268,6 +1273,51 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
     }
+
+    /**
+     * 修改装箱信息
+     * @param purchaseDetailListOld
+     * @param purchaseDetailListNew
+     * @param purchaseOrder
+     */
+    private void updatePurchaseBoxInfo(List<PurchaseDetail> purchaseDetailListOld,
+                                       List<PurchaseDetail> purchaseDetailListNew,
+                                       PurchaseOrder purchaseOrder){
+        boolean isUpdateOrder = false;
+
+        for(PurchaseDetail purchaseDetailOld : purchaseDetailListOld){
+            boolean isDelete = true;
+            for(PurchaseDetail purchaseDetailNew : purchaseDetailListNew){
+                if(purchaseDetailOld.getId().longValue() == purchaseDetailNew.getId().longValue()){
+                    isDelete = false;
+                    if(purchaseDetailOld.getPurchasingQuantity().longValue() !=
+                            purchaseDetailNew.getPurchasingQuantity().longValue()){
+                        isUpdateOrder = true;
+                    }
+                }
+            }
+            if(isDelete){
+                PurchaseBoxInfo purchaseBoxInfo = new PurchaseBoxInfo();
+                purchaseBoxInfo.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                Example example = new Example(PurchaseBoxInfo.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+                criteria.andEqualTo("skuCode", purchaseDetailOld.getSkuCode());
+                purchaseBoxInfoService.updateByExampleSelective(purchaseBoxInfo, example);
+            }
+        }
+
+        if(isUpdateOrder){
+            purchaseOrder.setBoxInfoStatus(PurchaseBoxInfoStatusEnum.UNFINISH.getCode());
+            int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
+            if (count == 0) {
+                String msg = String.format("修改采购单%s数据库操作失败",JSON.toJSONString(purchaseOrder));
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+            }
+        }
+    }
+
     /**
      * 修改提交审核的采购信息
      */
