@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ItemGroup;
+import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.util.Pagenation;
@@ -32,12 +33,39 @@ public class ItemGroupResource {
     private IitemGroupBiz itemGroupBiz;
 
     @GET
-    @Path(SupplyConstants.ItemGroupConstants.ROOT)
+    @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "商品组分页查询")
     public Response itemGroupPage(@BeanParam ItemGroupForm form, @BeanParam Pagenation<ItemGroup> page, @Context ContainerRequestContext requestContext){
         return ResultUtil.createSuccessPageResult(itemGroupBiz.itemGroupPage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
+
+    @POST
+    @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_SAVE)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "新增商品组")
+    public Response itemGroupSave(@BeanParam ItemGroup itemGroup){
+        itemGroupBiz.itemGroupSave(itemGroup);
+        return ResultUtil.createSuccessResult("商品组新增成功","");
+
+    }
+
+
+    @POST
+    @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_SAVE)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "保存商品组员")
+    public Response itemGroupUserSave(@BeanParam ItemGroupUser itemGroupUser){
+        itemGroupBiz.itemGroupUserSave(itemGroupUser);
+        return ResultUtil.createSuccessResult("保存商品组员成功","");
+
+    }
+
+
+
+
+
+
 
     @GET
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_DETAIL_QUERY)
@@ -58,13 +86,5 @@ public class ItemGroupResource {
 
     }
 
-    @POST
-    @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_SAVE)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "新增商品组")
-    public Response itemGroupSave(@BeanParam ItemGroup itemGroup){
-        itemGroupBiz.itemGroupSave(itemGroup);
-        return ResultUtil.createSuccessResult("商品组新增成功","");
 
-    }
 }

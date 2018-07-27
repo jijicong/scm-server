@@ -1,6 +1,7 @@
 package org.trc.biz.goods;
 
 import org.trc.domain.goods.ItemGroup;
+import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.util.Pagenation;
@@ -19,4 +20,6 @@ public interface IitemGroupBiz  {
     void editDetail(ItemGroup itemGroup);
 
     void itemGroupSave(ItemGroup itemGroup);
+
+    void itemGroupUserSave(ItemGroupUser itemGroupUser);
 }

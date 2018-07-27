@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.domain.goods.ItemGroup;
+import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.service.goods.IItemGroupService;
@@ -81,5 +82,11 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
 
 
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
+    public void itemGroupUserSave(ItemGroupUser itemGroupUser) {
+//TODO
     }
 }
