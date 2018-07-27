@@ -297,10 +297,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
                     ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
 
-                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
-                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
-                        return;
-                    }
+//                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
+//                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
+//                        return;
+//                    }
 
 //                    if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
 //                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
