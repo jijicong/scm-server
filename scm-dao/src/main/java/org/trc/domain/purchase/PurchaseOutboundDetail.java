@@ -6,11 +6,14 @@ import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
+import javax.ws.rs.FormParam;
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "purchase_outbound_detail")
 public class PurchaseOutboundDetail extends BaseDO {
+
+    private static final long serialVersionUID = 344433932044368816L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,6 +23,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("采购退货单编号")
     @Column(name = "purchase_outbound_order_code")
+    @FormParam("purchaseOutboundOrderCode")
     private String purchaseOutboundOrderCode;
 
     /**
@@ -27,12 +31,14 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("采购退货单code")
     @Column(name = "outbound_notice_code")
+    @FormParam("outboundNoticeCode")
     private String outboundNoticeCode;
 
     /**
      * 出库状态 1-等待出库，2-出库完成，3-出库异常，4-其他
      */
     @ApiModelProperty("出库状态 1-等待出库，2-出库完成，3-出库异常，4-其他")
+    @FormParam("status")
     private String status;
 
     /**
@@ -40,14 +46,17 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("商品名称")
     @Column(name = "item_name")
+    @FormParam("itemName")
     private String itemName;
 
     @ApiModelProperty("skuCode")
     @Column(name = "sku_code")
+    @FormParam("skuCode")
     private String skuCode;
 
     @ApiModelProperty("skuName")
     @Column(name = "sku_name")
+    @FormParam("skuName")
     private String skuName;
 
     /**
@@ -55,6 +64,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("品牌id")
     @Column(name = "brand_id")
+    @FormParam("brandId")
     private String brandId;
 
     /**
@@ -62,6 +72,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("所属分类id")
     @Column(name = "category_id")
+    @FormParam("categoryId")
     private String categoryId;
 
     /**
@@ -69,6 +80,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("所有分类id")
     @Column(name = "all_category")
+    @FormParam("allCategory")
     private String allCategory;
 
     /**
@@ -76,12 +88,14 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("条形码")
     @Column(name = "bar_code")
+    @FormParam("barCode")
     private String barCode;
 
     /**
      * 含税退货单价,单位/分
      */
     @ApiModelProperty("含税退货单价,单位/分")
+    @FormParam("price")
     private BigDecimal price;
 
     /**
@@ -89,6 +103,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("退货总金额")
     @Column(name = "total_amount")
+    @FormParam("totalAmount")
     private BigDecimal totalAmount;
 
     /**
@@ -96,6 +111,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("可退数量")
     @Column(name = "can_back_quantity")
+    @FormParam("canBackQuantity")
     private Long canBackQuantity;
 
     /**
@@ -103,6 +119,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("退货数量")
     @Column(name = "outbound_quantity")
+    @FormParam("outboundQuantity")
     private Long outboundQuantity;
 
     /**
@@ -110,6 +127,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("实际出库数量")
     @Column(name = "actual_storage_quantity")
+    @FormParam("actualStorageQuantity")
     private Long actualStorageQuantity;
 
     /**
@@ -117,6 +135,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("库存ID")
     @Column(name = "sku_stock_id")
+    @FormParam("skuStockId")
     private Long skuStockId;
 
     /**
@@ -124,6 +143,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("商品SPU编号")
     @Column(name = "spu_code")
+    @FormParam("spuCode")
     private String spuCode;
 
     /**
@@ -131,6 +151,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("商品货号")
     @Column(name = "item_no")
+    @FormParam("itemNo")
     private String itemNo;
 
     /**
@@ -138,6 +159,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("退货类型1-正品，2-残品")
     @Column(name = "return_order_type")
+    @FormParam("returnOrderType")
     private String returnOrderType;
 
     /**
@@ -145,6 +167,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("退货税率")
     @Column(name = "tax_rate")
+    @FormParam("taxRate")
     private BigDecimal taxRate;
 
     /**
@@ -152,6 +175,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("货主编码")
     @Column(name = "owner_code")
+    @FormParam("ownerCode")
     private String ownerCode;
 
     /**
@@ -160,6 +184,7 @@ public class PurchaseOutboundDetail extends BaseDO {
     @ApiModelProperty("实际出库时间")
     @JsonSerialize(using = CustomDateSerializer.class)
     @Column(name = "storage_time")
+    @FormParam("storageTime")
     private Date storageTime;
 
     /**
@@ -167,6 +192,7 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     @ApiModelProperty("出库异常原因")
     @Column(name = "outbound_exception")
+    @FormParam("outboundException")
     private String outboundException;
 
     ///**

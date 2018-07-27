@@ -11,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
@@ -19,6 +20,7 @@ import org.trc.enums.*;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
 import org.trc.exception.PurchaseOrderException;
 import org.trc.exception.PurchaseOutboundOrderException;
+import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkusService;
@@ -192,6 +194,21 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         purchaseOutboundOrder.setPurchaseOutboundDetailList(purchaseOutboundDetails);
         return purchaseOutboundOrder;
     }
+
+    /**
+     * 获取采购退货单商品详情
+     *
+     * @param form 查询条件
+     * @param page
+     * @param skus 过滤已选择的sku
+     * @return
+     */
+    @Override
+    public Pagenation<PurchaseOutboundDetail> getPurchaseOutboundOrderDetail(PurchaseOutboundItemForm form, Pagenation<PurchaseDetail> page, String skus) {
+
+        return null;
+    }
+
 
     private void checkWarehouse(String warehouseId) {
         if (StringUtils.isNotBlank(warehouseId)) {
