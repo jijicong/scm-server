@@ -1285,6 +1285,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                                        PurchaseOrder purchaseOrder){
         boolean isUpdateOrder = false;
 
+        int countNew = purchaseDetailListNew.size();
+
         for(PurchaseDetail purchaseDetailOld : purchaseDetailListOld){
             boolean isDelete = true;
             for(PurchaseDetail purchaseDetailNew : purchaseDetailListNew){
@@ -1294,6 +1296,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                             purchaseDetailNew.getPurchasingQuantity().longValue()){
                         isUpdateOrder = true;
                     }
+                    countNew--;
                 }
             }
             if(isDelete){
@@ -1307,7 +1310,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
         }
 
-        if(isUpdateOrder){
+        if(isUpdateOrder || countNew > 0){
             purchaseOrder.setBoxInfoStatus(PurchaseBoxInfoStatusEnum.UNFINISH.getCode());
             int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
             if (count == 0) {
