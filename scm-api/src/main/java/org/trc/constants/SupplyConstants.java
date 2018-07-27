@@ -1396,4 +1396,20 @@ public class SupplyConstants {
         public final static String ALLOCATE_OUT_ORDER = "allocate_out_order";
 
     }
+
+    /**
+     * 商品组
+     */
+    public static final class ItemGroupConstants {
+
+        public final static String ROOT = "itemGroup";
+        //商品组查询分页
+        public final static String ITEM_GROUP_PAGE = "itemGroupPage";
+        //商品组详情查询
+        public final static String ITEM_GROUP_DETAIL_QUERY = "itemGroupDetailQuery";
+        //商品组详情编辑
+        public final static String ITEM_GROUP_EDIT = "itemGroupEdit";
+        //商品组新增
+        public final static String ITEM_GROUP_SAVE = "itemGroupSave";
+    }
 }
