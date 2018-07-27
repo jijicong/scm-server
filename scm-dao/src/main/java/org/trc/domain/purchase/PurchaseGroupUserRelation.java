@@ -10,7 +10,13 @@ import javax.persistence.Id;
  * Created by sone on 2017/5/23.
  */
 public class PurchaseGroupUserRelation extends BaseDO{
-    @Id
+	
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2179424724320707817L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

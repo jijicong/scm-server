@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
 import org.trc.constants.SupplyConstants;
@@ -25,10 +26,14 @@ import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.AllocateOrderEnum;
+import org.trc.enums.DistributeLockEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.AllocateOrderException;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
+import org.trc.util.lock.RedisLock;
 
 @Component
 @Path("allocateOrder")
@@ -39,13 +44,15 @@ public class AllocateOrderResource {
     @Resource
     private IAllocateOrderBiz allocateOrderBiz;
 
+    @Autowired
+    private RedisLock redisLock;
+
 
 
     /**
      * 调拨单的分页查询
      * @param form
      * @param page
-     * @param requestContext
      * @return
      */
     @GET
@@ -76,8 +83,29 @@ public class AllocateOrderResource {
     		@FormParam("auditOpinion") String auditOpinion, 
     		@FormParam("auditResult") String auditResult, 
     		@Context ContainerRequestContext requestContext){
-    	allocateOrderBiz.allocateOrderAudit(orderId, auditOpinion, auditResult,
-    			(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+
+        String identifier = redisLock.Lock(DistributeLockEnum.ALLOCATE_ORDER_AUDIT.getCode() + orderId,0, 10000);
+        if (StringUtils.isBlank(identifier)) {
+            throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, "不允许操作!");
+        }
+        try {
+            allocateOrderBiz.allocateOrderAudit(orderId, auditOpinion, auditResult,
+                    (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        } finally {
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.ALLOCATE_ORDER_AUDIT.getCode()
+                        + orderId, identifier)) {
+                    logger.info("allocateCode:{} 调拨审核，解锁成功，identifier:{}", orderId, identifier);
+                } else {
+                    logger.error("allocateCode:{} 调拨审核，解锁失败，identifier:{}", orderId, identifier);
+                }
+
+            } catch (Exception e) {
+                logger.error("allocateCode:{} 调拨审核，解锁失败，identifier:{}, err:{}",
+                        orderId, identifier, e.getMessage());
+                e.printStackTrace();
+            }
+        }
         return ResultUtil.createSuccessResult("调拨单审核操作成功","");
 
     }

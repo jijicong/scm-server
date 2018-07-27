@@ -5,8 +5,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +14,13 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.ChannelOrderResponse;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.TrcConfig;
-import org.trc.form.TrcParam;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
-import org.trc.util.*;
+import org.trc.util.AssertUtil;
+import org.trc.util.DateUtils;
+import org.trc.util.HttpClientUtil;
 
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,6 +102,8 @@ public class TrcService implements ITrcService {
             Map<String, Object> map = new HashMap();
             map.put("param", params);
             response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
+            log.debug("结束调用泰然城信息更新同步服务" + url + ", 返回结果：" + response + ". 结束时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO.setStatus(jbo.getString("status"));
@@ -132,8 +131,6 @@ public class TrcService implements ITrcService {
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
         }
-        log.debug("结束泰然城信息更新同步服务" + url + ", 返回结果：" + response + ". 结束时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return toGlyResultDO;
     }
 
@@ -155,6 +152,8 @@ public class TrcService implements ITrcService {
             Map<String, Object> params = new HashMap();
             params.put("param", paramObj);
             response = HttpClientUtil.httpPostRequest(url, params, TIME_OUT);
+            log.debug("结束调用同步订单提交结果给渠服务" + url + ", 返回结果：" + response + ". 结束时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
@@ -186,8 +185,6 @@ public class TrcService implements ITrcService {
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
         }
-        log.debug("结束同步订单提交结果给渠服务" + url + ", 返回结果：" + JSONObject.toJSON(toGlyResultDO) + ". 结束时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return toGlyResultDO;
     }
 
@@ -215,6 +212,8 @@ public class TrcService implements ITrcService {
             Map<String, Object> params = new HashMap();
             params.put("param", paramObj);
             response = HttpClientUtil.httpPostRequest(url, params, TIME_OUT);
+            log.debug("结束调用同步物流信息给渠道服务" + url + ", 返回结果：" + response + ". 结束时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
@@ -243,8 +242,6 @@ public class TrcService implements ITrcService {
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
         }
-        log.debug("结束同步物流信息给渠道服务" + url + ", 返回结果：" + JSONObject.toJSON(toGlyResultDO) + ". 结束时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return toGlyResultDO;
     }
 

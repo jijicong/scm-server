@@ -12,7 +12,11 @@ import java.util.Date;
  */
 public class PurchaseOrderAddAudit extends PurchaseOrder{
 
-    //审核状态
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3495809559392318240L;
+	//审核状态
     private String status;
     //提交人
     @FormParam("createOperator")
