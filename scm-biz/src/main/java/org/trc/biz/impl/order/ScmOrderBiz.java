@@ -4351,7 +4351,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrder.setDiscountCouponPlatform(platformObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
         platformOrder.setDiscountFee(platformObj.getBigDecimal("discountFee"));//订单优惠总金额
 
-        platformOrder.setCreateTime(DateUtils.timestampToDate(platformObj.getLong("createTime")));//创建时间
+        platformOrder.setCreateTime(new Date());//创建时间
         platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
         platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
         platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
@@ -4449,7 +4449,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String scmShopOrderCode = serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
             shopOrder.setScmShopOrderCode(scmShopOrderCode);
             shopOrder.setPlatformType(platformType);
-            shopOrder.setCreateTime(DateUtils.timestampToDate(shopOrderObj.getLong("createTime")));//创建时间
+            shopOrder.setCreateTime(new Date());//创建时间
             shopOrder.setPayTime(payTime);//支付时间
             shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
             shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
@@ -4527,7 +4527,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItem.setTransactionPrice(orderItemObj.getBigDecimal("transactionPrice"));//成交单价
             orderItem.setTotalWeight(orderItemObj.getBigDecimal("totalWeight"));//商品重量
 
-            orderItem.setCreateTime(DateUtils.timestampToDate(orderItemObj.getLong("createTime")));//创建时间
+            orderItem.setCreateTime(new Date());//创建时间
             orderItem.setPayTime(DateUtils.timestampToDate(orderItemObj.getLong("payTime")));//支付时间
             orderItem.setConsignTime(DateUtils.timestampToDate(orderItemObj.getLong("consignTime")));//发货时间
             orderItem.setUpdateTime(DateUtils.timestampToDate(orderItemObj.getLong("updateTime")));//修改时间
