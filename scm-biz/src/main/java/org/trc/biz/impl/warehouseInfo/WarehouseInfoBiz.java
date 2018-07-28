@@ -30,6 +30,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.ExcelException;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.warehouseInfo.WarehouseOwner;
 import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
@@ -44,6 +45,7 @@ import org.trc.service.category.ICategoryService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.config.LogInfoService;
 import org.trc.service.util.IExcelExceptionService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
@@ -112,6 +114,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private JDWmsConstantConfig jDWmsConstantConfig;
     @Autowired
     private IWmsItemInfoService wmsItemInfoService;
+    @Autowired
+    private LogInfoService logInfoService;
+
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
 
@@ -1158,7 +1163,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             for(Map.Entry<String, Skus> entry : allMap.entrySet()){
                 warehouseItemInfo = new WarehouseItemInfo();
                 assembleWarehouseItemInfo(warehouseItemInfo, entry.getValue(), warehouseInfoIdLong, warehouseCode,
-                        warehouseOwnerId, wmsWarehouseCode, itemNoMap);
+                        warehouseOwnerId, wmsWarehouseCode, itemNoMap, warehouseInfo.getOperationalNature());
                 addList.add(warehouseItemInfo);
             }
             count = warehouseItemInfoService.insertList(addList);
@@ -1169,7 +1174,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 if(StringUtils.isEquals("new", str[2])){
                     warehouseItemInfo = new WarehouseItemInfo();
                     assembleWarehouseItemInfo(warehouseItemInfo, entry.getValue(), warehouseInfoIdLong, warehouseCode,
-                            warehouseOwnerId, wmsWarehouseCode, itemNoMap);
+                            warehouseOwnerId, wmsWarehouseCode, itemNoMap, null);
                     warehouseItemInfo.setWarehouseItemId(str[1]);
                     warehouseItemInfo.setNoticeStatus(Integer.parseInt(WarehouseItemInfoNoticeStateEnum.NOTICE_SUCCESS.getCode()));
                     addList.add(warehouseItemInfo);
@@ -1228,7 +1233,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     private void assembleWarehouseItemInfo(WarehouseItemInfo warehouseItemInfo, Skus skus, long warehouseInfoId,
                                            String warehouseCode, String warehouseOwnerId, String wmsWarehouseCode,
-                                           Map<String,String> itemNoMap){
+                                           Map<String,String> itemNoMap, String operationalNature){
         warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
         warehouseItemInfo.setWarehouseItemId(String.valueOf(skus.getItemId()));
         warehouseItemInfo.setSkuCode(skus.getSkuCode());
@@ -1245,6 +1250,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         warehouseItemInfo.setWarehouseCode(warehouseCode);
         warehouseItemInfo.setWarehouseOwnerId(warehouseOwnerId);
         warehouseItemInfo.setWmsWarehouseCode(wmsWarehouseCode);
+        if(operationalNature != null && StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
+            warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.SUCCESS.getCode());
+            warehouseItemInfo.setWarehouseItemId(skus.getSkuCode());
+        }
     }
 
     private void updateSkuStock(WarehouseItemInfo warehouseItemInfo, WarehouseInfo warehouseInfo){
@@ -1537,7 +1546,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     @Override
     @WarehouseCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Response saveOwnerInfo(WarehouseInfo warehouseInfo){
+    public Response saveOwnerInfo(WarehouseInfo warehouseInfo, AclUserAccreditInfo aclUserAccreditInfo){
 //        AssertUtil.notBlank(warehouseInfo.getOwnerName(),"货主姓名不能为空");
         AssertUtil.notNull(warehouseInfo.getId(),"主键不能为空");
         WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getId()));
@@ -1558,6 +1567,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             String msg = "不符合保存操作";
             throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
         }
+        String userId = aclUserAccreditInfo.getUserId();
+        logInfoService.recordLog(new WarehouseOwner(), warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), null, null);
         return ResultUtil.createSuccessResult("保存货主信息成功","success");
     }
 

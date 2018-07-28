@@ -78,9 +78,10 @@ public class WarehouseInfoResource {
     @PUT
     @Path(SupplyConstants.WarehouseInfo.OWNER_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response saveOwnerInfo(@BeanParam WarehouseInfo warehouseInfo) throws Exception{
+    public Response saveOwnerInfo(@BeanParam WarehouseInfo warehouseInfo, @Context ContainerRequestContext requestContext) throws Exception{
         logger.info("开始保存货主信息=========》");
-        return warehouseInfoBiz.saveOwnerInfo(warehouseInfo);
+        return warehouseInfoBiz.saveOwnerInfo(warehouseInfo,
+                (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @PUT

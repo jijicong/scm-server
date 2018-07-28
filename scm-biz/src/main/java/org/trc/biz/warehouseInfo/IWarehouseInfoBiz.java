@@ -55,7 +55,7 @@ public interface IWarehouseInfoBiz {
      * @param warehouseInfo 货主信息
      * @return
      */
-    Response saveOwnerInfo(WarehouseInfo warehouseInfo);
+    Response saveOwnerInfo(WarehouseInfo warehouseInfo, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 删除仓库信息
