@@ -6,7 +6,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseBoxInfoBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseBoxInfo;
 import org.trc.domain.purchase.PurchaseBoxInfoVO;
 import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
 import org.trc.util.ResultUtil;
@@ -23,7 +25,7 @@ import javax.ws.rs.core.Response;
  */
 @Component
 @Path("purchaseBoxInfo")
-@Api(value = "装箱薪资")
+@Api(value = "装箱信息")
 public class PurchaseBoxInfoResource {
 
     @Resource
@@ -53,7 +55,7 @@ public class PurchaseBoxInfoResource {
 
     @GET
     @Path("dict")
-    @ApiOperation(value = "获取包装方式")
+    @ApiOperation(value = "获取包装方式", response = Dict.class)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findPackingType(){
         return ResultUtil.createSuccessResult("获取包装方式成功",purchaseBoxInfoBiz.findPackingType());
@@ -61,8 +63,8 @@ public class PurchaseBoxInfoResource {
 
     @GET
     @Path("/{code}")
-    @ApiOperation(value = "获取装箱信息")
-    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "获取装箱信息", response = PurchaseBoxInfo.class)
+    @Produces({MediaType.APPLICATION_JSON})
     @ApiImplicitParam(name = "code", value = "采购单号", paramType = "path", dataType = "String", required = true)
     public Response findPackingBoxInfo(@PathParam("code") String code){
         return ResultUtil.createSuccessResult("获取装箱信息成功",purchaseBoxInfoBiz.findPackingBoxInfo(code));

@@ -1,6 +1,7 @@
 package org.trc.domain.purchase;
 
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -34,21 +35,25 @@ public class PurchaseBoxInfo extends BaseDO {
 
     @FormParam("skuCode")
     @ApiModelProperty("sku编码")
+    @ApiParam("sku编码")
     private String skuCode;
 
     @FormParam("purchaseOrderCode")
     @ApiModelProperty("采购单单号")
+    @ApiParam("采购单单号")
     private String purchaseOrderCode;
 
     @FormParam("amountPerBox")
+    @ApiParam("每箱数量")
     @ApiModelProperty("每箱数量")
     @Max(value = 100000, message = "每箱数量不能超过100000")
     @Min(value = 0, message = "每箱数量不能小于0")
     private Long amountPerBox;
 
     @FormParam("boxNumber")
+    @ApiParam("箱号")
     @Length(max = 15, message = "箱号字母和数字不能超过15个")
-    @ApiModelProperty("箱号")
+//    @ApiModelProperty("箱号")
     @NotEmpty(message = "箱号为必填项")
     private String boxNumber;
 

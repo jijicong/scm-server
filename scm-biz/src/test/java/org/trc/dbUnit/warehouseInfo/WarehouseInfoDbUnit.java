@@ -1,10 +1,12 @@
 package org.trc.dbUnit.warehouseInfo;
 
+import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.warehouseInfo.IWarehouseInfoBiz;
 import org.trc.form.warehouse.ScmItemSyncRequest;
 import org.trc.form.warehouse.ScmItemSyncResponse;
+import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.service.BaseTest;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.AppResult;

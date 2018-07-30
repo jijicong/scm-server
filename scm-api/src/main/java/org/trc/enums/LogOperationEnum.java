@@ -20,7 +20,7 @@ public enum LogOperationEnum {
     RECIVE_WMS_RECIVE_SUCCESS("入库仓接收成功"),RE_RECIVE_GOODS("重新收货"),CANCEL_RECIVE_GOODS("取消收货"),NOTICE_RECIVE_GOODS("通知收货"),
 	NOTICE_WMS("通知仓库"),NOTICE_SEND_GOODS("通知出库"),
     RECEIVE_ORDER("接收"), IMPORT_ORDER("导入"),PURCHASE_BOX_INFO("装箱信息维护"),NOTICE_SUCCESS("通知成功"),ADD_ITEM("添加"),NOTICE_WAREHOUSE("通知仓库"),
-    NOTICE_FAIL("通知失败"),IMPORT_ITEM_ID("导入商品及其仓库ID"),
+    NOTICE_FAIL("通知失败"),IMPORT_ITEM_ID("导入商品及其仓库ID"),CANCEL_NOTICE("取消通知"),RECOVER_NOTICE("恢复"),
 
 
     ALLOCATE_ORDER_OUT_NOTICE("通知出库"),
