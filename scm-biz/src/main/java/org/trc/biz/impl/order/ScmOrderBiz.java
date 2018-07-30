@@ -3027,6 +3027,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             SupplierOrderReturn returnOrder = new SupplierOrderReturn();
             returnOrder.setSupplyOrderCode(_shopOrder.getScmShopOrderCode());
             returnOrder.setState(ResponseAck.SUCCESS_CODE);
+            returnOrder.setMessage("下单成功");
             List<SkuInfo> skuInfoList = new ArrayList<>();
             for(OrderItem orderItem: _shopOrder.getOrderItems()){
                 SkuInfo skuInfo = new SkuInfo();
@@ -3395,6 +3396,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             SupplierOrderReturn returnOrder = new SupplierOrderReturn();
             returnOrder.setSupplyOrderCode(order.getOutboundOrderCode());
             returnOrder.setState(getNoticeOrderStatusByOutboundStatus(order.getStatus()));
+            returnOrder.setMessage(order.getMessage());
             List<OutboundDetail> _outboundDetailList = new ArrayList<>();
             for(OutboundDetail detail: outboundDetailList){
                 if(StringUtils.equals(detail.getOutboundOrderCode(), order.getOutboundOrderCode())){
@@ -3432,7 +3434,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else if(outboundStatus.equals(OutboundOrderStatusEnum.CANCELED.getCode()) || outboundStatus.equals(OutboundOrderStatusEnum.ON_CANCELED.getCode())){
             return NoticeChannelStatusEnum.CANCEL.getCode();
         }else{
-            return outboundStatus;
+            return NoticeChannelStatusEnum.FAILED.getCode();
         }
     }
 
