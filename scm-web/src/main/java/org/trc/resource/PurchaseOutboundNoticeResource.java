@@ -38,13 +38,13 @@ public class PurchaseOutboundNoticeResource {
     @Path("/pageList")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("查询退货出库通知单列表")
-    public Response pageList(@BeanParam PurchaseOutboundNoticeForm form, 
+    public Response pageList(@BeanParam PurchaseOutboundNoticeForm form, @BeanParam Pagenation<PurchaseOutboundNotice> page, 
     		@Context ContainerRequestContext requestContext) {
         Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         AssertUtil.notNull(obj, "查询订单分页中,获得授权信息失败");
         AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) obj;
         String channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
-        return ResultUtil.createSuccessPageResult(noticeBiz.pageList(form, null, channelCode));
+        return ResultUtil.createSuccessPageResult(noticeBiz.pageList(form, page, channelCode));
     }
 
 }
