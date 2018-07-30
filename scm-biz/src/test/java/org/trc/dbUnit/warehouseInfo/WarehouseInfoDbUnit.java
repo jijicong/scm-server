@@ -27,10 +27,10 @@ public class WarehouseInfoDbUnit extends BaseTest {
     private IWarehouseInfoBiz warehouseInfoBiz;
 
     @Test
-//    public void receiptAdvice_success () throws Exception {
-//        mockQimene(true);
-//        warehouseInfoBiz.warehouseItemNoticeQimen("1");
-//    }
+    public void receiptAdvice_success () throws Exception {
+        mockQimene(true);
+        warehouseInfoBiz.warehouseItemNoticeQimen("1");
+    }
 
     private void mockQimene(Boolean isSucc) {
         IWarehouseApiService service = mock(IWarehouseApiService.class);

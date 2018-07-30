@@ -2,10 +2,15 @@ package org.trc.domain.warehouseNotice;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.trc.domain.BaseDO;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.domain.purchase.PurchaseOutboundDetail;
+
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 
 @Table(name = "purchase_outbound_notice")
@@ -177,8 +182,24 @@ public class PurchaseOutboundNotice extends BaseDO {
     @Column(name = "exception_cause")
     @FormParam("exceptionCause")
     private String exceptionCause;
-
+    
     /**
+     * 退货出库通知单商品明细列表
+     */
+    @Transient
+    @ApiModelProperty("退货出库通知单商品明细列表")
+    private List<PurchaseOutboundDetail> skuList;
+
+
+	public List<PurchaseOutboundDetail> getSkuList() {
+		return skuList;
+	}
+
+	public void setSkuList(List<PurchaseOutboundDetail> skuList) {
+		this.skuList = skuList;
+	}
+
+	/**
      * @return id
      */
     public Long getId() {
