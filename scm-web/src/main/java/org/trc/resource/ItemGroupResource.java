@@ -14,6 +14,7 @@ import org.trc.form.goods.ItemGroupForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
+import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -30,7 +31,7 @@ public class ItemGroupResource {
 
     private Logger log = LoggerFactory.getLogger(ItemGroupResource.class);
 
-    @Autowired
+    @Resource
     private IitemGroupBiz itemGroupBiz;
 
 
