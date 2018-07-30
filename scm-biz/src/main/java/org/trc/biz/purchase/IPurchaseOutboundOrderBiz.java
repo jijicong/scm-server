@@ -1,10 +1,9 @@
 package org.trc.biz.purchase;
 
-import org.springframework.stereotype.Service;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.Pagenation;
@@ -54,7 +53,15 @@ public interface IPurchaseOutboundOrderBiz {
      * @param skus 过滤已选择的sku
      * @return
      */
-    Pagenation<PurchaseOutboundDetail> getPurchaseOutboundOrderDetail(PurchaseOutboundItemForm form, Pagenation<PurchaseDetail> page, String skus);
+    Pagenation<PurchaseOutboundDetail> getPurchaseOutboundOrderDetail(PurchaseOutboundItemForm form, Pagenation<PurchaseOutboundDetail> page, String skus);
+
+    /**
+     * 采购退货单获取采购历史详情
+     * @param form
+     * @param page
+     * @return
+     */
+    Pagenation<WarehouseNoticeDetails> getPurchaseHistory(PurchaseOutboundItemForm form, Pagenation<WarehouseNoticeDetails> page);
 
     /**
      *  采购退货单保存或
