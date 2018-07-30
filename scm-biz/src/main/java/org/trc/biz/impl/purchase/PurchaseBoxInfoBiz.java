@@ -1,5 +1,6 @@
 package org.trc.biz.impl.purchase;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,6 @@ import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
@@ -99,8 +99,13 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
         }
 
         //保存装箱信息详情
-        List<PurchaseBoxInfo> purchaseBoxInfoList = purchaseBoxInfoVO.getPurchaseBoxInfoList();
+        String purchaseBoxInfoListJSON = purchaseBoxInfoVO.getPurchaseBoxInfoListJSON();
+        List<PurchaseBoxInfo> purchaseBoxInfoList = new ArrayList<>();
+        if(StringUtils.isNotEmpty(purchaseBoxInfoListJSON)){
+            purchaseBoxInfoList = JSON.parseArray(purchaseBoxInfoListJSON, PurchaseBoxInfo.class);
+        }
         if(StringUtils.equals(PurchaseBoxInfoStatusEnum.FINISH.getCode(), status)){
+            this.checkInfo(purchaseBoxInfoList);
             this.checkPurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseOrderCode);
             this.savePackingType(purchaseBoxInfoVO.getPackingType(), purchaseOrder.getCreateOperator());
         }
@@ -178,6 +183,17 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
             save.setName(packingType);
             save.setCreateOperator(createOperator);
             dictService.insert(save);
+        }
+    }
+
+    private void checkInfo(List<PurchaseBoxInfo> purchaseBoxInfoList){
+        if(purchaseBoxInfoList == null || purchaseBoxInfoList.size() < 1){
+            String msg = "装箱信息不能为空";
+            logger.error(msg);
+            throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
+        }
+
+        for(PurchaseBoxInfo purchaseBoxInfo : purchaseBoxInfoList){
         }
     }
 

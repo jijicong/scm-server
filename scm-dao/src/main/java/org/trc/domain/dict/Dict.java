@@ -1,5 +1,6 @@
 package org.trc.domain.dict;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.CommonDO;
@@ -21,14 +22,17 @@ public class Dict extends CommonDO {
     @FormParam("typeCode")
     @NotEmpty
     @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
+    @ApiModelProperty("字典类型编码")
     private String typeCode;
     @NotEmpty
     @Length(max = 64, message = "字典名称字母和数字不能超过64个,汉字不能超过32个")
     @FormParam("name")
+    @ApiModelProperty("字典名称")
     private String name;
     @FormParam("value")
     @NotEmpty
     @Length(max = 64, message = "字典值字母和数字不能超过64个,汉字不能超过32个")
+    @ApiModelProperty("字典值")
     private String value;
 
     @Transient
