@@ -229,8 +229,10 @@ public class PurchaseOutboundDetail extends BaseDO {
      * 规格描述
      */
     @ApiModelProperty("规格描述")
-    @Column(name = "spec_nature_info")
+    @Column(name = "specNatureInfo")
+    @FormParam("specNatureInfo")
     private String specNatureInfo;
+
 
     /**
      * @return id
