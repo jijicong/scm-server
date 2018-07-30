@@ -133,9 +133,11 @@ public class WarehouseInfoResource {
     @POST
     @Path(SupplyConstants.WarehouseInfo.SAVE_ITEMS+"/{warehouseInfoId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response saveWarehouseItemsSku(@FormParam("itemsList") String itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
+    public Response saveWarehouseItemsSku(@FormParam("itemsList") String itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId,
+                                          @Context ContainerRequestContext requestContext) throws Exception {
         logger.info("进入添加新商品接口======>"+ "传入参数为：form："+JSON.toJSONString(itemsList)+",warehouseInfoId:"+warehouseInfoId);
-        return warehouseInfoBiz.saveWarehouseItemsSku(itemsList,warehouseInfoId);
+        return warehouseInfoBiz.saveWarehouseItemsSku(itemsList,warehouseInfoId,
+                (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @GET
@@ -152,17 +154,21 @@ public class WarehouseInfoResource {
     @Produces("application/octet-stream")
     public Response uploadNoticeStatus(@FormDataParam("file") InputStream uploadedInputStream,
                                        @FormDataParam("file") FormDataContentDisposition fileDetail,
-                                       @FormDataParam("warehouseInfoId") String warehouseInfoId) {
+                                       @FormDataParam("warehouseInfoId") String warehouseInfoId,
+                                       @Context ContainerRequestContext requestContext) {
         logger.info("开始导入仓库商品信息，请求参数分别为：warehouseInfoId=" + warehouseInfoId);
-        return warehouseInfoBiz.uploadNoticeStatus(uploadedInputStream, fileDetail, warehouseInfoId);
+        return warehouseInfoBiz.uploadNoticeStatus(uploadedInputStream, fileDetail, warehouseInfoId,
+                (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @POST
     @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_NOTICE_QIMEN)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response warehouseItemNoticeQimen(@FormParam("itemIds") String itemIds){
+    public Response warehouseItemNoticeQimen(@FormParam("itemIds") String itemIds,
+                                             @Context ContainerRequestContext requestContext){
         logger.info("仓库商品信息开始通知开放平台同步，请求参数分别为：itemIds=" + itemIds);
-        return warehouseInfoBiz.warehouseItemNoticeQimen(itemIds);
+        return warehouseInfoBiz.warehouseItemNoticeQimen(itemIds,
+                (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @GET
