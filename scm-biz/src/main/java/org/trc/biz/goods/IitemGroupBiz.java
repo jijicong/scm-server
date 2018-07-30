@@ -18,7 +18,7 @@ public interface IitemGroupBiz  {
 
     ItemGroup queryDetailByCode(String itemGroupCode);
 
-    void editDetail(ItemGroup itemGroup);
+    void editDetail(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo);
 
     void itemGroupSave(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo);
 

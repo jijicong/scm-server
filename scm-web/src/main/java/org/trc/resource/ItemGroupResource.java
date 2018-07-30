@@ -33,6 +33,7 @@ public class ItemGroupResource {
     @Autowired
     private IitemGroupBiz itemGroupBiz;
 
+
     @GET
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
@@ -52,13 +53,6 @@ public class ItemGroupResource {
     }
 
 
-
-
-
-
-
-
-
     @GET
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_DETAIL_QUERY)
     @Produces(MediaType.APPLICATION_JSON)
@@ -72,8 +66,8 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_EDIT)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据商品组编码编辑详情")
-    public Response editDetail(@BeanParam ItemGroup itemGroup){
-        itemGroupBiz.editDetail(itemGroup);
+    public Response editDetail(@BeanParam ItemGroup itemGroup,@BeanParam List<ItemGroupUser> groupUserList,@Context ContainerRequestContext requestContext){
+        itemGroupBiz.editDetail(itemGroup,groupUserList,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("商品组编辑成功","");
 
     }

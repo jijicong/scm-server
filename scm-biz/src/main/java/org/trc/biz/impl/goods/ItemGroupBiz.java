@@ -94,26 +94,74 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
     //商品组编辑
     @Override
-    public void editDetail(ItemGroup itemGroup) {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void editDetail(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo) {
         //查询详情便于记录日志
-        ItemGroup entity = queryDetailByCode(itemGroup.getItemGroupCode());
-        String logMsg="";
-        AssertUtil.notNull(itemGroup,"根据商品组信息修改商品组失败,商品组信息为null");
-        AssertUtil.notNull(itemGroup.getItemGroupName(),"商品组名称为空！");
-        String leaderName = itemGroup.getLeaderName();
-        AssertUtil.notNull(leaderName,"请选择组长！");
+        ItemGroup orginEntity = queryDetailByCode(itemGroup.getItemGroupCode());
 
-        ItemGroup temp =findItemGroupByName(itemGroup.getItemGroupName());
+
+
+        AssertUtil.notNull(itemGroup,"根据商品组信息修改商品组失败,商品组信息为null");
+        String itemGroupName=itemGroup.getItemGroupName();
+        AssertUtil.notNull(itemGroupName,"商品组名称为空！");
+        //商品组名称非重校验
+        ItemGroup temp =findItemGroupByName(itemGroupName);
         if (temp!=null){
             String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
         }
 
+
+        String leaderName = itemGroup.getLeaderName();
+
+        AssertUtil.notNull(leaderName,"请选择组长！");
         String memberUserId = itemGroup.getMemberUserId();
         AssertUtil.notNull(memberUserId,"请至少添加一个组员！");
-          //TODO
+        itemGroupService.updateByPrimaryKeySelective(itemGroup);
 
+
+        //由于这里增删操作种类搭配太多，故采用删除原有组员数据关系表，重新保存组员信息
+        Example example = new Example(ItemGroupUserRelation.class);
+        example.createCriteria().andEqualTo("itemGroupCode",itemGroup.getItemGroupCode());
+        iItemGroupUserRelationService.deleteByExample(example);
+
+        Example example1 = new Example(ItemGroupUser.class);
+        example1.createCriteria().andEqualTo("id",itemGroup.getLeaderUserId());
+        itemGroupUserService.deleteByExample(example1);
+        String[] memberUserIds = itemGroup.getMemberUserId().split(",");
+        for (String userId : memberUserIds) {
+            Example _example1 = new Example(ItemGroupUser.class);
+            _example1.createCriteria().andEqualTo("id",userId);
+            itemGroupUserService.deleteByExample(_example1);
+        }
+
+        saveItemGroupUserList( groupUserList,itemGroup.getIsValid(),aclUserAccreditInfo.getChannelCode());
+        saveItemGroupUserRelation(itemGroup,leaderName,itemGroup.getIsValid());
+
+
+
+        //记录日志
+        String logMsg="";
+        List<String> logDetail = new ArrayList<>();
+        String orginItemGroupName = orginEntity.getItemGroupName();
+        String orginRemark = orginEntity.getRemark();
+        String orginIsValid = orginEntity.getIsValid();
+        if (!StringUtils.equals(orginItemGroupName,itemGroup.getItemGroupName())){
+            logMsg=logMsg+"商品组名称由\""+orginItemGroupName+"\"改为\""+itemGroupName+"\";";
+            logDetail.add(logMsg);
+        }
+        if (!StringUtils.equals(orginRemark,itemGroup.getRemark())){
+            logMsg=logMsg+"备注由\""+orginRemark+"\"改为\""+itemGroup.getRemark()+"\";";
+            logDetail.add(logMsg);
+        }
+        if (!StringUtils.equals(orginIsValid,itemGroup.getIsValid())){
+            logMsg=logMsg+"状态由\""+orginIsValid+"\"改为\""+itemGroup.getIsValid()+"\";";
+            logDetail.add(logMsg);
+        }
+
+        String join = StringUtils.join(logDetail, ";");
+        logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),join,null);
     }
 
 
@@ -152,8 +200,20 @@ public class ItemGroupBiz implements IitemGroupBiz {
         saveItemGroupUserList(groupUserList,isValid,aclUserAccreditInfo.getChannelCode());
 
 
-
         //保存商品组与授权用户关系
+        Integer countList = saveItemGroupUserRelation(itemGroup, leaderName, isValid);
+        if (countList==null){
+            String msg="保存商品组成员失败";
+            logger.error(msg);
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_SAVE_EXCEPTION,msg);
+        }
+
+        //记录日志
+        logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(), LogOperationEnum.ADD.getMessage(),"",null);
+
+    }
+
+    private Integer saveItemGroupUserRelation(ItemGroup itemGroup, String leaderName, String isValid) {
         String memberUserId = itemGroup.getMemberUserId();//组员id1，id2,id3
         List<ItemGroupUserRelation> itemGroupUserRelationList=new ArrayList<>();
         //添加组长
@@ -172,16 +232,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             itemGroupUserRelation.setIsValid(isValid);
             itemGroupUserRelationList.add(itemGroupUserRelation);
         }
-        Integer countList=iItemGroupUserRelationService.insertList(itemGroupUserRelationList);
-        if (countList==null){
-            String msg="保存商品组成员失败";
-            logger.error(msg);
-            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_SAVE_EXCEPTION,msg);
-        }
-
-        //记录日志
-        logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId().toString(), LogOperationEnum.ADD.getMessage(),"","");
-
+        return iItemGroupUserRelationService.insertList(itemGroupUserRelationList);
     }
 
     @Override
