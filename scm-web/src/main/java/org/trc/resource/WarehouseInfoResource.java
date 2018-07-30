@@ -107,9 +107,10 @@ public class WarehouseInfoResource {
     @DELETE
     @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_INFO + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteDictById(@PathParam("id") Long id) {
+    public Response deleteDictById(@PathParam("id") Long id, @Context ContainerRequestContext requestContext) {
         logger.info("开始删除仓库商品信息，请求参数分别为：id=" + id);
-        warehouseInfoBiz.deleteWarehouseItemInfoById(id);
+        warehouseInfoBiz.deleteWarehouseItemInfoById(id,
+                (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("删除仓库商品信息成功", "");
     }
 

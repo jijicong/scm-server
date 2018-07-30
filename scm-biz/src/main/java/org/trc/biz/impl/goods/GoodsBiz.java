@@ -2145,8 +2145,8 @@ public class GoodsBiz implements IGoodsBiz {
                 if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
                         oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
                     warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
-                }else{
-
+                    logInfoService.recordLog(warehouseItemInfo1, warehouseItemInfo1.getId().toString(), "admin",
+                            LogOperationEnum.CANCEL_NOTICE.getMessage(), "商品被停用", null);
                 }
             }else{
                 Integer oldNoticeStatus = warehouseItemInfo1.getOldNoticeStatus();
@@ -2157,6 +2157,8 @@ public class GoodsBiz implements IGoodsBiz {
                         oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
                     if(warehouseItemInfo1.getOldNoticeStatus() != null){
                         warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
+                        logInfoService.recordLog(warehouseItemInfo1, warehouseItemInfo1.getId().toString(), "admin",
+                                LogOperationEnum.RECOVER_NOTICE.getMessage(), "商品重新启用", null);
                     }
                     warehouseItemInfo1.setOldNoticeStatus(null);
                 }

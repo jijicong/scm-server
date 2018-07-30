@@ -332,7 +332,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     @Override
     @WarehouseItemCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void deleteWarehouseItemInfoById(Long id) {
+    public void deleteWarehouseItemInfoById(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "仓库商品信息ID不能为空");
         WarehouseItemInfo tmp = new WarehouseItemInfo();
         tmp.setId(id);
@@ -356,6 +356,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         //修改库存信息
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(tmp.getWarehouseInfoId());
         this.deleteSkuStock(tmp, warehouseInfo);
+        logInfoService.recordLog(tmp, tmp.getId().toString(), aclUserAccreditInfo.getUserId(),
+                LogOperationEnum.DELETE.getMessage(), null, null);
     }
 
     private void deleteSkuStock(WarehouseItemInfo warehouseItemInfo, WarehouseInfo warehouseInfo){
@@ -1016,7 +1018,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
 
         for(WarehouseItemInfo info : warehouseItemInfoList){
-            logInfoService.recordLog(info, warehouseInfo.getCode() + info.getSkuCode(), userId,
+            logInfoService.recordLog(info, info.getId().toString(), userId,
                     LogOperationEnum.NOTICE_WAREHOUSE.getMessage(), null, null);
         }
 
@@ -1036,7 +1038,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
         }
         for(WarehouseItemInfo info : warehouseItemInfoList){
-            logInfoService.recordLog(info, warehouseInfo.getCode() + info.getSkuCode(), warehouseInfo.getWarehouseName(),
+            logInfoService.recordLog(info, info.getId().toString(), warehouseInfo.getWarehouseName(),
                     LogOperationEnum.NOTICE_FAIL.getMessage(), "失败原因:" + appResult.getDatabuffer(), null);
         }
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), appResult.getDatabuffer(), "");
@@ -1075,7 +1077,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             if(warehouseInfo == null){
                 warehouseInfo = warehouseInfoService.selectByPrimaryKey(info.getWarehouseInfoId());
             }
-            logInfoService.recordLog(info, warehouseInfo.getCode() + info.getSkuCode(), warehouseInfo.getWarehouseName(),
+            logInfoService.recordLog(info, info.getId().toString(), warehouseInfo.getWarehouseName(),
                     LogOperationEnum.NOTICE_SUCCESS.getMessage(), null, null);
             this.updateSkuStock(info, warehouseInfo);
         }
@@ -1168,7 +1170,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<WarehouseItemInfo> addList = new ArrayList<>();
         List<WarehouseItemInfo> updateList = new ArrayList<>();
         List<String> skusList = new ArrayList<>();
-        List<LogInfo> logInfoList = new ArrayList<>();
         int count = 0;
         for(Map.Entry<String, Skus> entry : allMap.entrySet()){
             skusList.add(entry.getKey().split(SupplyConstants.Symbol.COMMA)[0]);
@@ -1181,27 +1182,17 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         String warehouseOwnerId = warehouseInfo.getWarehouseOwnerId();
         String wmsWarehouseCode = warehouseInfo.getWmsWarehouseCode();
         String operationalNature = warehouseInfo.getOperationalNature();
-        String warehouseName = warehouseInfo.getWarehouseName();
-        Date createTiem = Calendar.getInstance().getTime();
+        String logOperation = "";
 
         if(length == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
             for(Map.Entry<String, Skus> entry : allMap.entrySet()){
                 warehouseItemInfo = new WarehouseItemInfo();
                 assembleWarehouseItemInfo(warehouseItemInfo, entry.getValue(), warehouseInfoIdLong, warehouseCode,
                         warehouseOwnerId, wmsWarehouseCode, itemNoMap, operationalNature);
-                if(operationalNature != null &&
-                        StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
-                    logInfoList.add(this.saveLogInfo(warehouseCode, entry.getValue().getSkuCode(), createTiem, userId,
-                            ZeroToNineEnum.ZERO.getCode(), ""));
-                    logInfoList.add(this.saveLogInfo(warehouseCode, entry.getValue().getSkuCode(), createTiem, userId,
-                            ZeroToNineEnum.ONE.getCode(), warehouseName));
-                }else{
-                    logInfoList.add(this.saveLogInfo(warehouseCode, entry.getValue().getSkuCode(), createTiem, userId,
-                            ZeroToNineEnum.ZERO.getCode(), ""));
-                }
                 addList.add(warehouseItemInfo);
             }
             count = warehouseItemInfoService.insertList(addList);
+            logOperation = LogOperationEnum.IMPORT_ORDER.getMessage();
             this.saveSkuStock(addList, warehouseInfo);
         }else if(length == Integer.parseInt(ZeroToNineEnum.TWO.getCode())){
             for(Map.Entry<String, Skus> entry : allMap.entrySet()){
@@ -1219,8 +1210,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                     warehouseItemInfo.setWarehouseItemId(str[1]);
                     updateList.add(warehouseItemInfo);
                 }
-                logInfoList.add(this.saveLogInfo(warehouseCode, entry.getValue().getSkuCode(), createTiem, userId,
-                        ZeroToNineEnum.TWO.getCode(), ""));
             }
 
             if(updateList.size() > 0){
@@ -1237,10 +1226,27 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 count = count + warehouseItemInfoService.insertList(addList);
                 saveSkuStockIsNotice(addList, warehouseInfo);
             }
+            logOperation = LogOperationEnum.IMPORT_ITEM_ID.getMessage();
         }
 
         //保存日志信息
-        logInfoService.insertList(logInfoList);
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skusList);
+        criteria.andEqualTo("warehouseCode", warehouseCode);
+        criteria.andEqualTo("isDelete", 0);
+        String warehouseName = warehouseInfo.getWarehouseName();
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
+        List<String> warehouseItemIds = new ArrayList<>();
+        for(WarehouseItemInfo warehouseItemInfoAdd : warehouseItemInfoList){
+            warehouseItemIds.add(warehouseItemInfoAdd.getId().toString());
+        }
+        logInfoService.recordLogs(new WarehouseItemInfo(), userId, logOperation, null, null, warehouseItemIds);
+        if(operationalNature != null &&
+                StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
+            logInfoService.recordLogs(new WarehouseItemInfo(), warehouseName, LogOperationEnum.NOTICE_SUCCESS.getMessage(),
+                    null, null, warehouseItemIds);
+        }
 
         return count;
     }
@@ -1295,24 +1301,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.SUCCESS.getCode());
             warehouseItemInfo.setWarehouseItemId(skus.getSkuCode());
         }
-    }
-
-    private LogInfo saveLogInfo(String warehouseCode, String skuCode, Date createTime, String userId, String type, String warehouseName){
-        LogInfo logInfo = new LogInfo();
-        logInfo.setEntityType(CLASS_NAME);
-        logInfo.setEntityId(warehouseCode + skuCode);
-        logInfo.setOperateTime(createTime);
-        if(StringUtils.isEquals(type, ZeroToNineEnum.ZERO.getCode())){
-            logInfo.setOperation(LogOperationEnum.IMPORT_ORDER.getMessage());
-            logInfo.setOperatorUserid(userId);
-        }else if(StringUtils.isEquals(type, ZeroToNineEnum.ONE.getCode())){
-            logInfo.setOperation(LogOperationEnum.NOTICE_SUCCESS.getMessage());
-            logInfo.setOperatorUserid(warehouseName);
-        }else if(StringUtils.isEquals(type, ZeroToNineEnum.TWO.getCode())){
-            logInfo.setOperation(LogOperationEnum.IMPORT_ITEM_ID.getMessage());
-            logInfo.setOperatorUserid(userId);
-        }
-        return logInfo;
     }
 
     private void updateSkuStock(WarehouseItemInfo warehouseItemInfo, WarehouseInfo warehouseInfo){

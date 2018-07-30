@@ -2,6 +2,7 @@ package org.trc.domain.purchase;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.BaseDO;
 
@@ -233,6 +234,22 @@ public class PurchaseOutboundDetail extends BaseDO {
     @FormParam("specNatureInfo")
     private String specNatureInfo;
 
+    /**
+     * 品牌名称
+     */
+    @ApiModelProperty("品牌名称")
+    @Transient
+    @FormParam("brandName")
+    @Length(max = 256, message = "商品的品牌名称字母和数字不能超过256个,汉字不能超过128个")
+    private String brandName;
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
 
     /**
      * @return id
