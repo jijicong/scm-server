@@ -29,7 +29,7 @@ public class WarehouseInfoDbUnit extends BaseTest {
     @Test
     public void receiptAdvice_success () throws Exception {
         mockQimene(true);
-        warehouseInfoBiz.warehouseItemNoticeQimen("1");
+       // warehouseInfoBiz.warehouseItemNoticeQimen("1");
     }
 
     private void mockQimene(Boolean isSucc) {

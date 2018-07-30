@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.trc.domain.allocateOrder.AllocateOrder;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
+import org.trc.mapper.purchase.IPurchaseOutboundDetailMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
@@ -31,6 +34,8 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	
 	@Autowired
 	private IAclUserAccreditInfoService userInfoService;
+	@Autowired
+	private IPurchaseOutboundDetailMapper detailMapper;
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> pageList (PurchaseOutboundNoticeForm form,
@@ -103,6 +108,15 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
         return pageResult;
 
 
+	}
+
+	@Override
+	public List<PurchaseOutboundDetail> selectDetailByNoticeCode (String outboundNoticeCode) {
+		PurchaseOutboundDetail queryDetail = new PurchaseOutboundDetail();
+		queryDetail.setOutboundNoticeCode(outboundNoticeCode);
+		// 未删除的记录
+		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+		return detailMapper.select(queryDetail);
 	}
 	
 }
