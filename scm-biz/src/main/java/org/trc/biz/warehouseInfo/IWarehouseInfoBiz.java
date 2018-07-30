@@ -77,7 +77,7 @@ public interface IWarehouseInfoBiz {
      *
      * @param id
      */
-    void deleteWarehouseItemInfoById(Long id);
+    void deleteWarehouseItemInfoById(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 编辑仓库商品信息

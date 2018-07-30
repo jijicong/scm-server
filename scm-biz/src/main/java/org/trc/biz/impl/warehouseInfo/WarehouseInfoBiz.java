@@ -332,7 +332,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     @Override
     @WarehouseItemCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void deleteWarehouseItemInfoById(Long id) {
+    public void deleteWarehouseItemInfoById(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "仓库商品信息ID不能为空");
         WarehouseItemInfo tmp = new WarehouseItemInfo();
         tmp.setId(id);
@@ -356,6 +356,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         //修改库存信息
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(tmp.getWarehouseInfoId());
         this.deleteSkuStock(tmp, warehouseInfo);
+        logInfoService.recordLog(tmp, tmp.getId().toString(), aclUserAccreditInfo.getUserId(),
+                LogOperationEnum.DELETE.getMessage(), null, null);
     }
 
     private void deleteSkuStock(WarehouseItemInfo warehouseItemInfo, WarehouseInfo warehouseInfo){
@@ -1187,9 +1189,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 warehouseItemInfo = new WarehouseItemInfo();
                 assembleWarehouseItemInfo(warehouseItemInfo, entry.getValue(), warehouseInfoIdLong, warehouseCode,
                         warehouseOwnerId, wmsWarehouseCode, itemNoMap, operationalNature);
-                if(operationalNature != null &&
-                        StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
-                }
                 addList.add(warehouseItemInfo);
             }
             count = warehouseItemInfoService.insertList(addList);
@@ -1243,6 +1242,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemIds.add(warehouseItemInfoAdd.getId().toString());
         }
         logInfoService.recordLogs(new WarehouseItemInfo(), userId, logOperation, null, null, warehouseItemIds);
+        if(operationalNature != null &&
+                StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
+            logInfoService.recordLogs(new WarehouseItemInfo(), warehouseName, LogOperationEnum.NOTICE_SUCCESS.getMessage(),
+                    null, null, warehouseItemIds);
+        }
 
         return count;
     }
