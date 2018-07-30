@@ -6,7 +6,10 @@ import org.trc.util.Pagenation;
 
 public interface IPurchaseOutboundNoticeBiz {
 
-	Pagenation<PurchaseOutboundNotice> pageList (PurchaseOutboundNoticeForm form, Pagenation<PurchaseOutboundNotice> page,
+	Pagenation<PurchaseOutboundNotice> getPageList (PurchaseOutboundNoticeForm form, Pagenation<PurchaseOutboundNotice> page,
 			String channelCode);
+
+	PurchaseOutboundNotice getDetail(Long id);
+
 
 }
