@@ -23,7 +23,7 @@ import javax.ws.rs.core.Response;
  */
 @Component
 @Path("purchaseBoxInfo")
-@Api(value = "装箱薪资")
+@Api(value = "装箱")
 public class PurchaseBoxInfoResource {
 
     @Resource
