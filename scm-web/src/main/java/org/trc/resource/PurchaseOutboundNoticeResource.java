@@ -37,7 +37,7 @@ public class PurchaseOutboundNoticeResource {
     @GET
     @Path("/pageList")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("查询退货出库通知单列表")
+    @ApiOperation(value = "查询退货出库通知单列表", response = PurchaseOutboundNotice.class)
     public Response pageList(@BeanParam PurchaseOutboundNoticeForm form, @BeanParam Pagenation<PurchaseOutboundNotice> page, 
     		@Context ContainerRequestContext requestContext) {
         Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);

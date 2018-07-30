@@ -36,10 +36,10 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	public Pagenation<PurchaseOutboundNotice> pageList (PurchaseOutboundNoticeForm form,
 			Pagenation<PurchaseOutboundNotice> page, String channelCode) {
 		
-		Example example = new Example(AllocateOrder.class);
+		Example example = new Example(PurchaseOutboundNotice.class);
         Example.Criteria criteria = example.createCriteria();
         
-        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        //criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         //业务线编号
         criteria.andEqualTo("channelCode", channelCode);
         
