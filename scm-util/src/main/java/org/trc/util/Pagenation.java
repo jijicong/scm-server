@@ -118,7 +118,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 根据pageNo和pageSize计算当前页第一条记录在总结果集中的位置,序号从1开始.
      */
-    public Integer getFirst() {
+    public Integer pageGetFirst() {
         return ((pageNo - 1) * pageSize) + 1;
     }
 
@@ -153,7 +153,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 根据pageSize与totalCount计算总页数, 默认值为-1.
      */
-    public long getTotalPages() {
+    public long pageGetTotalPages() {
         if (totalCount < 0) {
             return -1;
         }
@@ -170,15 +170,15 @@ public class Pagenation<T> implements Serializable {
     /**
      * 是否还有下一页.
      */
-    public boolean isHasNext() {
-        return (pageNo + 1 <= getTotalPages());
+    public boolean pageIsHasNext() {
+        return (pageNo + 1 <= pageGetTotalPages());
     }
 
     /**
      * 取得下页的页号, 序号从1开始. 当前页为尾页时仍返回尾页序号.
      */
-    public Integer getNextPage() {
-        if (isHasNext()) {
+    public Integer pageGetNextPage() {
+        if (pageIsHasNext()) {
             return pageNo + 1;
         } else {
             return pageNo;
@@ -188,15 +188,15 @@ public class Pagenation<T> implements Serializable {
     /**
      * 是否还有上一页.
      */
-    public boolean isHasPre() {
+    public boolean pageIsHasPre() {
         return (pageNo - 1 >= 1);
     }
 
     /**
      * 取得上页的页号, 序号从1开始. 当前页为首页时返回首页序号.
      */
-    public Integer getPrePage() {
-        if (isHasPre()) {
+    public Integer pageGetPrePage() {
+        if (pageIsHasPre()) {
             return pageNo - 1;
         } else {
             return pageNo;

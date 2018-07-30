@@ -28,7 +28,7 @@ import javax.ws.rs.core.Response;
  * @author hzliuwei
  * @create 2018/7/24
  */
-@Api(value = "采购退货单管理")
+//@Api(value = "采购退货单管理")
 @Component
 @Path("/purchaseOutboundOrder")
 public class PurchaseOutboundOrderResource {

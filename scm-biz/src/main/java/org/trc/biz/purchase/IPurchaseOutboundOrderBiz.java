@@ -9,7 +9,6 @@ import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.Pagenation;
 
-@Service("purchaseOutboundOrderBiz")
 public interface IPurchaseOutboundOrderBiz {
 
     /**
