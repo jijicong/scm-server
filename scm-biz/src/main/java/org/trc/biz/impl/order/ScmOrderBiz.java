@@ -3542,8 +3542,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             page.setPageSize(300);
             page=warehouseOrderPage(queryModel, page, aclUserAccreditInfo);
             warehouseOrderList.addAll(page.getResult());
-            if (page.getTotalPages()>1){
-                for (int i = 2; i <= page.getTotalPages(); i++) {
+            if (page.pageGetTotalPages()>1){
+                for (int i = 2; i <= page.pageGetTotalPages(); i++) {
                     page.setPageNo(i);
                     page=warehouseOrderPage(queryModel, page, aclUserAccreditInfo);
                     warehouseOrderList.addAll(page.getResult());

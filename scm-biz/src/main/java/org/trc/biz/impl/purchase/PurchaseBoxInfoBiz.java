@@ -23,6 +23,7 @@ import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
@@ -103,7 +104,11 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
             this.checkPurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseOrderCode);
             this.savePackingType(purchaseBoxInfoVO.getPackingType(), purchaseOrder.getCreateOperator());
         }
-        this.savePurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseOrder.getCreateOperator());
+        PurchaseBoxInfo purchaseBoxInfoOld = new PurchaseBoxInfo();
+        purchaseBoxInfoOld.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        purchaseBoxInfoOld.setPurchaseOrderCode(purchaseOrderCode);
+        List<PurchaseBoxInfo> purchaseBoxInfoListOld = purchaseBoxInfoService.select(purchaseBoxInfoOld);
+        this.savePurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseBoxInfoListOld, purchaseOrder.getCreateOperator());
 
         //保存操作日志
         String userId= aclUserAccreditInfo.getUserId();
@@ -225,33 +230,78 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
      * @param purchaseBoxInfoList
      * @param createOperator
      */
-    private void savePurchaseBoxInfoDetail(List<PurchaseBoxInfo> purchaseBoxInfoList, String createOperator){
+    private void savePurchaseBoxInfoDetail(List<PurchaseBoxInfo> purchaseBoxInfoList,
+                                           List<PurchaseBoxInfo> purchaseBoxInfoListOld, String createOperator){
         int count = 0;
-        for (PurchaseBoxInfo purchaseBoxInfo : purchaseBoxInfoList) {
-            if (RecordStatusEnum.ADD.getCode().equals(purchaseBoxInfo.getStatus())) {
-                ParamsUtil.setBaseDO(purchaseBoxInfo);
-                purchaseBoxInfo.setCreateOperator(createOperator);
-                purchaseBoxInfoService.insert(purchaseBoxInfo);
-                count += 1;
+        List<PurchaseBoxInfo> saveInfo = new ArrayList<>(purchaseBoxInfoList);
+
+        for(PurchaseBoxInfo purchaseBoxInfoOld : purchaseBoxInfoListOld){
+            boolean isDelete = true;
+
+            for(PurchaseBoxInfo purchaseBoxInfoNew : purchaseBoxInfoList){
+                if(purchaseBoxInfoNew.getId().longValue() == purchaseBoxInfoOld.getId().longValue()){
+                    isDelete = false;
+                    if(this.checkIsUpdate(purchaseBoxInfoOld, purchaseBoxInfoNew)){
+                        purchaseBoxInfoNew.setUpdateTime(Calendar.getInstance().getTime());
+                        purchaseBoxInfoService.updateByPrimaryKeySelective(purchaseBoxInfoNew);
+                        count += 1;
+                    }
+                    saveInfo.remove(purchaseBoxInfoNew);
+                }
             }
-            if (RecordStatusEnum.DELETE.getCode().equals(purchaseBoxInfo.getStatus())) {
+
+            if(isDelete){
                 PurchaseBoxInfo delete = new PurchaseBoxInfo();
-                delete.setId(purchaseBoxInfo.getId());
+                delete.setId(purchaseBoxInfoOld.getId());
                 delete.setIsDeleted(ZeroToNineEnum.ONE.getCode());
                 delete.setUpdateTime(Calendar.getInstance().getTime());
                 purchaseBoxInfoService.updateByPrimaryKeySelective(delete);
                 count += 1;
             }
-            if (RecordStatusEnum.UPDATE.getCode().equals(purchaseBoxInfo.getStatus())) {
-                purchaseBoxInfo.setUpdateTime(Calendar.getInstance().getTime());
-                purchaseBoxInfoService.updateByPrimaryKeySelective(purchaseBoxInfo);
-                count += 1;
-            }
         }
+
+        for (PurchaseBoxInfo purchaseBoxInfo : saveInfo) {
+            ParamsUtil.setBaseDO(purchaseBoxInfo);
+            purchaseBoxInfo.setCreateOperator(createOperator);
+            purchaseBoxInfoService.insert(purchaseBoxInfo);
+            count += 1;
+        }
+
         if (count<1){
             String msg = "装箱信息保存,数据库操作失败";
             logger.error(msg);
             throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
         }
+    }
+
+    private boolean checkIsUpdate(PurchaseBoxInfo oldInfo, PurchaseBoxInfo newInfo){
+        if((oldInfo.getAmountPerBox() == null ? 0 : oldInfo.getAmountPerBox().longValue()) !=
+                (newInfo.getAmountPerBox() == null ? 0 : newInfo.getAmountPerBox().longValue())){
+            return true;
+        }
+        if(!StringUtils.equals(oldInfo.getBoxNumber(), newInfo.getBoxNumber())){
+            return true;
+        }
+        if((oldInfo.getBoxAmount() == null ? 0 : oldInfo.getBoxAmount().longValue()) !=
+                (newInfo.getBoxAmount() == null ? 0 : newInfo.getBoxAmount().longValue())){
+            return true;
+        }
+        if((oldInfo.getAmount() == null ? 0 : oldInfo.getAmount().longValue()) !=
+                (newInfo.getAmount() == null ? 0 : newInfo.getAmount().longValue())){
+            return true;
+        }
+        if(!StringUtils.equals(oldInfo.getGrossWeight(), newInfo.getGrossWeight())){
+            return true;
+        }
+        if(!StringUtils.equals(oldInfo.getCartonSize(), newInfo.getCartonSize())){
+            return true;
+        }
+        if(!StringUtils.equals(oldInfo.getVolume(), newInfo.getVolume())){
+            return true;
+        }
+        if(!StringUtils.equals(oldInfo.getRemark(), newInfo.getRemark())){
+            return true;
+        }
+        return false;
     }
 }

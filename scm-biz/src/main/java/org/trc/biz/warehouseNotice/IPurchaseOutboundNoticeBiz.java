@@ -1,8 +1,12 @@
 package org.trc.biz.warehouseNotice;
 
-import org.springframework.stereotype.Service;
+import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
+import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
+import org.trc.util.Pagenation;
 
-@Service("purchaseOutboundNoticBiz")
 public interface IPurchaseOutboundNoticeBiz {
+
+	Pagenation<PurchaseOutboundNotice> pageList (PurchaseOutboundNoticeForm form, Pagenation<PurchaseOutboundNotice> page,
+			String channelCode);
 
 }

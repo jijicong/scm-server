@@ -149,7 +149,7 @@ public class PurchaseOutboundNotice extends BaseDO {
     @FormParam("ownerCode")
     private String ownerCode;
 
-    @ApiModelProperty("")
+    @ApiModelProperty("备注")
     @FormParam("remark")
     private String remark;
 

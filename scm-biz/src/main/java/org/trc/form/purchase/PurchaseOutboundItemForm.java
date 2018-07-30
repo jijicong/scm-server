@@ -1,6 +1,6 @@
 package org.trc.form.purchase;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -21,22 +21,22 @@ public class PurchaseOutboundItemForm extends QueryModel {
      */
     @QueryParam("supplierCode")
     @Length(max = 64)
-    @ApiModelProperty(name = "退货供应商", required = true)
+    @ApiParam(value = "退货供应商", required = true)
     private String supplierCode;
 
     /**
      * 退货仓库
      */
-    @QueryParam("warehouseCode")
+    @QueryParam("warehouseInfoId")
     @Length(max = 64)
-    @ApiModelProperty(name = "退货仓库", required = true)
-    private String warehouseCode;
+    @ApiParam(value = "退货仓库id", required = true)
+    private String warehouseInfoId;
 
     /**
      * 退货类型
      */
     @QueryParam("returnOrderType")
-    @ApiModelProperty(name = "退货类型", required = true)
+    @ApiParam(value = "退货类型", required = true)
     private String returnOrderType;
 
     /**
@@ -44,28 +44,28 @@ public class PurchaseOutboundItemForm extends QueryModel {
      */
     @QueryParam("skuName")
     @Length(max = 128)
-    @ApiModelProperty(name = "sku名称")
+    @ApiParam(value = "sku名称")
     private String skuName;
 
     /**
      * skucode
      */
     @QueryParam("skuCode")
-    @ApiModelProperty(name = "skuCode，多个以英文格式[,]分隔")
+    @ApiParam(value = "skuCode，多个以英文格式[,]分隔")
     private String skuCode;
 
     /**
      * 品牌名称
      */
     @QueryParam("brandName")
-    @ApiModelProperty(name = "品牌名称")
+    @ApiParam(value = "品牌名称")
     private String brandName;
 
     /**
      * 条形码
      */
     @QueryParam("barCode")
-    @ApiModelProperty(name = "条形码，多个以英文格式[,]分隔")
+    @ApiParam(value = "条形码，多个以英文格式[,]分隔")
     private String barCode;
 
     public String getSupplierCode() {
@@ -76,12 +76,12 @@ public class PurchaseOutboundItemForm extends QueryModel {
         this.supplierCode = supplierCode;
     }
 
-    public String getWarehouseCode() {
-        return warehouseCode;
+    public String getWarehouseInfoId() {
+        return warehouseInfoId;
     }
 
-    public void setWarehouseCode(String warehouseCode) {
-        this.warehouseCode = warehouseCode;
+    public void setWarehouseInfoId(String warehouseInfoId) {
+        this.warehouseInfoId = warehouseInfoId;
     }
 
     public String getReturnOrderType() {

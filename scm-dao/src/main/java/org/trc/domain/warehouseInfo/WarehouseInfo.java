@@ -1,9 +1,6 @@
 package org.trc.domain.warehouseInfo;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -12,7 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
-import java.util.Date;
 
 /**
  * 仓储管理-仓库信息管理
