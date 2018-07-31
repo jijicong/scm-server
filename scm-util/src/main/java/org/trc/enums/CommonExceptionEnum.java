@@ -15,6 +15,7 @@ public enum CommonExceptionEnum {
     NULL_EXCEPTION("2000103","系统繁忙"),
     REMOTE_TIMEOUT("2000104","远程服务超时"),
     REMOTE_ERROR("2000105","远程服务错误"),
+    REDIS_LOCK_ERROR("2000106","redis分布式锁异常"),
 
 
     NOVALID("0","停用");

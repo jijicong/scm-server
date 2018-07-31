@@ -74,7 +74,7 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public List<PurchaseDetail> purchaseDetailList(Long purchaseId) throws Exception {
 
         AssertUtil.notNull(purchaseId,"采购单id为空,采购明细查询失败");

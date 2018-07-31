@@ -7,7 +7,11 @@ import javax.ws.rs.FormParam;
  * Created by sone on 2017/6/20.
  */
 public class PurchaseOrderAddData extends PurchaseOrder{
-    @FormParam("gridValue")
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1550957835369944676L;
+	@FormParam("gridValue")
     @Transient
     private String gridValue;
 

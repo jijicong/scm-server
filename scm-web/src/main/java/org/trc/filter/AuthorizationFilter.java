@@ -229,10 +229,12 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     private String _getCookieChannelCode(ContainerRequestContext requestContext) {
 
         HttpSession session = request.getSession(false);
-        if(null == session){
+        if (null == session) {
             return StringUtils.EMPTY;
+        } else if (null != session.getAttribute("channelCode")) {
+            return session.getAttribute("channelCode").toString();
         }
-        return session.getAttribute("channelCode").toString();
+        return StringUtils.EMPTY;
 
     }
     private String _getChannelCode(ContainerRequestContext requestContext) {
