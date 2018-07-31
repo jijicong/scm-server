@@ -228,9 +228,6 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
     private void checkPurchaseBoxInfoDetail(List<PurchaseBoxInfo> purchaseBoxInfoList, String code){
         Map<String, Long> amountMap = new HashMap<>();
         for (PurchaseBoxInfo purchaseBoxInfo : purchaseBoxInfoList) {
-            if(RecordStatusEnum.DELETE.getCode().equals(purchaseBoxInfo.getStatus())){
-                continue;
-            }
             String skuCode = purchaseBoxInfo.getSkuCode();
             if(amountMap.containsKey(skuCode)){
                 amountMap.put(skuCode, amountMap.get(skuCode) + purchaseBoxInfo.getAmount());

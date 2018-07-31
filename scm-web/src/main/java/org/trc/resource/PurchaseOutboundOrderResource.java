@@ -104,7 +104,7 @@ public class PurchaseOutboundOrderResource {
     @Path("/commit")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("提交审核采购退货单")
-    public Response commitAuditPurchaseOutboundOrder(@BeanParam PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
+    public Response commitAuditPurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("提交审核采购退货单成功!", "");
     }
