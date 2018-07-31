@@ -1,5 +1,8 @@
 package org.trc.resource;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IitemGroupBiz;
@@ -23,6 +26,7 @@ import java.util.List;
  * Created by hzgjl on 2018/7/26.
  */
 @Component
+@Api(value = "商品组管理")
 @Path(SupplyConstants.ItemGroupConstants.ROOT)
 public class ItemGroupResource {
 
@@ -34,6 +38,7 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "商品组分页查询")
+    @ApiImplicitParam(paramType = "query", dataType = "String", name = "itemGroupName", value = "商品组编号", required = false)
     public Response itemGroupPage(@BeanParam ItemGroupForm form, @BeanParam Pagenation<ItemGroup> page, @Context ContainerRequestContext requestContext){
         return ResultUtil.createSuccessPageResult(itemGroupBiz.itemGroupPage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
