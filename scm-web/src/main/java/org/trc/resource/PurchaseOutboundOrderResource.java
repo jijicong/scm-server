@@ -8,11 +8,9 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
-import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
@@ -63,6 +61,7 @@ public class PurchaseOutboundOrderResource {
         //采购订单分页查询列表
         return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.purchaseOutboundOrderPageList(form, page, channelCode));
     }
+
 
     /**
      * 保存采购退货单
@@ -152,6 +151,31 @@ public class PurchaseOutboundOrderResource {
             return ResultUtil.createSuccessResult(msg, "");
         }
     }
+
+    /**
+     * 采购退货单出库通知
+     */
+    @PUT
+    @Path("warahouseAdvice/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("采购退货单出库通知")
+    public Response saveWarahouseAdvice(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
+        purchaseOutboundOrderBiz.warehouseAdvice(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("采购退货单出库通知成功!", "");
+    }
+
+
+    ///**
+    // * 审核采购退货单，根据采购退货编号查询采购退货单详情
+    // */
+    //@GET
+    //@Path("getOrder/{purchaseOutboundOrderCode}")
+    //@Produces(MediaType.APPLICATION_JSON)
+    //@ApiOperation("审核采购退货单，根据采购退货编号查询采购退货单详情")
+    //public Response getPurchaseOutboundOrderByCode(@ApiParam(name = "purchaseOutboundOrderCode", value = "采购退货单编号")
+    //                                               @PathParam("purchaseOutboundOrderCode") String purchaseOutboundOrderCode) {
+    //    return ResultUtil.createSuccessResult("根据采购退货单编号查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderByCode(purchaseOutboundOrderCode));
+    //}
 
 
     @POST

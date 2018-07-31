@@ -1,15 +1,16 @@
-package org.trc.enums.warehouse;
+package org.trc.enums.purchase;
 
 /**
  * Created by hzliuw on 2018/7/31.
- * 采购退货单退货类型
+ * 提货方式
  */
-public enum PurchaseOutboundOrderTypeEnum {
-    QUALITY("1", "正品"),
-    SUBSTANDARD("2", "残品");
+public enum PickTypeEnum {
+    ONESELF("1", "到仓自提"),
+    JD_DELIVERY("2", "京东配送"),
+    OTHER_DELIVERY("3", "其他物流");
 
-    public static PurchaseOutboundOrderTypeEnum queryNameByCode(String code){
-        for(PurchaseOutboundOrderTypeEnum sourceEnum: PurchaseOutboundOrderTypeEnum.values()){
+    public static PickTypeEnum queryNameByCode(String code){
+        for(PickTypeEnum sourceEnum: PickTypeEnum.values()){
             if (sourceEnum.getCode().equals(code)){
                 return sourceEnum;
             }
@@ -20,7 +21,7 @@ public enum PurchaseOutboundOrderTypeEnum {
     private String code;
     private String name;
 
-    PurchaseOutboundOrderTypeEnum(String code, String name) {
+    PickTypeEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }
