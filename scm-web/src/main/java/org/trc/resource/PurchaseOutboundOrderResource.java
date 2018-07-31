@@ -7,8 +7,9 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseDetail;
+import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
@@ -28,7 +29,7 @@ import javax.ws.rs.core.Response;
  * @author hzliuwei
  * @create 2018/7/24
  */
-//@Api(value = "采购退货单管理")
+@Api(value = "采购退货单管理")
 @Component
 @Path("/purchaseOutboundOrder")
 public class PurchaseOutboundOrderResource {
@@ -77,7 +78,7 @@ public class PurchaseOutboundOrderResource {
      * 根据采购退货单Id查询采购退货单
      */
     @GET
-    @Path("getorder/{id}")
+    @Path("getOrder/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("根据采购退货单Id查询采购退货单")
     public Response getPurchaseOutboundOrder(@ApiParam(name = "采购退货单Id") @PathParam("id") Long id) {
@@ -112,12 +113,21 @@ public class PurchaseOutboundOrderResource {
      * 获取采购退货单商品详情
      */
     @GET
-    @Path("/getdetail")
+    @Path("/getDetail")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("获取采购退货单商品详情")
-    public Response getPurchaseOutboundOrderDetail(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<PurchaseDetail> page, @QueryParam("skus") String skus) {
+    public Response getPurchaseOutboundOrderDetail(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<PurchaseOutboundDetail> page, @QueryParam("skus") String skus) {
         return ResultUtil.createSuccessResult("根据供应商编码查询所有的有效商品成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
     }
+
+    @GET
+    @Path("/getPurchaseHistory")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("采购退货单获取采购历史详情")
+    public Response getPurchaseHistory(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<WarehouseNoticeDetails> page) {
+        return ResultUtil.createSuccessResult("获取采购历史详情成功", purchaseOutboundOrderBiz.getPurchaseHistory(form, page));
+    }
+
 
     @POST
     @Path("/test")
