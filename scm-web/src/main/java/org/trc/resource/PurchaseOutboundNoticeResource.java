@@ -59,7 +59,7 @@ public class PurchaseOutboundNoticeResource {
     @Path("detail/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据主键id查询退货出库通知单详情", response = PurchaseOutboundNotice.class)
-    public Response detail(@ApiParam(value = "退货出库通知单主键") @PathParam("id") Long id){
+    public Response detail(@ApiParam(value = "退货出库通知单主键") @PathParam("id") Long id) {
     	return ResultUtil.createSuccessResult("根据主键id查询退货出库通知单详情成功", noticeBiz.getDetail(id));
     	
     }
