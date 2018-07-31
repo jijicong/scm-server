@@ -57,7 +57,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Resource
     private ILogInfoService logInfoService;
 
-    private static final String  SERIALNAME = "SPZ";
+    private static final String  SERIALNAME = "TEST";
     /**
      * 正则表达式：验证手机号
      */
