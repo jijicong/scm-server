@@ -319,6 +319,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 	        Example.Criteria ca = example.createCriteria();
 	        ca.andIn("skuCode", skuCodeList);
 	        ca.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
+	        ca.andEqualTo("warehouseCode", allocateInOrder.getInWarehouseCode());
 	        List<WarehouseItemInfo> whiList = warehouseItemInfoService.selectByExample(example);
 	        for (AllocateSkuDetail detail : detailList) {
 	        	for (WarehouseItemInfo info : whiList) {
