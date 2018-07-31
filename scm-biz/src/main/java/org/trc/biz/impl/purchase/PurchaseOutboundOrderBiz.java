@@ -121,7 +121,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     private IWarehouseNoticeService warehouseNoticeService;
 
     @Autowired
-    private IWarehouseNoticeDetailsService WarehouseNoticeDetailsService;
+    private IWarehouseNoticeDetailsService warehouseNoticeDetailsService;
 
 
     /**
@@ -244,7 +244,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //设置品牌名称
         purchaseOutboundDetails.forEach(purchaseOutboundDetail -> {
             Brand brand = brandService.selectByPrimaryKey(Long.valueOf(purchaseOutboundDetail.getBrandId()));
-            if(brand != null){
+            if (brand != null) {
                 purchaseOutboundDetail.setBrandName(brand.getName());
             }
         });
@@ -289,28 +289,57 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         criteria.andEqualTo("warehouseInfoId", form.getWarehouseInfoId());
         criteria.andEqualTo("supplierCode", form.getSupplierCode());
         criteria.andEqualTo("finishStatus", WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-        //退货类型是残品,查询入库单状态为入库异常
-        if(StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType())){
-            criteria.andEqualTo("status", WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        }
-        //criteria.andEqualTo("status", WarehouseNoticeStatusEnum.);
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
-        if(CollectionUtils.isEmpty(warehouseNotices)){
+        if (CollectionUtils.isEmpty(warehouseNotices)) {
             return null;
         }
-
-        for(WarehouseNotice warehouseNotice : warehouseNotices){
+        List<WarehouseNoticeDetails> details = new ArrayList<>();
+        for (WarehouseNotice warehouseNotice : warehouseNotices) {
             Example detailExample = new Example(WarehouseNoticeDetails.class);
             Example.Criteria detailCriteria = detailExample.createCriteria();
             detailCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
             detailCriteria.andEqualTo("skuCode", form.getSkuCode());
             detailCriteria.andBetween("storageTime", form.getStartDate(), form.getEndDate());
-            List<WarehouseNoticeDetails> warehouseNoticeDetails = WarehouseNoticeDetailsService.selectByExample(detailExample);
-            if(!CollectionUtils.isEmpty(warehouseNoticeDetails)){
-
+            //退货类型是残品,查询入库单状态为入库异常
+            if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType())) {
+                detailCriteria.andEqualTo("status", WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+            }
+            //退货类型是正品,查询入库单状态为
+            else if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.QUALITY.getCode(), form.getReturnOrderType())) {
+                detailCriteria.andEqualTo("status", Arrays.asList(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(),
+                        WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(),
+                        WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
+            }
+            List<WarehouseNoticeDetails> warehouseNoticeDetails = warehouseNoticeDetailsService.selectByExample(detailExample);
+            if (CollectionUtils.isEmpty(warehouseNoticeDetails)) {
+                continue;
+            }
+            for (WarehouseNoticeDetails warehouseNoticeDetail : warehouseNoticeDetails) {
+                //退货类型是残品
+                if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType())) {
+                    if (warehouseNoticeDetail.getDefectiveStorageQuantity() != null && warehouseNoticeDetail.getDefectiveStorageQuantity() == 0) {
+                        continue;
+                    }
+                }
+                //退货类型是正品
+                else if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.QUALITY.getCode(), form.getReturnOrderType())) {
+                    if (warehouseNoticeDetail.getDefectiveStorageQuantity() != null && warehouseNoticeDetail.getDefectiveStorageQuantity() > 0) {
+                        continue;
+                    }
+                }
+                warehouseNoticeDetail.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
+                details.add(warehouseNoticeDetail);
             }
         }
-        return null;
+
+        /**
+         * 分页查询结果
+         */
+        List<Long> warehouseNoticeDetailsIds = details.stream().map(WarehouseNoticeDetails::getId).collect(Collectors.toList());
+        Example ex = new Example(WarehouseNoticeDetails.class);
+        Example.Criteria criteria1 = ex.createCriteria();
+        criteria1.andIn("id", warehouseNoticeDetailsIds);
+        return warehouseNoticeDetailsService.pagination(ex, page, new QueryModel());
     }
 
     private void validateParam(PurchaseOutboundItemForm form) {
@@ -502,6 +531,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
     /**
      * 京东接口查询库存信息
+     *
      * @param warehouseItemInfos
      * @param returnOrderType
      * @return
