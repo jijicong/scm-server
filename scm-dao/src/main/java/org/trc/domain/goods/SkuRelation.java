@@ -15,6 +15,7 @@ import java.io.Serializable;
 @Table(name = "sku_relation")
 public class SkuRelation implements Serializable {
 
+    private static final long serialVersionUID = 8130558214880972290L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

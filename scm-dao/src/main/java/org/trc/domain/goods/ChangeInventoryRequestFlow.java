@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class ChangeInventoryRequestFlow implements Serializable {
+    private static final long serialVersionUID = 7829684815786180576L;
+
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -95,8 +95,4 @@ public class PurchaseBoxInfo extends BaseDO {
     @Length(max = 100, message = "备注字母和数字不能超过100个")
     private String remark;
 
-    @Transient
-    @ApiModelProperty("操作状态(0-未修改,1-新增,2-修改,3-删除)")
-    private String status;
-
 }

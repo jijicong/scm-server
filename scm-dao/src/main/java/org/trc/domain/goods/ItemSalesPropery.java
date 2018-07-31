@@ -13,6 +13,7 @@ import javax.ws.rs.PathParam;
 
 public class ItemSalesPropery extends ScmDO {
 
+    private static final long serialVersionUID = 509046100194015433L;
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

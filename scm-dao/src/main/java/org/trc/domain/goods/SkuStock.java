@@ -14,6 +14,7 @@ import javax.ws.rs.PathParam;
 
 public class SkuStock extends ScmDO {
 
+    private static final long serialVersionUID = -1357385203700722344L;
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

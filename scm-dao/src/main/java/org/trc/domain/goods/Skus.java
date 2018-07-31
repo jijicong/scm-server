@@ -16,6 +16,7 @@ import java.util.List;
 //@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class Skus extends ScmDO {
 
+    private static final long serialVersionUID = 2671659563299088628L;
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
