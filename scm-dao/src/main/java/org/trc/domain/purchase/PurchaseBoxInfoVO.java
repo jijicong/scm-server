@@ -26,7 +26,19 @@ public class PurchaseBoxInfoVO implements Serializable {
     private String purchaseOrderCode;
 
     @NotEmpty(message = "装箱信息详情不能为空")
-    @ApiParam("装箱信息详情")
+    @FormParam("purchaseBoxInfoListJSON")
+    @ApiParam("装箱信息详情,数据格式:{\n\"" +
+            "                    \"skuCode\":\"sku编码\",\n " +
+            "                    \"purchaseOrderCode\":\"采购单单号\",\n " +
+            "                    \"amountPerBox\":\"每箱数量\",\n " +
+            "                    \"boxNumber\":\"箱号\",\n " +
+            "                    \"boxAmount\":\"箱数\"\n" +
+            "                    \"amount\":\"总数\"\n" +
+            "                    \"grossWeight\":\"毛重\"\n" +
+            "                    \"cartonSize\":\"外箱尺寸\"\n" +
+            "                    \"volume\":\"体积\"\n" +
+            "                    \"remark\":\"备注\"\n" +
+            "                    \"}")
     private String purchaseBoxInfoListJSON;
 
     @FormParam("logisticsCorporationName")

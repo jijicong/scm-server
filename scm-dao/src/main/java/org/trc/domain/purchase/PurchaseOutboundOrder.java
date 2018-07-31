@@ -5,6 +5,7 @@ import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @PathParam("id")
     private Long id;
 
     /**

@@ -110,8 +110,18 @@ public class WarehouseNoticeDetails implements Serializable{
     //库存表对应的
     @Column(name = "sku_stock_id")
     private Long skuStockId;
-    
-    
+
+    @Transient
+    private String purchaseOrderCode;
+
+    public String getPurchaseOrderCode() {
+        return purchaseOrderCode;
+    }
+
+    public void setPurchaseOrderCode(String purchaseOrderCode) {
+        this.purchaseOrderCode = purchaseOrderCode;
+    }
+
     public Date getActualInstockTime() {
 		return actualInstockTime;
 	}
