@@ -9,6 +9,7 @@ import java.util.Date;
  * Created by hzszy on 2017/6/19.
  */
 public class SupplyItems extends BaseDO {
+    private static final long serialVersionUID = 5860189323188201824L;
     private Long id; //主键ID
     private String supplierCode; //供应商编码
     private String supplyName; //供应商名称
