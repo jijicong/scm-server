@@ -26,6 +26,7 @@ public class PurchaseBoxInfoVO implements Serializable {
     private String purchaseOrderCode;
 
     @NotEmpty(message = "装箱信息详情不能为空")
+    @FormParam("purchaseBoxInfoListJSON")
     @ApiParam("装箱信息详情")
     private String purchaseBoxInfoListJSON;
 

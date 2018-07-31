@@ -74,10 +74,10 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
 
         //单据状态"为“暂存”、“提交审核”、“审核驳回”、“审核通过”时才允许操作
         String purchaseOrderStatus = purchaseOrder.getStatus();
-        if(!(PurchaseOrderStatusEnum.HOLD.equals(purchaseOrderStatus) ||
-                PurchaseOrderStatusEnum.AUDIT.equals(purchaseOrderStatus) ||
-                PurchaseOrderStatusEnum.REJECT.equals(purchaseOrderStatus) ||
-                PurchaseOrderStatusEnum.PASS.equals(purchaseOrderStatus))){
+        if(!(PurchaseOrderStatusEnum.HOLD.getCode().equals(purchaseOrderStatus) ||
+                PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrderStatus) ||
+                PurchaseOrderStatusEnum.REJECT.getCode().equals(purchaseOrderStatus) ||
+                PurchaseOrderStatusEnum.PASS.getCode().equals(purchaseOrderStatus))){
             String msg = "单据状态为“暂存”、“提交审核”、“审核驳回”、“审核通过”时才允许操作";
             logger.error(msg);
             throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
@@ -91,7 +91,7 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
         purchaseOrderUpdate.setPackingType(purchaseBoxInfoVO.getPackingType());
         purchaseOrderUpdate.setBoxInfoStatus(status);
         purchaseOrderUpdate.setUpdateTime(Calendar.getInstance().getTime());
-        int count = purchaseOrderService.updateByPrimaryKey(purchaseOrderUpdate);
+        int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrderUpdate);
         if (count<1){
             String msg = "采购单保存,数据库操作失败";
             logger.error(msg);
@@ -113,7 +113,8 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
         purchaseBoxInfoOld.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         purchaseBoxInfoOld.setPurchaseOrderCode(purchaseOrderCode);
         List<PurchaseBoxInfo> purchaseBoxInfoListOld = purchaseBoxInfoService.select(purchaseBoxInfoOld);
-        this.savePurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseBoxInfoListOld, purchaseOrder.getCreateOperator());
+        this.savePurchaseBoxInfoDetail(purchaseBoxInfoList, purchaseBoxInfoListOld, purchaseOrder.getCreateOperator(),
+                purchaseOrderCode);
 
         //保存操作日志
         String userId= aclUserAccreditInfo.getUserId();
@@ -194,6 +195,29 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
         }
 
         for(PurchaseBoxInfo purchaseBoxInfo : purchaseBoxInfoList){
+            if (StringUtils.isEmpty(purchaseBoxInfo.getBoxNumber())){
+                String msg = "箱号不能为空";
+                logger.error(msg);
+                throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
+            }
+
+            if (StringUtils.isEmpty(purchaseBoxInfo.getGrossWeight())){
+                String msg = "毛重不能为空";
+                logger.error(msg);
+                throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
+            }
+
+            if (StringUtils.isEmpty(purchaseBoxInfo.getCartonSize())){
+                String msg = "外箱尺寸不能为空";
+                logger.error(msg);
+                throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
+            }
+
+            if (StringUtils.isEmpty(purchaseBoxInfo.getVolume())){
+                String msg = "体积不能为空";
+                logger.error(msg);
+                throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
+            }
         }
     }
 
@@ -232,7 +256,8 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
                 logger.error(msg);
                 throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
             }else{
-                if(purchaseDetail.getPurchasingQuantity().longValue() != entry.getValue().longValue()){
+                if((purchaseDetail.getPurchasingQuantity()==null?0L:purchaseDetail.getPurchasingQuantity().longValue())
+                        != entry.getValue().longValue()){
                     String msg = String.format("操作失败，[%s]装箱信息中的合计数量必须等于其采购数量！", entry.getKey());
                     logger.error(msg);
                     throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
@@ -247,20 +272,20 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
      * @param createOperator
      */
     private void savePurchaseBoxInfoDetail(List<PurchaseBoxInfo> purchaseBoxInfoList,
-                                           List<PurchaseBoxInfo> purchaseBoxInfoListOld, String createOperator){
-        int count = 0;
+                                           List<PurchaseBoxInfo> purchaseBoxInfoListOld, String createOperator,
+                                           String purchaseOrderCode){
         List<PurchaseBoxInfo> saveInfo = new ArrayList<>(purchaseBoxInfoList);
 
         for(PurchaseBoxInfo purchaseBoxInfoOld : purchaseBoxInfoListOld){
             boolean isDelete = true;
 
             for(PurchaseBoxInfo purchaseBoxInfoNew : purchaseBoxInfoList){
-                if(purchaseBoxInfoNew.getId().longValue() == purchaseBoxInfoOld.getId().longValue()){
+                if(purchaseBoxInfoNew.getId() != null &&
+                        purchaseBoxInfoNew.getId().longValue() == purchaseBoxInfoOld.getId().longValue()){
                     isDelete = false;
                     if(this.checkIsUpdate(purchaseBoxInfoOld, purchaseBoxInfoNew)){
                         purchaseBoxInfoNew.setUpdateTime(Calendar.getInstance().getTime());
                         purchaseBoxInfoService.updateByPrimaryKeySelective(purchaseBoxInfoNew);
-                        count += 1;
                     }
                     saveInfo.remove(purchaseBoxInfoNew);
                 }
@@ -272,21 +297,14 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
                 delete.setIsDeleted(ZeroToNineEnum.ONE.getCode());
                 delete.setUpdateTime(Calendar.getInstance().getTime());
                 purchaseBoxInfoService.updateByPrimaryKeySelective(delete);
-                count += 1;
             }
         }
 
         for (PurchaseBoxInfo purchaseBoxInfo : saveInfo) {
             ParamsUtil.setBaseDO(purchaseBoxInfo);
             purchaseBoxInfo.setCreateOperator(createOperator);
+            purchaseBoxInfo.setPurchaseOrderCode(purchaseOrderCode);
             purchaseBoxInfoService.insert(purchaseBoxInfo);
-            count += 1;
-        }
-
-        if (count<1){
-            String msg = "装箱信息保存,数据库操作失败";
-            logger.error(msg);
-            throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
         }
     }
 

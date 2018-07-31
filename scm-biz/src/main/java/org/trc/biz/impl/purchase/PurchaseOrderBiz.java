@@ -1290,10 +1290,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         for(PurchaseDetail purchaseDetailOld : purchaseDetailListOld){
             boolean isDelete = true;
             for(PurchaseDetail purchaseDetailNew : purchaseDetailListNew){
-                if(purchaseDetailOld.getId().longValue() == purchaseDetailNew.getId().longValue()){
+                if(purchaseDetailNew.getId() != null &&
+                        purchaseDetailOld.getId().longValue() == purchaseDetailNew.getId().longValue()){
                     isDelete = false;
-                    if(purchaseDetailOld.getPurchasingQuantity().longValue() !=
-                            purchaseDetailNew.getPurchasingQuantity().longValue()){
+                    if((purchaseDetailOld.getPurchasingQuantity()==null?0L:purchaseDetailOld.getPurchasingQuantity().longValue())
+                            !=
+                            (purchaseDetailNew.getPurchasingQuantity()==null?0L:purchaseDetailNew.getPurchasingQuantity().longValue()) ){
                         isUpdateOrder = true;
                     }
                     countNew--;
