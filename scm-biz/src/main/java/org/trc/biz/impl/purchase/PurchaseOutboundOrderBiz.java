@@ -22,11 +22,16 @@ import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.taxrate.TaxRate;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
+import org.trc.enums.purchase.PurchaseOutboundDetailStatusEnum;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
+import org.trc.enums.purchase.PurchaseOutboundStatusEnum;
+import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.enums.warehouse.PurchaseOutboundOrderTypeEnum;
+import org.trc.exception.PurchaseOrderException;
 import org.trc.exception.PurchaseOutboundOrderException;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
@@ -48,6 +53,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
@@ -123,6 +129,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Autowired
     private IWarehouseNoticeDetailsService warehouseNoticeDetailsService;
 
+    @Autowired
+    private IPurchaseOutboundNoticeService purchaseOutboundNoticeService;
+
 
     /**
      * 查询采购退货单列表
@@ -179,7 +188,25 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //插入采购退货单和退货详情,记录日志
         insertPurchaseOutboundOrderAndDetail(form, code, aclUserAccreditInfo, seq);
 
-        //保存提交审核
+        //保存提交审核，修改采购退货单状态
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), code)) {
+            PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
+            purchaseOutboundOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
+            purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
+            purchaseOutboundOrder.setAuditStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
+            purchaseOutboundOrder.setAuditDescription(form.getAuditDescription());
+            Example example = new Example(PurchaseOutboundOrder.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("purchaseOutboundOrderCode", seq);
+            int i = purchaseOutboundOrderService.updateByExampleSelective(purchaseOutboundOrder, example);
+
+            //记录日志
+            logInfoService.recordLog(form, form.getId().toString(), aclUserAccreditInfo.getUserId(), AuditStatusEnum.COMMIT.getName(), null, ZeroToNineEnum.ZERO.getCode());
+            if (i < 1) {
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "提交审核采购退货单失败");
+            }
+
+        }
     }
 
     /**
@@ -343,15 +370,62 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     /**
-     * 作废出库通知操作
+     * 出库通知作废操作
      *
      * @param form
      * @param aclUserAccreditInfo
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
 
+        Example example = new Example(PurchaseOutboundNotice.class);
+        example.createCriteria().andEqualTo("purchaseOutboundOrderCode", form.getPurchaseOutboundOrderCode());
+        List<PurchaseOutboundNotice> purchaseOutboundNotices = purchaseOutboundNoticeService.selectByExample(example);
+        AssertUtil.notEmpty(purchaseOutboundNotices, "出库通知作废失败，没有对应的出库单信息");
+        PurchaseOutboundNotice purchaseOutboundNotice = purchaseOutboundNotices.get(0);
+
+        //对应退货出库通知单的状态=“待通知出库”或“仓库接收失败”或“已取消” 才允许作废操作
+        checkNoticeStatus(purchaseOutboundNotice);
+
+        //更改采购退货单状态
+        PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
+        purchaseOutboundOrder.setId(form.getId());
+        purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.DROPPED.getCode());
+        purchaseOutboundOrder.setOutboundStatus("");
+        int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(purchaseOutboundOrder);
+        if (i < 1) {
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购退货单操作失败", JSON.toJSONString(form.getPurchaseOutboundOrderCode())));
+        }
+
+        //同步出库单状态
+        PurchaseOutboundNotice notice = new PurchaseOutboundNotice();
+        notice.setId(purchaseOutboundNotice.getId());
+        notice.setStatus(PurchaseOutboundNoticeStatusEnum.CANCEL.getCode());
+        notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+        int num = purchaseOutboundNoticeService.updateByPrimaryKeySelective(notice);
+        if (num < 1) {
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购单操作失败,出库通知单已经被执行操作", JSON.toJSONString(form.getPurchaseOutboundOrderCode())));
+        }
+
+        //更新出库详情
+        PurchaseOutboundDetail purchaseOutboundDetail = new PurchaseOutboundDetail();
+        purchaseOutboundDetail.setStatus(PurchaseOutboundDetailStatusEnum.CANCEL.getCode());
+        purchaseOutboundDetail.setOutbountStatus(PurchaseOutboundStatusEnum.OTHER.getCode());
+        Example example1 = new Example(WarehouseNoticeDetails.class);
+        Example.Criteria criteria1 = example1.createCriteria();
+        criteria1.andEqualTo("outboundNoticeCode", purchaseOutboundNotice.getOutboundNoticeCode());
+        int num2 = purchaseOutboundDetailService.updateByExampleSelective(purchaseOutboundDetail, example1);
+        if (num2 == 0) {
+            String msg = String.format("作废采购退货单操作失败,出库单%s详情状态同步失败", JSON.toJSONString(purchaseOutboundNotice.getOutboundNoticeCode()));
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+
+        //记录操作日志
+        logInfoService.recordLog(form, form.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
+        logInfoService.recordLog(purchaseOutboundNotice, purchaseOutboundNotice.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, null);
     }
+
 
     /**
      * 更新采购退货单状态
@@ -363,6 +437,19 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Override
     public String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         return null;
+    }
+
+    /**
+     * 对应退货出库通知单的状态=“待通知出库[0]”或“仓库接收失败[2]”或“已取消[5]” 才允许作废操作
+     *
+     * @param purchaseOutboundNotice
+     */
+    private void checkNoticeStatus(PurchaseOutboundNotice purchaseOutboundNotice) {
+        if (!StringUtils.equals(PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode(), purchaseOutboundNotice.getStatus())
+                && !StringUtils.equals(PurchaseOutboundNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), purchaseOutboundNotice.getStatus())
+                && !StringUtils.equals(PurchaseOutboundNoticeStatusEnum.CANCEL.getCode(), purchaseOutboundNotice.getStatus())) {
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, String.format("作废失败，采购退货单对应的%s出库单已经被推送给仓储", purchaseOutboundNotice.getOutboundNoticeCode()));
+        }
     }
 
     private void validateParam(PurchaseOutboundItemForm form) {
@@ -673,12 +760,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "保存采购退货单失败");
         }
         insertPurchaseOutboundDetail(form);
+
         //记录操作日志
         String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(form, form.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
-
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), code)) {
-            logInfoService.recordLog(form, form.getId().toString(), userId, AuditStatusEnum.COMMIT.getName(), null, ZeroToNineEnum.ZERO.getCode());
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.HOLD.getCode(), code)) {
+            logInfoService.recordLog(form, form.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
         }
     }
 
@@ -734,6 +820,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             if (purchaseOutboundDetail.getOutboundQuantity() == null || purchaseOutboundDetail.getOutboundQuantity() < 1) {
                 throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货数量不能小于0");
             }
+
             if (purchaseOutboundDetail.getTaxRate() == null
                     || purchaseOutboundDetail.getTaxRate().doubleValue() < 0
                     || purchaseOutboundDetail.getTaxRate().doubleValue() > 100) {
@@ -790,7 +877,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         //出库状态:1-等待出库，2-出库完成，3-出库异常，4-其他
         if (StringUtils.isNotBlank(form.getOutboundStatus())) {
-            criteria.andEqualTo("outboundStatus", form.getOutboundStatus());
+            if (StringUtils.equals(form.getOutboundStatus(), PurchaseOutboundStatusEnum.OTHER.getCode())) {
+                criteria.andCondition("outbound_status = '' OR outbound_status is null");
+            } else {
+                criteria.andEqualTo("outboundStatus", form.getOutboundStatus());
+            }
         }
 
         //退货类型1-正品，2-残品
