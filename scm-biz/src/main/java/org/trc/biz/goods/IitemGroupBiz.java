@@ -13,7 +13,7 @@ import java.util.List;
  * Created by hzgjl on 2018/7/26.
  */
 public interface IitemGroupBiz  {
-    Pagenation itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo);
+    Pagenation itemGroupPage(ItemGroupQuery itemGroupQuery, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo);
 
     ItemGroup queryDetailByCode(String itemGroupCode);
 
