@@ -44,7 +44,6 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		Example example = new Example(PurchaseOutboundNotice.class);
         Example.Criteria criteria = example.createCriteria();
         
-        //criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         //业务线编号
         criteria.andEqualTo("channelCode", channelCode);
         
@@ -117,6 +116,13 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		// 未删除的记录
 		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 		return detailMapper.select(queryDetail);
+	}
+
+	@Override
+	public List<PurchaseOutboundNotice> selectNoticeBycode(String code) {
+		PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
+		queryRecord.setOutboundNoticeCode(code);
+		return this.select(queryRecord);
 	}
 	
 }

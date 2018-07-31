@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.warehouseNotice.IPurchaseOutboundNoticeBiz;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
+import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
 import org.trc.util.AssertUtil;
@@ -39,6 +42,22 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		List<PurchaseOutboundDetail> skuList = noticeService.selectDetailByNoticeCode(notice.getOutboundNoticeCode());
 		notice.setSkuList(skuList);
 		return notice;
+	}
+
+	@Override
+	public void noticeOut(String code, AclUserAccreditInfo property) {
+		
+		AssertUtil.notNull(code, "退货出库通知单编号不能为空!");
+		
+		List<PurchaseOutboundNotice> noticeList = noticeService.selectNoticeBycode(code);
+		if (CollectionUtils.isEmpty(noticeList)) {
+			throw new IllegalArgumentException("退货出库通知单编号有误!");
+		} else if (noticeList.size() > 1) {
+			throw new IllegalArgumentException("退货出库通知单编号重复!");
+		}
+		PurchaseOutboundNotice notice = noticeList.get(0);
+		PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode().equals(notice.getStatus())    ;
+		
 	}
 
         

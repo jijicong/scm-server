@@ -206,14 +206,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     @Column(name = "receiver_city")
     @FormParam("receiverCity")
     private String receiverCity;
-    
-    /**
-     * 退货地区
-     */
-    @ApiModelProperty("退货地区")
-    @Column(name = "receiver_area")
-    @FormParam("receiverArea")
-    private String receiverArea;
 
     /**
      * 退货详细地址
@@ -265,14 +257,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     @Transient
     @FormParam("purchaseOutboundDetailList")
     private List<PurchaseOutboundDetail> purchaseOutboundDetailList;
-
-    public String getReceiverArea() {
-		return receiverArea;
-	}
-
-	public void setReceiverArea(String receiverArea) {
-		this.receiverArea = receiverArea;
-	}
 
 	public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
         return purchaseOutboundDetailList;
