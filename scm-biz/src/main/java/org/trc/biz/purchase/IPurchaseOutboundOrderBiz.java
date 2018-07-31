@@ -64,6 +64,21 @@ public interface IPurchaseOutboundOrderBiz {
     Pagenation<WarehouseNoticeDetails> getPurchaseHistory(PurchaseOutboundItemForm form, Pagenation<WarehouseNoticeDetails> page);
 
     /**
+     * 作废出库通知操作
+     * @param form
+     * @param aclUserAccreditInfo
+     */
+    void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 更新采购退货单状态
+     * @param form
+     * @param aclUserAccreditInfo
+     * @return
+     */
+    String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
      *  采购退货单保存或
      * @param form  采购退货单数据
      * @param code  保存类型

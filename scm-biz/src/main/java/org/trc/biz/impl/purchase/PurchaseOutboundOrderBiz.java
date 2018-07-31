@@ -342,6 +342,29 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         return warehouseNoticeDetailsService.pagination(ex, page, new QueryModel());
     }
 
+    /**
+     * 作废出库通知操作
+     *
+     * @param form
+     * @param aclUserAccreditInfo
+     */
+    @Override
+    public void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
+
+    }
+
+    /**
+     * 更新采购退货单状态
+     *
+     * @param form
+     * @param aclUserAccreditInfo
+     * @return
+     */
+    @Override
+    public String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
+        return null;
+    }
+
     private void validateParam(PurchaseOutboundItemForm form) {
         AssertUtil.notBlank(form.getSupplierCode(), "供应商不能为空");
         AssertUtil.notBlank(form.getWarehouseInfoId(), "退货仓库不能为空");
@@ -404,7 +427,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
                         "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选退货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
             }
-            return new ArrayList<PurchaseOutboundDetail>();
+            return new ArrayList<>();
         }
         List<String> skuCodeList = warehouseItemInfoList.stream().map(WarehouseItemInfo::getSkuCode).collect(Collectors.toList());
 
@@ -421,7 +444,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             if (!flag) {
                 throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
             }
-            return new ArrayList<PurchaseOutboundDetail>();
+            return new ArrayList<>();
         }
 
         //查询供应商，退货仓库对应sku
@@ -455,7 +478,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             if (!flag) {
                 throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
             }
-            return new ArrayList<PurchaseOutboundDetail>();
+            return new ArrayList<>();
         }
 
         return setPurchaseOutboundOrderDetail(result, warehouseItemInfoList, form.getReturnOrderType(), itemsList, brandList);
@@ -555,7 +578,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
         request.setScmInventoryQueryItemList(scmInventoryQueryItemList);
         AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
-        List<ScmInventoryQueryResponse> resList = new ArrayList<>();
+        List<ScmInventoryQueryResponse> resList;
         if (StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())) {
             resList = (List<ScmInventoryQueryResponse>) appResult.getResult();
             //TODO 测试日志
@@ -584,7 +607,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     private String setConditionSql(List<String> barCodes) {
-        StringBuffer sql = new StringBuffer("(");
+        StringBuilder sql = new StringBuilder("(");
         for (String bc : barCodes) {
             sql.append("FIND_IN_SET('" + bc + "', `bar_code`) OR ");
         }
