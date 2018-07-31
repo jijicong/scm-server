@@ -128,15 +128,9 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
      */
     @Override
     public List<Dict> findPackingType() {
-        List<Dict> dictList = null;
-        try{
-            Dict dict = new Dict();
-            dict.setTypeCode(PACKING_TYPE);
-            dictList = dictService.select(dict);
-        }catch (Exception e){
-            dictList = new ArrayList<>();
-        }
-        return dictList;
+        Dict dict = new Dict();
+        dict.setTypeCode(PACKING_TYPE);
+        return dictService.select(dict);
     }
 
     /**
@@ -188,7 +182,7 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
     }
 
     private void checkInfo(List<PurchaseBoxInfo> purchaseBoxInfoList){
-        if(purchaseBoxInfoList == null || purchaseBoxInfoList.size() < 1){
+        if(purchaseBoxInfoList.isEmpty()){
             String msg = "装箱信息不能为空";
             logger.error(msg);
             throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
@@ -240,13 +234,7 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
             PurchaseDetail purchaseDetail = new PurchaseDetail();
             purchaseDetail.setSkuCode(entry.getKey());
             purchaseDetail.setPurchaseOrderCode(code);
-            try {
-                purchaseDetail = purchaseDetailService.selectOne(purchaseDetail);
-            }catch(Exception e){
-                String msg = String.format("装箱信息中采购单详情sku为[%s]信息错误，存在多条信息", entry.getKey());
-                logger.error(msg);
-                throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
-            }
+            purchaseDetail = purchaseDetailService.selectOne(purchaseDetail);
 
             if(purchaseDetail == null ){
                 String msg = String.format("装箱信息中采购单详情sku为[%s]信息不存在", entry.getKey());
