@@ -1,24 +1,36 @@
 package org.trc.form.goods;
 
-import org.hibernate.validator.constraints.Length;
+import io.swagger.annotations.Api;
+import org.trc.domain.goods.ItemGroup;
+import org.trc.domain.goods.ItemGroupUser;
 import org.trc.util.QueryModel;
 
-import javax.ws.rs.QueryParam;
+import java.util.List;
 
 /**
- * Created by hzgjl on 2018/7/26.
+ * Created by hzgjl on 2018/7/31.
  */
-
+@Api("商品组新增/编辑提交表单数据")
 public class ItemGroupForm extends QueryModel {
-    @QueryParam("itemGroupName")
-    @Length(max=32,message = "商品名称字母和数字不能超过32个,汉字不能超过16个")
-    private String itemGroupName;
+    private static final long serialVersionUID = 3204517750595228825L;
 
-    public String getItemGroupName() {
-        return itemGroupName;
+   private ItemGroup itemGroup;
+
+   private List<ItemGroupUser> groupUserList;
+
+    public ItemGroup getItemGroup() {
+        return itemGroup;
     }
 
-    public void setItemGroupName(String itemGroupName) {
-        this.itemGroupName = itemGroupName;
+    public void setItemGroup(ItemGroup itemGroup) {
+        this.itemGroup = itemGroup;
+    }
+
+    public List<ItemGroupUser> getGroupUserList() {
+        return groupUserList;
+    }
+
+    public void setGroupUserList(List<ItemGroupUser> groupUserList) {
+        this.groupUserList = groupUserList;
     }
 }

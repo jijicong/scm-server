@@ -17,6 +17,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.exception.ItemGroupException;
 import org.trc.form.goods.ItemGroupForm;
+import org.trc.form.goods.ItemGroupQuery;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemGroupService;
 import org.trc.service.goods.IItemGroupUserRelationService;
@@ -67,7 +68,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
     //商品组分页
     @Override
-    public Pagenation itemGroupPage(ItemGroupForm form, Pagenation<ItemGroup> page,AclUserAccreditInfo aclUserAccreditInfo) {
+    public Pagenation itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
         Example example=new Example(ItemGroup.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(form.getItemGroupName())){
@@ -95,7 +96,10 @@ public class ItemGroupBiz implements IitemGroupBiz {
     //商品组编辑
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void editDetail(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo) {
+    public void editDetail(ItemGroupForm form,AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(form,"商品组form信息为null");
+        ItemGroup itemGroup = form.getItemGroup();
+        List<ItemGroupUser> groupUserList = form.getGroupUserList();
         //查询详情便于记录日志
         ItemGroup orginEntity = queryDetailByCode(itemGroup.getItemGroupCode());
 
@@ -169,9 +173,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
     //添加商品组
     @Override
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
-    public void itemGroupSave(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo) {
+    public void itemGroupSave(ItemGroupForm form, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(form,"商品组form信息为null");
+        ItemGroup itemGroup = form.getItemGroup();
+        List<ItemGroupUser> groupUserList = form.getGroupUserList();
         //校验信息
-        AssertUtil.notNull(itemGroup,"商品组管理模块新增商品组信息失败,商品组信息为null");
+        AssertUtil.notNull(form.getItemGroup(),"商品组管理模块新增商品组信息失败,商品组信息为null");
         String leaderName = itemGroup.getLeaderName();
         AssertUtil.notNull(leaderName,"请选择组长！");
         AssertUtil.notNull(groupUserList,"请至少添加一个组员！");
@@ -192,6 +199,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_SAVE_EXCEPTION,msg);
         }
+
 
         //商品组启用，则组长为启用，否则视同组员
         String isValid = itemGroup.getIsValid();
