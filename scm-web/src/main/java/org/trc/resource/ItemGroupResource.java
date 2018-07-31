@@ -1,9 +1,6 @@
 package org.trc.resource;
 
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.constants.SupplyConstants;
@@ -28,8 +25,6 @@ import java.util.List;
 @Component
 @Path(SupplyConstants.ItemGroupConstants.ROOT)
 public class ItemGroupResource {
-
-    private Logger log = LoggerFactory.getLogger(ItemGroupResource.class);
 
     @Resource
     private IitemGroupBiz itemGroupBiz;
@@ -74,12 +69,13 @@ public class ItemGroupResource {
     }
 
 
-   /* @PUT
+    @PUT
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_ISVALID)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "启停用")
-    public Response updateStatus(@BeanParam String isValid,@BeanParam String itemGroupCode){
-        itemGroupBiz.updateStatus(isValid,itemGroupCode);
-    }*/
+    public Response updateStatus(@BeanParam String isValid,@BeanParam String itemGroupCode,@Context ContainerRequestContext requestContext){
+        itemGroupBiz.updateStatus(isValid,itemGroupCode,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("商品组停用成功","");
+    }
 
 }

@@ -6,8 +6,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -23,4 +21,6 @@ public interface IitemGroupBiz  {
     void itemGroupSave(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo);
 
     ItemGroup findItemGroupByName(String name);
+
+    void updateStatus(String isValid, String itemGroupCode,AclUserAccreditInfo aclUserAccreditInfo);
 }
