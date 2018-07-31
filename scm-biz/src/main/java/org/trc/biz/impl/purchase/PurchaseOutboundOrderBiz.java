@@ -26,6 +26,7 @@ import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
+import org.trc.enums.warehouse.PurchaseOutboundOrderTypeEnum;
 import org.trc.exception.PurchaseOutboundOrderException;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
@@ -288,9 +289,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         criteria.andEqualTo("warehouseInfoId", form.getWarehouseInfoId());
         criteria.andEqualTo("supplierCode", form.getSupplierCode());
         criteria.andEqualTo("finishStatus", WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-        //正品，残品，对应的入库状态?
-        if(StringUtils.equals("2", form.getReturnOrderType())){
-
+        //退货类型是残品,查询入库单状态为入库异常
+        if(StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType())){
+            criteria.andEqualTo("status", WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
         }
         //criteria.andEqualTo("status", WarehouseNoticeStatusEnum.);
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
@@ -499,6 +500,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         return list;
     }
 
+    /**
+     * 京东接口查询库存信息
+     * @param warehouseItemInfos
+     * @param returnOrderType
+     * @return
+     */
     private Map<String, Long> skuInventoryQuery(List<WarehouseItemInfo> warehouseItemInfos, String returnOrderType) {
         ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
         commonService.getWarehoueType(warehouseItemInfos.get(0).getWarehouseCode(), request);
