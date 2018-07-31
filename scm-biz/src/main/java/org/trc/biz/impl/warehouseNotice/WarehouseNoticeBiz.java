@@ -1454,11 +1454,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         } else if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)) {
                             //部分收货
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
-                            purchaseOrder.setWarehouseNoticeStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+                            purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
                         } else if (!AssertUtil.collectionIsEmpty(allNoticeDetailList)) {
                             //全部收货
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
-                            purchaseOrder.setWarehouseNoticeStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+                            purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.ALL_GOODS.getCode());
                         }
 
                         //同步采购单入库状态
