@@ -74,4 +74,12 @@ public class ItemGroupResource {
     }
 
 
+   /* @PUT
+    @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_ISVALID)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "启停用")
+    public Response updateStatus(@BeanParam String isValid,@BeanParam String itemGroupCode){
+        itemGroupBiz.updateStatus(isValid,itemGroupCode);
+    }*/
+
 }
