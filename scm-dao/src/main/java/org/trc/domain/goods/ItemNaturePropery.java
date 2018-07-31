@@ -11,6 +11,8 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
 public class ItemNaturePropery extends ScmDO{
+    private static final long serialVersionUID = 7225076807216077978L;
+
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

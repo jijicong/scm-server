@@ -56,13 +56,13 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Resource
     private ILogInfoService logInfoService;
 
-    private final static String  SERIALNAME = "SPZ";
+    private static final String  SERIALNAME = "SPZ";
     /**
      * 正则表达式：验证手机号
      */
-    private final static String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
+    private static final String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
 
-    private final static Integer LENGTH = 5;//商品组编号5位流水号
+    private static final Integer LENGTH = 5;//商品组编号5位流水号
 
 
     //商品组分页
@@ -87,9 +87,9 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Override
     public ItemGroup queryDetailByCode(String code) {
         AssertUtil.notBlank(code,"商品组编码参数code不能为空");
-        ItemGroup itemGroup = new ItemGroup();
-        itemGroup.setItemGroupCode(code);
-        return itemGroupService.selectOne(itemGroup);
+        ItemGroup itemGroupTemp = new ItemGroup();
+        itemGroupTemp.setItemGroupCode(code);
+        return itemGroupService.selectOne(itemGroupTemp);
     }
 
     //商品组编辑
@@ -98,7 +98,6 @@ public class ItemGroupBiz implements IitemGroupBiz {
     public void editDetail(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo) {
         //查询详情便于记录日志
         ItemGroup orginEntity = queryDetailByCode(itemGroup.getItemGroupCode());
-
 
 
         AssertUtil.notNull(itemGroup,"根据商品组信息修改商品组失败,商品组信息为null");
@@ -244,6 +243,34 @@ public class ItemGroupBiz implements IitemGroupBiz {
         return itemGroupService.selectOne(itemGroup);
     }
 
+    //启停用
+    @Override
+    public void updateStatus(String isValid, String itemGroupCode,AclUserAccreditInfo aclUserAccreditInfo) {
+        ItemGroup itemGroup = queryDetailByCode(itemGroupCode);
+        itemGroup.setIsValid(isValid);
+        Integer count = itemGroupService.updateByPrimaryKeySelective(itemGroup);
+        if (count==null){
+            String msg="更新商品组信息失败";
+            logger.error(msg);
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+        }
+
+        //更新对应映射关系
+        ItemGroupUserRelation itemGroupUserRelationTemp = new ItemGroupUserRelation();
+        itemGroupUserRelationTemp.setItemGroupCode(itemGroupCode);
+        List<ItemGroupUserRelation> itemGroupUserRelationList = iItemGroupUserRelationService.select(itemGroupUserRelationTemp);
+        for (ItemGroupUserRelation itemGroupUserRelation : itemGroupUserRelationList) {
+            itemGroupUserRelation.setIsValid(isValid);
+            iItemGroupUserRelationService.updateByPrimaryKeySelective(itemGroupUserRelation);
+        }
+        //更新
+
+        //记录日志
+        String orginIsValid = itemGroup.getIsValid();
+        String logMsg="状态由\""+orginIsValid+"\"改为\""+isValid+"\"。";
+        logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),logMsg,null);
+    }
+
     private void saveItemGroupUserList(List<ItemGroupUser> groupUserList,String isValid,String channelCode){
         List<String> list=new ArrayList<>();
 
@@ -270,7 +297,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         }
 
         itemGroupUserService.insertList(groupUserList);
-        list.clear();
+       // list.clear();
     }
 
 

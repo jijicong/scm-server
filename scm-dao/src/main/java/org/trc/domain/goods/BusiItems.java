@@ -15,6 +15,7 @@ import java.util.Date;
 
 public class BusiItems implements Serializable {
 
+    private static final long serialVersionUID = 7699753868584266833L;
     @PathParam("id")
     @Id
     private String id;

@@ -1,9 +1,9 @@
 package org.trc.resource;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.constants.SupplyConstants;
@@ -26,10 +26,9 @@ import java.util.List;
  * Created by hzgjl on 2018/7/26.
  */
 @Component
+@Api(value = "商品组管理")
 @Path(SupplyConstants.ItemGroupConstants.ROOT)
 public class ItemGroupResource {
-
-    private Logger log = LoggerFactory.getLogger(ItemGroupResource.class);
 
     @Resource
     private IitemGroupBiz itemGroupBiz;
@@ -39,6 +38,7 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "商品组分页查询")
+    @ApiImplicitParam(paramType = "query", dataType = "String", name = "itemGroupName", value = "商品组编号", required = false)
     public Response itemGroupPage(@BeanParam ItemGroupForm form, @BeanParam Pagenation<ItemGroup> page, @Context ContainerRequestContext requestContext){
         return ResultUtil.createSuccessPageResult(itemGroupBiz.itemGroupPage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
@@ -73,5 +73,14 @@ public class ItemGroupResource {
 
     }
 
+
+    @PUT
+    @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_ISVALID)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "启停用")
+    public Response updateStatus(@BeanParam String isValid,@BeanParam String itemGroupCode,@Context ContainerRequestContext requestContext){
+        itemGroupBiz.updateStatus(isValid,itemGroupCode,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("商品组停用成功","");
+    }
 
 }
