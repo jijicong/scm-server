@@ -1,17 +1,15 @@
 package org.trc.domain.warehouseNotice;
 
-import java.util.List;
+import io.swagger.annotations.ApiModelProperty;
+import org.trc.domain.BaseDO;
+import org.trc.domain.purchase.PurchaseOutboundDetail;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
-
-import org.trc.domain.BaseDO;
-import org.trc.domain.purchase.PurchaseOutboundDetail;
-
-import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 
 @Table(name = "purchase_outbound_notice")
 public class PurchaseOutboundNotice extends BaseDO {
@@ -137,7 +135,7 @@ public class PurchaseOutboundNotice extends BaseDO {
     @Column(name = "receiver_city")
     @FormParam("receiverCity")
     private String receiverCity;
-    
+
     /**
      * 退货地区
      */
@@ -189,7 +187,7 @@ public class PurchaseOutboundNotice extends BaseDO {
     @Column(name = "pick_type")
     @FormParam("pickType")
     private String pickType;
-    
+
     /**
      * 退货类型1-正品，2-残品
      */
@@ -197,7 +195,7 @@ public class PurchaseOutboundNotice extends BaseDO {
     @Column(name = "return_order_type")
     @FormParam("returnOrderType")
     private String returnOrderType;
-    
+
     /**
      * 退货出库通知单商品明细列表
      */
@@ -212,7 +210,7 @@ public class PurchaseOutboundNotice extends BaseDO {
 	public void setReceiverArea(String receiverArea) {
 		this.receiverArea = receiverArea;
 	}
-	
+
 	public String getReturnOrderType() {
 		return returnOrderType;
 	}
@@ -221,7 +219,7 @@ public class PurchaseOutboundNotice extends BaseDO {
 		this.returnOrderType = returnOrderType;
 	}
 
-	public List<PurchaseOutboundDetail> getSkuList() {
+    public List<PurchaseOutboundDetail> getSkuList() {
 		return skuList;
 	}
 

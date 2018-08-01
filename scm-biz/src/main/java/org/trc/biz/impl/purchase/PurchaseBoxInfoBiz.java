@@ -10,10 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseBoxInfoBiz;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseBoxInfo;
-import org.trc.domain.purchase.PurchaseBoxInfoVO;
-import org.trc.domain.purchase.PurchaseDetail;
-import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.purchase.*;
 import org.trc.enums.*;
 import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
 import org.trc.exception.PurchaseBoxInfoException;
@@ -139,19 +136,66 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
      * @return
      */
     @Override
-    public List<PurchaseBoxInfo> findPackingBoxInfo(String code) {
+    public PurchaseBoxInfoResultVO findPackingBoxInfo(String code) {
         //校验信息完整性
         AssertUtil.notBlank(code,"采购单编码为空");
+
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setPurchaseOrderCode(code);
+        purchaseOrder = purchaseOrderService.selectOne(purchaseOrder);
+        if (purchaseOrder == null){
+            String msg = "采购单不存在";
+            logger.error(msg);
+            throw new PurchaseBoxInfoException(ExceptionEnum.PURCHASE_PURCHASE_BOX_INFO_SAVE_EXCEPTION, msg);
+        }
+
+        PurchaseBoxInfoResultVO purchaseBoxInfoResultVO = new PurchaseBoxInfoResultVO();
+        purchaseBoxInfoResultVO.setPackingType(purchaseOrder.getPackingType());
+        purchaseBoxInfoResultVO.setLogisticsCorporationName(purchaseOrder.getLogisticsCorporationName());
 
         //获取装箱信息
         PurchaseBoxInfo purchaseBoxInfo = new PurchaseBoxInfo();
         purchaseBoxInfo.setPurchaseOrderCode(code);
         purchaseBoxInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<PurchaseBoxInfo> purchaseBoxInfoList = purchaseBoxInfoService.select(purchaseBoxInfo);
-        if(purchaseBoxInfoList == null){
-            purchaseBoxInfoList = new ArrayList<>();
+        Map<String, List<PurchaseBoxInfo>> boxInfoMap = new HashMap<>();
+        if(purchaseBoxInfoList != null && purchaseBoxInfoList.size() > 0){
+            for(PurchaseBoxInfo purchaseBoxInfoTemp : purchaseBoxInfoList) {
+                String skuCode = purchaseBoxInfoTemp.getSkuCode();
+                if (boxInfoMap.containsKey(skuCode)) {
+                    List<PurchaseBoxInfo> purchaseBoxInfoListTemp = boxInfoMap.get(skuCode);
+                    purchaseBoxInfoListTemp.add(purchaseBoxInfoTemp);
+                    boxInfoMap.put(skuCode, purchaseBoxInfoListTemp);
+                } else {
+                    List<PurchaseBoxInfo> purchaseBoxInfoListNew = new ArrayList<>();
+                    purchaseBoxInfoListNew.add(purchaseBoxInfoTemp);
+                    boxInfoMap.put(skuCode, purchaseBoxInfoListNew);
+                }
+            }
         }
-        return purchaseBoxInfoList;
+
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setPurchaseOrderCode(code);
+        List<PurchaseDetail> purchaseDetailList = purchaseDetailService.select(purchaseDetail);
+        List<PurchaseBoxInfoDetailResultVO> purchaseBoxInfoDetailResultVOList = new ArrayList<>();
+        if(purchaseDetailList != null && purchaseDetailList.size() > 0){
+            for(PurchaseDetail purchaseDetailTemp : purchaseDetailList){
+                PurchaseBoxInfoDetailResultVO purchaseBoxInfoDetailResultVO = new PurchaseBoxInfoDetailResultVO();
+                String skuCode = purchaseDetailTemp.getSkuCode();
+                purchaseBoxInfoDetailResultVO.setBarCode(purchaseDetailTemp.getBarCode());
+                purchaseBoxInfoDetailResultVO.setSkuCode(skuCode);
+                purchaseBoxInfoDetailResultVO.setSkuName(purchaseDetailTemp.getSkuName());
+                purchaseBoxInfoDetailResultVO.setSpecNatureInfo(purchaseDetailTemp.getSpecNatureInfo());
+                if(boxInfoMap.containsKey(skuCode)){
+                    purchaseBoxInfoDetailResultVO.setPurchaseBoxInfoList(boxInfoMap.get(skuCode));
+                }
+                purchaseBoxInfoDetailResultVOList.add(purchaseBoxInfoDetailResultVO);
+            }
+        }
+
+        purchaseBoxInfoResultVO.setPurchaseBoxInfoDetailResultVOList(purchaseBoxInfoDetailResultVOList);
+
+        return purchaseBoxInfoResultVO;
     }
 
     /**

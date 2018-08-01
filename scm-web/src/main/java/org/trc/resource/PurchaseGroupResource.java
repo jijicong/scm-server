@@ -1,7 +1,5 @@
 package org.trc.resource;
 
-import com.sun.org.apache.regexp.internal.RE;
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
@@ -10,7 +8,6 @@ import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUser;
 import org.trc.enums.ValidEnum;
 import org.trc.form.purchase.PurchaseGroupForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -20,7 +17,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Created by sone on 2017/5/19.
