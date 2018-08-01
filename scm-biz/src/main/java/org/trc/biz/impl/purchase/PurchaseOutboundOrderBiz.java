@@ -181,8 +181,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @PurchaseOutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void savePurchaseOutboundOrder(PurchaseOutboundOrder form, String code, AclUserAccreditInfo aclUserAccreditInfo) {
-        log.info("采购退货单保存或提交审核，PurchaseOutboundOrder:{}, 当前操作:{} ", JSON.toJSONString(form), code);
-        validationRequestParam(form);
+        log.info("采购退货单保存或提交审核，PurchaseOutboundOrder:{}, 当前操作:{} ", JSON.toJSONString(form), code.equals("0") ? "[0]暂存" : "[1]提交审核");
+        validationRequestParam(form, aclUserAccreditInfo);
         //校验仓库是否停用
         checkWarehouse(form.getWarehouseInfoId());
 
@@ -1173,8 +1173,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
     }
 
-    private void validationRequestParam(PurchaseOutboundOrder form) {
+    private void validationRequestParam(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(form, "采购退货单数据不能为空");
+        AssertUtil.notNull(aclUserAccreditInfo, "用户信息异常");
         AssertUtil.notBlank(form.getSupplierCode(), "供应商不能为空");
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             form.getPurchaseOutboundDetailList().forEach(purchaseOutboundDetail -> {
