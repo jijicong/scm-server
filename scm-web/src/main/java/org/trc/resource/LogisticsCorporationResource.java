@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSON;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,5 +64,13 @@ public class LogisticsCorporationResource {
     public Response updateLogisticsCorporationState(@BeanParam LogisticsCorporation logisticsCorporation, @Context ContainerRequestContext requestContext){
         logisticsCorporationBiz.updateLogisticsCorporationState(logisticsCorporation, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult(ValidEnum.VALID.getCode().equals(logisticsCorporation.getIsValid()) ? "停用成功!":"启用成功!","");
+    }
+
+    @GET
+    @Path("enabled")
+    @ApiOperation(value = "获取货运企业", response = LogisticsCorporation.class)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findEnabled() {
+        return ResultUtil.createSuccessResult("获取货运企业成功", logisticsCorporationBiz.findEnabled());
     }
 }
