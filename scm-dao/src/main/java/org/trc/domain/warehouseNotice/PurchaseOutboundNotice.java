@@ -195,6 +195,24 @@ public class PurchaseOutboundNotice extends BaseDO {
     @Column(name = "return_order_type")
     @FormParam("returnOrderType")
     private String returnOrderType;
+    
+    /**
+     * 供应商名称
+     */
+    @ApiModelProperty("供应商名称")
+    private String supplierName;
+    
+    /**
+     * 退货仓库名称
+     */
+    @ApiModelProperty("退货仓库名称")
+    private String warehouseName;
+    
+    /**
+     * 出库单创建人名称
+     */
+    @ApiModelProperty("出库单创建人名称")
+    private String creatorName;
 
     /**
      * 退货出库通知单商品明细列表
@@ -604,4 +622,29 @@ public class PurchaseOutboundNotice extends BaseDO {
     public void setExceptionCause(String exceptionCause) {
         this.exceptionCause = exceptionCause;
     }
+
+	public String getSupplierName() {
+		return supplierName;
+	}
+
+	public void setSupplierName(String supplierName) {
+		this.supplierName = supplierName;
+	}
+
+	public String getWarehouseName() {
+		return warehouseName;
+	}
+
+	public void setWarehouseName(String warehouseName) {
+		this.warehouseName = warehouseName;
+	}
+
+	public String getCreatorName() {
+		return creatorName;
+	}
+
+	public void setCreatorName(String creatorName) {
+		this.creatorName = creatorName;
+	}
+    
 }

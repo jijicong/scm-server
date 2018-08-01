@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -79,7 +80,7 @@ public class PurchaseOutboundNoticeResource {
     }
     
     /**
-     * 通知出库
+     * 通知出库-重新出库
      * @return
      */
     @PUT
@@ -110,6 +111,44 @@ public class PurchaseOutboundNoticeResource {
     		}
     	}
         return ResultUtil.createSuccessResult("操作成功","");
+
+    }
+    
+    /**
+     * 取消出库
+     * @return
+     */
+    @PUT
+    @Path("cancel/{code}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "取消出库")
+    public Response cancel(@ApiParam(value = "退货出库通知单号") @PathParam("code") String code, 
+    		@ApiParam(value = "取消原因") @FormParam("cancelReson") String cancelReson,
+    		@Context ContainerRequestContext requestContext) {
+        String identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_OUTBOUND_NOTICE.getCode() + code, 0, 10000);
+    	if (StringUtils.isBlank(identifier)) {
+    		throw new RuntimeException("请不要重复操作!");
+    	}
+    	Response resp = null;
+    	try {
+    		resp = noticeBiz.cancel(code, cancelReson, 
+    				(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    	} finally {
+    		try {
+    			if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_OUTBOUND_NOTICE.getCode() 
+    					+ code, identifier)) {
+    				logger.info("退货出库通知单号:{} 取消出库，解锁成功，identifier:{}", code, identifier);
+    			} else {
+    				logger.error("退货出库通知单号:{} 取消出库，解锁失败，identifier:{}", code, identifier);
+    			}
+    			
+    		} catch (Exception e) {
+    			logger.error("退货出库通知单号:{} 取消出库，解锁失败，identifier:{}, err:", 
+    					code, identifier, e);
+    			e.printStackTrace();
+    		}
+    	}
+        return resp;
 
     }
     

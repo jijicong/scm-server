@@ -211,7 +211,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前状态不能进行重新发货");
             }
             
-            if (AllocateInOrderStatusEnum.CANCEL.getCode().equals(allocateInOrder.getStatus())
+            if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(allocateInOrder.getStatus())
             		&& DateCheckUtil.checkDate(allocateInOrder.getUpdateTime())) {
             	throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前调拨入单取消时间过长，不能重新收货");
             }

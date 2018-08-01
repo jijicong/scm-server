@@ -1,5 +1,6 @@
 package org.trc.biz.impl.goods;
 
+import com.ecfront.dew.common.Resp;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
     //商品组分页
     @Override
-    public Pagenation itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Resp<Pagenation<ItemGroup>> itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
         Example example=new Example(ItemGroup.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(form.getItemGroupName())){
@@ -81,7 +82,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         example.orderBy("updateTime").desc();
         Pagenation<ItemGroup> pagenation = itemGroupService.pagination(example, page, form);
         userNameUtilService.handleUserName(pagenation.getResult());
-        return pagenation;
+        return Resp.success(pagenation);
     }
 
     //根据商品组编码查询详情
@@ -90,7 +91,8 @@ public class ItemGroupBiz implements IitemGroupBiz {
         AssertUtil.notBlank(code,"商品组编码参数code不能为空");
         ItemGroup itemGroupTemp = new ItemGroup();
         itemGroupTemp.setItemGroupCode(code);
-        return itemGroupService.selectOne(itemGroupTemp);
+        ItemGroup itemGroup = itemGroupService.selectOne(itemGroupTemp);
+        return itemGroup;
     }
 
     //商品组编辑
@@ -225,7 +227,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         List<ItemGroupUserRelation> itemGroupUserRelationList=new ArrayList<>();
         //添加组长
         ItemGroupUserRelation itemGroupUserRelation = new ItemGroupUserRelation();
-        itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupName());
+        itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupCode());
         itemGroupUserRelation.setUserId(leaderName);
         ParamsUtil.setBaseDO(itemGroupUserRelation);
         itemGroupUserRelation.setIsValid(isValid);
@@ -234,7 +236,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         //添加组员
         for (String memberId: memberUserId.split(SupplyConstants.Symbol.COMMA)) {
              itemGroupUserRelation = new ItemGroupUserRelation();
-            itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupName());
+            itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupCode());
             itemGroupUserRelation.setUserId(memberId);
             ParamsUtil.setBaseDO(itemGroupUserRelation);
             itemGroupUserRelation.setIsValid(isValid);
