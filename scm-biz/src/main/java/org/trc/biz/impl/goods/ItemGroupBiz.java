@@ -57,7 +57,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Resource
     private ILogInfoService logInfoService;
 
-    private static final String  SERIALNAME = "TEST";
+    private static final String  SERIALNAME = "SPZ";
     /**
      * 正则表达式：验证手机号
      */
@@ -229,6 +229,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         itemGroupUserRelation.setUserId(leaderName);
         ParamsUtil.setBaseDO(itemGroupUserRelation);
         itemGroupUserRelation.setIsValid(isValid);
+        itemGroupUserRelation.setCreateOperator(itemGroup.getCreateOperator());
         itemGroupUserRelationList.add(itemGroupUserRelation);
         //添加组员
         for (String memberId: memberUserId.split(SupplyConstants.Symbol.COMMA)) {
@@ -237,6 +238,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             itemGroupUserRelation.setUserId(memberId);
             ParamsUtil.setBaseDO(itemGroupUserRelation);
             itemGroupUserRelation.setIsValid(isValid);
+            itemGroupUserRelation.setCreateOperator(itemGroup.getCreateOperator());
             itemGroupUserRelationList.add(itemGroupUserRelation);
         }
         return iItemGroupUserRelationService.insertList(itemGroupUserRelationList);
