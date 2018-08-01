@@ -459,6 +459,12 @@ public class TrcBiz implements ITrcBiz {
                     if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
                         skus.setAvailableInventory((skuStock.getAvailableInventory() == null ? 0 : skuStock.getAvailableInventory()) + (skus.getAvailableInventory() == null ? 0 : skus.getAvailableInventory()));
                         skus.setRealInventory((skuStock.getLockInventory() == null ? 0 : skuStock.getLockInventory()) + (skus.getRealInventory() == null ? 0 : skus.getRealInventory()));
+                        if (null == skus.getAvailableInventory()) {
+                            skus.setAvailableInventory(null);
+                        }
+                        if (null == skus.getRealInventory()) {
+                            skus.setRealInventory(null);
+                        }
                         skus.setStock(skus.getAvailableInventory());
                     }
                 }
