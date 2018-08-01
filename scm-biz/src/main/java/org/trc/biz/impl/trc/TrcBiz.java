@@ -3,8 +3,6 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.qimen.api.request.InventoryQueryRequest;
-import com.qimen.api.response.InventoryQueryResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.goods.GoodsBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.impl.trc.model.SkusProperty;
-import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
@@ -30,31 +26,24 @@ import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.forTrc.PropertyValueForTrc;
 import org.trc.domain.goods.*;
-import org.trc.domain.order.OrderItem;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.domain.supplier.SupplierBrand;
-import org.trc.domain.util.ScmDO;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
-import org.trc.exception.QimenException;
 import org.trc.exception.TrcException;
-import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
-import org.trc.form.order.WarehouseOwernSkuDO;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.trc.BrandForm2;
 import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
-import org.trc.form.warehouse.ScmInventoryQueryItem;
-import org.trc.form.warehouse.ScmInventoryQueryRequest;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
@@ -74,7 +63,6 @@ import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
-import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
@@ -344,7 +332,7 @@ public class TrcBiz implements ITrcBiz {
         List<SkuRelation> skuRelationList = new ArrayList<SkuRelation>();
         if(updateSkus.size() > 0){
             //设置sku库存
-            setSkuStock(updateSkus);
+            //setSkuStock(updateSkus);
         }
         List<Skus> noticeSkus = new ArrayList<Skus>();
         for(Skus skus2: updateSkus){
@@ -361,6 +349,8 @@ public class TrcBiz implements ITrcBiz {
         if(noticeSkus.size() == 0){
             return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "商品修改无需同步");
         }
+        //设置自采sku库存
+        setSkusStock(noticeSkus);
         //MD5加密
         TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), action);
         JSONObject params = (JSONObject)JSONObject.toJSON(trcParam);
@@ -406,6 +396,74 @@ public class TrcBiz implements ITrcBiz {
             logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
         }
         return toGlyResultDO;
+    }
+
+    /**
+     * 设置自采sku库存
+     * @param skusList
+     */
+    private void setSkusStock(List<Skus> skusList){
+        //查询SKU相关库存信息,直接调用京东接口查库存
+        //通知成功的仓库
+        List<ScmInventoryQueryResponse> inventoryQueryResponseList = new ArrayList<>();
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+        if(CollectionUtils.isEmpty(warehouseInfoList)){
+            logger.warn("自采SKU没有查询到可用仓库");
+        }
+        List<String> skuCodes =  new ArrayList<>();
+        for(Skus skus: skusList){
+            skuCodes.add(skus.getSkuCode());
+        }
+        inventoryQueryResponseList= warehouseExtService.getWarehouseInventory(skuCodes,null);
+        if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
+            List<SkuStock> skuStockList = new ArrayList<>();
+            //sku计算库存总和
+            for (String skuCode:skuCodes) {
+                //先获取到该sku关联的仓库
+                WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+                warehouseItemInfo.setSkuCode(skuCode);
+                //通知成功的状态
+                warehouseItemInfo.setNoticeStatus(4);
+                List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+                if (AssertUtil.collectionIsEmpty(warehouseItemInfoList)){
+                    logger.warn("自采SKU"+skuCode+"没有查询到仓库关联信息");
+                    continue;
+                }
+                List<String> itemIds = new ArrayList<>();
+                for (WarehouseItemInfo warehouseItem:warehouseItemInfoList) {
+                    itemIds.add(warehouseItem.getWarehouseItemId());
+                }
+                for (ScmInventoryQueryResponse inventoryQueryResponse:inventoryQueryResponseList ) {
+                    SkuStock skuStock = new SkuStock();
+                    skuStock.setSkuCode(skuCode);
+                    boolean flag = false;
+                    for (String itemId:itemIds) {
+                        if (StringUtils.equals(inventoryQueryResponse.getItemId(),itemId)){
+                            flag =true;
+                        }
+                    }
+                    if (flag){
+                        //判断库存类型,可销售
+                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),JingdongInventoryTypeEnum.SALE.getCode())&&StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),JingdongInventoryStateEnum.GOOD.getCode())){
+                            skuStock.setAvailableInventory((inventoryQueryResponse.getQuantity()==null?0:inventoryQueryResponse.getQuantity())+(skuStock.getAvailableInventory()==null?0:skuStock.getAvailableInventory()));
+                        }
+                    }
+                    skuStockList.add(skuStock);
+                }
+            }
+            for(SkuStock skuStock: skuStockList){
+                for(Skus skus: skusList){
+                    if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
+                        skus.setAvailableInventory((skuStock.getAvailableInventory() == null ? 0 : skuStock.getAvailableInventory()) + (skus.getAvailableInventory() == null ? 0 : skus.getAvailableInventory()));
+                        skus.setRealInventory((skuStock.getLockInventory() == null ? 0 : skuStock.getLockInventory()) + (skus.getRealInventory() == null ? 0 : skus.getRealInventory()));
+                        skus.setStock(skus.getAvailableInventory());
+                    }
+                }
+            }
+        }
     }
 
 
