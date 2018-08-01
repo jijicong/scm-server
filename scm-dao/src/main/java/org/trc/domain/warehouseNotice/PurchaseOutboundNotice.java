@@ -199,18 +199,21 @@ public class PurchaseOutboundNotice extends BaseDO {
     /**
      * 供应商名称
      */
+    @Transient
     @ApiModelProperty("供应商名称")
     private String supplierName;
     
     /**
      * 退货仓库名称
      */
+    @Transient
     @ApiModelProperty("退货仓库名称")
     private String warehouseName;
     
     /**
      * 出库单创建人名称
      */
+    @Transient
     @ApiModelProperty("出库单创建人名称")
     private String creatorName;
 

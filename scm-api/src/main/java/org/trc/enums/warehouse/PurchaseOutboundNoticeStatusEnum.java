@@ -10,7 +10,8 @@ public enum PurchaseOutboundNoticeStatusEnum {
     PASS("3", "出库完成"),
     RECEIVE_EXCEPTION("4", "出库异常"),
     CANCEL("5", "已取消"),
-	CANCELLING("6", "取消中");
+    DROP("6", "作废"),
+	CANCELLING("7", "取消中");
 
     public static PurchaseOutboundNoticeStatusEnum queryNameByCode(String code){
         for(PurchaseOutboundNoticeStatusEnum sourceEnum: PurchaseOutboundNoticeStatusEnum.values()){
