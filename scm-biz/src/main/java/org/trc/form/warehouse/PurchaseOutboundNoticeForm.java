@@ -36,9 +36,9 @@ public class PurchaseOutboundNoticeForm extends QueryModel {
     /**
      * 供应商id
      */
-    @ApiParam("供应商id")
-    @QueryParam("supplierId")
-    private String supplierId;
+    @ApiParam("供应商编码")
+    @QueryParam("supplierCode")
+    private String supplierCode;
     
     /**
      * 状态:0-待通知出库,1-出库仓接收成功,2-出库仓接收失败,3-出库完成,4-出库异常,5-已取消
@@ -92,12 +92,12 @@ public class PurchaseOutboundNoticeForm extends QueryModel {
 		this.warehouseCode = warehouseCode;
 	}
 
-	public String getSupplierId() {
-		return supplierId;
+	public String getSupplierCode() {
+		return supplierCode;
 	}
 
-	public void setSupplierId(String supplierId) {
-		this.supplierId = supplierId;
+	public void setSupplierCode(String supplierCode) {
+		this.supplierCode = supplierCode;
 	}
 
 	public String getStatus() {

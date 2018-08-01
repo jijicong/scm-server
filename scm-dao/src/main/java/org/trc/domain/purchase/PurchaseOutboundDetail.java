@@ -46,9 +46,9 @@ public class PurchaseOutboundDetail extends BaseDO {
      * 商品详情出库状态：1-等待出库，2-出库完成，3-出库异常，其他-""
      */
     @ApiModelProperty("商品详情出库状态：1-等待出库，2-出库完成，3-出库异常，其他-\"\"")
-    @Column(name = "outbount_status")
-    @FormParam("outbountStatus")
-    private String outbountStatus;
+    @Column(name = "outbound_status")
+    @FormParam("outboundStatus")
+    private String outboundStatus;
 
     /**
      * 商品名称
@@ -235,12 +235,12 @@ public class PurchaseOutboundDetail extends BaseDO {
     //private Date updateTime;
 
 
-    public String getOutbountStatus() {
-        return outbountStatus;
+    public String getOutboundStatus() {
+        return outboundStatus;
     }
 
-    public void setOutbountStatus(String outbountStatus) {
-        this.outbountStatus = outbountStatus;
+    public void setOutboundStatus(String outboundStatus) {
+        this.outboundStatus = outboundStatus;
     }
 
     /**

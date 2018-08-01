@@ -1,23 +1,24 @@
 package org.trc.service.impl.warehouseNotice;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.trc.domain.allocateOrder.AllocateOrder;
-import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseOutboundDetail;
+import org.trc.domain.supplier.Supplier;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
-import org.trc.mapper.purchase.IPurchaseOutboundDetailMapper;
+import org.trc.mapper.impower.AclUserAccreditInfoMapper;
+import org.trc.mapper.supplier.ISupplierMapper;
+import org.trc.mapper.warehouseInfo.IWarehouseInfoMapper;
 import org.trc.mapper.warehouseNotice.IPurchaseOutboundNoticeMapper;
 import org.trc.service.impl.BaseService;
-import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
 import org.trc.util.Pagenation;
 
@@ -34,11 +35,13 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	IPurchaseOutboundNoticeService {
 	
 	@Autowired
-	private IAclUserAccreditInfoService userInfoService;
+	private AclUserAccreditInfoMapper userInfoMapper;
 	@Autowired
-	private IPurchaseOutboundDetailMapper detailMapper;
+	private IWarehouseInfoMapper whiMapper;
 	@Autowired
 	private IPurchaseOutboundNoticeMapper noticeMapper;
+	@Autowired
+	private ISupplierMapper supplierMapper;
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> pageList (PurchaseOutboundNoticeForm form,
@@ -66,8 +69,8 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
         }
         
         //供应商编号
-        if (StringUtils.isNotBlank(form.getSupplierId())) {
-        	criteria.andEqualTo("supplierId", form.getSupplierId());
+        if (StringUtils.isNotBlank(form.getSupplierCode())) {
+        	criteria.andEqualTo("supplierCode", form.getSupplierCode());
         }
         
         //出库单状态
@@ -92,7 +95,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
             
             userCriteria.andLike("name", "%" + form.getCreateUser() + "%");
             
-            List<AclUserAccreditInfo> userList = userInfoService.selectByExample(userExample);
+            List<AclUserAccreditInfo> userList = userInfoMapper.selectByExample(userExample);
             if (CollectionUtils.isEmpty(userList)) {
             	// 未查询到结果
             	return new Pagenation<>();
@@ -113,19 +116,88 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	}
 
 	@Override
-	public List<PurchaseOutboundDetail> selectDetailByNoticeCode (String outboundNoticeCode) {
-		PurchaseOutboundDetail queryDetail = new PurchaseOutboundDetail();
-		queryDetail.setOutboundNoticeCode(outboundNoticeCode);
-		// 未删除的记录
-		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-		return detailMapper.select(queryDetail);
-	}
-
-	@Override
 	public List<PurchaseOutboundNotice> selectNoticeBycode(String code) {
 		PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
 		queryRecord.setOutboundNoticeCode(code);
 		return noticeMapper.select(queryRecord);
+	}
+
+	@Override
+	public void updateById(String status, Long id, String errMsg, String wmsEntryRtCode) {
+		PurchaseOutboundNotice updateRecord = new PurchaseOutboundNotice();
+		updateRecord.setId(id);
+		updateRecord.setStatus(status);
+		updateRecord.setFailureCause(errMsg);
+		updateRecord.setEntryOrderId(wmsEntryRtCode);
+		noticeMapper.updateByPrimaryKeySelective(updateRecord);		
+	}
+
+	@Override
+	public void generateNames(Pagenation<PurchaseOutboundNotice> resultPage) {
+		List<PurchaseOutboundNotice> resultList = resultPage.getResult();
+        if (CollectionUtils.isEmpty(resultList)) {
+            return;
+        }
+        
+        Set<String> warehouseCodes = new HashSet<>(); // 仓库
+        Set<String> operatorIds = new HashSet<>();  // 创建人
+        Set<String> supplyCodes = new HashSet<>();  // 供应商
+        
+        List<WarehouseInfo> warehouseInfoList = null;
+        List<AclUserAccreditInfo> aclUserAccreditInfoList = null;
+        List<Supplier> supplierList = null;
+        
+        for (PurchaseOutboundNotice notice : resultList) {
+            warehouseCodes.add(notice.getWarehouseCode());
+            operatorIds.add(notice.getCreateOperator());
+            supplyCodes.add(notice.getSupplierCode());
+        }
+
+        if (!warehouseCodes.isEmpty()) {
+            Example example = new Example(WarehouseInfo.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("code", warehouseCodes);
+            warehouseInfoList = whiMapper.selectByExample(example);
+        }
+        if (!operatorIds.isEmpty()) {
+            Example example = new Example(AclUserAccreditInfo.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("userId", operatorIds);
+            aclUserAccreditInfoList = userInfoMapper.selectByExample(example);
+        }
+        if (!supplyCodes.isEmpty()) {
+        	Example example = new Example(Supplier.class);
+        	Example.Criteria criteria = example.createCriteria();
+        	criteria.andIn("supplierCode", supplyCodes);
+        	supplierList = supplierMapper.selectByExample(example);
+        }
+        
+        for (PurchaseOutboundNotice notice : resultList) {
+            if (!CollectionUtils.isEmpty(warehouseInfoList)) {
+                for (WarehouseInfo warehouseInfo: warehouseInfoList) {
+                    if(StringUtils.equals(notice.getWarehouseCode(), warehouseInfo.getCode())){
+                    	notice.setWarehouseName(warehouseInfo.getWarehouseName());
+                        break;
+                    }
+                }
+            }
+            if (!CollectionUtils.isEmpty(aclUserAccreditInfoList)) {
+                for (AclUserAccreditInfo userAccreditInfo: aclUserAccreditInfoList) {
+                    if (StringUtils.equals(notice.getCreateOperator(), userAccreditInfo.getUserId())) {
+                    	notice.setCreatorName(userAccreditInfo.getName());
+                        break;
+                    }
+                }
+            }
+            if (!CollectionUtils.isEmpty(supplierList)) {
+            	for (Supplier supplier : supplierList) {
+            		if (StringUtils.equals(notice.getSupplierCode(), supplier.getSupplierCode())) {
+            			notice.setSupplierName(supplier.getSupplierName());
+            			break;
+            		}
+            	}
+            }
+        }		
 	}
 	
 }

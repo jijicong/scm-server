@@ -1,12 +1,15 @@
 package org.trc.domain.purchase;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 @Table(name = "purchase_outbound_order")
@@ -243,7 +246,26 @@ public class PurchaseOutboundOrder extends BaseDO {
     @ApiModelProperty("供应商名称")
     @Transient
     @FormParam("supplierName")
+    @Column(name = "supplier_name")
     private String supplierName;
+
+    /**
+     * 提交审核时间
+     */
+    @ApiModelProperty("提交审核时间")
+    @Column(name = "commit_audit_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date commitAuditTime;
+
+    /**
+     * 审核更新时间
+     */
+    @ApiModelProperty("审核更新时间")
+    @Column(name = "update_audit_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date updateAuditTime;
+
+
 
     @ApiModelProperty("采购退货单退货商品详情")
     @Transient
@@ -761,6 +783,22 @@ public class PurchaseOutboundOrder extends BaseDO {
 
     public void setAuditOperator(String auditOperator) {
         this.auditOperator = auditOperator;
+    }
+
+    public Date getCommitAuditTime() {
+        return commitAuditTime;
+    }
+
+    public void setCommitAuditTime(Date commitAuditTime) {
+        this.commitAuditTime = commitAuditTime;
+    }
+
+    public Date getUpdateAuditTime() {
+        return updateAuditTime;
+    }
+
+    public void setUpdateAuditTime(Date updateAuditTime) {
+        this.updateAuditTime = updateAuditTime;
     }
 
 ///**

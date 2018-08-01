@@ -5,7 +5,7 @@ package org.trc.enums;
  */
 public enum LogOperationEnum {
     ADD("新增"),UPDATE("修改"),DELETE("删除"), AUDIT_REJECT("审核驳回"),CANCEL("作废"),RENEWAL("更新"),CREATE("创建"),SUBMIT("提交审核"), AUDIT_PASS("审核通过"),
-    FREEZE("冻结"),UN_FREEZE("解冻"),WAREHOUSE_NOTICE("入库通知"),NOTICE_RECEIVE("通知收货"),WMS_RECEIVE_FAILED("仓库接收失败"),
+    FREEZE("冻结"),UN_FREEZE("解冻"),WAREHOUSE_NOTICE("入库通知"),OUTBOUND_NOTICE("出库通知"),NOTICE_RECEIVE("通知收货"),WMS_RECEIVE_FAILED("仓库接收失败"),
     SUBMIT_JINGDONG_ORDER("映射京东地址并发送"),SUBMIT_ORDER("发送"),SUBMIT_ORDER_FIALURE("下单失败"), DELIVER("已发货"),SYNCHRONIZE("同步"),
 
     WAIT_FOR_SUBMIT("待发送供应商"),ORDER_EXCEPTION("供应商下单异常"),WAIT_FOR_DELIVER("等待供应商发货"),ALL_DELIVER("全部发货"),
@@ -33,7 +33,10 @@ public enum LogOperationEnum {
     ALLOCATE_IN("入库"),
     
     //采购退货
-    ENTRY_RETURN_NOTICE("通知出库");
+    ENTRY_RETURN_NOTICE("通知出库"),
+    ENTRY_RETURN_NOTICE_SUCC("仓库接收成功"),
+    ENTRY_RETURN_NOTICE_FAIL("仓库接收失败"),
+    ENTRY_RETURN_NOTICE_CANCEL("取消出库");
 
     private String message;
 

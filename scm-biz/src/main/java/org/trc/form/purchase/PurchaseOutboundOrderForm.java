@@ -1,6 +1,6 @@
 package org.trc.form.purchase;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -21,45 +21,75 @@ public class PurchaseOutboundOrderForm extends QueryModel {
      */
     @QueryParam("purchaseOrderCode")
     @Length(max = 32)
-    @ApiModelProperty(name = "采购退货单编号")
+    @ApiParam(value = "采购退货单编号")
     private String purchaseOutboundOrderCode;
 
     /**
      *供应商名称
      */
-    @QueryParam("supplierName")
+    @QueryParam("supplierCode")
     @Length(max = 64)
-    @ApiModelProperty(name = "供应商名称")
-    private String supplierName;
+    @ApiParam(value = "供应商Code")
+    private String supplierCode;
 
     /**
-     * 退货仓库
+     * 退货仓库id
      */
-    @QueryParam("warehouseName")
+    @QueryParam("warehouseInfoId")
     @Length(max = 64)
-    @ApiModelProperty(name = "退货仓库")
-    private String warehouseName;
+    @ApiParam(value = "退货仓库id")
+    private String warehouseInfoId;
 
     /**
      *  退货类型1-正品，2-残品
      */
     @QueryParam("returnOrderType")
-    @ApiModelProperty(name = "退货类型1-正品，2-残品")
+    @ApiParam(value = "退货类型1-正品，2-残品")
     private String returnOrderType;
 
     /**
      *  单据状态:0-暂存,1-提交审核,2-审核驳回,3-审核通过,4-出库通知,5-作废
      */
     @QueryParam("status")
-    @ApiModelProperty(name = "单据状态:0-暂存,1-提交审核,2-审核驳回,3-审核通过,4-出库通知,5-作废")
+    @ApiParam(value = "单据状态:0-暂存,1-提交审核,2-审核驳回,3-审核通过,4-出库通知,5-作废")
     private String status;
 
     /**
      * 出库状态:1-等待出库，2-出库完成，3-出库异常，4-其他
      */
     @QueryParam("outboundStatus")
-    @ApiModelProperty(name = "出库状态:1-等待出库，2-出库完成，3-出库异常，4-其他")
+    @ApiParam(value = "出库状态:1-等待出库，2-出库完成，3-出库异常，4-其他")
     private String outboundStatus;
+
+    /**
+     * 审核状态：1-提交审核,2-审核驳回,3-审核通过,
+     */
+    @QueryParam("auditStatus")
+    @ApiParam(value = "审核状态：1-提交审核,2-审核驳回,3-审核通过,")
+    private String auditStatus;
+
+    /**
+     * 提交审核时间
+     */
+    @QueryParam("commitAuditTime")
+    @ApiParam(value = "提交审核时间")
+    private String commitAuditTime;
+
+    public String getCommitAuditTime() {
+        return commitAuditTime;
+    }
+
+    public void setCommitAuditTime(String commitAuditTime) {
+        this.commitAuditTime = commitAuditTime;
+    }
+
+    public String getAuditStatus() {
+        return auditStatus;
+    }
+
+    public void setAuditStatus(String auditStatus) {
+        this.auditStatus = auditStatus;
+    }
 
     public String getPurchaseOutboundOrderCode() {
         return purchaseOutboundOrderCode;
@@ -69,20 +99,20 @@ public class PurchaseOutboundOrderForm extends QueryModel {
         this.purchaseOutboundOrderCode = purchaseOutboundOrderCode;
     }
 
-    public String getSupplierName() {
-        return supplierName;
+    public String getSupplierCode() {
+        return supplierCode;
     }
 
-    public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName;
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
     }
 
-    public String getWarehouseName() {
-        return warehouseName;
+    public String getWarehouseInfoId() {
+        return warehouseInfoId;
     }
 
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
+    public void setWarehouseInfoId(String warehouseInfoId) {
+        this.warehouseInfoId = warehouseInfoId;
     }
 
     public String getReturnOrderType() {
