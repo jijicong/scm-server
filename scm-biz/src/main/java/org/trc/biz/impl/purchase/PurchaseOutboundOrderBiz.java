@@ -337,7 +337,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         pagenation.setStart(page.getStart());
         pagenation.setPageSize(page.getPageSize());
         pagenation.setPageNo(page.getPageNo());
-        List<PurchaseOutboundDetail> list = getPurchaseOutboundOrderDetails(form, skus, page, pagenation);
+        List<PurchaseOutboundDetail> list = getDetails(form, skus, page, pagenation);
         page.setResult(list);
         return page;
     }
@@ -373,9 +373,14 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType())) {
                 detailCriteria.andEqualTo("status", WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
             }
-            //退货类型是正品,查询入库单状态为
+            /**
+             *退货类型是正品,查询入库单 状态入库异常和全部入库和部分入库
+             * 入库异常分:
+             *     1.有残次品入库
+             *     2.入库数量大于采购数量
+             */
             else if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.QUALITY.getCode(), form.getReturnOrderType())) {
-                detailCriteria.andEqualTo("status", Arrays.asList(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(),
+                detailCriteria.andIn("status", Arrays.asList(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode(),
                         WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(),
                         WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
@@ -383,21 +388,23 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             if (CollectionUtils.isEmpty(warehouseNoticeDetails)) {
                 continue;
             }
-            for (WarehouseNoticeDetails warehouseNoticeDetail : warehouseNoticeDetails) {
-                //退货类型是残品
-                if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType())) {
-                    if (warehouseNoticeDetail.getDefectiveStorageQuantity() != null && warehouseNoticeDetail.getDefectiveStorageQuantity() == 0) {
-                        continue;
-                    }
+            for (WarehouseNoticeDetails notic : warehouseNoticeDetails) {
+                /**
+                 * 1.退货类型是残品:(过滤掉残次品为0的商品)
+                 *      如果残品数量为0，跳过当前循环
+                 *
+                 * 2.退货类型是正品:(过滤掉残品记录)
+                 *      如果残品数量大于0，跳过当前循环
+                 */
+                if (((StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType()))
+                        && (notic.getDefectiveStorageQuantity() != null && notic.getDefectiveStorageQuantity() == 0))
+                        || ((StringUtils.equals(PurchaseOutboundOrderTypeEnum.QUALITY.getCode(), form.getReturnOrderType()))
+                        && (notic.getDefectiveStorageQuantity() != null && notic.getDefectiveStorageQuantity() > 0))) {
+                    continue;
                 }
-                //退货类型是正品
-                else if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.QUALITY.getCode(), form.getReturnOrderType())) {
-                    if (warehouseNoticeDetail.getDefectiveStorageQuantity() != null && warehouseNoticeDetail.getDefectiveStorageQuantity() > 0) {
-                        continue;
-                    }
-                }
-                warehouseNoticeDetail.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
-                details.add(warehouseNoticeDetail);
+
+                notic.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
+                details.add(notic);
             }
         }
 
@@ -610,10 +617,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             if (brand != null) {
                 purchaseOutboundDetail.setBrandName(brand.getName());
             }
-            if (!CollectionUtils.isEmpty(canBackQuantity)) {
-                if (canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
-                    purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
-                }
+            if (!CollectionUtils.isEmpty(canBackQuantity) && canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
+                purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
             }
         }
 
@@ -915,7 +920,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notBlank(form.getReturnOrderType(), "退货类型不能为空");
     }
 
-    private List<PurchaseOutboundDetail> getPurchaseOutboundOrderDetails(PurchaseOutboundItemForm form, String skus, Pagenation<PurchaseOutboundDetail> page, Pagenation<Skus> pagenation) {
+    private List<PurchaseOutboundDetail> getDetails(PurchaseOutboundItemForm form, String skus, Pagenation<PurchaseOutboundDetail> page, Pagenation<Skus> pagenation) {
 
         //是否条件查询的标记
         boolean flag = false;
@@ -1025,10 +1030,10 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             return new ArrayList<>();
         }
 
-        return setPurchaseOutboundOrderDetail(result, warehouseItemInfoList, form.getReturnOrderType(), itemsList, brandList);
+        return setDetails(result, warehouseItemInfoList, form.getReturnOrderType(), itemsList, brandList);
     }
 
-    private List<PurchaseOutboundDetail> setPurchaseOutboundOrderDetail(List<Skus> result, List<WarehouseItemInfo> warehouseItemInfoList, String returnOrderType, List<Items> itemsList, List<Brand> brandList) {
+    private List<PurchaseOutboundDetail> setDetails(List<Skus> result, List<WarehouseItemInfo> warehouseItemInfoList, String returnOrderType, List<Items> itemsList, List<Brand> brandList) {
         List<WarehouseItemInfo> warehouseItemInfos = new ArrayList<>();
         for (Skus sku : result) {
             for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfoList) {
@@ -1063,10 +1068,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 detail.setTaxRate(taxRates.get(0).getTaxRate());
             }
             //设置可退数量
-            if (!CollectionUtils.isEmpty(inventoryInfo)) {
-                if (inventoryInfo.get(sku.getSkuCode()) != null) {
-                    detail.setCanBackQuantity(inventoryInfo.get(sku.getSkuCode()));
-                }
+            if (!CollectionUtils.isEmpty(inventoryInfo) && inventoryInfo.get(sku.getSkuCode()) != null) {
+                detail.setCanBackQuantity(inventoryInfo.get(sku.getSkuCode()));
             }
 
             for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfos) {
@@ -1125,7 +1128,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<ScmInventoryQueryResponse> resList;
         if (StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())) {
             resList = (List<ScmInventoryQueryResponse>) appResult.getResult();
-            //TODO 测试日志
             log.info("----采购退货，京东查询库存结果:{}", JSON.toJSONString(resList));
             try {
                 Map<String, Long> retTempMap = resList.stream()
