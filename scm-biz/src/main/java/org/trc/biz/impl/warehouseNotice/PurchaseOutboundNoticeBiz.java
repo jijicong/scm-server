@@ -173,7 +173,8 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 
 	@Override
 	public void cancel(String code, AclUserAccreditInfo property) {
-		// TODO Auto-generated method stub
+		// 入参校验
+		PurchaseOutboundNotice notice = checkCode(code);
 		
 	}
 	

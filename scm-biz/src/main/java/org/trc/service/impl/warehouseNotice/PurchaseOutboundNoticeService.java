@@ -65,8 +65,8 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
         }
         
         //供应商编号
-        if (StringUtils.isNotBlank(form.getSupplierId())) {
-        	criteria.andEqualTo("supplierId", form.getSupplierId());
+        if (StringUtils.isNotBlank(form.getSupplierCode())) {
+        	criteria.andEqualTo("supplierCode", form.getSupplierCode());
         }
         
         //出库单状态
