@@ -91,7 +91,8 @@ public class ItemGroupBiz implements IitemGroupBiz {
         AssertUtil.notBlank(code,"商品组编码参数code不能为空");
         ItemGroup itemGroupTemp = new ItemGroup();
         itemGroupTemp.setItemGroupCode(code);
-        return itemGroupService.selectOne(itemGroupTemp);
+        ItemGroup itemGroup = itemGroupService.selectOne(itemGroupTemp);
+        return itemGroup;
     }
 
     //商品组编辑

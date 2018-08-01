@@ -58,8 +58,9 @@ public class ItemGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据商品组编码查询详情")
     @ApiImplicitParam(paramType = "query", dataType = "String", name = "itemGroupCode", value = "商品组编号", required = true)
-    public Response queryDetailByCode(@QueryParam("itemGroupCode") String itemGroupCode){
-        return ResultUtil.createSuccessResult("商品组查询成功",itemGroupBiz.queryDetailByCode(itemGroupCode));
+    public Resp<ItemGroup> queryDetailByCode(@QueryParam("itemGroupCode") String itemGroupCode){
+        ItemGroup itemGroup = itemGroupBiz.queryDetailByCode(itemGroupCode);
+        return Resp.success(itemGroup);
 
     }
 
