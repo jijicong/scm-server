@@ -69,7 +69,7 @@
         <task:scheduled ref="allocateOutOrderBiz" method="retryCancelOrder" cron="${allocate.out.cancel}"/>
         <task:scheduled ref="warehouseNoticeBiz" method="retryCancelOrder" cron="${warehouse.notice.cancel}"/>
         <!-- 退货出库单取消中定时任务 -->
-        <task:scheduled ref="purchaseOutboundNotice" method="retryCancelOrder" cron="${entry.return.cancel}"/> 
+        <task:scheduled ref="purchaseOutboundNoticeBiz" method="retryCancelOrder" cron="${entry.return.cancel}"/>
     </task:scheduled-tasks>
 
 </beans>
