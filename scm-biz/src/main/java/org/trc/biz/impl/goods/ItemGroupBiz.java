@@ -1,5 +1,6 @@
 package org.trc.biz.impl.goods;
 
+import com.ecfront.dew.common.Resp;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
     //商品组分页
     @Override
-    public Pagenation<ItemGroup> itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Resp<Pagenation<ItemGroup>> itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
         Example example=new Example(ItemGroup.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(form.getItemGroupName())){
@@ -81,7 +82,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         example.orderBy("updateTime").desc();
         Pagenation<ItemGroup> pagenation = itemGroupService.pagination(example, page, form);
         userNameUtilService.handleUserName(pagenation.getResult());
-        return pagenation;
+        return Resp.success(pagenation);
     }
 
     //根据商品组编码查询详情

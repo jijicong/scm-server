@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.ecfront.dew.common.Resp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -37,8 +38,8 @@ public class ItemGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "商品组分页查询")
     @ApiImplicitParam(paramType = "query", dataType = "String", name = "itemGroupName", value = "商品组编号", required = false)
-    public Response itemGroupPage(@BeanParam ItemGroupQuery itemGroupQuery, @BeanParam Pagenation<ItemGroup> page, @Context ContainerRequestContext requestContext){
-        return ResultUtil.createSuccessPageResult(itemGroupBiz.itemGroupPage(itemGroupQuery,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
+    public  Resp<Pagenation<ItemGroup>> itemGroupPage(@BeanParam ItemGroupQuery itemGroupQuery, @BeanParam Pagenation<ItemGroup> page, @Context ContainerRequestContext requestContext){
+       return itemGroupBiz.itemGroupPage(itemGroupQuery,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @POST
