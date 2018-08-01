@@ -57,7 +57,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Resource
     private ILogInfoService logInfoService;
 
-    private static final String  SERIALNAME = "TEST";
+    private static final String  SERIALNAME = "SPZ";
     /**
      * 正则表达式：验证手机号
      */
@@ -68,7 +68,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
     //商品组分页
     @Override
-    public Pagenation itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Pagenation<ItemGroup> itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
         Example example=new Example(ItemGroup.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(form.getItemGroupName())){
@@ -225,18 +225,20 @@ public class ItemGroupBiz implements IitemGroupBiz {
         List<ItemGroupUserRelation> itemGroupUserRelationList=new ArrayList<>();
         //添加组长
         ItemGroupUserRelation itemGroupUserRelation = new ItemGroupUserRelation();
-        itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupName());
+        itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupCode());
         itemGroupUserRelation.setUserId(leaderName);
         ParamsUtil.setBaseDO(itemGroupUserRelation);
         itemGroupUserRelation.setIsValid(isValid);
+        itemGroupUserRelation.setCreateOperator(itemGroup.getCreateOperator());
         itemGroupUserRelationList.add(itemGroupUserRelation);
         //添加组员
         for (String memberId: memberUserId.split(SupplyConstants.Symbol.COMMA)) {
              itemGroupUserRelation = new ItemGroupUserRelation();
-            itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupName());
+            itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupCode());
             itemGroupUserRelation.setUserId(memberId);
             ParamsUtil.setBaseDO(itemGroupUserRelation);
             itemGroupUserRelation.setIsValid(isValid);
+            itemGroupUserRelation.setCreateOperator(itemGroup.getCreateOperator());
             itemGroupUserRelationList.add(itemGroupUserRelation);
         }
         return iItemGroupUserRelationService.insertList(itemGroupUserRelationList);

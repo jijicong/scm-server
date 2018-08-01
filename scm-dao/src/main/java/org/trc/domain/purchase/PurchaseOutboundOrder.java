@@ -250,7 +250,7 @@ public class PurchaseOutboundOrder extends BaseDO {
     @FormParam("purchaseOutboundDetailList")
     private List<PurchaseOutboundDetail> purchaseOutboundDetailList;
 
-    public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
+	public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
         return purchaseOutboundDetailList;
     }
 

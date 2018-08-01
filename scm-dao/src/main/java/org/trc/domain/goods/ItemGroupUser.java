@@ -21,6 +21,7 @@ public class ItemGroupUser extends BaseDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @PathParam("id")
+    @ApiModelProperty("用户id")
     private Long id;
 
     @FormParam("name")

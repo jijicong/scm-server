@@ -270,6 +270,10 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(purchaseOutboundOrder, "采购单货单根据主键id查询失败，没有对应采购退货单");
 
+        //仓库名称
+        WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(purchaseOutboundOrder.getWarehouseInfoId());
+        purchaseOutboundOrder.setWarehouseName(warehouseInfo.getWarehouseName());
+
         Example example = new Example(PurchaseOutboundDetail.class);
         example.createCriteria().andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
         List<PurchaseOutboundDetail> purchaseOutboundDetails = purchaseOutboundDetailService.selectByExample(example);
@@ -519,6 +523,26 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      */
     private void initPurchaseOutboundNotice(PurchaseOutboundOrder purchaseOutboundOrder, PurchaseOutboundNotice notice, WarehouseInfo warehouseInfo) {
         String purchaseOutboundNoticeCode = serialUtilService.generateCode(LENGTH, SequenceEnum.TH_CKTZ_PREFIX.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        notice.setOutboundNoticeCode(purchaseOutboundNoticeCode);
+        notice.setPurchaseOutboundOrderCode(purchaseOutboundOrder.getPurchaseOutboundOrderCode());
+        notice.setWarehouseId(Long.valueOf(purchaseOutboundOrder.getWarehouseId()));
+        notice.setWarehouseInfoId(purchaseOutboundOrder.getWarehouseInfoId());
+        notice.setWarehouseCode(purchaseOutboundOrder.getWarehouseCode());
+        //待通知收货
+        notice.setStatus(PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode());
+        // 默认为未完成的状态
+        notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
+        notice.setSupplierId(purchaseOutboundOrder.getSupplierId());
+        notice.setSupplierCode(purchaseOutboundOrder.getSupplierCode());
+
+        //退货收货人信息
+        notice.setReceiver(purchaseOutboundOrder.getReceiver());
+        notice.setReceiverNumber(purchaseOutboundOrder.getReceiverNumber());
+        notice.setReceiverProvince(purchaseOutboundOrder.getReceiverProvince());
+        notice.setReceiverCity(purchaseOutboundOrder.getReceiverCity());
+        notice.setReceiverArea(purchaseOutboundOrder.getReceiverArea());
+        notice.setReceiverAddress(purchaseOutboundOrder.getReceiverAddress());
+
 
     }
 

@@ -83,8 +83,8 @@ public class WarehouseNoticeResource {
     			}
     			
     		} catch (Exception e) {
-    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:{}", 
-    					noticeCode, identifier, e.getMessage());
+    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:", 
+    					noticeCode, identifier, e);
     			e.printStackTrace();
     		}
     	}
@@ -122,8 +122,8 @@ public class WarehouseNoticeResource {
     			}
     			
     		} catch (Exception e) {
-    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:{}", 
-    					noticeCode, identifier, e.getMessage());
+    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:", 
+    					noticeCode, identifier, e);
     			e.printStackTrace();
     		}
     	}
@@ -185,7 +185,7 @@ public class WarehouseNoticeResource {
 					logger.error("warehouseNoticeCode:{}入库通知，解锁失败，identifier:{}",warehouseNoticeCode,identifier);
 				}
 			}catch (Exception e){
-				logger.error("warehouseNoticeCode:{}入库通知，解锁失败，identifier:{},err:{}",warehouseNoticeCode,identifier,e.getMessage());
+				logger.error("warehouseNoticeCode:{}入库通知，解锁失败，identifier:{},err:",warehouseNoticeCode,identifier,e);
 				e.printStackTrace();
 			}
 		}
