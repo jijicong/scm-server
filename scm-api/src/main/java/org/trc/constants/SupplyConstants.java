@@ -1414,5 +1414,7 @@ public class SupplyConstants {
         public final static String ITEM_GROUP_EDIT = "itemGroupEdit";
         //商品组新增
         public final static String ITEM_GROUP_SAVE = "itemGroupSave";
+        //商品组新增
+        public final static String ITEM_GROUP_ISVALID = "isValid";
     }
 }

@@ -8,7 +8,8 @@ package org.trc.enums;
  */
 public enum SequenceEnum {
 
-    CGTH_PREFIX("CGTH", "采购退货单");
+    CGTH_PREFIX("CGTH", "采购退货单"),
+    TH_CKTZ_PREFIX("THCKTZ", "采购退货通知单");
 
     public static SequenceEnum queryNameByCode(String code){
         for(SequenceEnum sourceEnum: SequenceEnum.values()){

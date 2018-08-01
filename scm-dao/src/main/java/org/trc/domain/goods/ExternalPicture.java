@@ -14,6 +14,7 @@ import java.util.Date;
 @Table(name = "external_picture")
 public class ExternalPicture  implements Serializable {
 
+    private static final long serialVersionUID = -122535266090699663L;
     // 主键
     @PathParam("id")
     @Id

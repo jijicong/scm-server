@@ -5,6 +5,7 @@ import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @PathParam("id")
     private Long id;
 
     /**
@@ -79,14 +81,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     @Column(name = "purchase_person_id")
     @FormParam("purchasePersonId")
     private String purchasePersonId;
-
-    /**
-     * 收货地址
-     */
-    @ApiModelProperty("收货地址")
-    @Column(name = "receive_address")
-    @FormParam("receiveAddress")
-    private String receiveAddress;
 
     /**
      * 退货仓库编号
@@ -190,6 +184,14 @@ public class PurchaseOutboundOrder extends BaseDO {
     private String receiverProvince;
 
     /**
+     * 退货地区
+     */
+    @ApiModelProperty("退货地区")
+    @Column(name = "receiver_area")
+    @FormParam("receiverArea")
+    private String receiverArea;
+
+    /**
      * 退货城市
      */
     @ApiModelProperty("退货城市")
@@ -204,6 +206,39 @@ public class PurchaseOutboundOrder extends BaseDO {
     @Column(name = "receiver_address")
     @FormParam("receiverAddress")
     private String receiverAddress;
+
+    /**
+     * 审核状态：1-提交审核,2-审核驳回,3-审核通过,
+     */
+    @ApiModelProperty("审核状态：1-提交审核,2-审核驳回,3-审核通过")
+    @Column(name = "audit_status")
+    @FormParam("auditStatus")
+    private String auditStatus;
+
+    /**
+     * 审核意见
+     */
+    @ApiModelProperty("审核意见")
+    @Column(name = "audit_opinion")
+    @FormParam("auditOpinion")
+    private String auditOpinion;
+
+    /**
+     * 提交审核说明
+     */
+    @ApiModelProperty("提交审核说明")
+    @Column(name = "audit_description")
+    @FormParam("auditDescription")
+    private String auditDescription;
+
+    /**
+     * 审核人
+     */
+    @ApiModelProperty("提交审核说明")
+    @Column(name = "audit_operator")
+    @FormParam("auditOperator")
+    private String auditOperator;
+
 
     @ApiModelProperty("供应商名称")
     @Transient
@@ -408,24 +443,6 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     public void setPurchasePersonId(String purchasePersonId) {
         this.purchasePersonId = purchasePersonId;
-    }
-
-    /**
-     * 获取收货地址
-     *
-     * @return receive_address - 收货地址
-     */
-    public String getReceiveAddress() {
-        return receiveAddress;
-    }
-
-    /**
-     * 设置收货地址
-     *
-     * @param receiveAddress 收货地址
-     */
-    public void setReceiveAddress(String receiveAddress) {
-        this.receiveAddress = receiveAddress;
     }
 
     /**
@@ -704,6 +721,46 @@ public class PurchaseOutboundOrder extends BaseDO {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public String getReceiverArea() {
+        return receiverArea;
+    }
+
+    public void setReceiverArea(String receiverArea) {
+        this.receiverArea = receiverArea;
+    }
+
+    public String getAuditStatus() {
+        return auditStatus;
+    }
+
+    public void setAuditStatus(String auditStatus) {
+        this.auditStatus = auditStatus;
+    }
+
+    public String getAuditOpinion() {
+        return auditOpinion;
+    }
+
+    public void setAuditOpinion(String auditOpinion) {
+        this.auditOpinion = auditOpinion;
+    }
+
+    public String getAuditDescription() {
+        return auditDescription;
+    }
+
+    public void setAuditDescription(String auditDescription) {
+        this.auditDescription = auditDescription;
+    }
+
+    public String getAuditOperator() {
+        return auditOperator;
+    }
+
+    public void setAuditOperator(String auditOperator) {
+        this.auditOperator = auditOperator;
     }
 
 ///**

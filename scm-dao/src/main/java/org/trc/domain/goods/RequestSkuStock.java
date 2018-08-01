@@ -3,6 +3,7 @@ package org.trc.domain.goods;
 import java.io.Serializable;
 
 public class RequestSkuStock implements Serializable {
+    private static final long serialVersionUID = -2571451364844068320L;
     /**
      * 可用正品总库存
      */

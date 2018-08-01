@@ -2,16 +2,14 @@ package org.trc.domain.warehouseNotice;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.trc.domain.BaseDO;
-import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
-
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
+import java.util.List;
 
 @Table(name = "purchase_outbound_notice")
 public class PurchaseOutboundNotice extends BaseDO {
@@ -82,7 +80,7 @@ public class PurchaseOutboundNotice extends BaseDO {
     @ApiModelProperty("完成状态：0-未完成，1-已完成")
     @Column(name = "finish_status")
     @FormParam("finishStatus")
-    private Byte finishStatus;
+    private String finishStatus;
 
     /**
      * 状态:0-待通知出库,1-出库仓接收成功,2-出库仓接收失败,3-出库完成,4-出库异常,5-已取消
@@ -344,7 +342,7 @@ public class PurchaseOutboundNotice extends BaseDO {
      *
      * @return finish_status - 完成状态：0-未完成，1-已完成
      */
-    public Byte getFinishStatus() {
+    public String getFinishStatus() {
         return finishStatus;
     }
 
@@ -353,7 +351,7 @@ public class PurchaseOutboundNotice extends BaseDO {
      *
      * @param finishStatus 完成状态：0-未完成，1-已完成
      */
-    public void setFinishStatus(Byte finishStatus) {
+    public void setFinishStatus(String finishStatus) {
         this.finishStatus = finishStatus;
     }
 

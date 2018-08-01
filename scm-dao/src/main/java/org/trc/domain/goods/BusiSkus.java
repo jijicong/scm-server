@@ -13,6 +13,7 @@ import java.util.Date;
 
 public class BusiSkus implements Serializable {
 
+    private static final long serialVersionUID = 6939917346316442364L;
     @PathParam("id")
     @Id
     private String id;

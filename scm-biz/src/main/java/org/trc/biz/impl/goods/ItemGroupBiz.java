@@ -17,6 +17,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.exception.ItemGroupException;
 import org.trc.form.goods.ItemGroupForm;
+import org.trc.form.goods.ItemGroupQuery;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemGroupService;
 import org.trc.service.goods.IItemGroupUserRelationService;
@@ -56,18 +57,18 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Resource
     private ILogInfoService logInfoService;
 
-    private final static String  SERIALNAME = "SPZ";
+    private static final String  SERIALNAME = "TEST";
     /**
      * 正则表达式：验证手机号
      */
-    private final static String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
+    private static final String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
 
-    private final static Integer LENGTH = 5;//商品组编号5位流水号
+    private static final Integer LENGTH = 5;//商品组编号5位流水号
 
 
     //商品组分页
     @Override
-    public Pagenation itemGroupPage(ItemGroupForm form, Pagenation<ItemGroup> page,AclUserAccreditInfo aclUserAccreditInfo) {
+    public Pagenation itemGroupPage(ItemGroupQuery form, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo) {
         Example example=new Example(ItemGroup.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(form.getItemGroupName())){
@@ -87,18 +88,20 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Override
     public ItemGroup queryDetailByCode(String code) {
         AssertUtil.notBlank(code,"商品组编码参数code不能为空");
-        ItemGroup itemGroup = new ItemGroup();
-        itemGroup.setItemGroupCode(code);
-        return itemGroupService.selectOne(itemGroup);
+        ItemGroup itemGroupTemp = new ItemGroup();
+        itemGroupTemp.setItemGroupCode(code);
+        return itemGroupService.selectOne(itemGroupTemp);
     }
 
     //商品组编辑
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void editDetail(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo) {
+    public void editDetail(ItemGroupForm form,AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(form,"商品组form信息为null");
+        ItemGroup itemGroup = form.getItemGroup();
+        List<ItemGroupUser> groupUserList = form.getGroupUserList();
         //查询详情便于记录日志
         ItemGroup orginEntity = queryDetailByCode(itemGroup.getItemGroupCode());
-
 
 
         AssertUtil.notNull(itemGroup,"根据商品组信息修改商品组失败,商品组信息为null");
@@ -170,9 +173,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
     //添加商品组
     @Override
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
-    public void itemGroupSave(ItemGroup itemGroup,List<ItemGroupUser> groupUserList,AclUserAccreditInfo aclUserAccreditInfo) {
+    public void itemGroupSave(ItemGroupForm form, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(form,"商品组form信息为null");
+        ItemGroup itemGroup = form.getItemGroup();
+        List<ItemGroupUser> groupUserList = form.getGroupUserList();
         //校验信息
-        AssertUtil.notNull(itemGroup,"商品组管理模块新增商品组信息失败,商品组信息为null");
+        AssertUtil.notNull(form.getItemGroup(),"商品组管理模块新增商品组信息失败,商品组信息为null");
         String leaderName = itemGroup.getLeaderName();
         AssertUtil.notNull(leaderName,"请选择组长！");
         AssertUtil.notNull(groupUserList,"请至少添加一个组员！");
@@ -193,6 +199,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_SAVE_EXCEPTION,msg);
         }
+
 
         //商品组启用，则组长为启用，否则视同组员
         String isValid = itemGroup.getIsValid();
@@ -244,6 +251,34 @@ public class ItemGroupBiz implements IitemGroupBiz {
         return itemGroupService.selectOne(itemGroup);
     }
 
+    //启停用
+    @Override
+    public void updateStatus(String isValid, String itemGroupCode,AclUserAccreditInfo aclUserAccreditInfo) {
+        ItemGroup itemGroup = queryDetailByCode(itemGroupCode);
+        itemGroup.setIsValid(isValid);
+        Integer count = itemGroupService.updateByPrimaryKeySelective(itemGroup);
+        if (count==null){
+            String msg="更新商品组信息失败";
+            logger.error(msg);
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+        }
+
+        //更新对应映射关系
+        ItemGroupUserRelation itemGroupUserRelationTemp = new ItemGroupUserRelation();
+        itemGroupUserRelationTemp.setItemGroupCode(itemGroupCode);
+        List<ItemGroupUserRelation> itemGroupUserRelationList = iItemGroupUserRelationService.select(itemGroupUserRelationTemp);
+        for (ItemGroupUserRelation itemGroupUserRelation : itemGroupUserRelationList) {
+            itemGroupUserRelation.setIsValid(isValid);
+            iItemGroupUserRelationService.updateByPrimaryKeySelective(itemGroupUserRelation);
+        }
+        //更新
+
+        //记录日志
+        String orginIsValid = itemGroup.getIsValid();
+        String logMsg="状态由\""+orginIsValid+"\"改为\""+isValid+"\"。";
+        logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),logMsg,null);
+    }
+
     private void saveItemGroupUserList(List<ItemGroupUser> groupUserList,String isValid,String channelCode){
         List<String> list=new ArrayList<>();
 
@@ -270,7 +305,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         }
 
         itemGroupUserService.insertList(groupUserList);
-        list.clear();
+       // list.clear();
     }
 
 

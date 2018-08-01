@@ -21,6 +21,7 @@ import org.trc.domain.BaseDO;
 //@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class Items extends BaseDO{
 
+    private static final long serialVersionUID = -8948886744275187652L;
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

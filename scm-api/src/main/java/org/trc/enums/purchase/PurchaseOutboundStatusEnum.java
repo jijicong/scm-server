@@ -1,15 +1,17 @@
-package org.trc.enums.warehouse;
+package org.trc.enums.purchase;
 
 /**
  * Created by hzliuw on 2018/7/31.
- * 采购退货单退货类型
+ * 采购退货单对应出库单状态
  */
-public enum PurchaseOutboundOrderTypeEnum {
-    QUALITY("1", "正品"),
-    SUBSTANDARD("2", "残品");
+public enum PurchaseOutboundStatusEnum {
+    WAIT("1", "等待出库"),
+    FINISH("2", "出库完成"),
+    EXCEPTION("3", "出库异常"),
+    OTHER("4", "其他");
 
-    public static PurchaseOutboundOrderTypeEnum queryNameByCode(String code){
-        for(PurchaseOutboundOrderTypeEnum sourceEnum: PurchaseOutboundOrderTypeEnum.values()){
+    public static PurchaseOutboundStatusEnum queryNameByCode(String code){
+        for(PurchaseOutboundStatusEnum sourceEnum: PurchaseOutboundStatusEnum.values()){
             if (sourceEnum.getCode().equals(code)){
                 return sourceEnum;
             }
@@ -20,7 +22,7 @@ public enum PurchaseOutboundOrderTypeEnum {
     private String code;
     private String name;
 
-    PurchaseOutboundOrderTypeEnum(String code, String name) {
+    PurchaseOutboundStatusEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }
