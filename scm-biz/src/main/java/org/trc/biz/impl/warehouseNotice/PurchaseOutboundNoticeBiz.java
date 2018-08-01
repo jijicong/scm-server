@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,10 +21,14 @@ import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.enums.LogOperationEnum;
+import org.trc.enums.OrderCancelResultEnum;
 import org.trc.enums.WarehouseTypeEnum;
+import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
+import org.trc.form.warehouse.ScmOrderCancelRequest;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnItem;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
@@ -34,6 +42,7 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
+import org.trc.util.ResultUtil;
 
 /**
  * Description〈〉
@@ -58,12 +67,16 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
     private ILogInfoService logInfoService;
+    
+    private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeBiz.class);
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> getPageList(PurchaseOutboundNoticeForm form,
 			Pagenation<PurchaseOutboundNotice> page, String channelCode) {
 		AssertUtil.notNull(channelCode, "业务线编号不能为空");
-		return noticeService.pageList(form, page, channelCode);
+		Pagenation<PurchaseOutboundNotice> resultPage = noticeService.pageList(form, page, channelCode);
+		noticeService.generateNames(resultPage);
+		return resultPage;
 	}
 
 	@Override
@@ -172,10 +185,60 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 	}
 
 	@Override
-	public void cancel(String code, AclUserAccreditInfo property) {
+	public Response cancel(String code, String cancelReson, AclUserAccreditInfo useInfo) {
+		
+		AssertUtil.notBlank(cancelReson, "取消原因不能为空");
 		// 入参校验
 		PurchaseOutboundNotice notice = checkCode(code);
 		
+    	String cancelSts = null;// 取消状态
+    	String cancelResult = null;// 取消结果
+    	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
+    	request.setOrderType(CancelOrderType.ENTRY_RETURN.getCode());
+    	// 自营仓 和 三方仓库 统一取EntryOrderId
+    	request.setOrderCode(notice.getEntryOrderId());
+        commonService.getWarehoueType(notice.getWarehouseCode(), request);
+    	
+    	AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
+    	
+		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			
+			ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
+			if (OrderCancelResultEnum.CANCEL_SUCC.code.equals(respResult.getFlag())) { // 取消成功
+				
+				cancelSts = PurchaseOutboundNoticeStatusEnum.CANCEL.getCode();
+				cancelResult = OrderCancelResultEnum.CANCEL_SUCC.name;
+				
+			} else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
+				
+				cancelSts = PurchaseOutboundNoticeStatusEnum.CANCELLING.getCode();
+				cancelResult = OrderCancelResultEnum.CANCELLING.name;
+				
+			} else { // 取消失败
+				//记录操作日志 (动作：取消出库; 操作人：仓库名称; 备注：取消原因+取消结果)
+		        logInfoService.recordLog(notice, notice.getId().toString(), useInfo.getUserId(),
+		        		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), 
+		        		"取消原因：" + cancelReson + "，取消结果：取消失败，原因：" + respResult.getMessage(), null);
+				return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "取消出库失败:" + response.getDatabuffer());
+            }
+		} else { // 取消异常
+			
+			logger.error(String.format("%s 取消出库异常:%s", code, response.getDatabuffer()));
+			return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "取消出库异常:" + response.getDatabuffer());
+		}
+		
+		/**
+		 * 更新操作
+		 */
+		noticeService.updateById(cancelSts, notice.getId(), null, null);
+		detailService.updateByOrderCode(cancelSts, notice.getOutboundNoticeCode());
+		
+		//记录操作日志 (动作：取消出库; 操作人：仓库名称; 备注：取消原因+取消结果)
+        logInfoService.recordLog(notice, notice.getId().toString(), useInfo.getUserId(),
+        		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), 
+        		"取消原因：" + cancelReson + "，取消结果：" + cancelResult, null);
+		
+		return ResultUtil.createSuccessResult("取消操作成功","");
 	}
 	
 	private PurchaseOutboundNotice checkCode (String code) {

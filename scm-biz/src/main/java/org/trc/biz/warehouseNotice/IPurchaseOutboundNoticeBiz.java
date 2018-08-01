@@ -1,5 +1,7 @@
 package org.trc.biz.warehouseNotice;
 
+import javax.ws.rs.core.Response;
+
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
@@ -14,7 +16,7 @@ public interface IPurchaseOutboundNoticeBiz {
 
 	void noticeOut(String code, AclUserAccreditInfo property);
 
-	void cancel(String code, AclUserAccreditInfo property);
+	Response cancel(String code, String cancelReson, AclUserAccreditInfo property);
 
 
 }

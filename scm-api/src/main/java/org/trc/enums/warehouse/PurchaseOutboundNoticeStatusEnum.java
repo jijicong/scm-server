@@ -9,7 +9,8 @@ public enum PurchaseOutboundNoticeStatusEnum {
     WAREHOUSE_RECEIVE_FAILED("2", "出库仓接收失败"),
     PASS("3", "出库完成"),
     RECEIVE_EXCEPTION("4", "出库异常"),
-    CANCEL("5", "已取消");
+    CANCEL("5", "已取消"),
+	CANCELLING("6", "取消中");
 
     public static PurchaseOutboundNoticeStatusEnum queryNameByCode(String code){
         for(PurchaseOutboundNoticeStatusEnum sourceEnum: PurchaseOutboundNoticeStatusEnum.values()){

@@ -15,4 +15,6 @@ public interface IPurchaseOutboundNoticeService extends IBaseService<PurchaseOut
 	List<PurchaseOutboundNotice> selectNoticeBycode(String code);
 
 	void updateById(String status, Long id, String errMsg, String wmsEntryRtCode);
+
+	void generateNames(Pagenation<PurchaseOutboundNotice> resultPage);
 }

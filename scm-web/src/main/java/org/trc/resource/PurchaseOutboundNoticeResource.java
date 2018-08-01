@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -122,13 +123,16 @@ public class PurchaseOutboundNoticeResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "取消出库")
     public Response cancel(@ApiParam(value = "退货出库通知单号") @PathParam("code") String code, 
+    		@ApiParam(value = "取消原因") @FormParam("cancelReson") String cancelReson,
     		@Context ContainerRequestContext requestContext) {
         String identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_OUTBOUND_NOTICE.getCode() + code, 0, 10000);
     	if (StringUtils.isBlank(identifier)) {
     		throw new RuntimeException("请不要重复操作!");
     	}
+    	Response resp = null;
     	try {
-    		noticeBiz.cancel(code, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    		resp = noticeBiz.cancel(code, cancelReson, 
+    				(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     	} finally {
     		try {
     			if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_OUTBOUND_NOTICE.getCode() 
@@ -144,7 +148,7 @@ public class PurchaseOutboundNoticeResource {
     			e.printStackTrace();
     		}
     	}
-        return ResultUtil.createSuccessResult("操作成功","");
+        return resp;
 
     }
     
