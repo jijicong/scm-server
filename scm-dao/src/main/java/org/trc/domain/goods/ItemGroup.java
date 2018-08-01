@@ -1,5 +1,6 @@
 package org.trc.domain.goods;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
@@ -16,6 +17,7 @@ import javax.ws.rs.PathParam;
  * Created by hzgjl on 2018/7/25.
  */
 @Data
+@Api(value = "商品组")
 public class ItemGroup extends BaseDO{
     private static final long serialVersionUID = 6077285329430988185L;
     @Id
