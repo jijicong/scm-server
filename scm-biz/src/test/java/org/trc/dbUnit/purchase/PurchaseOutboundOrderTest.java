@@ -37,7 +37,11 @@ public class PurchaseOutboundOrderTest extends BaseTestContext {
     @Test
     public void savePurchaseOutboundOrderTest(){
         PurchaseOutboundOrder order = new PurchaseOutboundOrder();
+
+
         AclUserAccreditInfo info = new AclUserAccreditInfo();
+        info.setChannelCode("YWX001");
+        info.setUserId("B571346F625E44DB8FCBA8116E72593D");
         purchaseOutboundOrderBiz.savePurchaseOutboundOrder(order,"0",info);
     }
 }

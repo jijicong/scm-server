@@ -463,7 +463,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         PurchaseOutboundDetail purchaseOutboundDetail = new PurchaseOutboundDetail();
         purchaseOutboundDetail.setStatus(PurchaseOutboundDetailStatusEnum.CANCEL.getCode());
         //对应出库单状态为其他
-        purchaseOutboundDetail.setOutbountStatus("");
+        purchaseOutboundDetail.setOutboundStatus("");
         Example example1 = new Example(WarehouseNoticeDetails.class);
         Example.Criteria criteria1 = example1.createCriteria();
         criteria1.andEqualTo("outboundNoticeCode", purchaseOutboundNotice.getOutboundNoticeCode());
@@ -560,7 +560,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
             //更新采购退货单商品详情状态
             PurchaseOutboundDetail purchaseOutboundDetail = new PurchaseOutboundDetail();
-            purchaseOutboundDetail.setOutbountStatus(PurchaseOutboundStatusEnum.WAIT.getCode());
+            purchaseOutboundDetail.setOutboundStatus(PurchaseOutboundStatusEnum.WAIT.getCode());
             purchaseOutboundDetail.setStatus(PurchaseOutboundDetailStatusEnum.TO_BE_NOTIFIED.getCode());
             Example example = new Example(PurchaseOutboundDetail.class);
             example.createCriteria().andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
