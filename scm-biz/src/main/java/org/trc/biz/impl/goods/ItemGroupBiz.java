@@ -142,7 +142,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         }
 
         saveItemGroupUserList( groupUserList,itemGroup.getIsValid(),aclUserAccreditInfo.getChannelCode());
-        saveItemGroupUserRelation(itemGroup,leaderName,itemGroup.getIsValid());
+        saveItemGroupUserRelation(itemGroup,itemGroup.getIsValid());
 
 
 
@@ -210,7 +210,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
 
         //保存商品组与授权用户关系
-        Integer countList = saveItemGroupUserRelation(itemGroup, leaderName, isValid);
+        Integer countList = saveItemGroupUserRelation(itemGroup, isValid);
         if (countList==null){
             String msg="保存商品组成员失败";
             logger.error(msg);
@@ -222,13 +222,13 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
     }
 
-    private Integer saveItemGroupUserRelation(ItemGroup itemGroup, String leaderName, String isValid) {
+    private Integer saveItemGroupUserRelation(ItemGroup itemGroup,String isValid) {
         String memberUserId = itemGroup.getMemberUserId();//组员id1，id2,id3
         List<ItemGroupUserRelation> itemGroupUserRelationList=new ArrayList<>();
         //添加组长
         ItemGroupUserRelation itemGroupUserRelation = new ItemGroupUserRelation();
         itemGroupUserRelation.setItemGroupCode(itemGroup.getItemGroupCode());
-        itemGroupUserRelation.setUserId(leaderName);
+        itemGroupUserRelation.setUserId(itemGroup.getLeaderUserId());
         ParamsUtil.setBaseDO(itemGroupUserRelation);
         itemGroupUserRelation.setIsValid(isValid);
         itemGroupUserRelation.setCreateOperator(itemGroup.getCreateOperator());
