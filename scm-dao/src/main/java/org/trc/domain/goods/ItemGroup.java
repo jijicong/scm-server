@@ -41,20 +41,10 @@ public class ItemGroup extends BaseDO{
     @ApiModelProperty("业务线编码")
     private String channelCode;
 
-    @FormParam("leaderUserId")
-    @Length(max=32,message = "组长id字母和数字不能超过32个,汉字不能超过16个")
-    @ApiModelProperty("组长id")
-    private String leaderUserId;
-
     @FormParam("leaderName")
     @Length(max=32,message = "组长名称字母和数字不能超过32个,汉字不能超过16个")
     @ApiModelProperty("组长名字")
     private String leaderName;
-
-    @FormParam("memberUserId")
-    @Length(max=1024,message = "组员id字母和数字不能超过1024个,汉字不能超过512个")
-    @ApiModelProperty("所有组员id，以逗号分隔")
-    private String memberUserId;
 
     @FormParam("memberName")
     @Length(max=1024,message = "组员名称字母和数字不能超过1024个,汉字不能超过512个")
