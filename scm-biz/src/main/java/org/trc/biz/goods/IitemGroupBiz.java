@@ -15,7 +15,7 @@ import java.util.List;
  * Created by hzgjl on 2018/7/26.
  */
 public interface IitemGroupBiz  {
-    Resp<Pagenation<ItemGroup>> itemGroupPage(ItemGroupQuery itemGroupQuery, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo);
+    Pagenation<ItemGroup> itemGroupPage(ItemGroupQuery itemGroupQuery, Pagenation<ItemGroup> page, AclUserAccreditInfo aclUserAccreditInfo);
 
     ItemGroup queryDetailByCode(String itemGroupCode);
 
@@ -26,4 +26,6 @@ public interface IitemGroupBiz  {
     ItemGroup findItemGroupByName(String name);
 
     void updateStatus(String isValid, String itemGroupCode,AclUserAccreditInfo aclUserAccreditInfo);
+
+    List<ItemGroupUser> queryItemGroupUserListByCode(String itemGroupCode);
 }

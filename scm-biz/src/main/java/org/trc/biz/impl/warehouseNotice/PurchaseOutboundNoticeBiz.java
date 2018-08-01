@@ -1,7 +1,12 @@
 package org.trc.biz.impl.warehouseNotice;
 
+import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
@@ -16,13 +21,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.warehouseNotice.IPurchaseOutboundNoticeBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
+import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OrderCancelResultEnum;
+import org.trc.enums.WarehouseNoticeStatusEnum;
 import org.trc.enums.WarehouseTypeEnum;
+import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.JDWmsConstantConfig;
@@ -35,6 +46,7 @@ import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.purchase.IPurchaseOutboundDetailService;
+import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
@@ -43,6 +55,8 @@ import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
+
+import tk.mybatis.mapper.entity.Example;
 
 /**
  * Description〈〉
@@ -66,9 +80,13 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     @Autowired
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
+    private IRealIpService realIpService;
+    @Autowired
     private ILogInfoService logInfoService;
     
     private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeBiz.class);
+    
+    private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> getPageList(PurchaseOutboundNoticeForm form,
@@ -156,19 +174,19 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
         logInfoService.recordLog(notice, notice.getId().toString(),
         		userInfo.getUserId(), LogOperationEnum.ENTRY_RETURN_NOTICE.getMessage(), "", null);
 		
-        String status = null;// 退货出库通知单状态
+        PurchaseOutboundNoticeStatusEnum status = null;// 退货出库通知单状态
         String logOp = null;// 日志动作
         String errMsg = null;// 失败原因
         String wmsEntryRtCode = null; // 仓库返回的单号
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			
-			status = PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode();
+			status = PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING;
 			logOp = LogOperationEnum.ENTRY_RETURN_NOTICE_SUCC.getMessage();
 			ScmEntryReturnOrderCreateResponse rep = (ScmEntryReturnOrderCreateResponse) response.getResult();
 			wmsEntryRtCode = rep.getWmsEntryReturnNoticeCode();
 		} else {
 			
-			status = PurchaseOutboundNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode();
+			status = PurchaseOutboundNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED;
 			logOp = LogOperationEnum.ENTRY_RETURN_NOTICE_FAIL.getMessage();
 			errMsg = response.getDatabuffer();
 		}
@@ -191,7 +209,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		// 入参校验
 		PurchaseOutboundNotice notice = checkCode(code);
 		
-    	String cancelSts = null;// 取消状态
+		PurchaseOutboundNoticeStatusEnum cancelSts = null;// 取消状态
     	String cancelResult = null;// 取消结果
     	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
     	request.setOrderType(CancelOrderType.ENTRY_RETURN.getCode());
@@ -206,12 +224,12 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 			ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
 			if (OrderCancelResultEnum.CANCEL_SUCC.code.equals(respResult.getFlag())) { // 取消成功
 				
-				cancelSts = PurchaseOutboundNoticeStatusEnum.CANCEL.getCode();
+				cancelSts = PurchaseOutboundNoticeStatusEnum.CANCEL;
 				cancelResult = OrderCancelResultEnum.CANCEL_SUCC.name;
 				
 			} else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
 				
-				cancelSts = PurchaseOutboundNoticeStatusEnum.CANCELLING.getCode();
+				cancelSts = PurchaseOutboundNoticeStatusEnum.CANCELLING;
 				cancelResult = OrderCancelResultEnum.CANCELLING.name;
 				
 			} else { // 取消失败
@@ -253,6 +271,88 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		}
 		return noticeList.get(0);
 	}
+	
+	
+    //取消收货 取消中状态定时任务
+    @Override
+    public void retryCancelOrder() {
+    	
+        if (!realIpService.isRealTimerService()) {
+        	return;
+        }
+        
+        // 查询满足条件(取消中)的出库通知单
+        List<PurchaseOutboundNotice> noticeList = noticeService.
+        		selectNoticeByStatus(PurchaseOutboundNoticeStatusEnum.CANCELLING);
+
+        if (CollectionUtils.isEmpty(noticeList)) {
+        	return;
+        }
+        
+        List<ScmOrderCancelRequest> requests = new ArrayList<>();
+        
+        ScmOrderCancelRequest cancelRequest = null;
+        for (PurchaseOutboundNotice notice : noticeList) {
+        	cancelRequest = new ScmOrderCancelRequest();
+        	cancelRequest.setOrderCode(notice.getEntryOrderId());
+        	cancelRequest.setWarehouseType("JD");
+        	cancelRequest.setOrderType(CancelOrderType.PURCHASE.getCode());
+            requests.add(cancelRequest);
+        }
+
+        //调用接口
+        for (ScmOrderCancelRequest request : requests) {
+        	cachedThreadPool.execute(() -> {
+                //调用接口
+                AppResult<ScmOrderCancelResponse> responseAppResult = warehouseApiService.orderCancel(request);
+                //回写数据
+                try {
+                    this.updateCancelOrder(responseAppResult, request.getOrderCode());
+                } catch (Exception e) {
+                    logger.error("采购退货出库单号:{},定时任务取消入库异常：{}, 异常原因：", 
+                    		request.getOrderCode(), responseAppResult.getResult(), e);
+                }
+        	});
+        }
+    }
+    
+    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String entryOrderCode) {
+    	
+        if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
+        	
+        	PurchaseOutboundNoticeStatusEnum status = null;// 退货出库通知单状态
+        	PurchaseOutboundNotice notice = noticeService.selectOneByEntryOrderCode(entryOrderCode);
+        	
+        	String logRemark = null; //日志备注
+        	
+            ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
+            String flag = response.getFlag();
+            
+            if (StringUtils.equals(flag, OrderCancelResultEnum.CANCEL_SUCC.code)) {//取消成功
+            	
+            	status = PurchaseOutboundNoticeStatusEnum.CANCEL;
+            	logRemark = "取消结果:取消成功";
+            	
+            } else if (StringUtils.equals(flag, OrderCancelResultEnum.CANCEL_FAIL.code)) { // 取消失败 状态复原
+            	
+            	status = PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING;
+            	logRemark = "取消结果:取消失败；原因：" + response.getMessage();
+
+            }
+            
+    		/**
+    		 * 更新操作
+    		 */
+    		noticeService.updateById(status, notice.getId(), null, null);
+    		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
+    		// 日志 admin??
+            logInfoService.recordLog(notice, notice.getId().toString(), "admin",
+            		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), logRemark, null);
+        }
+	}
+
+
+    
 
         
 }

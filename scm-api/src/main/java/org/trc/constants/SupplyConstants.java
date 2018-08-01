@@ -1415,6 +1415,8 @@ public class SupplyConstants {
         public final static String ITEM_GROUP_PAGE = "itemGroupPage";
         //商品组详情查询
         public final static String ITEM_GROUP_DETAIL_QUERY = "itemGroupDetailQuery";
+        //商品组员信息列表查询
+        public final static String ITEM_GROUP_USERS_QUERY = "itemGroupUsersQuery";
         //商品组详情编辑
         public final static String ITEM_GROUP_EDIT = "itemGroupEdit";
         //商品组新增

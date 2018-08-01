@@ -13,6 +13,8 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
+import org.trc.enums.WarehouseNoticeStatusEnum;
+import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
 import org.trc.mapper.impower.AclUserAccreditInfoMapper;
 import org.trc.mapper.supplier.ISupplierMapper;
@@ -116,17 +118,17 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	}
 
 	@Override
-	public List<PurchaseOutboundNotice> selectNoticeBycode(String code) {
+	public List<PurchaseOutboundNotice> selectNoticeBycode(String outboundNoticecode) {
 		PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
-		queryRecord.setOutboundNoticeCode(code);
+		queryRecord.setOutboundNoticeCode(outboundNoticecode);// 系统退货出库单号
 		return noticeMapper.select(queryRecord);
 	}
 
 	@Override
-	public void updateById(String status, Long id, String errMsg, String wmsEntryRtCode) {
+	public void updateById(PurchaseOutboundNoticeStatusEnum status, Long id, String errMsg, String wmsEntryRtCode) {
 		PurchaseOutboundNotice updateRecord = new PurchaseOutboundNotice();
 		updateRecord.setId(id);
-		updateRecord.setStatus(status);
+		updateRecord.setStatus(status.getCode());
 		updateRecord.setFailureCause(errMsg);
 		updateRecord.setEntryOrderId(wmsEntryRtCode);
 		noticeMapper.updateByPrimaryKeySelective(updateRecord);		
@@ -198,6 +200,21 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
             	}
             }
         }		
+	}
+
+	@Override
+	public List<PurchaseOutboundNotice> selectNoticeByStatus(PurchaseOutboundNoticeStatusEnum status) {
+        PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
+        queryRecord.setStatus(status.getCode());
+        return noticeMapper.select(queryRecord);
+	}
+
+
+	@Override
+	public PurchaseOutboundNotice selectOneByEntryOrderCode(String entryOrderCode) {
+		PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
+		queryRecord.setEntryOrderId(entryOrderCode); // 仓库反馈退货出库单号
+		return noticeMapper.selectOne(queryRecord);
 	}
 	
 }

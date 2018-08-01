@@ -13,7 +13,6 @@ import javax.ws.rs.QueryParam;
 @Api("分页查询的条件")
 public class ItemGroupQuery extends QueryModel {
     @QueryParam("itemGroupName")
-    @Length(max=32,message = "商品名称字母和数字不能超过32个,汉字不能超过16个")
     @ApiModelProperty("商品组名称")
     private String itemGroupName;
 

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.mapper.purchase.IPurchaseOutboundDetailMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.purchase.IPurchaseOutboundDetailService;
@@ -36,9 +37,9 @@ public class PurchaseOutboundDetailService extends BaseService<PurchaseOutboundD
 	}
 
 	@Override
-	public void updateByOrderCode(String status, String outboundNoticeCode) {
+	public void updateByOrderCode(PurchaseOutboundNoticeStatusEnum status, String outboundNoticeCode) {
 		PurchaseOutboundDetail updateRecord = new PurchaseOutboundDetail();
-		updateRecord.setStatus(status);
+		updateRecord.setStatus(status.getCode());
 		Example example = new Example(PurchaseOutboundDetail.class);
 		Example.Criteria ca = example.createCriteria();
 		ca.andEqualTo("outboundNoticeCode", outboundNoticeCode);

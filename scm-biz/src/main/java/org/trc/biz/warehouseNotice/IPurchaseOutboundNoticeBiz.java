@@ -18,5 +18,7 @@ public interface IPurchaseOutboundNoticeBiz {
 
 	Response cancel(String code, String cancelReson, AclUserAccreditInfo property);
 
+	void retryCancelOrder();
+
 
 }
