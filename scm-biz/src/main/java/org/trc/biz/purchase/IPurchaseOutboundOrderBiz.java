@@ -57,6 +57,7 @@ public interface IPurchaseOutboundOrderBiz {
 
     /**
      * 采购退货单获取采购历史详情
+     *
      * @param form
      * @param page
      * @return
@@ -65,6 +66,7 @@ public interface IPurchaseOutboundOrderBiz {
 
     /**
      * 作废出库通知操作
+     *
      * @param form
      * @param aclUserAccreditInfo
      */
@@ -72,11 +74,21 @@ public interface IPurchaseOutboundOrderBiz {
 
     /**
      * 更新采购退货单状态
+     *
      * @param form
      * @param aclUserAccreditInfo
      * @return
      */
     String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 采购退货单出库通知
+     *
+     * @param form
+     * @param aclUserAccreditInfo
+     */
+    void warehouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+
 
     /**
      *  采购退货单保存或

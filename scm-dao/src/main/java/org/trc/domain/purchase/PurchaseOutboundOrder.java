@@ -83,14 +83,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     private String purchasePersonId;
 
     /**
-     * 收货地址
-     */
-    @ApiModelProperty("收货地址")
-    @Column(name = "receive_address")
-    @FormParam("receiveAddress")
-    private String receiveAddress;
-
-    /**
      * 退货仓库编号
      */
     @ApiModelProperty("退货仓库编号")
@@ -451,24 +443,6 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     public void setPurchasePersonId(String purchasePersonId) {
         this.purchasePersonId = purchasePersonId;
-    }
-
-    /**
-     * 获取收货地址
-     *
-     * @return receive_address - 收货地址
-     */
-    public String getReceiveAddress() {
-        return receiveAddress;
-    }
-
-    /**
-     * 设置收货地址
-     *
-     * @param receiveAddress 收货地址
-     */
-    public void setReceiveAddress(String receiveAddress) {
-        this.receiveAddress = receiveAddress;
     }
 
     /**
