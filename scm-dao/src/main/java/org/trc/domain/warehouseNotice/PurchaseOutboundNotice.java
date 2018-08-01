@@ -137,6 +137,14 @@ public class PurchaseOutboundNotice extends BaseDO {
     private String receiverCity;
 
     /**
+     * 退货地区
+     */
+    @ApiModelProperty("退货地区")
+    @Column(name = "receiver_area")
+    @FormParam("receiverArea")
+    private String receiverArea;
+
+    /**
      * 退货详细地址
      */
     @ApiModelProperty("退货详细地址")
@@ -188,8 +196,15 @@ public class PurchaseOutboundNotice extends BaseDO {
     @ApiModelProperty("退货出库通知单商品明细列表")
     private List<PurchaseOutboundDetail> skuList;
 
+    public String getReceiverArea() {
+        return receiverArea;
+    }
 
-	public List<PurchaseOutboundDetail> getSkuList() {
+    public void setReceiverArea(String receiverArea) {
+        this.receiverArea = receiverArea;
+    }
+
+    public List<PurchaseOutboundDetail> getSkuList() {
 		return skuList;
 	}
 
