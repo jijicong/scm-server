@@ -3,15 +3,12 @@ package org.trc.biz.impl.goods;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.goods.IitemGroupBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
-import org.trc.domain.goods.ItemGroupUserRelation;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
@@ -21,7 +18,6 @@ import org.trc.form.goods.ItemGroupForm;
 import org.trc.form.goods.ItemGroupQuery;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemGroupService;
-import org.trc.service.goods.IItemGroupUserRelationService;
 import org.trc.service.goods.IItemGroupUserService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
@@ -49,9 +45,6 @@ public class ItemGroupBiz implements IitemGroupBiz {
     private IUserNameUtilService userNameUtilService;
     @Resource
     private IItemGroupUserService itemGroupUserService;
-    @Resource
-    private IItemGroupUserRelationService iItemGroupUserRelationService;
-
 
 
     @Resource
@@ -244,7 +237,6 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
     //需要实时查询
     @Override
-    @Cacheable(value = SupplyConstants.Cache.ITEM_GROUP)
     public ItemGroup findItemGroupByName(String name) {
         AssertUtil.notBlank(name,"根据商品组名称查询采购组的参数itemGroupName为空");
         ItemGroup itemGroup = new ItemGroup();
@@ -257,22 +249,30 @@ public class ItemGroupBiz implements IitemGroupBiz {
     public void updateStatus(String isValid, String itemGroupCode,AclUserAccreditInfo aclUserAccreditInfo) {
         ItemGroup itemGroup = queryDetailByCode(itemGroupCode);
         itemGroup.setIsValid(isValid);
+        itemGroup.setUpdateTime(Calendar.getInstance().getTime());
         Integer count = itemGroupService.updateByPrimaryKeySelective(itemGroup);
         if (count==null){
-            String msg="更新商品组信息失败";
+            String msg=String.format("更新商品组[itemGroupName=%s]的数据失败,数据库操作失败",itemGroup.getItemGroupName());
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
         }
 
-        //更新对应映射关系
-        ItemGroupUserRelation itemGroupUserRelationTemp = new ItemGroupUserRelation();
-        itemGroupUserRelationTemp.setItemGroupCode(itemGroupCode);
-        List<ItemGroupUserRelation> itemGroupUserRelationList = iItemGroupUserRelationService.select(itemGroupUserRelationTemp);
-        for (ItemGroupUserRelation itemGroupUserRelation : itemGroupUserRelationList) {
-            itemGroupUserRelation.setIsValid(isValid);
-            iItemGroupUserRelationService.updateByPrimaryKeySelective(itemGroupUserRelation);
+        //更新对应组员的状态
+        Example example = new Example(ItemGroupUser.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("itemGroupCode",itemGroupCode);
+        criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+        List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
+        for (ItemGroupUser itemGroupUser : list) {
+            itemGroupUser.setIsValid(isValid);
+            itemGroupUser.setUpdateTime(Calendar.getInstance().getTime());
+            Integer countUser = itemGroupUserService.updateByPrimaryKey(itemGroupUser);
+            if (countUser==null){
+                String msg="更新商品组成员信息失败，数据库操作失败";
+                logger.error(msg);
+                throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+            }
         }
-        //更新
 
         //记录日志
         String orginIsValid = itemGroup.getIsValid();
