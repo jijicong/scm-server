@@ -2276,7 +2276,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         //如果自采sku全部异常，那么直接通知渠道自采sku下单失败
-        if(selfSkuAllException){
+        /*if(selfSkuAllException){
+            ExceptionOrder exceptionOrder = new ExceptionOrder();
+            exceptionOrder.setPlatformOrderCode(platformOrder.getPlatformOrderCode());
+            List<ExceptionOrder> exceptionOrderList = exceptionOrderService.select(exceptionOrder);
+            for(ExceptionOrder exceptionOrder2: exceptionOrderList){
+                notifyChannelSubmitOrderResult(exceptionOrder2);
+            }
+        }*/
+        if(exceptionOrderItemList.size() > 0){
             ExceptionOrder exceptionOrder = new ExceptionOrder();
             exceptionOrder.setPlatformOrderCode(platformOrder.getPlatformOrderCode());
             List<ExceptionOrder> exceptionOrderList = exceptionOrderService.select(exceptionOrder);
