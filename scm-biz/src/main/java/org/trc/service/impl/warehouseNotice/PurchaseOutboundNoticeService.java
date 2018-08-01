@@ -15,6 +15,7 @@ import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
 import org.trc.mapper.purchase.IPurchaseOutboundDetailMapper;
+import org.trc.mapper.warehouseNotice.IPurchaseOutboundNoticeMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
@@ -36,6 +37,8 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	private IAclUserAccreditInfoService userInfoService;
 	@Autowired
 	private IPurchaseOutboundDetailMapper detailMapper;
+	@Autowired
+	private IPurchaseOutboundNoticeMapper noticeMapper;
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> pageList (PurchaseOutboundNoticeForm form,
@@ -122,7 +125,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	public List<PurchaseOutboundNotice> selectNoticeBycode(String code) {
 		PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
 		queryRecord.setOutboundNoticeCode(code);
-		return this.select(queryRecord);
+		return noticeMapper.select(queryRecord);
 	}
 	
 }

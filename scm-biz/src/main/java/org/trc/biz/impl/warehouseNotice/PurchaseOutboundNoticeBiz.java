@@ -1,24 +1,36 @@
 package org.trc.biz.impl.warehouseNotice;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.warehouseNotice.IPurchaseOutboundNoticeBiz;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
+import org.trc.enums.LogOperationEnum;
 import org.trc.enums.WarehouseTypeEnum;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
+import org.trc.form.warehouse.ScmEntryOrderItem;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnItem;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
+import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 
@@ -39,6 +51,10 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     private ICommonService commonService;
     @Autowired
     private JDWmsConstantConfig jDWmsConstantConfig;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> getPageList(PurchaseOutboundNoticeForm form,
@@ -59,7 +75,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 
 
 	@Override
-	public void noticeOut(String code, AclUserAccreditInfo property) {
+	public void noticeOut(String code, AclUserAccreditInfo userInfo) {
 		
 		AssertUtil.notNull(code, "退货出库通知单编号不能为空!");
 		
@@ -100,15 +116,35 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 				throw new IllegalArgumentException("退货出库通知单的商品列表为空!");
 			}
 			ScmEntryReturnItem item = null;
-			for (PurchaseOutboundDetail sku : skuList) {
-				item = new ScmEntryReturnItem();
-				//item.setItemId(itemId);
-			}
+			
+			List<String> skuCodeList = skuList.stream().map(
+					PurchaseOutboundDetail :: getSkuCode).collect(Collectors.toList());
+			
+			List<WarehouseItemInfo> whiList = warehouseItemInfoService.
+					selectInfoListBySkuCodeAndWarehouseCode(skuCodeList, notice.getWarehouseCode());
+			List<ScmEntryReturnItem> list = new ArrayList<>();
+	        for (PurchaseOutboundDetail sku : skuList) {
+	        	for (WarehouseItemInfo info : whiList) {
+					if (StringUtils.equals(info.getSkuCode(), sku.getSkuCode())) {
+						item = new ScmEntryReturnItem();
+						item.setItemId(info.getWarehouseItemId());
+						item.setReturnQuantity(sku.getOutboundQuantity());
+						list.add(item);
+						break;
+					}
+				}
+	        }
+	        request.setEntryOrderItemList(list);
 			
 		} else {
 			throw new IllegalArgumentException("暂时不支持自营仓库的退货出库操作!");
 		}
 		
+		AppResult<ScmEntryReturnOrderCreateResponse> response = warehouseApiService.entryReturnOrderCreate(request);
+		
+        //记录操作日志 (动作：通知出库;操作人：用户姓名)
+        logInfoService.recordLog(notice, notice.getId().toString(),
+        		userInfo.getUserId(), LogOperationEnum.ENTRY_RETURN_NOTICE.getMessage(), "",null);
 		
 		
 	}

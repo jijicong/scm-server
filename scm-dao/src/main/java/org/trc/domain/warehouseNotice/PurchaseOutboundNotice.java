@@ -1,15 +1,17 @@
 package org.trc.domain.warehouseNotice;
 
-import io.swagger.annotations.ApiModelProperty;
-import org.trc.domain.BaseDO;
-import org.trc.domain.purchase.PurchaseOutboundDetail;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
-import java.util.List;
+
+import org.trc.domain.BaseDO;
+import org.trc.domain.purchase.PurchaseOutboundDetail;
+
+import io.swagger.annotations.ApiModelProperty;
 
 @Table(name = "purchase_outbound_notice")
 public class PurchaseOutboundNotice extends BaseDO {
