@@ -5,11 +5,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
@@ -56,6 +58,7 @@ import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
+import org.trc.util.cache.PurchaseOutboundOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
@@ -148,6 +151,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_OUTBOUND_ORDER)
     public Pagenation<PurchaseOutboundOrder> purchaseOutboundOrderPageList(PurchaseOutboundOrderForm form, Pagenation<PurchaseOutboundOrder> page, String channelCode) {
         AssertUtil.notBlank(channelCode, "未获得授权");
         Example example = setSelectCondition(form, channelCode);
@@ -174,9 +178,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @param aclUserAccreditInfo
      */
     @Override
-    //@PurchaseOrderCacheEvict
+    @PurchaseOutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    //public void savePurchaseOutboundOrder(PurchaseOutboundOrderDataForm form, String code, AclUserAccreditInfo property) {
     public void savePurchaseOutboundOrder(PurchaseOutboundOrder form, String code, AclUserAccreditInfo aclUserAccreditInfo) {
         log.info("采购退货单保存或提交审核，PurchaseOutboundOrder:{}, 当前操作:{} ", JSON.toJSONString(form), code);
         validationRequestParam(form);
@@ -225,6 +228,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @PurchaseOutboundOrderCacheEvict
     public void updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         log.info("更新采购退货单，PurchaseOutboundOrder:{}", JSON.toJSONString(form));
         AssertUtil.notNull(form, "修改采购退货单失败,采购退货单为空");
@@ -415,6 +419,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @PurchaseOutboundOrderCacheEvict
     public void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
 
         Example example = new Example(PurchaseOutboundNotice.class);
@@ -475,6 +480,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
+    @PurchaseOutboundOrderCacheEvict
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(form, "状态修改失败，采购退货单信息为空");
         AssertUtil.notNull(form.getId(), "状态修改失败，采购退货单ID为空");
@@ -504,6 +511,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @param aclUserAccreditInfo
      */
     @Override
+    @PurchaseOutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void warehouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(form, "采购退货单信息为空,保存采购退货出库通知单失败");
@@ -622,6 +630,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_OUTBOUND_ORDER)
     public Pagenation<PurchaseOutboundOrder> getAuditPagelist(PurchaseOutboundOrderForm form, Pagenation<PurchaseOutboundOrder> page, String channelCode) {
         AssertUtil.notBlank(channelCode, "未获得授权");
         Example example = setAuditSelectCondition(form, channelCode);
@@ -647,6 +656,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @param aclUserAccreditInfo
      */
     @Override
+    @PurchaseOutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void auditPurchaseOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         checkParam(form);
@@ -682,6 +692,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
+
     public List<WarehouseInfo> getWarehousesByChannelCode(String channelCode) {
         //获取已启用仓库信息
         WarehouseInfo warehouse = new WarehouseInfo();
@@ -705,6 +716,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<Supplier> getSuppliersByChannelCode(String channelCode) {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode, "获取渠道编号失败");
