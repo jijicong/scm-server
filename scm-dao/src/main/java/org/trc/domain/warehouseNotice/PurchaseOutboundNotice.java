@@ -1,15 +1,17 @@
 package org.trc.domain.warehouseNotice;
 
-import io.swagger.annotations.ApiModelProperty;
-import org.trc.domain.BaseDO;
-import org.trc.domain.purchase.PurchaseOutboundDetail;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
-import java.util.List;
+
+import org.trc.domain.BaseDO;
+import org.trc.domain.purchase.PurchaseOutboundDetail;
+
+import io.swagger.annotations.ApiModelProperty;
 
 @Table(name = "purchase_outbound_notice")
 public class PurchaseOutboundNotice extends BaseDO {
@@ -135,6 +137,14 @@ public class PurchaseOutboundNotice extends BaseDO {
     @Column(name = "receiver_city")
     @FormParam("receiverCity")
     private String receiverCity;
+    
+    /**
+     * 退货地区
+     */
+    @ApiModelProperty("退货地区")
+    @Column(name = "receiver_area")
+    @FormParam("receiverArea")
+    private String receiverArea;
 
     /**
      * 退货详细地址
@@ -156,16 +166,7 @@ public class PurchaseOutboundNotice extends BaseDO {
     @FormParam("remark")
     private String remark;
 
-    //@Column(name = "create_operator")
-    //private String createOperator;
-    //
-    //@Column(name = "create_time")
-    //private Date createTime;
-    //
-    //@Column(name = "update_time")
-    //private Date updateTime;
-
-    /**
+	/**
      * 仓库接收出库通知失败原因
      */
     @ApiModelProperty("仓库接收出库通知失败原因")
@@ -182,12 +183,43 @@ public class PurchaseOutboundNotice extends BaseDO {
     private String exceptionCause;
     
     /**
+     * 提货方式1-到仓自提，2-京东配送，3-其他物流
+     */
+    @ApiModelProperty("提货方式1-到仓自提，2-京东配送，3-其他物流")
+    @Column(name = "pick_type")
+    @FormParam("pickType")
+    private String pickType;
+    
+    /**
+     * 退货类型1-正品，2-残品
+     */
+    @ApiModelProperty("退货类型1-正品，2-残品")
+    @Column(name = "return_order_type")
+    @FormParam("returnOrderType")
+    private String returnOrderType;
+    
+    /**
      * 退货出库通知单商品明细列表
      */
     @Transient
     @ApiModelProperty("退货出库通知单商品明细列表")
     private List<PurchaseOutboundDetail> skuList;
 
+    public String getReceiverArea() {
+		return receiverArea;
+	}
+
+	public void setReceiverArea(String receiverArea) {
+		this.receiverArea = receiverArea;
+	}
+	
+	public String getReturnOrderType() {
+		return returnOrderType;
+	}
+
+	public void setReturnOrderType(String returnOrderType) {
+		this.returnOrderType = returnOrderType;
+	}
 
 	public List<PurchaseOutboundDetail> getSkuList() {
 		return skuList;
@@ -531,49 +563,15 @@ public class PurchaseOutboundNotice extends BaseDO {
         this.remark = remark;
     }
 
-    /**
-     * @return create_operator
-     */
-    //public String getCreateOperator() {
-    //    return createOperator;
-    //}
-    //
-    ///**
-    // * @param createOperator
-    // */
-    //public void setCreateOperator(String createOperator) {
-    //    this.createOperator = createOperator;
-    //}
-    //
-    ///**
-    // * @return create_time
-    // */
-    //public Date getCreateTime() {
-    //    return createTime;
-    //}
-    //
-    ///**
-    // * @param createTime
-    // */
-    //public void setCreateTime(Date createTime) {
-    //    this.createTime = createTime;
-    //}
-    //
-    ///**
-    // * @return update_time
-    // */
-    //public Date getUpdateTime() {
-    //    return updateTime;
-    //}
-    //
-    ///**
-    // * @param updateTime
-    // */
-    //public void setUpdateTime(Date updateTime) {
-    //    this.updateTime = updateTime;
-    //}
+    public String getPickType() {
+		return pickType;
+	}
 
-    /**
+	public void setPickType(String pickType) {
+		this.pickType = pickType;
+	}
+
+	/**
      * 获取仓库接收出库通知失败原因
      *
      * @return failure_cause - 仓库接收出库通知失败原因

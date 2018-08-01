@@ -46,6 +46,8 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderRequest;
 import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.AppResult;
 import org.trc.util.DateUtils;
@@ -140,6 +142,11 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 		return wmsInvoke(scmJosAllocateOrderRequest);
 	}
 	
+	@Override
+	public AppResult<ScmEntryReturnOrderCreateResponse> entryReturnOrderCreate(ScmEntryReturnOrderCreateRequest request) {
+		return wmsInvoke(request);
+	}
+	
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
         if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){
             return wmsInvokeMock(scmWarehouseRequestBase);
@@ -179,6 +186,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmJosAllocateOrderRequest){
             url = externalSupplierConfig.getJosAllocateOrderCreateUrl();
             method = "京东仓间调拨单创建";
+        }else if(scmWarehouseRequestBase instanceof ScmEntryReturnOrderCreateRequest){
+            url = externalSupplierConfig.getEntryReturnOrderCreateUrl();
+            method = "采购退货出库单创建";
         }
             
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
@@ -248,6 +258,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAllocateOrderInResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmJosAllocateOrderRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmJosAllocateOrderResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmEntryReturnOrderCreateRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmEntryReturnOrderCreateResponse.class);
         }
         appResult.setResult(response);
     }
