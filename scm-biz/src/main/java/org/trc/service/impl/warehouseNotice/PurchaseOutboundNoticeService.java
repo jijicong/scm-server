@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -35,8 +36,6 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	
 	@Autowired
 	private IAclUserAccreditInfoService userInfoService;
-	@Autowired
-	private IPurchaseOutboundDetailMapper detailMapper;
 	@Autowired
 	private IPurchaseOutboundNoticeMapper noticeMapper;
 
@@ -113,19 +112,20 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	}
 
 	@Override
-	public List<PurchaseOutboundDetail> selectDetailByNoticeCode (String outboundNoticeCode) {
-		PurchaseOutboundDetail queryDetail = new PurchaseOutboundDetail();
-		queryDetail.setOutboundNoticeCode(outboundNoticeCode);
-		// 未删除的记录
-		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-		return detailMapper.select(queryDetail);
-	}
-
-	@Override
 	public List<PurchaseOutboundNotice> selectNoticeBycode(String code) {
 		PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
 		queryRecord.setOutboundNoticeCode(code);
 		return noticeMapper.select(queryRecord);
+	}
+
+	@Override
+	public void updateById(String status, Long id, String errMsg, String wmsEntryRtCode) {
+		PurchaseOutboundNotice updateRecord = new PurchaseOutboundNotice();
+		updateRecord.setId(id);
+		updateRecord.setStatus(status);
+		updateRecord.setFailureCause(errMsg);
+		updateRecord.setEntryOrderId(wmsEntryRtCode);
+		noticeMapper.updateByPrimaryKeySelective(updateRecord);		
 	}
 	
 }

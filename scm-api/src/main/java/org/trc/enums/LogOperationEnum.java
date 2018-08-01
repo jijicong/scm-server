@@ -33,7 +33,9 @@ public enum LogOperationEnum {
     ALLOCATE_IN("入库"),
     
     //采购退货
-    ENTRY_RETURN_NOTICE("通知出库");
+    ENTRY_RETURN_NOTICE("通知出库"),
+    ENTRY_RETURN_NOTICE_SUCC("仓库接收成功"),
+    ENTRY_RETURN_NOTICE_FAIL("仓库接收失败");
 
     private String message;
 

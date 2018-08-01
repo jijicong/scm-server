@@ -12,7 +12,7 @@ public interface IPurchaseOutboundNoticeService extends IBaseService<PurchaseOut
 
 	Pagenation<PurchaseOutboundNotice> pageList(PurchaseOutboundNoticeForm form, Pagenation<PurchaseOutboundNotice> page, String channelCode);
 
-	List<PurchaseOutboundDetail> selectDetailByNoticeCode(String outboundNoticeCode);
-
 	List<PurchaseOutboundNotice> selectNoticeBycode(String code);
+
+	void updateById(String status, Long id, String errMsg, String wmsEntryRtCode);
 }

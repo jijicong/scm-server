@@ -14,5 +14,7 @@ public interface IPurchaseOutboundNoticeBiz {
 
 	void noticeOut(String code, AclUserAccreditInfo property);
 
+	void cancel(String code, AclUserAccreditInfo property);
+
 
 }
