@@ -172,4 +172,12 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         logInfoService.recordLog(logisticsCorporation, logisticsCorporation.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
     }
 
+    @Override
+    public List<LogisticsCorporation> findEnabled() {
+        LogisticsCorporation logisticsCorporation = new LogisticsCorporation();
+        logisticsCorporation.setLogisticsCorporationType(ZeroToNineEnum.ONE.getCode());
+        logisticsCorporation.setIsValid(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+        return logisticsCorporationService.select(logisticsCorporation);
+    }
+
 }

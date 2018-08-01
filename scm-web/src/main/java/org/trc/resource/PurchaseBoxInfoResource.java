@@ -10,6 +10,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseBoxInfo;
+import org.trc.domain.purchase.PurchaseBoxInfoResultVO;
 import org.trc.domain.purchase.PurchaseBoxInfoVO;
 import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
 import org.trc.util.ResultUtil;
@@ -64,7 +65,7 @@ public class PurchaseBoxInfoResource {
 
     @GET
     @Path("/{code}")
-    @ApiOperation(value = "获取装箱信息", response = PurchaseBoxInfo.class)
+    @ApiOperation(value = "获取装箱信息", response = PurchaseBoxInfoResultVO.class)
     @Produces({MediaType.APPLICATION_JSON})
     @ApiImplicitParam(name = "code", value = "采购单号", paramType = "path", dataType = "String", required = true)
     public Response findPackingBoxInfo(@ApiParam(name = "采购单编号") @PathParam("code") String code){

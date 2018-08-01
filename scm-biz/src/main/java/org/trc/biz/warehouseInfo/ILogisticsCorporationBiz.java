@@ -6,6 +6,7 @@ import org.trc.form.warehouseInfo.LogisticsCorporationForm;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Created by hzcyn on 2018/5/3.
@@ -26,4 +27,10 @@ public interface ILogisticsCorporationBiz {
     void updateLogisticsCorporation(LogisticsCorporation logisticsCorporation, AclUserAccreditInfo aclUserAccreditInfo);
 
     void updateLogisticsCorporationState(LogisticsCorporation logisticsCorporation, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 获取货运企业
+     * @return
+     */
+    List<LogisticsCorporation> findEnabled();
 }
