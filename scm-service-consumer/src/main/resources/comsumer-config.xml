@@ -55,6 +55,8 @@
         <property name="allocateOrderOutCancelUrl" value="${wms.allocateOrder.out.cancel.url}"/>
         <property name="allocateOrderInCancelUrl" value="${wms.allocateOrder.in.cancel.url}"/>
         <property name="josAllocateOrderCreateUrl" value="${wms.jos.allocateOrder.create.url}"/>
+        
+        <property name="entryReturnOrderCreateUrl" value="${wms.entryReturnOrder.create.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->
