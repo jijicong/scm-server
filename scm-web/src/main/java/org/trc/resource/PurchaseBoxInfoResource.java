@@ -3,6 +3,7 @@ package org.trc.resource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseBoxInfoBiz;
 import org.trc.constants.SupplyConstants;
@@ -66,7 +67,7 @@ public class PurchaseBoxInfoResource {
     @ApiOperation(value = "获取装箱信息", response = PurchaseBoxInfo.class)
     @Produces({MediaType.APPLICATION_JSON})
     @ApiImplicitParam(name = "code", value = "采购单号", paramType = "path", dataType = "String", required = true)
-    public Response findPackingBoxInfo(@PathParam("code") String code){
+    public Response findPackingBoxInfo(@ApiParam(name = "采购单编号") @PathParam("code") String code){
         return ResultUtil.createSuccessResult("获取装箱信息成功",purchaseBoxInfoBiz.findPackingBoxInfo(code));
     }
 }
