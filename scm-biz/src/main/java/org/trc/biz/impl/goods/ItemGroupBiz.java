@@ -212,7 +212,11 @@ public class ItemGroupBiz implements IitemGroupBiz {
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_QUERY_EXCEPTION,msg);
         }
         itemGroup.setChannelCode(aclUserAccreditInfo.getChannelCode());
-        ParamsUtil.setBaseDO(itemGroup);
+        //公共字段更新
+        itemGroup.setCreateTime(Calendar.getInstance().getTime());
+        itemGroup.setUpdateTime(Calendar.getInstance().getTime());
+        itemGroup.setCreateOperator(aclUserAccreditInfo.getCreateOperator());
+
         String code = serialUtilService.generateCode(LENGTH, SERIALNAME);
         itemGroup.setItemGroupCode(code);
         Integer count = itemGroupService.insertSelective(itemGroup);
@@ -302,7 +306,9 @@ public class ItemGroupBiz implements IitemGroupBiz {
             }
 
             itemGroupUser.setChannelCode(channelCode);
-            ParamsUtil.setBaseDO(itemGroupUser);
+
+            itemGroupUser.setCreateTime(Calendar.getInstance().getTime());
+            itemGroupUser.setUpdateTime(Calendar.getInstance().getTime());
             itemGroupUser.setIsValid(isValid);
             itemGroupUser.setItemGroupCode(itemGroupCode);
             //手机号添加之前判断是否存在

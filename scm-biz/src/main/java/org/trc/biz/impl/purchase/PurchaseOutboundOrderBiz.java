@@ -232,11 +232,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     public void updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         log.info("更新采购退货单，PurchaseOutboundOrder:{}", JSON.toJSONString(form));
         AssertUtil.notNull(form, "修改采购退货单失败,采购退货单为空");
-
+        PurchaseOutboundOrder order = purchaseOutboundOrderService.selectByPrimaryKey(form.getId());
+        AssertUtil.notNull(order, "修改采购退货单失败,没有采购退货单信息");
         //校验仓库是否停用
         this.checkWarehouse(form.getWarehouseInfoId());
         //提交审核校验必填参数
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), order.getStatus())) {
             validationParam(form);
         }
         //更新总金额
@@ -246,6 +247,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetailList) {
                 totalAmount = totalAmount.add(purchaseOutboundDetail.getTotalAmount());
             }
+
+            //删除退货单商品，重新添加
+            Example example = new Example(PurchaseOutboundDetail.class);
+            example.createCriteria().andEqualTo("purchaseOutboundOrderCode", form.getPurchaseOutboundOrderCode());
+            purchaseOutboundDetailService.deleteByExample(example);
         }
         form.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
 
@@ -254,10 +260,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             log.error("采购退货单更新异常, 采购退货单号:{}", form.getPurchaseOutboundOrderCode());
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, "采购退货单更新异常");
         }
-        //删除退货单商品，重新添加
-        Example example = new Example(PurchaseOutboundDetail.class);
-        example.createCriteria().andEqualTo("purchaseOutboundOrderCode", form.getPurchaseOutboundOrderCode());
-        purchaseOutboundDetailService.deleteByExample(example);
 
         insertPurchaseOutboundDetail(form);
 
@@ -358,9 +360,10 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         criteria.andEqualTo("warehouseInfoId", form.getWarehouseInfoId());
         criteria.andEqualTo("supplierCode", form.getSupplierCode());
         criteria.andEqualTo("finishStatus", WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+        criteria.andIn("status", Arrays.asList(WarehouseNoticeStatusEnum.ALL_GOODS.getCode(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
         if (CollectionUtils.isEmpty(warehouseNotices)) {
-            return null;
+            return new Pagenation<>();
         }
         List<WarehouseNoticeDetails> details = new ArrayList<>();
         for (WarehouseNotice warehouseNotice : warehouseNotices) {
@@ -412,6 +415,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
          * 分页查询结果
          */
         List<Long> warehouseNoticeDetailsIds = details.stream().map(WarehouseNoticeDetails::getId).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(warehouseNoticeDetailsIds)){
+            return new Pagenation<>();
+        }
         Example ex = new Example(WarehouseNoticeDetails.class);
         Example.Criteria criteria1 = ex.createCriteria();
         criteria1.andIn("id", warehouseNoticeDetailsIds);
@@ -671,7 +677,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         purchaseOutboundOrder.setAuditDescription(form.getAuditDescription());
         purchaseOutboundOrder.setAuditOperator(aclUserAccreditInfo.getUserId());
         //更新采购退货单状态
-        purchaseOutboundOrder.setStatus(form.getStatus());
+        purchaseOutboundOrder.setStatus(form.getAuditStatus());
         //更新采购退货单审核状态
         purchaseOutboundOrder.setAuditStatus(form.getAuditStatus());
         purchaseOutboundOrder.setUpdateAuditTime(Calendar.getInstance().getTime());
@@ -753,9 +759,14 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             criteria.andLike("purchaseOutboundOrderCode", "%" + form.getPurchaseOutboundOrderCode() + "%");
         }
 
-        //审核状态
-        if (StringUtils.isNotBlank(form.getAuditStatus())) {
+        /**
+         * 审核状态：1-提交审核,2-审核驳回,3-审核通过
+         * [1]表示未审核,[2,3]表示已审核
+         */
+        if (StringUtils.isNotBlank(form.getAuditStatus()) && StringUtils.equals(PurchaseOutboundOrderAuditStatusEnum.COMMIT.getCode(), form.getAuditStatus())) {
             criteria.andEqualTo("auditStatus", form.getAuditStatus());
+        } else {
+            criteria.andIn("auditStatus", Arrays.asList(PurchaseOutboundOrderAuditStatusEnum.REJECT.getCode(), PurchaseOutboundOrderAuditStatusEnum.PASS.getCode()));
         }
 
         //供应商名称
@@ -791,8 +802,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             criteria.andLessThan("commitAuditTime", form.getCommitAuditTime());
         }
         criteria.andEqualTo("isDeleted", "0");
-        example.setOrderByClause("instr('1,3',`auditStatus`) ASC");
-        example.orderBy("updateTime").desc();
+        example.setOrderByClause("instr('1,2,3',`audit_status`) ASC");
+        example.orderBy("commitAuditTime").desc();
         return example;
     }
 
@@ -1162,7 +1173,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
 
     private void checkWarehouse(Long warehouseInfoId) {
-        if (StringUtils.isNotBlank(String.valueOf(warehouseInfoId))) {
+        if (warehouseInfoId != null) {
             WarehouseInfo warehouse = new WarehouseInfo();
             warehouse.setId(warehouseInfoId);
             warehouse.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -1179,16 +1190,17 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notNull(aclUserAccreditInfo, "用户信息异常");
         AssertUtil.notBlank(form.getSupplierCode(), "供应商不能为空");
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
-            form.getPurchaseOutboundDetailList().forEach(purchaseOutboundDetail -> {
-                AssertUtil.notNull(purchaseOutboundDetail.getSpecNatureInfo(), "商品规格不能为空");
-                AssertUtil.notNull(purchaseOutboundDetail.getItemNo(), "商品货号不能为空");
-                AssertUtil.notNull(purchaseOutboundDetail.getBarCode(), "商品条形码不能为空");
-                AssertUtil.notNull(purchaseOutboundDetail.getSkuCode(), "商品sku编码不能为空");
-                AssertUtil.notNull(purchaseOutboundDetail.getSkuName(), "商品sku名称不能为空");
-                if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            for (PurchaseOutboundDetail detail : form.getPurchaseOutboundDetailList()) {
+                AssertUtil.notNull(detail.getSpecNatureInfo(), "商品规格不能为空");
+                AssertUtil.notNull(detail.getItemNo(), "商品货号不能为空");
+                AssertUtil.notNull(detail.getBarCode(), "商品条形码不能为空");
+                AssertUtil.notNull(detail.getSkuCode(), "商品sku编码不能为空");
+                AssertUtil.notNull(detail.getSkuName(), "商品sku名称不能为空");
+                if (detail.getPrice() != null && detail.getPrice().compareTo(BigDecimal.ZERO) < 0) {
                     throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货商品含税单价不能小于0");
                 }
-            });
+            }
+
         }
     }
 
@@ -1208,9 +1220,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         form.setStatus(code);
         form.setCreateOperator(aclUserAccreditInfo.getUserId());
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
-            List<PurchaseOutboundDetail> purchaseOutboundDetailList = form.getPurchaseOutboundDetailList();
-            for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetailList) {
-                totalAmount = totalAmount.add(purchaseOutboundDetail.getTotalAmount());
+            for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
+                if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
+                    //单价*数量
+                    totalAmount = totalAmount.add(purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity())));
+                }
             }
         }
         form.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
@@ -1248,7 +1262,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     totalAmount = purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity()));
                 }
 
-                purchaseOutboundDetail.setPurchaseOutboundOrderCode(form.getStatus());
+                purchaseOutboundDetail.setPurchaseOutboundOrderCode(form.getPurchaseOutboundOrderCode());
                 purchaseOutboundDetail.setPrice(purchaseOutboundDetail.getPrice() == null ? null : purchaseOutboundDetail.getPrice().setScale(3, RoundingMode.HALF_UP));
                 purchaseOutboundDetail.setTotalAmount(totalAmount == null ? null : totalAmount.setScale(3, RoundingMode.HALF_UP));
                 purchaseOutboundDetail.setCreateOperator(form.getCreateOperator());
@@ -1320,8 +1334,10 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     purchaseOutboundOrder.setSupplierName(entitySupplier.getSupplierName());
                 }
                 //仓库名称
-                WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(purchaseOutboundOrder.getWarehouseInfoId());
-                purchaseOutboundOrder.setWarehouseName(warehouseInfo.getWarehouseName());
+                if (purchaseOutboundOrder.getWarehouseInfoId() != null) {
+                    WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(purchaseOutboundOrder.getWarehouseInfoId());
+                    purchaseOutboundOrder.setWarehouseName(warehouseInfo.getWarehouseName());
+                }
             }
         });
     }
