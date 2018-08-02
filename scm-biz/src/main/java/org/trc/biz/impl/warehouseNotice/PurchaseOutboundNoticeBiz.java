@@ -3,7 +3,6 @@ package org.trc.biz.impl.warehouseNotice;
 import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,20 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.warehouseNotice.IPurchaseOutboundNoticeBiz;
-import org.trc.domain.allocateOrder.AllocateInOrder;
-import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
-import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
-import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OrderCancelResultEnum;
-import org.trc.enums.WarehouseNoticeStatusEnum;
 import org.trc.enums.WarehouseTypeEnum;
-import org.trc.enums.ZeroToNineEnum;
-import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.JDWmsConstantConfig;
@@ -55,8 +47,6 @@ import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
-
-import tk.mybatis.mapper.entity.Example;
 
 /**
  * Description〈〉
@@ -348,6 +338,8 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     		// 日志 admin??
             logInfoService.recordLog(notice, notice.getId().toString(), "admin",
             		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), logRemark, null);
+        } else {
+        	
         }
 	}
 
