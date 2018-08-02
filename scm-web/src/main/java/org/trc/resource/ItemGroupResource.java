@@ -83,7 +83,7 @@ public class ItemGroupResource {
     @PUT
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_EDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    //@ApiOperation(value = "根据商品组编码编辑详情")
+    @ApiOperation(value = "根据商品组编码编辑详情")
     public Response editDetail( ItemGroupForm form,@Context ContainerRequestContext requestContext){
         itemGroupBiz.editDetail(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("商品组编辑成功","");
@@ -94,8 +94,7 @@ public class ItemGroupResource {
     @PUT
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_ISVALID)
     @Produces(MediaType.APPLICATION_JSON)
-    //@ApiOperation(value = "启停用")
-    //@ApiImplicitParam(paramType = "query", dataType = "String", name = "isValid", value = "启停用:0-停用,1-启用", required = true)
+    @ApiOperation(value = "启停用")
     public Response updateStatus(@BeanParam ItemGroupFormEdit formEdit, @Context ContainerRequestContext requestContext){
         String itemGroupCode=formEdit.getItemGroupCode();
         String isValid = formEdit.getIsValid();
