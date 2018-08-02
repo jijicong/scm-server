@@ -8,7 +8,7 @@ import javax.ws.rs.FormParam;
  * Created by hzgjl on 2018/8/2.
  */
 public class ItemGroupFormEdit {
-    @FormParam("itemGroupCode")
+    @FormParam("isValid")
     @ApiModelProperty("启停用")
     private String isValid;
 
