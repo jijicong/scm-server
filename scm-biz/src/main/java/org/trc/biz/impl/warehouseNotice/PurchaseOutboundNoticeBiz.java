@@ -263,7 +263,9 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 	}
 	
 	
-    //取消收货 取消中状态定时任务
+    /**
+     * 取消收货 取消中状态定时任务
+     */
     @Override
     public void retryCancelOrder() {
     	
@@ -297,7 +299,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
                 AppResult<ScmOrderCancelResponse> responseAppResult = warehouseApiService.orderCancel(request);
                 //回写数据
                 try {
-                    this.updateCancelOrder(responseAppResult, request.getOrderCode());
+                	noticeService.updateCancelOrder(responseAppResult, request.getOrderCode());
                 } catch (Exception e) {
                     logger.error("采购退货出库单号:{},定时任务取消入库异常：{}, 异常原因：", 
                     		request.getOrderCode(), responseAppResult.getResult(), e);
@@ -306,44 +308,6 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
         }
     }
     
-    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String entryOrderCode) {
-    	
-        if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
-        	
-        	PurchaseOutboundNoticeStatusEnum status = null;// 退货出库通知单状态
-        	PurchaseOutboundNotice notice = noticeService.selectOneByEntryOrderCode(entryOrderCode);
-        	
-        	String logRemark = null; //日志备注
-        	
-            ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
-            String flag = response.getFlag();
-            
-            if (StringUtils.equals(flag, OrderCancelResultEnum.CANCEL_SUCC.code)) {//取消成功
-            	
-            	status = PurchaseOutboundNoticeStatusEnum.CANCEL;
-            	logRemark = "取消结果:取消成功";
-            	
-            } else if (StringUtils.equals(flag, OrderCancelResultEnum.CANCEL_FAIL.code)) { // 取消失败 状态复原
-            	
-            	status = PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING;
-            	logRemark = "取消结果:取消失败；原因：" + response.getMessage();
-
-            }
-            
-    		/**
-    		 * 更新操作
-    		 */
-    		noticeService.updateById(status, notice.getId(), null, null);
-    		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
-    		// 日志 admin??
-            logInfoService.recordLog(notice, notice.getId().toString(), "admin",
-            		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), logRemark, null);
-        } else {
-        	
-        }
-	}
-
-
     
 
         

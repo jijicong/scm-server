@@ -7,7 +7,9 @@ import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.enums.WarehouseNoticeStatusEnum;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.service.IBaseService;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
 public interface IPurchaseOutboundNoticeService extends IBaseService<PurchaseOutboundNotice,Long> {
@@ -23,4 +25,8 @@ public interface IPurchaseOutboundNoticeService extends IBaseService<PurchaseOut
 	List<PurchaseOutboundNotice> selectNoticeByStatus(PurchaseOutboundNoticeStatusEnum status);
 
 	PurchaseOutboundNotice selectOneByEntryOrderCode(String entryOrderCode);
+
+	void updateCancelOrder(AppResult<ScmOrderCancelResponse> responseAppResult, String orderCode);
+	
+	
 }
