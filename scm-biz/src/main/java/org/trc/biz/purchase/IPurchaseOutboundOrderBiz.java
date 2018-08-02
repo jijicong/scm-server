@@ -74,7 +74,7 @@ public interface IPurchaseOutboundOrderBiz {
      * @param form
      * @param aclUserAccreditInfo
      */
-    void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    //void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 更新采购退货单状态
@@ -83,7 +83,7 @@ public interface IPurchaseOutboundOrderBiz {
      * @param aclUserAccreditInfo
      * @return
      */
-    String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    //String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 采购退货单出库通知
@@ -134,6 +134,15 @@ public interface IPurchaseOutboundOrderBiz {
      * @return
      */
     List<Supplier> getSuppliersByChannelCode(String channelCode);
+
+    /**
+     * 更新采购退货单状态或出库通知作废操作
+     *
+     * @param form
+     * @param property
+     * @return
+     */
+    String cancelWarahouseAdviceAndupdate(PurchaseOutboundOrder form, AclUserAccreditInfo property);
 
 
     /**

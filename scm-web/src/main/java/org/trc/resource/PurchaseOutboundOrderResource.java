@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.alibaba.druid.util.StringUtils;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,9 +43,9 @@ public class PurchaseOutboundOrderResource {
     @Path("/getSuppliers")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("获取供应商名称下拉列表")
-    public Response findSuppliers(@Context ContainerRequestContext requestContext)  {
+    public Response findSuppliers(@Context ContainerRequestContext requestContext) {
         String channelCode = ((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)).getChannelCode();
-        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商",purchaseOutboundOrderBiz.getSuppliersByChannelCode(channelCode));
+        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商", purchaseOutboundOrderBiz.getSuppliersByChannelCode(channelCode));
 
     }
 
@@ -165,15 +164,8 @@ public class PurchaseOutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     //@ApiOperation("更新采购退货单状态或出库通知作废操作")
     public Response updatePurchaseState(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        AssertUtil.notNull(form, "采购退货单的信息为空");
-        AssertUtil.notNull(form.getStatus(), "采购退货单的状态为空");
-        if (StringUtils.equals(form.getStatus(), PurchaseOutboundOrderStatusEnum.WAREHOUSE_NOTICE.getCode())) {
-            purchaseOutboundOrderBiz.cancelWarahouseAdvice(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-            return ResultUtil.createSuccessResult("出库通知作废成功！", "");
-        } else {
-            String msg = purchaseOutboundOrderBiz.updateStatus(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-            return ResultUtil.createSuccessResult(msg, "");
-        }
+        String result = purchaseOutboundOrderBiz.cancelWarahouseAdviceAndupdate(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult(result, "");
     }
 
     /**
@@ -182,7 +174,7 @@ public class PurchaseOutboundOrderResource {
     @PUT
     @Path("warahouseAdvice/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    //@ApiOperation("采购退货单出库通知")
+    @ApiOperation("采购退货单出库通知")
     public Response saveWarahouseAdvice(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.warehouseAdvice(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单出库通知成功!", "");

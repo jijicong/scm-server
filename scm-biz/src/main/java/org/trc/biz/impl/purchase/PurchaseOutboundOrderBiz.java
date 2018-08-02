@@ -415,7 +415,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
          * 分页查询结果
          */
         List<Long> warehouseNoticeDetailsIds = details.stream().map(WarehouseNoticeDetails::getId).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(warehouseNoticeDetailsIds)){
+        if (CollectionUtils.isEmpty(warehouseNoticeDetailsIds)) {
             return new Pagenation<>();
         }
         Example ex = new Example(WarehouseNoticeDetails.class);
@@ -425,7 +425,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     /**
-     * 出库通知作废操作
+     * 更新采购退货单状态或出库通知作废操作
      *
      * @param form
      * @param aclUserAccreditInfo
@@ -433,10 +433,58 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @PurchaseOutboundOrderCacheEvict
-    public void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
+    public String cancelWarahouseAdviceAndupdate(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(form, "采购退货单的信息为空");
+        AssertUtil.notNull(form.getId(), "采购退货单的ID为空");
 
+        PurchaseOutboundOrder order = purchaseOutboundOrderService.selectByPrimaryKey(form.getId());
+        AssertUtil.notNull(order, String.format("ID:%s采购退货单的信息为空", form.getId()));
+        //出库通知作废操作
+        if (StringUtils.equals(order.getStatus(), PurchaseOutboundOrderStatusEnum.WAREHOUSE_NOTICE.getCode())) {
+            cancelAdvice(order, aclUserAccreditInfo);
+            return "出库通知作废成功！";
+        } else {
+            //更新状态
+            return updateOutboundOrderStatus(order, aclUserAccreditInfo);
+        }
+
+    }
+
+    /**
+     * 更新状态
+     *
+     * @param order
+     * @param aclUserAccreditInfo
+     */
+    private String updateOutboundOrderStatus(PurchaseOutboundOrder order, AclUserAccreditInfo aclUserAccreditInfo) {
+        //暂存：的删除操作
+        if (PurchaseOutboundOrderStatusEnum.HOLD.getCode().equals(order.getStatus())) {
+            handleDeleted(order, aclUserAccreditInfo);
+            return "删除成功!";
+
+        }
+        //审核驳回：的删除操作
+        if (PurchaseOutboundOrderStatusEnum.REJECT.getCode().equals(order.getStatus())) {
+            handleDeleted(order, aclUserAccreditInfo);
+            return "删除成功!";
+        }
+        //审核通过：的作废操作
+        if (PurchaseOutboundOrderStatusEnum.PASS.getCode().equals(order.getStatus())) {
+            handleCancel(order, aclUserAccreditInfo);
+            return "作废成功!";
+        }
+        return "操作失败!";
+    }
+
+    /**
+     * 出库通知作废操作
+     *
+     * @param order
+     * @param aclUserAccreditInfo
+     */
+    private void cancelAdvice(PurchaseOutboundOrder order, AclUserAccreditInfo aclUserAccreditInfo) {
         Example example = new Example(PurchaseOutboundNotice.class);
-        example.createCriteria().andEqualTo("purchaseOutboundOrderCode", form.getPurchaseOutboundOrderCode());
+        example.createCriteria().andEqualTo("purchaseOutboundOrderCode", order.getPurchaseOutboundOrderCode());
         List<PurchaseOutboundNotice> purchaseOutboundNotices = purchaseOutboundNoticeService.selectByExample(example);
         AssertUtil.notEmpty(purchaseOutboundNotices, "出库通知作废失败，没有对应的出库单信息");
         PurchaseOutboundNotice purchaseOutboundNotice = purchaseOutboundNotices.get(0);
@@ -446,13 +494,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         //更改采购退货单状态
         PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
-        purchaseOutboundOrder.setId(form.getId());
+        purchaseOutboundOrder.setId(order.getId());
         purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.DROPPED.getCode());
         //对应出库单状态为其他
         purchaseOutboundOrder.setOutboundStatus("");
         int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(purchaseOutboundOrder);
         if (i < 1) {
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购退货单操作失败", JSON.toJSONString(form.getPurchaseOutboundOrderCode())));
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购退货单操作失败", JSON.toJSONString(order.getPurchaseOutboundOrderCode())));
         }
 
         //同步出库单状态
@@ -462,7 +510,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
         int num = purchaseOutboundNoticeService.updateByPrimaryKeySelective(notice);
         if (num < 1) {
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购单操作失败,出库通知单已经被执行操作", JSON.toJSONString(form.getPurchaseOutboundOrderCode())));
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购单操作失败,出库通知单已经被执行操作", JSON.toJSONString(order.getPurchaseOutboundOrderCode())));
         }
 
         //更新出库详情
@@ -470,9 +518,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         purchaseOutboundDetail.setStatus(PurchaseOutboundDetailStatusEnum.CANCEL.getCode());
         //对应出库单状态为其他
         purchaseOutboundDetail.setOutboundStatus("");
-        Example example1 = new Example(WarehouseNoticeDetails.class);
+        Example example1 = new Example(PurchaseOutboundDetail.class);
         Example.Criteria criteria1 = example1.createCriteria();
-        criteria1.andEqualTo("outboundNoticeCode", purchaseOutboundNotice.getOutboundNoticeCode());
+        criteria1.andEqualTo("purchaseOutboundOrderCode", purchaseOutboundNotice.getPurchaseOutboundOrderCode());
         int num2 = purchaseOutboundDetailService.updateByExampleSelective(purchaseOutboundDetail, example1);
         if (num2 == 0) {
             String msg = String.format("作废采购退货单操作失败,出库单%s详情状态同步失败", JSON.toJSONString(purchaseOutboundNotice.getOutboundNoticeCode()));
@@ -480,7 +528,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
 
         //记录操作日志
-        logInfoService.recordLog(form, form.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
+        logInfoService.recordLog(order, order.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
         logInfoService.recordLog(purchaseOutboundNotice, purchaseOutboundNotice.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, null);
     }
 
@@ -492,7 +540,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @param aclUserAccreditInfo
      * @return
      */
-    @Override
     @PurchaseOutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
@@ -819,7 +866,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         String purchaseOutboundNoticeCode = serialUtilService.generateCode(LENGTH, SequenceEnum.TH_CKTZ_PREFIX.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         notice.setOutboundNoticeCode(purchaseOutboundNoticeCode);
         notice.setPurchaseOutboundOrderCode(purchaseOutboundOrder.getPurchaseOutboundOrderCode());
-        notice.setWarehouseId(Long.valueOf(purchaseOutboundOrder.getWarehouseId()));
         notice.setWarehouseInfoId(purchaseOutboundOrder.getWarehouseInfoId());
         notice.setWarehouseCode(purchaseOutboundOrder.getWarehouseCode());
         //待通知收货

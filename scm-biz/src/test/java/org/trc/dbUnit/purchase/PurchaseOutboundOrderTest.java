@@ -88,7 +88,7 @@ public class PurchaseOutboundOrderTest {
         info.setChannelCode("YWX001");
         info.setUserId("B571346F625E44DB8FCBA8116E72593D");
         //code [0]暂存，[1]提交审核
-        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(order,"1",info);
+        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(order,"0",info);
     }
 
     /**
@@ -192,9 +192,9 @@ public class PurchaseOutboundOrderTest {
     @Test
     public void auditPurchaseOrderTest(){
         PurchaseOutboundOrder order = new PurchaseOutboundOrder();
-        order.setId(12L);
+        order.setId(15L);
         //2-审核驳回,3-审核通过
-        order.setAuditStatus("2");
+        order.setAuditStatus("3");
         order.setAuditOpinion("asdsd");
 
         AclUserAccreditInfo info = new AclUserAccreditInfo();
@@ -204,4 +204,34 @@ public class PurchaseOutboundOrderTest {
 
     }
 
+    /**
+     * 采购退货单出库通知
+     */
+    @Test
+    public void saveWarahouseAdviceTest(){
+        PurchaseOutboundOrder order = new PurchaseOutboundOrder();
+        order.setId(13L);
+
+        AclUserAccreditInfo info = new AclUserAccreditInfo();
+        info.setChannelCode("YWX001");
+        info.setUserId("B571346F625E44DB8FCBA8116E72593D");
+        purchaseOutboundOrderBiz.warehouseAdvice(order, info);
+    }
+
+    /**
+     * 更新采购退货单状态或出库通知作废操作
+     */
+    @Test
+    public void updatePurchaseStateTest(){
+        PurchaseOutboundOrder order = new PurchaseOutboundOrder();
+        order.setId(15L);
+
+        AclUserAccreditInfo info = new AclUserAccreditInfo();
+        info.setChannelCode("YWX001");
+        info.setUserId("B571346F625E44DB8FCBA8116E72593D");
+
+        //出库通知作废
+        String s = purchaseOutboundOrderBiz.cancelWarahouseAdviceAndupdate(order, info);
+        System.out.println(s);
+    }
 }
