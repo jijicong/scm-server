@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.biz.warehouseNotice.IPurchaseOutboundNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -42,6 +43,9 @@ public class PurchaseOutboundNoticeResource {
     
     @Autowired
     private RedisLock redisLock;
+    
+    @Autowired
+    private IPurchaseOutboundOrderBiz purchaseOutboundOrderBiz;
     
     private static Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeResource.class);
 
@@ -145,6 +149,33 @@ public class PurchaseOutboundNoticeResource {
     		}
     	}
         return resp;
+
+    }
+    
+    /**
+     * 获取退货仓库下拉列表
+     */
+    @GET
+    @Path("/getWarehouse")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("获取退货仓库下拉列表")
+    public Response findWarehouses(@Context ContainerRequestContext requestContext) {
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.
+        		getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        String channelCode = aclUserAccreditInfo.getChannelCode();
+        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getWarehousesByChannelCode(channelCode));
+    }
+    
+    /**
+     * 获取供应商名称下拉列表
+     */
+    @GET
+    @Path("/getSuppliers")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("获取供应商名称下拉列表")
+    public Response findSuppliers(@Context ContainerRequestContext requestContext)  {
+        String channelCode = ((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)).getChannelCode();
+        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商",purchaseOutboundOrderBiz.getSuppliersByChannelCode(channelCode));
 
     }
     
