@@ -19,18 +19,15 @@ import org.trc.form.goods.ItemGroupQuery;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemGroupService;
 import org.trc.service.goods.IItemGroupUserService;
+import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -42,7 +39,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Resource
     private IItemGroupService itemGroupService;
     @Resource
-    private IUserNameUtilService userNameUtilService;
+    private IAclUserAccreditInfoService userAccreditInfoService;
     @Resource
     private IItemGroupUserService itemGroupUserService;
 
@@ -75,10 +72,34 @@ public class ItemGroupBiz implements IitemGroupBiz {
         criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
         example.orderBy("updateTime").desc();
         Pagenation<ItemGroup> pagenation = itemGroupService.pagination(example, page, form);
-        userNameUtilService.handleUserName(pagenation.getResult());
+        handleUserName(pagenation.getResult());
         return pagenation;
     }
 
+    //设置创建人名字
+    private void handleUserName(List list) {
+        if(AssertUtil.collectionIsEmpty(list)){
+            return;
+        }
+        Set<String> userIdsSet=new HashSet<>();
+        for (Object obj:list) {
+                userIdsSet.add(((ItemGroup)obj).getCreateOperator());
+        }
+        String[] userIdArr=new String[userIdsSet.size()];
+        userIdsSet.toArray(userIdArr);
+        Map<String,AclUserAccreditInfo> mapTemp = userAccreditInfoService.selectByIds(userIdArr);
+        for (Object obj:list) {
+                if(!StringUtils.isBlank(((ItemGroup)obj).getCreateOperator())){
+                    if(mapTemp!=null){
+                        AclUserAccreditInfo aclUserAccreditInfo =mapTemp.get(((ItemGroup)obj).getCreateOperator());
+                        if(aclUserAccreditInfo !=null){
+                            ((ItemGroup)obj).setCreateOperator(aclUserAccreditInfo.getName());
+                        }
+                    }
+                }
+
+        }
+    }
     //根据商品组编码查询详情
     @Override
     public ItemGroup queryDetailByCode(String code) {
@@ -119,6 +140,17 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
 
         //更新用户数据
+        List<ItemGroupUser> orginlist = queryItemGroupUserListByCode(itemGroup.getItemGroupCode());
+        for (ItemGroupUser oldItemGroupUser : orginlist) {
+            for (ItemGroupUser itemGroupUser : groupUserList) {
+                if(oldItemGroupUser.getId().longValue()==itemGroupUser.getId().longValue()){
+
+                }
+            }
+
+        }
+
+
         for (ItemGroupUser itemGroupUser : groupUserList) {
             if (itemGroupUser.getStatus().equals(RecordStatusEnum.DELETE.getCode())){//删除该条
                 Integer countDel = itemGroupUserService.deleteByPrimaryKey(itemGroupUser.getId());
@@ -212,7 +244,11 @@ public class ItemGroupBiz implements IitemGroupBiz {
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_QUERY_EXCEPTION,msg);
         }
         itemGroup.setChannelCode(aclUserAccreditInfo.getChannelCode());
-        ParamsUtil.setBaseDO(itemGroup);
+        //公共字段更新
+        itemGroup.setCreateTime(Calendar.getInstance().getTime());
+        itemGroup.setUpdateTime(Calendar.getInstance().getTime());
+        itemGroup.setCreateOperator(aclUserAccreditInfo.getCreateOperator());
+
         String code = serialUtilService.generateCode(LENGTH, SERIALNAME);
         itemGroup.setItemGroupCode(code);
         Integer count = itemGroupService.insertSelective(itemGroup);
@@ -302,7 +338,9 @@ public class ItemGroupBiz implements IitemGroupBiz {
             }
 
             itemGroupUser.setChannelCode(channelCode);
-            ParamsUtil.setBaseDO(itemGroupUser);
+
+            itemGroupUser.setCreateTime(Calendar.getInstance().getTime());
+            itemGroupUser.setUpdateTime(Calendar.getInstance().getTime());
             itemGroupUser.setIsValid(isValid);
             itemGroupUser.setItemGroupCode(itemGroupCode);
             //手机号添加之前判断是否存在

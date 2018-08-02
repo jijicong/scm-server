@@ -3,7 +3,9 @@ package org.trc.domain.goods;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
+import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -11,6 +13,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 商品组管理
@@ -18,12 +22,13 @@ import javax.ws.rs.PathParam;
  */
 @Data
 @Api(value = "商品组")
-public class ItemGroup extends BaseDO{
-    private static final long serialVersionUID = 6077285329430988185L;
+public class ItemGroup implements Serializable{
+    private static final long serialVersionUID = 3197429285613752258L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @PathParam("id")
-    @ApiModelProperty("商品组id")
+    @ApiModelProperty("商品组id，前端不需要传值")
     private Long id;
 
     @FormParam("itemGroupCode")
@@ -38,7 +43,7 @@ public class ItemGroup extends BaseDO{
 
     @FormParam("channelCode")
     @Length(max = 32, message = "业务线渠道编码字母和数字不能超过32个,汉字不能超过16个")
-    @ApiModelProperty("业务线编码")
+    @ApiModelProperty("业务线编码,前端不需要传值")
     private String channelCode;
 
     @FormParam("leaderName")
@@ -55,4 +60,28 @@ public class ItemGroup extends BaseDO{
     @Length(max =400, message = "商品组的备注字母和数字不能超过400个,汉字不能超过个200")
     @ApiModelProperty("备注")
     private  String remark;
+
+
+    //公共字段
+    @FormParam("isDeleted")
+    @ApiModelProperty("是否删除:0-否,1-是")
+    private String isDeleted; //是否删除:0-否,1-是
+
+    @FormParam("createOperator")
+    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
+    @ApiModelProperty("创建人,前端不需要传值")
+    private String createOperator; //创建人
+
+    @FormParam("isValid")
+    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
+    @ApiModelProperty("启停用状态0-停用,1-启用")
+    private String isValid; //是否有效:0-否,1-是
+
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @ApiModelProperty("创建时间")
+    private Date createTime; //创建时间
+
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @ApiModelProperty("更新时间")
+    private Date updateTime; //更新时间
 }

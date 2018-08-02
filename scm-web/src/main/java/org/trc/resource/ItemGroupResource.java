@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ItemGroup;
