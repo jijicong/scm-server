@@ -107,7 +107,7 @@ public class PurchaseOutboundOrderResource {
     @Path("getOrder/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("根据采购退货单Id查询采购退货单")
-    public Response getPurchaseOutboundOrder(@ApiParam(name = "采购退货单Id") @PathParam("id") Long id) {
+    public Response getPurchaseOutboundOrder(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(id));
     }
 
@@ -163,7 +163,7 @@ public class PurchaseOutboundOrderResource {
     @PUT
     @Path("updateStatus/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("更新采购退货单状态或出库通知作废操作")
+    //@ApiOperation("更新采购退货单状态或出库通知作废操作")
     public Response updatePurchaseState(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
         AssertUtil.notNull(form, "采购退货单的信息为空");
         AssertUtil.notNull(form.getStatus(), "采购退货单的状态为空");
@@ -182,7 +182,7 @@ public class PurchaseOutboundOrderResource {
     @PUT
     @Path("warahouseAdvice/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("采购退货单出库通知")
+    //@ApiOperation("采购退货单出库通知")
     public Response saveWarahouseAdvice(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.warehouseAdvice(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单出库通知成功!", "");
