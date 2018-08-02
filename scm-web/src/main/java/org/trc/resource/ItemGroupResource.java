@@ -38,11 +38,11 @@ public class ItemGroupResource {
     @GET
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "商品组分页查询2")
+    @ApiOperation(value = "商品组分页查询")
     @ApiImplicitParam(paramType = "query", dataType = "String", name = "itemGroupName", value = "商品组编号", required = false)
     public  Response itemGroupPage(@BeanParam ItemGroupQuery itemGroupQuery, @BeanParam Pagenation<ItemGroup> page, @Context ContainerRequestContext requestContext){
         Pagenation<ItemGroup> pagenation = itemGroupBiz.itemGroupPage(itemGroupQuery, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("商品组分页查询成功",pagenation);
+        return ResultUtil.createSuccessPageResult(pagenation);
     }
 
     @POST
