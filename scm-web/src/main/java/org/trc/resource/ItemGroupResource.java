@@ -95,7 +95,7 @@ public class ItemGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "启停用")
     @ApiImplicitParam(paramType = "query", dataType = "String", name = "isValid", value = "启停用:0-停用,1-启用", required = true)
-    public Response updateStatus(@QueryParam("isValid") String isValid,@QueryParam("itemGroupCode")  String itemGroupCode,@Context ContainerRequestContext requestContext){
+    public Response updateStatus(String isValid,String itemGroupCode,@Context ContainerRequestContext requestContext){
         itemGroupBiz.updateStatus(isValid,itemGroupCode,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("商品组停用成功","");
     }
