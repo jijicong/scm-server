@@ -360,9 +360,10 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         criteria.andEqualTo("warehouseInfoId", form.getWarehouseInfoId());
         criteria.andEqualTo("supplierCode", form.getSupplierCode());
         criteria.andEqualTo("finishStatus", WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+        criteria.andIn("status", Arrays.asList(WarehouseNoticeStatusEnum.ALL_GOODS.getCode(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
         if (CollectionUtils.isEmpty(warehouseNotices)) {
-            return null;
+            return new Pagenation<>();
         }
         List<WarehouseNoticeDetails> details = new ArrayList<>();
         for (WarehouseNotice warehouseNotice : warehouseNotices) {
@@ -414,6 +415,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
          * 分页查询结果
          */
         List<Long> warehouseNoticeDetailsIds = details.stream().map(WarehouseNoticeDetails::getId).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(warehouseNoticeDetailsIds)){
+            return new Pagenation<>();
+        }
         Example ex = new Example(WarehouseNoticeDetails.class);
         Example.Criteria criteria1 = ex.createCriteria();
         criteria1.andIn("id", warehouseNoticeDetailsIds);
@@ -673,7 +677,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         purchaseOutboundOrder.setAuditDescription(form.getAuditDescription());
         purchaseOutboundOrder.setAuditOperator(aclUserAccreditInfo.getUserId());
         //更新采购退货单状态
-        purchaseOutboundOrder.setStatus(form.getStatus());
+        purchaseOutboundOrder.setStatus(form.getAuditStatus());
         //更新采购退货单审核状态
         purchaseOutboundOrder.setAuditStatus(form.getAuditStatus());
         purchaseOutboundOrder.setUpdateAuditTime(Calendar.getInstance().getTime());

@@ -10,6 +10,7 @@ import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.Pagenation;
@@ -147,4 +148,60 @@ public class PurchaseOutboundOrderTest {
         Pagenation<PurchaseOutboundOrder> pagelist = purchaseOutboundOrderBiz.getAuditPagelist(form, new Pagenation<PurchaseOutboundOrder>(), "YWX001");
         System.out.println(JSON.toJSONString(pagelist));
     }
+
+    /**
+     * 采购退货单获取采购历史详情
+     */
+    @Test
+    public void getPurchaseHistoryTest(){
+        PurchaseOutboundItemForm form = new PurchaseOutboundItemForm();
+        form.setStartDate("2018-02-02");
+        form.setEndDate("2018-08-02");
+        form.setSupplierCode("GYS000009");
+        form.setWarehouseInfoId("128");
+        //退货类型1-正品，2-残品
+        form.setReturnOrderType("2");
+        form.setSkuCode("SP0201707280000058");
+
+        Pagenation<WarehouseNoticeDetails> pagenation = new Pagenation<>();
+        Pagenation<WarehouseNoticeDetails> purchaseHistory = purchaseOutboundOrderBiz.getPurchaseHistory(form, pagenation);
+        System.out.println(JSON.toJSONString(purchaseHistory));
+    }
+
+    /**
+     *  根据采购退货单Id查询采购退货单
+     */
+    @Test
+    public void getPurchaseOutboundOrderTest(){
+        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(12L);
+        System.out.println(JSON.toJSONString(order));
+    }
+
+    /**
+     * 采购退货单审核操作，获取详情
+     */
+    @Test
+    public void getPurchaseOutboundAuditOrderTest() {
+        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundAuditOrder(12L);
+        System.out.println(JSON.toJSONString(order));
+    }
+
+    /**
+     * 采购退货单审核
+     */
+    @Test
+    public void auditPurchaseOrderTest(){
+        PurchaseOutboundOrder order = new PurchaseOutboundOrder();
+        order.setId(12L);
+        //2-审核驳回,3-审核通过
+        order.setAuditStatus("2");
+        order.setAuditOpinion("asdsd");
+
+        AclUserAccreditInfo info = new AclUserAccreditInfo();
+        info.setChannelCode("YWX001");
+        info.setUserId("B571346F625E44DB8FCBA8116E72593D");
+        purchaseOutboundOrderBiz.auditPurchaseOrder(order, info);
+
+    }
+
 }
