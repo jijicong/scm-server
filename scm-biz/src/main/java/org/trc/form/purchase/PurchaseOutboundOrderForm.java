@@ -19,7 +19,7 @@ public class PurchaseOutboundOrderForm extends QueryModel {
     /**
      * 采购退货单编号
      */
-    @QueryParam("purchaseOrderCode")
+    @QueryParam("purchaseOutboundOrderCode")
     @Length(max = 32)
     @ApiParam(value = "采购退货单编号")
     private String purchaseOutboundOrderCode;

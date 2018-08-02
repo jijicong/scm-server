@@ -6,6 +6,7 @@ import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
+import org.trc.form.purchase.AuditPurchaseOrderForm;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.Pagenation;
@@ -88,10 +89,10 @@ public interface IPurchaseOutboundOrderBiz {
     /**
      * 采购退货单出库通知
      *
-     * @param form
+     * @param id                  采购退货单Id
      * @param aclUserAccreditInfo
      */
-    void warehouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    void warehouseAdvice(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 采购退货单审核操作，获取详情
@@ -117,7 +118,7 @@ public interface IPurchaseOutboundOrderBiz {
      * @param form
      * @param aclUserAccreditInfo
      */
-    void auditPurchaseOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    void auditPurchaseOrder(AuditPurchaseOrderForm form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 获取退货仓库下拉列表
@@ -138,11 +139,11 @@ public interface IPurchaseOutboundOrderBiz {
     /**
      * 更新采购退货单状态或出库通知作废操作
      *
-     * @param form
+     * @param id       采购退货单Id
      * @param property
      * @return
      */
-    String cancelWarahouseAdviceAndupdate(PurchaseOutboundOrder form, AclUserAccreditInfo property);
+    String cancelWarahouseAdviceAndupdate(Long id, AclUserAccreditInfo property);
 
 
     /**

@@ -10,6 +10,7 @@ import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
+import org.trc.form.purchase.AuditPurchaseOrderForm;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.AssertUtil;
@@ -162,9 +163,9 @@ public class PurchaseOutboundOrderResource {
     @PUT
     @Path("updateStatus/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    //@ApiOperation("更新采购退货单状态或出库通知作废操作")
-    public Response updatePurchaseState(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        String result = purchaseOutboundOrderBiz.cancelWarahouseAdviceAndupdate(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    @ApiOperation("更新采购退货单状态或出库通知作废操作")
+    public Response updatePurchaseState(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id, @Context ContainerRequestContext requestContext) {
+        String result = purchaseOutboundOrderBiz.cancelWarahouseAdviceAndupdate(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult(result, "");
     }
 
@@ -175,8 +176,8 @@ public class PurchaseOutboundOrderResource {
     @Path("warahouseAdvice/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单出库通知")
-    public Response saveWarahouseAdvice(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        purchaseOutboundOrderBiz.warehouseAdvice(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response saveWarahouseAdvice(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id, @Context ContainerRequestContext requestContext) {
+        purchaseOutboundOrderBiz.warehouseAdvice(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单出库通知成功!", "");
     }
 
@@ -222,7 +223,7 @@ public class PurchaseOutboundOrderResource {
     @Path("/audit")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单审核")
-    public Response auditPurchaseOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response auditPurchaseOrder(@BeanParam AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) throws Exception {
         purchaseOutboundOrderBiz.auditPurchaseOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单审核成功", "");
 
