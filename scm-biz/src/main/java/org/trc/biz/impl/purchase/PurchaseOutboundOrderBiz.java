@@ -791,6 +791,23 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     /**
+     * 所有仓库下拉列表
+     *
+     * @return
+     */
+    @Override
+    public List<WarehouseInfo> getAllWarehouses() {
+        //获取已启用仓库信息
+        WarehouseInfo warehouse = new WarehouseInfo();
+        warehouse.setIsValid(ZeroToNineEnum.ONE.getCode());
+        //已通知仓库
+        warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
+        AssertUtil.notEmpty(warehouseList, "无数据，请确认【仓储管理-仓库信息管理】中存在“启用”状态，并且货主仓库状态为“通知成功”的仓库！");
+        return warehouseList;
+    }
+
+    /**
      * 获取供应商名称下拉列表
      * 申请状态为“审核通过”且供应商类型为“采购”的供应商名称
      *

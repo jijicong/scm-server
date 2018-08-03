@@ -10,6 +10,7 @@ import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.purchase.AuditPurchaseOrderForm;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
@@ -250,7 +251,11 @@ public class PurchaseOutboundOrderTest {
         info.setUserId("B571346F625E44DB8FCBA8116E72593D");
 
         //出库通知作废
-        String s = purchaseOutboundOrderBiz.cancelWarahouseAdviceAndupdate(15L, info);
-        System.out.println(s);
+        //String s = purchaseOutboundOrderBiz.cancelWarahouseAdviceAndupdate(15L, info);
+        //System.out.println(s);
+        List<WarehouseInfo> allWarehouses = purchaseOutboundOrderBiz.getAllWarehouses();
+        System.out.println(JSON.toJSONString(allWarehouses));
+
+
     }
 }

@@ -64,6 +64,16 @@ public class PurchaseOutboundOrderResource {
     }
 
     /**
+     * 所有仓库下拉列表
+     */
+    @Path("/getAllWarehouse")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("所有仓库下拉列表")
+    public Response findAllWarehouses(@Context ContainerRequestContext requestContext) {
+        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getAllWarehouses());
+    }
+
+    /**
      * 查询采购退货单列表
      */
     @GET
