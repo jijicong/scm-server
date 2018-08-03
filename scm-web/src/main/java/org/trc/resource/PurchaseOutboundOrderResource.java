@@ -60,7 +60,7 @@ public class PurchaseOutboundOrderResource {
     public Response findWarehouses(@Context ContainerRequestContext requestContext) {
         AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         String channelCode = aclUserAccreditInfo.getChannelCode();
-        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getWarehousesByChannelCode(channelCode));
+        return ResultUtil.createSuccessResult("获取退货仓库下拉列表", purchaseOutboundOrderBiz.getWarehousesByChannelCode(channelCode));
     }
 
     /**
@@ -71,7 +71,7 @@ public class PurchaseOutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("所有仓库下拉列表")
     public Response findAllWarehouses(@Context ContainerRequestContext requestContext) {
-        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getAllWarehouses());
+        return ResultUtil.createSuccessResult("所有仓库下拉列表", purchaseOutboundOrderBiz.getAllWarehouses());
     }
 
     /**
