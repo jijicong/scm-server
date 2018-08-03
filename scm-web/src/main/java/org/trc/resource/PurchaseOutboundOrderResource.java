@@ -66,6 +66,7 @@ public class PurchaseOutboundOrderResource {
     /**
      * 所有仓库下拉列表
      */
+    @GET
     @Path("/getAllWarehouse")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("所有仓库下拉列表")
