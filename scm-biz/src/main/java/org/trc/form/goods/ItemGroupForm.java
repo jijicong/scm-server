@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by hzgjl on 2018/7/31.
  */
-@Api("商品组新增/编辑提交表单数据")
+@Api("商品组新增提交表单数据")
 @Data
 public class ItemGroupForm implements Serializable{
 
