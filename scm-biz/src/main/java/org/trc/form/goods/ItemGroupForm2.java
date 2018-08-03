@@ -13,10 +13,10 @@ import java.util.List;
 @Api("商品组编辑传值")
 public class ItemGroupForm2 {
 
-    @FormParam("itemGroup")
+    //@FormParam("itemGroup")
     private ItemGroupVo itemGroup;
 
-    @FormParam("itemGroup")
+   // @FormParam("groupUserList")
     private List<ItemGroupUserVO> groupUserList;
 
 }
