@@ -308,7 +308,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 //                    }
 
                     //更新发货单信息
-                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(packsResponse, outboundOrder.getWarehouseCode());
+                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(packsResponse,
+                            outboundOrder.getWarehouseCode(), outboundOrderCode);
 
                     //更新发货单状态
                     this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
@@ -582,7 +583,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     //更新发货单
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmOrderPacksResponse response, String warehouseCode){
+    public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmOrderPacksResponse response, String warehouseCode,
+                                                                     String outboundOrderCode){
         OutboundDetail outboundDetail = null;
         OutboundDetailLogistics outboundDetailLogistics = null;
         OutboundPackageInfo outboundPackageInfo = null;
@@ -592,8 +594,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
         //遍历获取包裹信息
         for(ScmOrderDefaultResult result : results){
-            //发货单号
-            String outboundOrderCode = result.getOrderCode();
+//            //发货单号
+//            String outboundOrderCode = result.getOrderCode();
             //物流公司名称
             String logisticsName = result.getLogisticsName();
             //物流公司编号
