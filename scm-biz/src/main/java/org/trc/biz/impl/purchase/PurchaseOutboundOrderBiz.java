@@ -383,7 +383,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         criteria.andEqualTo("warehouseInfoId", form.getWarehouseInfoId());
         criteria.andEqualTo("supplierCode", form.getSupplierCode());
         criteria.andEqualTo("finishStatus", WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
-        criteria.andIn("status", Arrays.asList(WarehouseNoticeStatusEnum.ALL_GOODS.getCode(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+        if (StringUtils.equals(PurchaseOutboundOrderTypeEnum.SUBSTANDARD.getCode(), form.getReturnOrderType())) {
+            criteria.andEqualTo("status", WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+        } else {
+            criteria.andIn("status", Arrays.asList(WarehouseNoticeStatusEnum.ALL_GOODS.getCode(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+        }
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
         if (CollectionUtils.isEmpty(warehouseNotices)) {
             return new Pagenation<>();
@@ -1148,6 +1152,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 detail.setCanBackQuantity(inventoryInfo.get(sku.getSkuCode()));
             }
 
+            //设置货号
             for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfos) {
                 if (StringUtils.equals(sku.getSkuCode(), warehouseItemInfo.getSkuCode())) {
                     detail.setItemNo(warehouseItemInfo.getItemNo());
@@ -1155,7 +1160,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 }
             }
 
-            for (Items item : itemsList) {
+            //设置品牌名称
+           for (Items item : itemsList) {
                 if (sku.getItemId().equals(item.getId())) {
                     detail.setCategoryId(String.valueOf(item.getCategoryId()));
                     detail.setBrandId(String.valueOf(item.getBrandId()));
@@ -1168,7 +1174,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     break;
                 }
             }
-
 
             list.add(detail);
         }
