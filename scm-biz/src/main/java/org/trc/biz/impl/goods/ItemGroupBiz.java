@@ -118,7 +118,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void editDetail(ItemGroupForm2 form, AclUserAccreditInfo aclUserAccreditInfo) {
         ItemGroupVo itemGroupVo = form.getItemGroup();
-        List<ItemGroupUserVO> groupUserlistVO = form.getList();
+        List<ItemGroupUserVO> groupUserlistVO = form.getGroupUserList();
         //查询详情只用于记录日志
         ItemGroup orginEntity = queryDetailByCode(itemGroupVo.getItemGroupCode());
 

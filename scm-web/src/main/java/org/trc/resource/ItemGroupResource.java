@@ -84,7 +84,7 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_EDIT)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据商品组编码编辑详情")
-    public Response editDetail(ItemGroupForm2 itemGroupForm2 , @Context ContainerRequestContext requestContext){
+    public Response editDetail(@BeanParam ItemGroupForm2 itemGroupForm2 , @Context ContainerRequestContext requestContext){
         itemGroupBiz.editDetail(itemGroupForm2,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("商品组编辑成功","");
 
