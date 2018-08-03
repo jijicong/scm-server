@@ -358,6 +358,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     public Pagenation<PurchaseOutboundDetail> getPurchaseOutboundOrderDetail(PurchaseOutboundItemForm form, Pagenation<PurchaseOutboundDetail> page, String skus) {
         log.info("------getPurchaseOutboundOrderDetail, form:{}", JSON.toJSONString(form));
         validateParam(form);
+
+        WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(Long.valueOf(form.getWarehouseInfoId()));
+        AssertUtil.notNull(warehouseInfo, "对应仓库信息为空");
+        if(!StringUtils.equals(warehouseInfo.getOperationalNature(), ZeroToNineEnum.ZERO.getCode())){
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, String.format("%s仓库不为第三方仓", warehouseInfo.getWarehouseName()));
+        }
+
         Pagenation<Skus> pagenation = new Pagenation();
         pagenation.setStart(page.getStart());
         pagenation.setPageSize(page.getPageSize());
@@ -781,9 +788,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         warehouse.setIsValid(ZeroToNineEnum.ONE.getCode());
         //运营性质(0:第三方仓库 1:自营仓库)
         //过滤掉“运营性质”为“自营仓库”的仓库
-        warehouse.setOperationalNature(ZeroToNineEnum.ONE.getCode());
+        warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
         //已通知仓库
-        warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        //warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
         AssertUtil.notEmpty(warehouseList, "无数据，请确认【仓储管理-仓库信息管理】中存在“启用”状态，并且货主仓库状态为“通知成功”的仓库！");
 

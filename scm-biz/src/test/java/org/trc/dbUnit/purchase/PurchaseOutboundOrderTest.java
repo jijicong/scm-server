@@ -150,8 +150,8 @@ public class PurchaseOutboundOrderTest {
     @Test
     public void getPurchaseOutboundOrderDetailTest(){
         PurchaseOutboundItemForm form = new PurchaseOutboundItemForm();
-        form.setSupplierCode("GYS000166");
-        form.setWarehouseInfoId("58");
+        form.setSupplierCode("GYS000015");
+        form.setWarehouseInfoId("107");
         //退货类型1-正品，2-残品
         form.setReturnOrderType("2");
 
