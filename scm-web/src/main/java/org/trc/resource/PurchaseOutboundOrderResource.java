@@ -167,7 +167,7 @@ public class PurchaseOutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "获取采购退货单商品详情", response = PurchaseOutboundDetail.class)
     public Response getPurchaseOutboundOrderDetail(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<PurchaseOutboundDetail> page, @QueryParam("skus") String skus) {
-        return ResultUtil.createSuccessResult("根据供应商编码查询所有的有效商品成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
+        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
     }
 
     /**
