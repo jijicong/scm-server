@@ -4,6 +4,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.purchase.AuditPurchaseOrderForm;
@@ -135,4 +136,11 @@ public interface IPurchaseOutboundOrderBiz {
      */
     String cancelWarahouseAdviceAndupdate(Long id, AclUserAccreditInfo property);
 
+    /**
+     * 查询该供应商对应的品牌列表
+     *
+     * @param supplierCode 供应商Code
+     * @return
+     */
+    List<SupplierBrandExt> findSupplierBrand(String supplierCode);
 }
