@@ -185,6 +185,8 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
                 purchaseBoxInfoDetailResultVO.setBarCode(purchaseDetailTemp.getBarCode());
                 purchaseBoxInfoDetailResultVO.setSkuCode(skuCode);
                 purchaseBoxInfoDetailResultVO.setSkuName(purchaseDetailTemp.getSkuName());
+                purchaseBoxInfoDetailResultVO.setPurchasingQuantity(
+                        purchaseDetailTemp.getPurchasingQuantity()==null?"0":purchaseDetailTemp.getPurchasingQuantity().toString());
                 purchaseBoxInfoDetailResultVO.setSpecNatureInfo(purchaseDetailTemp.getSpecNatureInfo());
                 if(boxInfoMap.containsKey(skuCode)){
                     purchaseBoxInfoDetailResultVO.setPurchaseBoxInfoList(boxInfoMap.get(skuCode));

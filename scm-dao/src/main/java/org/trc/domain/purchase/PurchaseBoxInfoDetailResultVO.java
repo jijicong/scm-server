@@ -31,6 +31,8 @@ public class PurchaseBoxInfoDetailResultVO implements Serializable {
     @ApiParam("条形码")
     private String barCode;
 
+    private String purchasingQuantity;
+
     @ApiModelProperty("包装信息详情")
     @ApiParam("包装信息详情")
     private List<PurchaseBoxInfo> purchaseBoxInfoList;
