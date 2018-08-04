@@ -4,7 +4,6 @@ import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.goods.ItemGroupForm;
-import org.trc.form.goods.ItemGroupForm2;
 import org.trc.form.goods.ItemGroupQuery;
 import org.trc.util.Pagenation;
 
@@ -18,7 +17,7 @@ public interface IitemGroupBiz  {
 
     ItemGroup queryDetailByCode(String itemGroupCode);
 
-    void editDetail(ItemGroupForm2 form, AclUserAccreditInfo aclUserAccreditInfo);
+    void editDetail(ItemGroupForm form, AclUserAccreditInfo aclUserAccreditInfo);
 
     void itemGroupSave(ItemGroupForm form, AclUserAccreditInfo aclUserAccreditInfo);
 

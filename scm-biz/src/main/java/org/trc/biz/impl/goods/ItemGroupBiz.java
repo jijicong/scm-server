@@ -1,6 +1,5 @@
 package org.trc.biz.impl.goods;
 
-import com.ecfront.dew.common.$;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,20 +14,19 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ItemGroupException;
-import org.trc.form.goods.*;
+import org.trc.form.goods.ItemGroupForm;
+import org.trc.form.goods.ItemGroupQuery;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemGroupService;
 import org.trc.service.goods.IItemGroupUserService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -86,20 +84,20 @@ public class ItemGroupBiz implements IitemGroupBiz {
         }
         Set<String> userIdsSet=new HashSet<>();
         for (Object obj:list) {
-                userIdsSet.add(((ItemGroup)obj).getCreateOperator());
+            userIdsSet.add(((ItemGroup)obj).getCreateOperator());
         }
         String[] userIdArr=new String[userIdsSet.size()];
         userIdsSet.toArray(userIdArr);
         Map<String,AclUserAccreditInfo> mapTemp = userAccreditInfoService.selectByIds(userIdArr);
         for (Object obj:list) {
-                if(!StringUtils.isBlank(((ItemGroup)obj).getCreateOperator())){
-                    if(mapTemp!=null){
-                        AclUserAccreditInfo aclUserAccreditInfo =mapTemp.get(((ItemGroup)obj).getCreateOperator());
-                        if(aclUserAccreditInfo !=null){
-                            ((ItemGroup)obj).setCreateOperator(aclUserAccreditInfo.getName());
-                        }
+            if(!StringUtils.isBlank(((ItemGroup)obj).getCreateOperator())){
+                if(mapTemp!=null){
+                    AclUserAccreditInfo aclUserAccreditInfo =mapTemp.get(((ItemGroup)obj).getCreateOperator());
+                    if(aclUserAccreditInfo !=null){
+                        ((ItemGroup)obj).setCreateOperator(aclUserAccreditInfo.getName());
                     }
                 }
+            }
 
         }
     }
@@ -116,90 +114,87 @@ public class ItemGroupBiz implements IitemGroupBiz {
     //商品组编辑
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void editDetail(ItemGroupForm2 form, AclUserAccreditInfo aclUserAccreditInfo) {
-        ItemGroupVo itemGroupVo = form.getItemGroup();
-        List<ItemGroupUserVO> groupUserlistVO = form.getGroupUserList();
-        //查询详情只用于记录日志
-        ItemGroup orginEntity = queryDetailByCode(itemGroupVo.getItemGroupCode());
+    public void editDetail(ItemGroupForm form,AclUserAccreditInfo aclUserAccreditInfo) {
+        ItemGroup itemGroup = form.getItemGroup();
+        List<ItemGroupUser> groupUserList = form.getGroupUserList();
+        //查询详情便于记录日志
+        ItemGroup orginEntity = queryDetailByCode(itemGroup.getItemGroupCode());
 
 
-        AssertUtil.notNull(itemGroupVo,"根据商品组信息修改商品组失败,商品组信息为null");
-        String itemGroupName=itemGroupVo.getItemGroupName();
+        AssertUtil.notNull(itemGroup,"根据商品组信息修改商品组失败,商品组信息为null");
+        String itemGroupName=itemGroup.getItemGroupName();
         AssertUtil.notNull(itemGroupName,"商品组名称为空！");
         //商品组名称非重校验
         ItemGroup temp =findItemGroupByName(itemGroupName);
         if (temp!=null){
-            String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroupVo.getItemGroupName());
-            logger.error(msg);
-            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+            if(!StringUtils.equals(temp.getId().toString(),itemGroup.getId().toString())){
+                String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
+                logger.error(msg);
+                throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+            }
+
         }
 
 
-        String leaderName = itemGroupVo.getLeaderName();
+        String leaderName = itemGroup.getLeaderName();
 
         AssertUtil.notNull(leaderName,"请选择组长！");
-        AssertUtil.notNull(groupUserlistVO,"请至少添加一个组员！");
-
-        temp.setCreateTime(DateUtils.parseDateTime(itemGroupVo.getCreateTime()));
-        temp.setUpdateTime(Calendar.getInstance().getTime());
-        temp.setMemberName(itemGroupVo.getMemberName());
-        temp.setLeaderName(itemGroupVo.getLeaderName());
-        temp.setIsValid(itemGroupVo.getIsValid());
-        temp.setItemGroupName(itemGroupName);
-        temp.setRemark(itemGroupVo.getRemark());
-        itemGroupService.updateByPrimaryKeySelective(temp);
+        AssertUtil.notNull(groupUserList,"请至少添加一个组员！");
+        itemGroup.setUpdateTime(Calendar.getInstance().getTime());
+        itemGroupService.updateByPrimaryKeySelective(itemGroup);
 
 
         //更新用户数据
         String logMsg="";
         List<String> logDetail = new ArrayList<>();
-        List<ItemGroupUser> orginlist = queryItemGroupUserListByCode(orginEntity.getItemGroupCode());
+        List<ItemGroupUser> orginlist = queryItemGroupUserListByCode(itemGroup.getItemGroupCode());
         for (ItemGroupUser oldItemGroupUser : orginlist) {
-            List<Long> ids = groupUserlistVO.stream().map(e -> e.getId()).collect(Collectors.toList());
+            List<Long> ids = groupUserList.stream().map(e -> e.getId()).collect(Collectors.toList());
 
-            for (ItemGroupUserVO itemGroupUserVO : groupUserlistVO) {
+            for (ItemGroupUser itemGroupUser : groupUserList) {
 
                 if(!ids.contains(oldItemGroupUser.getId())){//删除
                     Integer countDel = itemGroupUserService.deleteByPrimaryKey(oldItemGroupUser.getId());
                     logMsg=logMsg+"商品组员手机号为\""+oldItemGroupUser.getPhoneNumber()+"\"的成员被删除了;";
                     logDetail.add(logMsg);
                     if (countDel==null){
-                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户删除失败，数据库操作失败",orginEntity.getItemGroupName(),oldItemGroupUser.getPhoneNumber());
+                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户删除失败，数据库操作失败",itemGroup.getItemGroupName(),oldItemGroupUser.getPhoneNumber());
                         logger.error(msg);
                         throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
                     }
                 }
 
-                if (StringUtils.isEmpty(itemGroupUserVO.getId().toString())){//id不存在为新增成员
+                if (itemGroupUser.getId()==null){//id不存在为新增成员
                     ItemGroupUser insertEntity = new ItemGroupUser();
-                    insertEntity.setName(itemGroupUserVO.getName());
-                    insertEntity.setPhoneNumber(itemGroupUserVO.getPhoneNumber());
-                    insertEntity.setIsLeader(itemGroupUserVO.getIsLeader());
-                    insertEntity.setItemGroupCode(itemGroupVo.getItemGroupCode());
+                    insertEntity.setName(itemGroupUser.getName());
+                    insertEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
+                    insertEntity.setIsLeader(itemGroupUser.getIsLeader());
+                    insertEntity.setItemGroupCode(itemGroup.getItemGroupCode());
                     insertEntity.setChannelCode(aclUserAccreditInfo.getChannelCode());
                     insertEntity.setCreateTime(Calendar.getInstance().getTime());
                     insertEntity.setUpdateTime(Calendar.getInstance().getTime());
                     insertEntity.setCreateOperator(aclUserAccreditInfo.getName());
-                    insertEntity.setItemGroupCode(orginEntity.getItemGroupCode());
+                    insertEntity.setIsValid(itemGroup.getIsValid());
                     Integer countIns = itemGroupUserService.insertSelective(insertEntity);
 
-                    logMsg=logMsg+"商品组员新增了手机号为\""+itemGroupUserVO.getPhoneNumber()+"\"的成员;";
+                    logMsg=logMsg+"商品组员新增了手机号为\""+itemGroupUser.getPhoneNumber()+"\"的成员;";
                     logDetail.add(logMsg);
                     if (countIns==null){
-                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户插入失败，数据库操作失败",itemGroupVo.getItemGroupName(),itemGroupUserVO.getPhoneNumber());
+                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户插入失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
                         logger.error(msg);
                         throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
                     }
                 }else {//修改操作
-                    ItemGroupUser updateEntity = itemGroupUserService.selectByPrimaryKey(itemGroupUserVO.getId());
-                    updateEntity.setName(itemGroupUserVO.getName());
-                    updateEntity.setPhoneNumber(itemGroupUserVO.getPhoneNumber());
-                    updateEntity.setIsLeader(itemGroupUserVO.getIsLeader());
-                    updateEntity.setItemGroupCode(itemGroupVo.getItemGroupCode());
+                    ItemGroupUser updateEntity = itemGroupUserService.selectByPrimaryKey(itemGroupUser.getId());
+                    updateEntity.setName(itemGroupUser.getName());
+                    updateEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
+                    updateEntity.setIsLeader(itemGroupUser.getIsLeader());
+                    updateEntity.setItemGroupCode(itemGroup.getItemGroupCode());
+                    updateEntity.setCreateTime(itemGroup.getCreateTime());
                     updateEntity.setUpdateTime(Calendar.getInstance().getTime());
                     Integer countUpd = itemGroupUserService.updateByPrimaryKeySelective(updateEntity);
                     if (countUpd==null){
-                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户修改失败，数据库操作失败",itemGroupVo.getItemGroupName(),oldItemGroupUser.getPhoneNumber());
+                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户修改失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
                         logger.error(msg);
                         throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
                     }
@@ -214,23 +209,23 @@ public class ItemGroupBiz implements IitemGroupBiz {
         String orginItemGroupName = orginEntity.getItemGroupName();
         String orginRemark = orginEntity.getRemark();
         String orginIsValid = orginEntity.getIsValid();
-        if (!StringUtils.equals(orginItemGroupName,itemGroupVo.getItemGroupName())){
+        if (!StringUtils.equals(orginItemGroupName,itemGroup.getItemGroupName())){
             logMsg=logMsg+"商品组名称由\""+orginItemGroupName+"\"改为\""+itemGroupName+"\";";
             logDetail.add(logMsg);
         }
-        if (!StringUtils.equals(orginRemark,itemGroupVo.getRemark())){
-            logMsg=logMsg+"备注由\""+orginRemark+"\"改为\""+itemGroupVo.getRemark()+"\";";
+        if (!StringUtils.equals(orginRemark,itemGroup.getRemark())){
+            logMsg=logMsg+"备注由\""+orginRemark+"\"改为\""+itemGroup.getRemark()+"\";";
             logDetail.add(logMsg);
         }
-        if (!StringUtils.equals(orginIsValid,itemGroupVo.getIsValid())){
+        if (!StringUtils.equals(orginIsValid,itemGroup.getIsValid())){
             String orginIsValidLog=(orginIsValid==ZeroToNineEnum.ZERO.getCode())?"停用":"启用";
-            String newIsValidLog=(itemGroupVo.getIsValid()==ZeroToNineEnum.ZERO.getCode())?"停用":"启用";
+            String newIsValidLog=(itemGroup.getIsValid()==ZeroToNineEnum.ZERO.getCode())?"停用":"启用";
             logMsg=logMsg+"状态由\""+orginIsValidLog+"\"改为\""+newIsValidLog+"\";";
             logDetail.add(logMsg);
         }
 
         String join = StringUtils.join(logDetail, ";");
-        logInfoService.recordLog(itemGroupVo,itemGroupVo.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),join,null);
+        logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),join,null);
     }
 
 

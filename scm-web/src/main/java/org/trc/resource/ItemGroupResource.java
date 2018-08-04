@@ -10,7 +10,6 @@ import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.goods.ItemGroupForm;
-import org.trc.form.goods.ItemGroupForm2;
 import org.trc.form.goods.ItemGroupFormEdit;
 import org.trc.form.goods.ItemGroupQuery;
 import org.trc.util.Pagenation;
@@ -84,8 +83,8 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_EDIT)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据商品组编码编辑详情")
-    public Response editDetail(@BeanParam ItemGroupForm2 itemGroupForm2 , @Context ContainerRequestContext requestContext){
-        itemGroupBiz.editDetail(itemGroupForm2,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response editDetail(@BeanParam ItemGroupForm form , @Context ContainerRequestContext requestContext){
+        itemGroupBiz.editDetail(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("商品组编辑成功","");
 
     }
