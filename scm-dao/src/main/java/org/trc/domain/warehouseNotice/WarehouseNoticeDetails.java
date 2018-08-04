@@ -1,5 +1,6 @@
 package org.trc.domain.warehouseNotice;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
@@ -20,6 +21,7 @@ public class WarehouseNoticeDetails implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     //'入库通知单编号',
+    @ApiModelProperty("入库通知单编号")
     @Column(name = "warehouse_notice_code")
     private String warehouseNoticeCode;
     //'商品名称',
@@ -40,21 +42,25 @@ public class WarehouseNoticeDetails implements Serializable{
     @Transient
     private String allCategoryName;
     //'采购价,单位/分',
+    @ApiModelProperty("含税单价")
     @Column(name = "purchase_price")
     private Long purchasePrice;
     //采购价格转化成元
     @Transient
     private BigDecimal purchasePriceT;
     //'采购数量',
+    @ApiModelProperty("采购数量")
     @Column(name = "purchasing_quantity")
     private Long purchasingQuantity;
     //'实际入库数量',
+    @ApiModelProperty("实际入库数量")
     @Column(name = "actual_storage_quantity")
     private Long actualStorageQuantity;
     //'创建时间,格式yyyy-mm-dd hh:mi:ss',
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
     //'入库时间,格式yyyy-mm-dd hh:mi:ss',
+    @ApiModelProperty("实际入库时间")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date storageTime;
     
@@ -89,9 +95,11 @@ public class WarehouseNoticeDetails implements Serializable{
     @Column(name = "status")
     private Integer status;
     //正品入库数量
+    @ApiModelProperty("正品入库数量")
     @Column(name = "normal_storage_quantity")
     private Long normalStorageQuantity;
     //残次品入库数量
+    @ApiModelProperty("残次品入库数量")
     @Column(name = "defective_storage_quantity")
     private Long defectiveStorageQuantity;
     //货主编码
@@ -112,6 +120,7 @@ public class WarehouseNoticeDetails implements Serializable{
     private Long skuStockId;
 
     @Transient
+    @ApiModelProperty("采购单号")
     private String purchaseOrderCode;
 
     public String getPurchaseOrderCode() {

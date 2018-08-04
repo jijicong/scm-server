@@ -10,6 +10,7 @@ import org.trc.biz.purchase.IPurchaseOutboundOrderBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.purchase.AuditPurchaseOrderForm;
@@ -257,5 +258,11 @@ public class PurchaseOutboundOrderTest {
         System.out.println(JSON.toJSONString(allWarehouses));
 
 
+    }
+
+    @Test
+    public void findSupplierBrand(){
+        List<SupplierBrandExt> supplierBrand = purchaseOutboundOrderBiz.findSupplierBrand("GYS000009");
+        System.out.println(JSON.toJSONString(supplierBrand));
     }
 }

@@ -20,6 +20,7 @@ import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrand;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.taxrate.TaxRate;
 import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
@@ -142,6 +143,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
     @Autowired
     private IPurchaseOrderService purchaseOrderService;
+
 
     /**
      * 查询采购退货单列表
@@ -481,6 +483,29 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             return updateOutboundOrderStatus(order, aclUserAccreditInfo);
         }
 
+    }
+
+    /**
+     * 查询该供应商对应的品牌列表
+     *
+     * @param supplierCode 供应商Code
+     * @return
+     */
+    @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
+    public List<SupplierBrandExt> findSupplierBrand(String supplierCode) {
+        AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
+        List<SupplierBrandExt> supplierBrandExts = null;
+        try {
+            supplierBrandExts = supplierBrandService.selectSupplierBrandNames(supplierCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if(CollectionUtils.isEmpty(supplierBrandExts)){
+            return new ArrayList<>();
+        }
+        supplierBrandExts.sort(Comparator.comparing(SupplierBrandExt::getBrandName));
+        return supplierBrandExts;
     }
 
     /**

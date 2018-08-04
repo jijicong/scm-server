@@ -75,12 +75,25 @@ public class PurchaseOutboundOrderResource {
     }
 
     /**
+     * 查询该供应商对应的品牌列表
+     */
+    @GET
+    @Path("/getBrands/{supplierCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("所有仓库下拉列表")
+    public Response findSupplierBrand(@ApiParam(name = "supplierCode", value = "供应商Code", required = true) @PathParam("supplierCode") String supplierCode) throws Exception {
+
+        return ResultUtil.createSuccessResult("根据供应商编码,查询该供应商对应的品牌成功!", purchaseOutboundOrderBiz.findSupplierBrand(supplierCode));
+
+    }
+
+    /**
      * 查询采购退货单列表
      */
     @GET
     @Path("/pagelist")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("查询采购退货单列表")
+    @ApiOperation(value = "查询采购退货单列表", response = PurchaseOutboundOrder.class)
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "purchaseOutboundOrderCode", value = "采购退货单编号", required = false),
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "supplierCode", value = "供应商Code", required = false),
@@ -117,7 +130,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("getOrder/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("根据采购退货单Id查询采购退货单")
+    @ApiOperation(value = "根据采购退货单Id查询采购退货单", response = PurchaseOutboundOrder.class)
     public Response getPurchaseOutboundOrder(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(id));
     }
@@ -152,9 +165,9 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/getDetail")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("获取采购退货单商品详情")
+    @ApiOperation(value = "获取采购退货单商品详情", response = PurchaseOutboundDetail.class)
     public Response getPurchaseOutboundOrderDetail(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<PurchaseOutboundDetail> page, @QueryParam("skus") String skus) {
-        return ResultUtil.createSuccessResult("根据供应商编码查询所有的有效商品成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
+        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
     }
 
     /**
@@ -163,7 +176,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/getPurchaseHistory")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("采购退货单获取采购历史详情")
+    @ApiOperation(value = "采购退货单获取采购历史详情", response = WarehouseNoticeDetails.class)
     public Response getPurchaseHistory(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<WarehouseNoticeDetails> page) {
         return ResultUtil.createSuccessResult("获取采购历史详情成功", purchaseOutboundOrderBiz.getPurchaseHistory(form, page));
     }
@@ -198,7 +211,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/auditPagelist")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("获取采购退货单审核列表")
+    @ApiOperation(value = "获取采购退货单审核列表", response = PurchaseOutboundOrder.class)
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "purchaseOutboundOrderCode", value = "采购退货单编号", required = false),
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "supplierCode", value = "供应商Code", required = false),
@@ -222,7 +235,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("getAudit/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("采购退货单审核操作，获取详情")
+    @ApiOperation(value = "采购退货单审核操作，获取详情", response = PurchaseOutboundOrder.class)
     public Response getPurchaseOutboundAuditOrder(@ApiParam(value = "采购退货单Id", required = true) @PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundAuditOrder(id));
     }
