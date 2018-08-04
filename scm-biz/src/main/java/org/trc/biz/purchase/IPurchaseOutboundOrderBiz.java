@@ -4,8 +4,10 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
+import org.trc.form.purchase.AuditPurchaseOrderForm;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.Pagenation;
@@ -69,29 +71,12 @@ public interface IPurchaseOutboundOrderBiz {
     Pagenation<WarehouseNoticeDetails> getPurchaseHistory(PurchaseOutboundItemForm form, Pagenation<WarehouseNoticeDetails> page);
 
     /**
-     * 作废出库通知操作
-     *
-     * @param form
-     * @param aclUserAccreditInfo
-     */
-    void cancelWarahouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
-
-    /**
-     * 更新采购退货单状态
-     *
-     * @param form
-     * @param aclUserAccreditInfo
-     * @return
-     */
-    String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
-
-    /**
      * 采购退货单出库通知
      *
-     * @param form
+     * @param id                  采购退货单Id
      * @param aclUserAccreditInfo
      */
-    void warehouseAdvice(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    void warehouseAdvice(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 采购退货单审核操作，获取详情
@@ -117,7 +102,7 @@ public interface IPurchaseOutboundOrderBiz {
      * @param form
      * @param aclUserAccreditInfo
      */
-    void auditPurchaseOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    void auditPurchaseOrder(AuditPurchaseOrderForm form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 获取退货仓库下拉列表
@@ -128,6 +113,13 @@ public interface IPurchaseOutboundOrderBiz {
     List<WarehouseInfo> getWarehousesByChannelCode(String channelCode);
 
     /**
+     * 所有仓库下拉列表
+     *
+     * @return
+     */
+    List<WarehouseInfo> getAllWarehouses();
+
+    /**
      * 获取供应商名称下拉列表
      *
      * @param channelCode
@@ -135,12 +127,20 @@ public interface IPurchaseOutboundOrderBiz {
      */
     List<Supplier> getSuppliersByChannelCode(String channelCode);
 
+    /**
+     * 更新采购退货单状态或出库通知作废操作
+     *
+     * @param id       采购退货单Id
+     * @param property
+     * @return
+     */
+    String cancelWarahouseAdviceAndupdate(Long id, AclUserAccreditInfo property);
 
     /**
-     *  采购退货单保存或
-     * @param form  采购退货单数据
-     * @param code  保存类型
-     * @param property
+     * 查询该供应商对应的品牌列表
+     *
+     * @param supplierCode 供应商Code
+     * @return
      */
-    //void savePurchaseOutboundOrder(PurchaseOutboundOrderDataForm form, String code, AclUserAccreditInfo property);
+    List<SupplierBrandExt> findSupplierBrand(String supplierCode);
 }

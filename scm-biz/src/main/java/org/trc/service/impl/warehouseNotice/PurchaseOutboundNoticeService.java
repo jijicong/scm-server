@@ -1,27 +1,37 @@
 package org.trc.service.impl.warehouseNotice;
 
+import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
-import org.trc.enums.WarehouseNoticeStatusEnum;
+import org.trc.enums.LogOperationEnum;
+import org.trc.enums.OrderCancelResultEnum;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.mapper.impower.AclUserAccreditInfoMapper;
 import org.trc.mapper.supplier.ISupplierMapper;
 import org.trc.mapper.warehouseInfo.IWarehouseInfoMapper;
 import org.trc.mapper.warehouseNotice.IPurchaseOutboundNoticeMapper;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impl.BaseService;
+import org.trc.service.purchase.IPurchaseOutboundDetailService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
 import tk.mybatis.mapper.entity.Example;
@@ -44,6 +54,12 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	private IPurchaseOutboundNoticeMapper noticeMapper;
 	@Autowired
 	private ISupplierMapper supplierMapper;
+	@Autowired
+	private IPurchaseOutboundDetailService detailService;
+    @Autowired
+    private ILogInfoService logInfoService;
+    
+    private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeService.class);
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> pageList (PurchaseOutboundNoticeForm form,
@@ -215,6 +231,45 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		PurchaseOutboundNotice queryRecord = new PurchaseOutboundNotice();
 		queryRecord.setEntryOrderId(entryOrderCode); // 仓库反馈退货出库单号
 		return noticeMapper.selectOne(queryRecord);
+	}
+
+	@Override
+	@Transactional
+	public void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String entryOrderCode) {
+		
+        if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
+        	
+        	PurchaseOutboundNoticeStatusEnum status = null;// 退货出库通知单状态
+        	PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(entryOrderCode);
+        	
+        	String logRemark = null; //日志备注
+        	
+            ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
+            String flag = response.getFlag();
+            
+            if (StringUtils.equals(flag, OrderCancelResultEnum.CANCEL_SUCC.code)) {//取消成功
+            	
+            	status = PurchaseOutboundNoticeStatusEnum.CANCEL;
+            	logRemark = "取消结果:取消成功";
+            	
+            } else if (StringUtils.equals(flag, OrderCancelResultEnum.CANCEL_FAIL.code)) { // 取消失败 状态复原
+            	
+            	status = PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING;
+            	logRemark = "取消结果:取消失败；原因：" + response.getMessage();
+
+            }
+            
+    		/**
+    		 * 更新操作
+    		 */
+    		this.updateById(status, notice.getId(), null, null);
+    		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
+    		// 日志 admin??
+            logInfoService.recordLog(notice, notice.getId().toString(), "admin",
+            		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), logRemark, null);
+        } else {
+        	logger.error("wms采购退货出库单号:{},取消出库异常：{}", entryOrderCode, appResult.getDatabuffer());
+        }		
 	}
 	
 }
