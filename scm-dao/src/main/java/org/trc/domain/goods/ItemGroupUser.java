@@ -2,8 +2,10 @@ package org.trc.domain.goods;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
+import org.trc.custom.CustomDateDeserializer;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.BaseDO;
 
@@ -71,10 +73,12 @@ public class ItemGroupUser implements Serializable{
     private String isValid; //是否有效:0-否,1-是
 
     @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
     @ApiModelProperty("创建时间")
     private Date createTime; //创建时间
 
     @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
     @ApiModelProperty("更新时间")
     private Date updateTime; //更新时间
 }
