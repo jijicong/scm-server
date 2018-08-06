@@ -2,6 +2,9 @@ package org.trc.service.impl.purchase;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
@@ -10,6 +13,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.mapper.purchase.IPurchaseOutboundDetailMapper;
 import org.trc.service.impl.BaseService;
+import org.trc.service.impl.warehouseNotice.PurchaseOutboundNoticeService;
 import org.trc.service.purchase.IPurchaseOutboundDetailService;
 
 import tk.mybatis.mapper.entity.Example;
@@ -25,6 +29,8 @@ public class PurchaseOutboundDetailService extends BaseService<PurchaseOutboundD
 
 	@Autowired
 	private IPurchaseOutboundDetailMapper detailMapper;
+	
+	private Logger logger = LoggerFactory.getLogger(PurchaseOutboundDetailService.class);
 	
 	@Override
 	public List<PurchaseOutboundDetail> selectDetailByNoticeCode(String outboundNoticeCode) {
@@ -42,6 +48,9 @@ public class PurchaseOutboundDetailService extends BaseService<PurchaseOutboundD
 		updateRecord.setStatus(status.getCode());
 		Example example = new Example(PurchaseOutboundDetail.class);
 		Example.Criteria ca = example.createCriteria();
+		if (StringUtils.isBlank(outboundNoticeCode)) {
+			throw new IllegalArgumentException("invoking function updateByOrderCode with outboundNoticeCode null!");
+		}
 		ca.andEqualTo("outboundNoticeCode", outboundNoticeCode);
 		ca.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
 		detailMapper.updateByExampleSelective(updateRecord, example);

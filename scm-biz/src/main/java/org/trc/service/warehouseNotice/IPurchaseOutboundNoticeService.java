@@ -19,7 +19,7 @@ public interface IPurchaseOutboundNoticeService extends IBaseService<PurchaseOut
 
 	List<PurchaseOutboundNotice> selectNoticeBycode(String code);
 
-	void updateById(PurchaseOutboundNoticeStatusEnum status, Long id, String errMsg, String wmsEntryRtCode, String entryRtCode);
+	void updateById(PurchaseOutboundNoticeStatusEnum status, Long id, String errMsg, String wmsEntryRtCode);
 
 	void generateNames(Pagenation<PurchaseOutboundNotice> resultPage);
 
@@ -29,6 +29,6 @@ public interface IPurchaseOutboundNoticeService extends IBaseService<PurchaseOut
 
 	void updateCancelOrder(AppResult<ScmOrderCancelResponse> responseAppResult, String orderCode);
 
-	void updateEntryReturn(AppResult responseResult);
+	void updateEntryReturn(ScmEntryReturnDetailResponse resp);
 
 }

@@ -1,5 +1,6 @@
 package org.trc.biz.impl.warehouseNotice;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -78,6 +79,8 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     private ILogInfoService logInfoService;
     
     private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeBiz.class);
+    
+    public static final String SUCCESS = "200";
     
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
@@ -182,7 +185,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		/**
 		 * 更新操作
 		 */
-		noticeService.updateById(status, notice.getId(), errMsg, wmsEntryRtCode, null);
+		noticeService.updateById(status, notice.getId(), errMsg, wmsEntryRtCode);
 		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：出库仓接收成功（失败）; 操作人：仓库名称; 备注：失败原因)
@@ -191,6 +194,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public Response cancel(String code, String cancelReson, AclUserAccreditInfo useInfo) {
 		
 		AssertUtil.notBlank(cancelReson, "取消原因不能为空");
@@ -236,7 +240,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		/**
 		 * 更新操作
 		 */
-		noticeService.updateById(cancelSts, notice.getId(), null, null, null);
+		noticeService.updateById(cancelSts, notice.getId(), null, null);
 		detailService.updateByOrderCode(cancelSts, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：取消出库; 操作人：仓库名称; 备注：取消原因+取消结果)
@@ -341,7 +345,15 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
         	threadPool.execute(() -> {
         		AppResult responseResult = warehouseApiService.entryReturnDetail(req);
         		try {
-        			noticeService.updateEntryReturn(responseResult);
+        			 if (StringUtils.equals(responseResult.getAppcode(), ResponseAck.SUCCESS_CODE)) { // 成功
+        				 List<ScmEntryReturnDetailResponse> respList = (List<ScmEntryReturnDetailResponse>) responseResult.getResult();
+        				 for (ScmEntryReturnDetailResponse resp : respList) {
+        					 this.updateEntryReturn(resp);
+        				 }
+    				 } else {
+    					 logger.error("采购退货出库单号:{},定时任务查询出库单详情异常:{}", 
+    							 req.getWmsEntryReturnNoticeCode(),responseResult.getDatabuffer());
+    				 }
         		} catch (Exception e) {
         			logger.error("采购退货出库单号:{},定时任务查询出库单详情异常：{}, 异常原因：", 
         					req.getWmsEntryReturnNoticeCode(), e);
@@ -349,6 +361,15 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
         	});
         }
         
+    }
+    
+    private void updateEntryReturn(ScmEntryReturnDetailResponse resp) {
+		 try {
+			 noticeService.updateEntryReturn(resp);
+		 } catch (Exception e) {
+			logger.error("采购退货出库单号:{},定时任务查询出库单详情异常：{}, 异常原因：", 
+					resp.getOutboundNoticeCode(), e);
+		 }
     }
     
     
