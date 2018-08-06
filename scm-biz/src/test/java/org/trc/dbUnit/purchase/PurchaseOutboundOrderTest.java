@@ -41,7 +41,10 @@ public class PurchaseOutboundOrderTest {
 
     @Test
     public void getPurchaseOutboundOrderListTest(){
-        Pagenation<PurchaseOutboundOrder> purchaseOutboundOrderPagenation = purchaseOutboundOrderBiz.purchaseOutboundOrderPageList(new PurchaseOutboundOrderForm(), new Pagenation<>(), "YWX001");
+        PurchaseOutboundOrderForm form = new PurchaseOutboundOrderForm();
+        //退货类型1-正品，2-残品
+        form.setReturnOrderType("1");
+        Pagenation<PurchaseOutboundOrder> purchaseOutboundOrderPagenation = purchaseOutboundOrderBiz.purchaseOutboundOrderPageList(form, new Pagenation<>(), "YWX001");
         System.out.println(JSON.toJSONString(purchaseOutboundOrderPagenation));
     }
 

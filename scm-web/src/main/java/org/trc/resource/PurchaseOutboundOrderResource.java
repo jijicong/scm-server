@@ -178,7 +178,7 @@ public class PurchaseOutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "采购退货单获取采购历史详情", response = WarehouseNoticeDetails.class)
     public Response getPurchaseHistory(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<WarehouseNoticeDetails> page) {
-        return ResultUtil.createSuccessResult("获取采购历史详情成功", purchaseOutboundOrderBiz.getPurchaseHistory(form, page));
+        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getPurchaseHistory(form, page));
     }
 
     /**
