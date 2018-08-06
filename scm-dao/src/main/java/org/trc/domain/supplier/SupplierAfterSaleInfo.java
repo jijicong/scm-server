@@ -35,6 +35,18 @@ public class SupplierAfterSaleInfo extends ScmDO{
     @FormParam("goodsReturnStrategy")
     @Length(max = 3072, message = "退货策略长度不能超过3072个")
     private String goodsReturnStrategy;
+    @FormParam("saleProvince")
+    @NotEmpty
+    @Length(max = 32, message = "省编码长度不能超过32个")
+    private String saleProvince;
+    @FormParam("saleCity")
+    @NotEmpty
+    @Length(max = 32, message = "城市市编码长度不能超过32个")
+    private String saleCity;
+    @FormParam("saleArea")
+    @NotEmpty
+    @Length(max = 32, message = "区编码长度不能超过32个")
+    private String saleArea;
 
     public Long getId() {
         return id;
@@ -90,5 +102,29 @@ public class SupplierAfterSaleInfo extends ScmDO{
 
     public void setGoodsReturnStrategy(String goodsReturnStrategy) {
         this.goodsReturnStrategy = goodsReturnStrategy == null ? null : goodsReturnStrategy.trim();
+    }
+
+    public String getSaleProvince() {
+        return saleProvince;
+    }
+
+    public void setSaleProvince(String saleProvince) {
+        this.saleProvince = saleProvince;
+    }
+
+    public String getSaleCity() {
+        return saleCity;
+    }
+
+    public void setSaleCity(String saleCity) {
+        this.saleCity = saleCity;
+    }
+
+    public String getSaleArea() {
+        return saleArea;
+    }
+
+    public void setSaleArea(String saleArea) {
+        this.saleArea = saleArea;
     }
 }

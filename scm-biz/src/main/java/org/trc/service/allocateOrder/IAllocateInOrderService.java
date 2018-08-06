@@ -5,6 +5,6 @@ import org.trc.service.IBaseService;
 
 public interface IAllocateInOrderService extends IBaseService<AllocateInOrder, Long>{
 
-	void updateInOrderById(String status, Long id, String errMsg, String wmsAllocatInCode);
+	void updateInOrderById(String status, Long id, String errMsg, String wmsAllocatInCode, Integer orderSeq);
 
 }

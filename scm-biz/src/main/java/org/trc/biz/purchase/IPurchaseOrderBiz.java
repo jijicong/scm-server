@@ -21,11 +21,13 @@ public interface IPurchaseOrderBiz {
     Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page,String channelCode) ;
     /**
      * 根据渠道用户的id查询对应的供应商
+     *
+     * @param supplierName
      * @param channelCode
      * @return
      * @
      */
-    List<Supplier> findSuppliersByChannelCode(String channelCode) ;
+    List<Supplier> findSuppliersByChannelCode(String channelCode, String supplierName) ;
 
     /**
      * 根据供应商的code查询可采购的商品列表-(排除已经在采购列表出现的商品)

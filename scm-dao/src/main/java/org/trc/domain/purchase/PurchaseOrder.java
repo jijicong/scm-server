@@ -2,7 +2,6 @@ package org.trc.domain.purchase;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.MoneySerializer;
 import org.trc.domain.BaseDO;
 
@@ -20,9 +19,11 @@ import java.math.BigDecimal;
  */
 public class PurchaseOrder extends BaseDO{
 
-    private static final Long serialVersionUID = 1L;
-
-    @PathParam("id")
+    /**
+	 *
+	 */
+	private static final long serialVersionUID = -4743778003296714026L;
+	@PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -101,8 +102,8 @@ public class PurchaseOrder extends BaseDO{
      @Transient
      private BigDecimal totalFeeD;//'采购总金额,单位/分',
      @FormParam("totalFee")
-     @JsonSerialize(using = MoneySerializer.class)
-     private Long totalFee;//'采购总金额,单位/分',
+     //@JsonSerialize(using = MoneySerializer.class)
+     private BigDecimal totalFee;//'采购总金额,单位/分',
      @FormParam("abnormalRemark")
      @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
      private String abnormalRemark;//入库异常说明*/
@@ -127,6 +128,12 @@ public class PurchaseOrder extends BaseDO{
     @Length(max = 100, message = "发件方详细地址字母和数字不能超过100个")
     private String senderAddress;//发件方详细地址
 
+    /**
+     * v2.5 入库状态:0-等待入库,1-全部入库,2-部分入库,3-入库异常,其他情况为null
+     */
+    @FormParam("warehouseNoticeStatus")
+    private String warehouseNoticeStatus;
+
     @Transient
     private String senderProvinceName;
 
@@ -148,6 +155,29 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("boxInfoStatus")
     //装箱信息状态：0-未完成，1-已完成
     private String boxInfoStatus;
+
+    @Transient
+    private String noticeStatus;
+
+    //审核意见  20180720 add
+    @Transient
+    private String auditOpinion;
+
+    public String getAuditOpinion() {
+		return auditOpinion;
+	}
+
+	public void setAuditOpinion(String auditOpinion) {
+		this.auditOpinion = auditOpinion;
+	}
+
+	public String getNoticeStatus() {
+        return noticeStatus;
+    }
+
+    public void setNoticeStatus(String noticeStatus) {
+        this.noticeStatus = noticeStatus;
+    }
 
     public String getHandlerPriorityName() {
         return handlerPriorityName;
@@ -333,11 +363,11 @@ public class PurchaseOrder extends BaseDO{
         this.remark = remark;
     }
 
-    public Long getTotalFee() {
+    public BigDecimal getTotalFee() {
         return totalFee;
     }
 
-    public void setTotalFee(Long totalFee) {
+    public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
 
@@ -532,6 +562,14 @@ public class PurchaseOrder extends BaseDO{
 
     public void setSenderCityName(String senderCityName) {
         this.senderCityName = senderCityName;
+    }
+
+    public String getWarehouseNoticeStatus() {
+        return warehouseNoticeStatus;
+    }
+
+    public void setWarehouseNoticeStatus(String warehouseNoticeStatus) {
+        this.warehouseNoticeStatus = warehouseNoticeStatus;
     }
 
     public String getLogisticsCorporationName() {

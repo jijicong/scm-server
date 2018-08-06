@@ -46,6 +46,20 @@ public class PurchaseOrderForm extends QueryModel{
     @QueryParam("purchaseGroup")
     private String  purchaseGroup;
 
+    /**
+     * v2.5 入库状态:0-等待入库,1-全部入库,2-部分入库,3-入库异常,其他情况为null
+     */
+    @QueryParam("warehouseNoticeStatus")
+    private String warehouseNoticeStatus;
+
+    public String getWarehouseNoticeStatus() {
+        return warehouseNoticeStatus;
+    }
+
+    public void setWarehouseNoticeStatus(String warehouseNoticeStatus) {
+        this.warehouseNoticeStatus = warehouseNoticeStatus;
+    }
+
     public String getPurchaseOrderCode() {
         return purchaseOrderCode;
     }
@@ -84,14 +98,6 @@ public class PurchaseOrderForm extends QueryModel{
 
     public void setPurchaseType(String purchaseType) {
         this.purchaseType = purchaseType;
-    }
-
-    public String getPurchaseGroup() {
-        return purchaseGroup;
-    }
-
-    public void setPurchaseGroup(String purchaseGroup) {
-        this.purchaseGroup = purchaseGroup;
     }
 
     @Override

@@ -15,7 +15,11 @@ import javax.ws.rs.PathParam;
  * Created by sone on 2017/5/19.
  */
 public class PurchaseGroup extends BaseDO{
-    @PathParam("id")
+	
+    /**
+	 */
+	private static final long serialVersionUID = -585877427224510655L;
+	@PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

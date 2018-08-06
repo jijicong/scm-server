@@ -15,6 +15,9 @@
         WHERE
             is_valid = '1'
             AND supplier_kind_code = 'purchase'
+            <if test="supplierName != '' and supplierName != null">
+                AND supplier_name LIKE CONCAT('%', #{supplierName}, '%')
+            </if>
             AND supplier_code IN (
                 SELECT
                 supplier_code
