@@ -679,6 +679,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, msg);
             }
 
+            //出库通知添加字段
+            setDetailColumn(purchaseOutboundOrder);
+
             //更新采购退货单商品详情状态
             PurchaseOutboundDetail purchaseOutboundDetail = new PurchaseOutboundDetail();
             purchaseOutboundDetail.setOutboundStatus(PurchaseOutboundStatusEnum.WAIT.getCode());
@@ -703,6 +706,36 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 }
             } catch (Exception e) {
                 log.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:{}", id, identifier, e);
+            }
+        }
+    }
+
+    private void setDetailColumn(PurchaseOutboundOrder purchaseOutboundOrder) {
+        Example example1 = new Example(PurchaseOutboundDetail.class);
+        Example.Criteria criteria1 = example1.createCriteria();
+        criteria1.andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
+        List<PurchaseOutboundDetail> list = purchaseOutboundDetailService.selectByExample(example1);
+        AssertUtil.notEmpty(list, String.format("出库通知失败，%s对应仓库商品信息为空", purchaseOutboundOrder.getPurchaseOutboundOrderCode()));
+        List<String> skuCodes = list.stream().map(PurchaseOutboundDetail::getSkuCode).collect(Collectors.toList());
+
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseInfoId", purchaseOutboundOrder.getWarehouseInfoId());
+        criteria.andIn("skuCode", skuCodes);
+        List<WarehouseItemInfo> itemInfos = warehouseItemInfoService.selectByExample(example);
+        AssertUtil.notEmpty(itemInfos, "出库通知失败，对应仓库商品信息异常");
+        for(PurchaseOutboundDetail detail : list){
+            for(WarehouseItemInfo item : itemInfos){
+                if(StringUtils.equals(detail.getSkuCode(), item.getSkuCode())){
+                    PurchaseOutboundDetail outboundDetail = new PurchaseOutboundDetail();
+                    outboundDetail.setId(detail.getId());
+                    outboundDetail.setWarehouseItemId(item.getWarehouseItemId());
+                    int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(outboundDetail);
+                    if(i < 1){
+                        throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, String.format("%s出库通知失败，添加仓库商品id失败", purchaseOutboundOrder.getPurchaseOutboundOrderCode()));
+                    }
+                    break;
+                }
             }
         }
     }
