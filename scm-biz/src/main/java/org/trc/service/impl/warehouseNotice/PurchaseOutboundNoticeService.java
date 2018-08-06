@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -15,14 +16,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OrderCancelResultEnum;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailItem;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnItem;
 import org.trc.mapper.impower.AclUserAccreditInfoMapper;
 import org.trc.mapper.supplier.ISupplierMapper;
 import org.trc.mapper.warehouseInfo.IWarehouseInfoMapper;
@@ -32,6 +38,7 @@ import org.trc.service.impl.BaseService;
 import org.trc.service.purchase.IPurchaseOutboundDetailService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
 import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 
 import tk.mybatis.mapper.entity.Example;
@@ -58,6 +65,9 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	private IPurchaseOutboundDetailService detailService;
     @Autowired
     private ILogInfoService logInfoService;
+    
+    private final static String CANCELLED = "400"; //400.已取消
+    private final static String FINISH = "200";  // 200.完成
     
     private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeService.class);
 
@@ -141,12 +151,14 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 	}
 
 	@Override
-	public void updateById(PurchaseOutboundNoticeStatusEnum status, Long id, String errMsg, String wmsEntryRtCode) {
+	public void updateById(PurchaseOutboundNoticeStatusEnum status, Long id, 
+			String errMsg, String wmsEntryRtCode, String entryRtCode) {
 		PurchaseOutboundNotice updateRecord = new PurchaseOutboundNotice();
 		updateRecord.setId(id);
 		updateRecord.setStatus(status.getCode());
 		updateRecord.setFailureCause(errMsg);
 		updateRecord.setEntryOrderId(wmsEntryRtCode);
+		updateRecord.setOutboundNoticeCode(entryRtCode);
 		noticeMapper.updateByPrimaryKeySelective(updateRecord);		
 	}
 
@@ -262,7 +274,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
     		/**
     		 * 更新操作
     		 */
-    		this.updateById(status, notice.getId(), null, null);
+    		this.updateById(status, notice.getId(), null, null, null);
     		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
     		// 日志 admin??
             logInfoService.recordLog(notice, notice.getId().toString(), "admin",
@@ -270,6 +282,35 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
         } else {
         	logger.error("wms采购退货出库单号:{},取消出库异常：{}", entryOrderCode, appResult.getDatabuffer());
         }		
+	}
+
+	@Override
+	public void updateEntryReturn(AppResult appResult) {
+		
+		 if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
+			 List<ScmEntryReturnDetailResponse> respList = (List<ScmEntryReturnDetailResponse>) appResult.getResult();
+			 for (ScmEntryReturnDetailResponse resp : respList) {
+				 String code = resp.getOutboundNoticeCode();
+				 if (CANCELLED.equals(resp.getStatus())) { // 已取消
+					 this.updateById(PurchaseOutboundNoticeStatusEnum.CANCEL, null, null, 
+							 resp.getWmsEntryReturnNoticeCode(), code);
+				 } else if (FINISH.equals(resp.getStatus())) { // 已完成
+					 List<PurchaseOutboundDetail> detailList = detailService.selectDetailByNoticeCode(code);
+					 
+					 List<String> skuCodeList = detailList.stream().map(
+							PurchaseOutboundDetail :: getSkuCode).collect(Collectors.toList());
+						
+					
+				        
+					 List<ScmEntryReturnDetailItem> itemList = resp.getItemList();
+					 for (ScmEntryReturnDetailItem item : itemList) {
+					 }
+				 }
+			 }
+		 } else {
+			 logger.error("查询采购出库单异常：{}", appResult.getDatabuffer());
+		 }
+		
 	}
 	
 }

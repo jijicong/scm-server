@@ -1,7 +1,5 @@
 package org.trc.biz.impl.warehouseNotice;
 
-import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +30,8 @@ import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
 import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailRequest;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnItem;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
@@ -44,9 +44,12 @@ import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.service.warehouseNotice.IPurchaseOutboundNoticeService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
+import org.trc.util.ListSplit;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
+
+import com.alibaba.fastjson.JSON;
 
 /**
  * Description〈〉
@@ -76,7 +79,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     
     private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeBiz.class);
     
-    private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
 	@Override
 	public Pagenation<PurchaseOutboundNotice> getPageList(PurchaseOutboundNoticeForm form,
@@ -142,15 +145,10 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 			
 			List<ScmEntryReturnItem> list = new ArrayList<>();
 	        for (PurchaseOutboundDetail sku : skuList) {
-	        	for (WarehouseItemInfo info : whiList) {
-					if (StringUtils.equals(info.getSkuCode(), sku.getSkuCode())) {
-						item = new ScmEntryReturnItem();
-						item.setItemId(info.getWarehouseItemId());
-						item.setReturnQuantity(sku.getOutboundQuantity());
-						list.add(item);
-						break;
-					}
-				}
+				item = new ScmEntryReturnItem();
+				item.setItemId(sku.getWarehouseItemId());
+				item.setReturnQuantity(sku.getOutboundQuantity());
+				list.add(item);
 	        }
 	        request.setEntryOrderItemList(list);
 			
@@ -184,7 +182,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		/**
 		 * 更新操作
 		 */
-		noticeService.updateById(status, notice.getId(), errMsg, wmsEntryRtCode);
+		noticeService.updateById(status, notice.getId(), errMsg, wmsEntryRtCode, null);
 		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：出库仓接收成功（失败）; 操作人：仓库名称; 备注：失败原因)
@@ -238,7 +236,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		/**
 		 * 更新操作
 		 */
-		noticeService.updateById(cancelSts, notice.getId(), null, null);
+		noticeService.updateById(cancelSts, notice.getId(), null, null, null);
 		detailService.updateByOrderCode(cancelSts, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：取消出库; 操作人：仓库名称; 备注：取消原因+取消结果)
@@ -294,18 +292,63 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 
         //调用接口
         for (ScmOrderCancelRequest request : requests) {
-        	cachedThreadPool.execute(() -> {
+        	threadPool.execute(() -> {
                 //调用接口
                 AppResult<ScmOrderCancelResponse> responseAppResult = warehouseApiService.orderCancel(request);
                 //回写数据
                 try {
                 	noticeService.updateCancelOrder(responseAppResult, request.getOrderCode());
                 } catch (Exception e) {
-                    logger.error("采购退货出库单号:{},定时任务取消入库异常：{}, 异常原因：", 
-                    		request.getOrderCode(), responseAppResult.getResult(), e);
+                    logger.error("采购退货出库单号:{},定时任务取消入库异常, 异常原因：", 
+                    		request.getOrderCode(), e);
                 }
         	});
         }
+    }
+    
+    /**
+     * 退货出库通知单查询详情 定时任务
+     */
+    @Override
+    public void entryReturnDetailQuery() {
+    	
+        if (!realIpService.isRealTimerService()) {
+        	return;
+        }
+        
+        // 查询满足条件(出库仓接收成功)的出库通知单
+        List<PurchaseOutboundNotice> noticeList = noticeService.
+        		selectNoticeByStatus(PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING);
+
+        if (CollectionUtils.isEmpty(noticeList)) {
+        	return;
+        }
+        
+        // 接口支持一次查询十个单号查询，需要分割符合条件的采购
+        List<List<PurchaseOutboundNotice>> splitList = ListSplit.split(noticeList, 10);
+        //分批调用接口
+        List<ScmEntryReturnDetailRequest> reqList = new ArrayList<>();
+        ScmEntryReturnDetailRequest request = null;
+        for (List<PurchaseOutboundNotice> splitOneList : splitList) {
+        	String reqCodeList = splitOneList.stream()
+        			.map(PurchaseOutboundNotice :: getEntryOrderId).collect(Collectors.joining(","));
+        	request = new ScmEntryReturnDetailRequest();
+        	request.setWmsEntryReturnNoticeCode(reqCodeList);
+        	request.setWarehouseType("JD");
+        	reqList.add(request);
+        }
+        for (ScmEntryReturnDetailRequest req : reqList) {
+        	threadPool.execute(() -> {
+        		AppResult responseResult = warehouseApiService.entryReturnDetail(req);
+        		try {
+        			noticeService.updateEntryReturn(responseResult);
+        		} catch (Exception e) {
+        			logger.error("采购退货出库单号:{},定时任务查询出库单详情异常：{}, 异常原因：", 
+        					req.getWmsEntryReturnNoticeCode(), e);
+        		}
+        	});
+        }
+        
     }
     
     

@@ -133,5 +133,5 @@ public interface IWarehouseApiService {
      * @param 
      * @return
      */
-	AppResult<ScmEntryReturnDetailResponse> entryReturnDetail(ScmEntryReturnDetailRequest request);
+	AppResult<List<ScmEntryReturnDetailResponse>> entryReturnDetail(ScmEntryReturnDetailRequest request);
 }

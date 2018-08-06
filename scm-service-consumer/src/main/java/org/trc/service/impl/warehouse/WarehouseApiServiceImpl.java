@@ -150,7 +150,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 	}
 	
 	@Override
-	public AppResult<ScmEntryReturnDetailResponse> entryReturnDetail(ScmEntryReturnDetailRequest request) {
+	public AppResult<List<ScmEntryReturnDetailResponse>> entryReturnDetail(ScmEntryReturnDetailRequest request) {
 		return wmsInvoke(request);
 	}
 	
@@ -270,6 +270,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmJosAllocateOrderResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmEntryReturnOrderCreateRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmEntryReturnOrderCreateResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmEntryReturnDetailRequest){
+            response = JSON.parseArray(appResult.getResult().toString()).toJavaObject(ScmEntryReturnDetailResponse.class);
         }
         appResult.setResult(response);
     }
