@@ -80,7 +80,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/getBrands/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("所有仓库下拉列表")
+    @ApiOperation("查询该供应商对应的品牌")
     public Response findSupplierBrand(@ApiParam(name = "supplierCode", value = "供应商Code", required = true) @PathParam("supplierCode") String supplierCode) throws Exception {
 
         return ResultUtil.createSuccessResult("根据供应商编码,查询该供应商对应的品牌成功!", purchaseOutboundOrderBiz.findSupplierBrand(supplierCode));

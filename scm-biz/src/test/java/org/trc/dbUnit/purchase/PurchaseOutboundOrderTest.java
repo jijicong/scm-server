@@ -265,4 +265,10 @@ public class PurchaseOutboundOrderTest {
         List<SupplierBrandExt> supplierBrand = purchaseOutboundOrderBiz.findSupplierBrand("GYS000009");
         System.out.println(JSON.toJSONString(supplierBrand));
     }
+
+    @Test
+    public void getsupplierTest(){
+        System.out.println(JSON.toJSONString(purchaseOutboundOrderBiz.getSuppliersByChannelCode("YWX001")));
+
+    }
 }
