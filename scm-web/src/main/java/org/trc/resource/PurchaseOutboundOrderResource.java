@@ -139,7 +139,7 @@ public class PurchaseOutboundOrderResource {
      * 修改采购退货单
      */
     @PUT
-    @Path("/update/{id}")
+    @Path("/update")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("修改采购退货单")
     public Response updatePurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
