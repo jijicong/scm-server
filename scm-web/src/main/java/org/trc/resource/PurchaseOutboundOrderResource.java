@@ -139,7 +139,7 @@ public class PurchaseOutboundOrderResource {
      * 修改采购退货单
      */
     @PUT
-    @Path("/update")
+    @Path("/update/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("修改采购退货单")
     public Response updatePurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
@@ -247,7 +247,7 @@ public class PurchaseOutboundOrderResource {
     @Path("/audit")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单审核")
-    public Response auditPurchaseOrder(@BeanParam AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response auditPurchaseOrder(@BeanParam AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.auditPurchaseOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单审核成功", "");
 
