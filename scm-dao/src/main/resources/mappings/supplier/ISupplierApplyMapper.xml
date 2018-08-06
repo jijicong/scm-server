@@ -14,21 +14,31 @@
         <result property="supplierName" column="supplier_name"/>
         <result property="supplierKindCode" column="supplier_kind_code"/>
         <result property="supplierStatus" column="is_valid"/>
+        <result property="channelRelationId" column="channelRelationId"/>
     </resultMap>
 
     <sql id="supplierApplyColumns">
           a.id,a.apply_code,a.supplier_id,a.supplier_code,a.status,a.create_time,a.update_time,b.phone,b.contact,b.supplier_name,b.supplier_kind_code,b.is_valid
     </sql>
 
+    <sql id="supplierApplyColumns2">
+          a.id,a.apply_code,a.supplier_id,a.supplier_code,a.status,a.create_time,a.update_time,b.phone,b.contact,b.supplier_name,b.supplier_kind_code,b.is_valid,r.id as channelRelationId
+    </sql>
+
     <sql id="supplierApplyJoins">
         LEFT JOIN supplier b ON a.supplier_id=b.id
     </sql>
 
+    <sql id="supplierChannelRelationJoins">
+        LEFT JOIN supplier_channel_relation r ON a.supplier_id=r.supplier_id AND a.channel_id = r.channel_id
+    </sql>
+
     <select id="selectList" resultMap="supplierApplyMap" parameterType="java.util.Map">
         SELECT
-        <include refid="supplierApplyColumns"/>
+        <include refid="supplierApplyColumns2"/>
         FROM apply_for_supplier a
         <include refid="supplierApplyJoins"/>
+        <include refid="supplierChannelRelationJoins"/>
         <where>
             AND a.is_deleted=0
             <if test="supplierName != null and supplierName != ''">
