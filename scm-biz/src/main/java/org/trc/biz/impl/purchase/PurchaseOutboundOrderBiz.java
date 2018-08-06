@@ -457,7 +457,18 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         Example ex = new Example(WarehouseNoticeDetails.class);
         Example.Criteria criteria1 = ex.createCriteria();
         criteria1.andIn("id", warehouseNoticeDetailsIds);
-        return warehouseNoticeDetailsService.pagination(ex, page, new QueryModel());
+        Pagenation<WarehouseNoticeDetails> pagination = warehouseNoticeDetailsService.pagination(ex, page, new QueryModel());
+        List<WarehouseNoticeDetails> result = pagination.getResult();
+        //setPurchaseOrderCode
+        for (WarehouseNoticeDetails warehouseNoticeDetails : result){
+            for(WarehouseNoticeDetails wd : details){
+                if(StringUtils.equals(warehouseNoticeDetails.getWarehouseNoticeCode(), wd.getWarehouseNoticeCode())){
+                    warehouseNoticeDetails.setPurchaseOrderCode(wd.getPurchaseOrderCode());
+                    break;
+                }
+            }
+        }
+        return pagination;
     }
 
     /**

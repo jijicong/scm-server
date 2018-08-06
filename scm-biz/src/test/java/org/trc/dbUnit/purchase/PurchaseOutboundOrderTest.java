@@ -185,11 +185,11 @@ public class PurchaseOutboundOrderTest {
         PurchaseOutboundItemForm form = new PurchaseOutboundItemForm();
         form.setStartDate("2018-02-02");
         form.setEndDate("2018-08-02");
-        form.setSupplierCode("GYS000009");
-        form.setWarehouseInfoId("128");
+        form.setSupplierCode("GYS000166");
+        form.setWarehouseInfoId("107");
         //退货类型1-正品，2-残品
         form.setReturnOrderType("2");
-        form.setSkuCode("SP0201707280000058");
+        form.setSkuCode("SP0201805190000768");
 
         Pagenation<WarehouseNoticeDetails> pagenation = new Pagenation<>();
         Pagenation<WarehouseNoticeDetails> purchaseHistory = purchaseOutboundOrderBiz.getPurchaseHistory(form, pagenation);
