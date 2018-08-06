@@ -220,7 +220,7 @@ public class PurchaseOutboundOrderTest {
     @Test
     public void auditPurchaseOrderTest(){
         AuditPurchaseOrderForm order = new AuditPurchaseOrderForm();
-        order.setId(17L);
+        order.setId(27L);
         //2-审核驳回,3-审核通过
         order.setAuditStatus("3");
         order.setAuditOpinion("asdsd");
@@ -241,7 +241,7 @@ public class PurchaseOutboundOrderTest {
         AclUserAccreditInfo info = new AclUserAccreditInfo();
         info.setChannelCode("YWX001");
         info.setUserId("B571346F625E44DB8FCBA8116E72593D");
-        purchaseOutboundOrderBiz.warehouseAdvice(13L, info);
+        purchaseOutboundOrderBiz.warehouseAdvice(27L, info);
     }
 
     /**
