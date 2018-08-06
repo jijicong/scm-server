@@ -125,6 +125,11 @@ public class ExternalSupplierConfig {
      * 采购退货出库单创建URL
      */
     private String entryReturnOrderCreateUrl;
+    
+    /**
+     * 采购退货出库单详情URL
+     */
+    private String entryReturnDetailUrl;
 
 
 

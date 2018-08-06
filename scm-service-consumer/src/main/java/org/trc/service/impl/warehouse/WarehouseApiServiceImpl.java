@@ -46,6 +46,8 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderRequest;
 import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailRequest;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
 import org.trc.service.warehouse.IWarehouseApiService;
@@ -147,6 +149,11 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 		return wmsInvoke(request);
 	}
 	
+	@Override
+	public AppResult<ScmEntryReturnDetailResponse> entryReturnDetail(ScmEntryReturnDetailRequest request) {
+		return wmsInvoke(request);
+	}
+	
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
         if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){
             return wmsInvokeMock(scmWarehouseRequestBase);
@@ -189,6 +196,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmEntryReturnOrderCreateRequest){
             url = externalSupplierConfig.getEntryReturnOrderCreateUrl();
             method = "采购退货出库单创建";
+        }else if(scmWarehouseRequestBase instanceof ScmEntryReturnDetailRequest){
+            url = externalSupplierConfig.getEntryReturnDetailUrl();
+            method = "采购退货出库单详情";
         }
             
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
