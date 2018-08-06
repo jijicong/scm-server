@@ -851,7 +851,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     public List<Supplier> getSuppliersByChannelCode(String channelCode) {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode, "获取渠道编号失败");
-        return purchaseOrderService.findSuppliersByChannelCode(channelCode);
+        return purchaseOrderService.findSuppliersByChannelCode(channelCode, "");
     }
 
     private void checkParam(AuditPurchaseOrderForm form) {
