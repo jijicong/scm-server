@@ -142,7 +142,7 @@ public class PurchaseOutboundOrderResource {
     @Path("/update/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("修改采购退货单")
-    public Response updatePurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
+    public Response updatePurchaseOutboundOrder(@BeanParam PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.updatePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("修改采购退货单成功!", "");
     }

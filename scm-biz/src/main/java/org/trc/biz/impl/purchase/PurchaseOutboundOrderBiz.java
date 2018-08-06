@@ -510,7 +510,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         try {
             supplierBrandExts = supplierBrandService.selectSupplierBrandNames(supplierCode);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("查询该供应商对应的品牌列表失败， e:{}", e);
         }
         if (CollectionUtils.isEmpty(supplierBrandExts)) {
             return new ArrayList<>();
@@ -705,7 +705,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     log.error("PurchaseOutboundOrderId:{} 采购退货单出库通知，解锁失败，identifier:{}", id, identifier);
                 }
             } catch (Exception e) {
-                log.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:{}", id, identifier, e);
+                log.error("PurchaseOutboundOrderId:{} 出库通知，解锁失败，identifier:{}, err:{}", id, identifier, e);
             }
         }
     }
@@ -724,14 +724,14 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         criteria.andIn("skuCode", skuCodes);
         List<WarehouseItemInfo> itemInfos = warehouseItemInfoService.selectByExample(example);
         AssertUtil.notEmpty(itemInfos, "出库通知失败，对应仓库商品信息异常");
-        for(PurchaseOutboundDetail detail : list){
-            for(WarehouseItemInfo item : itemInfos){
-                if(StringUtils.equals(detail.getSkuCode(), item.getSkuCode())){
+        for (PurchaseOutboundDetail detail : list) {
+            for (WarehouseItemInfo item : itemInfos) {
+                if (StringUtils.equals(detail.getSkuCode(), item.getSkuCode())) {
                     PurchaseOutboundDetail outboundDetail = new PurchaseOutboundDetail();
                     outboundDetail.setId(detail.getId());
                     outboundDetail.setWarehouseItemId(item.getWarehouseItemId());
                     int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(outboundDetail);
-                    if(i < 1){
+                    if (i < 1) {
                         throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, String.format("%s出库通知失败，添加仓库商品id失败", purchaseOutboundOrder.getPurchaseOutboundOrderCode()));
                     }
                     break;
@@ -789,7 +789,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.PURCHASE_OUTBOUND_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_OUTBOUND_ORDER)
     public Pagenation<PurchaseOutboundOrder> getAuditPagelist(PurchaseOutboundOrderForm form, Pagenation<PurchaseOutboundOrder> page, String channelCode) {
         AssertUtil.notBlank(channelCode, "未获得授权");
         Example example = setAuditSelectCondition(form, channelCode);
