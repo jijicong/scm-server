@@ -363,7 +363,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(Long.valueOf(form.getWarehouseInfoId()));
         AssertUtil.notNull(warehouseInfo, "对应仓库信息为空");
-        if(!StringUtils.equals(warehouseInfo.getOperationalNature(), ZeroToNineEnum.ZERO.getCode())){
+        if (!StringUtils.equals(warehouseInfo.getOperationalNature(), ZeroToNineEnum.ZERO.getCode())) {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, String.format("%s仓库不为第三方仓", warehouseInfo.getWarehouseName()));
         }
 
@@ -460,9 +460,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         Pagenation<WarehouseNoticeDetails> pagination = warehouseNoticeDetailsService.pagination(ex, page, new QueryModel());
         List<WarehouseNoticeDetails> result = pagination.getResult();
         //setPurchaseOrderCode
-        for (WarehouseNoticeDetails warehouseNoticeDetails : result){
-            for(WarehouseNoticeDetails wd : details){
-                if(StringUtils.equals(warehouseNoticeDetails.getWarehouseNoticeCode(), wd.getWarehouseNoticeCode())){
+        for (WarehouseNoticeDetails warehouseNoticeDetails : result) {
+            for (WarehouseNoticeDetails wd : details) {
+                if (StringUtils.equals(warehouseNoticeDetails.getWarehouseNoticeCode(), wd.getWarehouseNoticeCode())) {
                     warehouseNoticeDetails.setPurchaseOrderCode(wd.getPurchaseOrderCode());
                     break;
                 }
@@ -505,14 +505,14 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Override
     @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<SupplierBrandExt> findSupplierBrand(String supplierCode) {
-        AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
+        AssertUtil.notBlank(supplierCode, "供应商的编码为空!");
         List<SupplierBrandExt> supplierBrandExts = null;
         try {
             supplierBrandExts = supplierBrandService.selectSupplierBrandNames(supplierCode);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(CollectionUtils.isEmpty(supplierBrandExts)){
+        if (CollectionUtils.isEmpty(supplierBrandExts)) {
             return new ArrayList<>();
         }
         supplierBrandExts.sort(Comparator.comparing(SupplierBrandExt::getBrandName));
@@ -1221,7 +1221,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             }
 
             //设置品牌名称
-           for (Items item : itemsList) {
+            for (Items item : itemsList) {
                 if (sku.getItemId().equals(item.getId())) {
                     detail.setCategoryId(String.valueOf(item.getCategoryId()));
                     detail.setBrandId(String.valueOf(item.getBrandId()));
@@ -1436,7 +1436,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             }
 
             //退货数量不能大于可退数量
-            if (purchaseOutboundDetail.getOutboundQuantity() > purchaseOutboundDetail.getCanBackQuantity()) {
+            if (purchaseOutboundDetail.getCanBackQuantity() == null || purchaseOutboundDetail.getOutboundQuantity() > purchaseOutboundDetail.getCanBackQuantity()) {
                 throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货数量不能大于当前可退数量");
             }
 
@@ -1450,7 +1450,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货含税单价不能为空，且不能小于0");
             }
         }
-
     }
 
     private void setSupplierName(Pagenation<PurchaseOutboundOrder> pagination) {
