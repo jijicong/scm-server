@@ -7,12 +7,14 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.LogInfo;
 import org.trc.form.config.LogInfoForm;
 import org.trc.util.Pagenation;
+import org.trc.util.ResultUtil;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by hzqph on 2017/7/17.
@@ -25,7 +27,7 @@ public class LogInfoResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<LogInfo> logInfoPage(@BeanParam LogInfoForm form, @BeanParam Pagenation<LogInfo> page){
-        return logInfoBiz.logInfoPage(form,page);
+    public Response logInfoPage(@BeanParam LogInfoForm form, @BeanParam Pagenation<LogInfo> page) {
+        return ResultUtil.createSuccessPageResult(logInfoBiz.logInfoPage(form, page));
     }
 }

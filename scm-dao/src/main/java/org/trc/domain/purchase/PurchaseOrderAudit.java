@@ -16,7 +16,11 @@ import java.io.Serializable;
  */
 @Table(name="apply_for_purchase_order")
 public class PurchaseOrderAudit extends CommonDO implements Serializable {
-    @PathParam("id")
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4793902173742735947L;
+	@PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

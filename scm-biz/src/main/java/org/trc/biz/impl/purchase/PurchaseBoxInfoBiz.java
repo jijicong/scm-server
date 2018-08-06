@@ -21,6 +21,7 @@ import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
+import org.trc.util.cache.PurchaseOrderCacheEvict;
 
 import java.util.*;
 
@@ -53,6 +54,7 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @PurchaseOrderCacheEvict
     public void savePurchaseBoxInfo(PurchaseBoxInfoVO purchaseBoxInfoVO, String status, AclUserAccreditInfo aclUserAccreditInfo)  {
         //校验信息完整性
         AssertUtil.notNull(purchaseBoxInfoVO,"装箱信息对象为空");
@@ -185,6 +187,8 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
                 purchaseBoxInfoDetailResultVO.setBarCode(purchaseDetailTemp.getBarCode());
                 purchaseBoxInfoDetailResultVO.setSkuCode(skuCode);
                 purchaseBoxInfoDetailResultVO.setSkuName(purchaseDetailTemp.getSkuName());
+                purchaseBoxInfoDetailResultVO.setPurchasingQuantity(
+                        purchaseDetailTemp.getPurchasingQuantity()==null?"0":purchaseDetailTemp.getPurchasingQuantity().toString());
                 purchaseBoxInfoDetailResultVO.setSpecNatureInfo(purchaseDetailTemp.getSpecNatureInfo());
                 if(boxInfoMap.containsKey(skuCode)){
                     purchaseBoxInfoDetailResultVO.setPurchaseBoxInfoList(boxInfoMap.get(skuCode));

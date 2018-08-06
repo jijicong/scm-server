@@ -1,6 +1,5 @@
 package org.trc.biz.goods;
 
-import com.ecfront.dew.common.Resp;
 import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -8,7 +7,6 @@ import org.trc.form.goods.ItemGroupForm;
 import org.trc.form.goods.ItemGroupQuery;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -19,7 +17,7 @@ public interface IitemGroupBiz  {
 
     ItemGroup queryDetailByCode(String itemGroupCode);
 
-    void editDetail(ItemGroupForm form,AclUserAccreditInfo aclUserAccreditInfo);
+    void editDetail(ItemGroupForm form, AclUserAccreditInfo aclUserAccreditInfo);
 
     void itemGroupSave(ItemGroupForm form, AclUserAccreditInfo aclUserAccreditInfo);
 

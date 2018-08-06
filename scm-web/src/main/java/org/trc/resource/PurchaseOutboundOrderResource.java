@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.alibaba.druid.util.StringUtils;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,6 +10,7 @@ import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
+import org.trc.form.purchase.AuditPurchaseOrderForm;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
 import org.trc.util.AssertUtil;
@@ -44,9 +44,9 @@ public class PurchaseOutboundOrderResource {
     @Path("/getSuppliers")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("获取供应商名称下拉列表")
-    public Response findSuppliers(@Context ContainerRequestContext requestContext)  {
+    public Response findSuppliers(@Context ContainerRequestContext requestContext) {
         String channelCode = ((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)).getChannelCode();
-        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商",purchaseOutboundOrderBiz.getSuppliersByChannelCode(channelCode));
+        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商", purchaseOutboundOrderBiz.getSuppliersByChannelCode(channelCode));
 
     }
 
@@ -60,7 +60,31 @@ public class PurchaseOutboundOrderResource {
     public Response findWarehouses(@Context ContainerRequestContext requestContext) {
         AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         String channelCode = aclUserAccreditInfo.getChannelCode();
-        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getWarehousesByChannelCode(channelCode));
+        return ResultUtil.createSuccessResult("获取退货仓库下拉列表", purchaseOutboundOrderBiz.getWarehousesByChannelCode(channelCode));
+    }
+
+    /**
+     * 所有仓库下拉列表
+     */
+    @GET
+    @Path("/getAllWarehouse")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("所有仓库下拉列表")
+    public Response findAllWarehouses(@Context ContainerRequestContext requestContext) {
+        return ResultUtil.createSuccessResult("所有仓库下拉列表", purchaseOutboundOrderBiz.getAllWarehouses());
+    }
+
+    /**
+     * 查询该供应商对应的品牌列表
+     */
+    @GET
+    @Path("/getBrands/{supplierCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("查询该供应商对应的品牌")
+    public Response findSupplierBrand(@ApiParam(name = "supplierCode", value = "供应商Code", required = true) @PathParam("supplierCode") String supplierCode) throws Exception {
+
+        return ResultUtil.createSuccessResult("根据供应商编码,查询该供应商对应的品牌成功!", purchaseOutboundOrderBiz.findSupplierBrand(supplierCode));
+
     }
 
     /**
@@ -69,7 +93,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/pagelist")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("查询采购退货单列表")
+    @ApiOperation(value = "查询采购退货单列表", response = PurchaseOutboundOrder.class)
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "purchaseOutboundOrderCode", value = "采购退货单编号", required = false),
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "supplierCode", value = "供应商Code", required = false),
@@ -106,7 +130,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("getOrder/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("根据采购退货单Id查询采购退货单")
+    @ApiOperation(value = "根据采购退货单Id查询采购退货单", response = PurchaseOutboundOrder.class)
     public Response getPurchaseOutboundOrder(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(id));
     }
@@ -141,9 +165,9 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/getDetail")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("获取采购退货单商品详情")
+    @ApiOperation(value = "获取采购退货单商品详情", response = PurchaseOutboundDetail.class)
     public Response getPurchaseOutboundOrderDetail(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<PurchaseOutboundDetail> page, @QueryParam("skus") String skus) {
-        return ResultUtil.createSuccessResult("根据供应商编码查询所有的有效商品成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
+        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getPurchaseOutboundOrderDetail(form, page, skus));
     }
 
     /**
@@ -152,9 +176,9 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/getPurchaseHistory")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("采购退货单获取采购历史详情")
+    @ApiOperation(value = "采购退货单获取采购历史详情", response = WarehouseNoticeDetails.class)
     public Response getPurchaseHistory(@BeanParam PurchaseOutboundItemForm form, @BeanParam Pagenation<WarehouseNoticeDetails> page) {
-        return ResultUtil.createSuccessResult("获取采购历史详情成功", purchaseOutboundOrderBiz.getPurchaseHistory(form, page));
+        return ResultUtil.createSuccessPageResult(purchaseOutboundOrderBiz.getPurchaseHistory(form, page));
     }
 
     /**
@@ -163,17 +187,10 @@ public class PurchaseOutboundOrderResource {
     @PUT
     @Path("updateStatus/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    //@ApiOperation("更新采购退货单状态或出库通知作废操作")
-    public Response updatePurchaseState(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        AssertUtil.notNull(form, "采购退货单的信息为空");
-        AssertUtil.notNull(form.getStatus(), "采购退货单的状态为空");
-        if (StringUtils.equals(form.getStatus(), PurchaseOutboundOrderStatusEnum.WAREHOUSE_NOTICE.getCode())) {
-            purchaseOutboundOrderBiz.cancelWarahouseAdvice(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-            return ResultUtil.createSuccessResult("出库通知作废成功！", "");
-        } else {
-            String msg = purchaseOutboundOrderBiz.updateStatus(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-            return ResultUtil.createSuccessResult(msg, "");
-        }
+    @ApiOperation("更新采购退货单状态或出库通知作废操作")
+    public Response updatePurchaseState(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id, @Context ContainerRequestContext requestContext) {
+        String result = purchaseOutboundOrderBiz.cancelWarahouseAdviceAndupdate(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult(result, "");
     }
 
     /**
@@ -182,9 +199,9 @@ public class PurchaseOutboundOrderResource {
     @PUT
     @Path("warahouseAdvice/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    //@ApiOperation("采购退货单出库通知")
-    public Response saveWarahouseAdvice(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        purchaseOutboundOrderBiz.warehouseAdvice(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    @ApiOperation("采购退货单出库通知")
+    public Response saveWarahouseAdvice(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id, @Context ContainerRequestContext requestContext) {
+        purchaseOutboundOrderBiz.warehouseAdvice(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单出库通知成功!", "");
     }
 
@@ -194,7 +211,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("/auditPagelist")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("获取采购退货单审核列表")
+    @ApiOperation(value = "获取采购退货单审核列表", response = PurchaseOutboundOrder.class)
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "purchaseOutboundOrderCode", value = "采购退货单编号", required = false),
             @ApiImplicitParam(paramType = "query", dataType = "String", name = "supplierCode", value = "供应商Code", required = false),
@@ -218,7 +235,7 @@ public class PurchaseOutboundOrderResource {
     @GET
     @Path("getAudit/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("采购退货单审核操作，获取详情")
+    @ApiOperation(value = "采购退货单审核操作，获取详情", response = PurchaseOutboundOrder.class)
     public Response getPurchaseOutboundAuditOrder(@ApiParam(value = "采购退货单Id", required = true) @PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundAuditOrder(id));
     }
@@ -230,7 +247,7 @@ public class PurchaseOutboundOrderResource {
     @Path("/audit")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单审核")
-    public Response auditPurchaseOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response auditPurchaseOrder(@BeanParam AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.auditPurchaseOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单审核成功", "");
 

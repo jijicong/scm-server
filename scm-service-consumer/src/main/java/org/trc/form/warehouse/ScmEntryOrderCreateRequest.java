@@ -153,4 +153,9 @@ public class ScmEntryOrderCreateRequest  extends ScmWarehouseRequestBase{
      * 入库单联系人
      */
     private String createOperatorName;
+
+    /**
+     * 采购入库单重新发货第几次序号-京东仓库重新发货用
+     */
+    private Long inOrderSeq;
 }

@@ -4,18 +4,19 @@ import io.swagger.annotations.ApiModelProperty;
 import org.trc.domain.BaseDO;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import java.util.List;
 
 @Table(name = "purchase_outbound_notice")
 public class PurchaseOutboundNotice extends BaseDO {
 
     private static final long serialVersionUID = -4114185533338509893L;
+
     @Id
+    @PathParam("id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**

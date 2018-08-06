@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.purchase.IPurchaseOrderMapper">
+
+    <sql id="supplierColumn">
+        id, supplier_code as supplierCode, supplier_name as supplierName, contact, phone, mobile, country, province, city, area, address
+    </sql>
     <!-- 根据用户的userId，查询对应的渠道，用户申请供应商；因此该查询为渠道渠道申请的审核通过的有效供应商-->
     <select id="findSuppliersByChannelCode" resultType="org.trc.domain.supplier.Supplier">
         SELECT
-            id ,
-            supplier_code AS supplierCode,
-            supplier_name AS supplierName
+        <include refid="supplierColumn"></include>
+
         FROM
             supplier
         WHERE
             is_valid = '1'
             AND supplier_kind_code = 'purchase'
+            <if test="supplierName != '' and supplierName != null">
+                AND supplier_name LIKE CONCAT('%', #{supplierName}, '%')
+            </if>
             AND supplier_code IN (
                 SELECT
                 supplier_code
