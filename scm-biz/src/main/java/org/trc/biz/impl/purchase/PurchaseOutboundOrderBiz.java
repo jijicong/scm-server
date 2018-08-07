@@ -227,7 +227,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //校验仓库是否停用
         this.checkWarehouse(form.getWarehouseInfoId());
         //提交审核校验必填参数
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getAuditStatus())) {
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
             validationParam(form);
         }
         //更新总金额
@@ -256,7 +256,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         insertPurchaseOutboundDetail(form);
 
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getAuditStatus())) {
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
             //更新采购退货单状态
             auditStatusUpdate(form, aclUserAccreditInfo, order.getPurchaseOutboundOrderCode());
         } else {
