@@ -28,7 +28,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Items> itemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
+    Pagenation<Items> itemsPage(ItemsForm form, Pagenation<Items> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 商品SKU分页查询

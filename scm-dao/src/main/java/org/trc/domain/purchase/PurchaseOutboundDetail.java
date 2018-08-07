@@ -14,8 +14,12 @@ import java.util.Date;
 @Table(name = "purchase_outbound_detail")
 public class PurchaseOutboundDetail extends BaseDO {
 
-    private static final long serialVersionUID = 344433932044368816L;
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8196204487775574643L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -203,6 +207,14 @@ public class PurchaseOutboundDetail extends BaseDO {
     @Column(name = "outbound_exception")
     @FormParam("outboundException")
     private String outboundException;
+    
+    /**
+     * 仓库商品id
+     */
+    @ApiModelProperty("仓库商品id")
+    @Column(name = "warehouse_item_id")
+    @FormParam("warehouseItemId")
+    private String warehouseItemId;
 
     ///**
     // * 是否有效:0-无效,1-有效
@@ -239,7 +251,15 @@ public class PurchaseOutboundDetail extends BaseDO {
         return outboundStatus;
     }
 
-    public void setOutboundStatus(String outboundStatus) {
+    public String getWarehouseItemId() {
+		return warehouseItemId;
+	}
+
+	public void setWarehouseItemId(String warehouseItemId) {
+		this.warehouseItemId = warehouseItemId;
+	}
+
+	public void setOutboundStatus(String outboundStatus) {
         this.outboundStatus = outboundStatus;
     }
 

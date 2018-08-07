@@ -57,6 +57,7 @@
         <property name="josAllocateOrderCreateUrl" value="${wms.jos.allocateOrder.create.url}"/>
         
         <property name="entryReturnOrderCreateUrl" value="${wms.entryReturnOrder.create.url}"/>
+        <property name="entryReturnDetailUrl" value="${wms.entryReturnOrder.detail.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->

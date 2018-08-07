@@ -198,6 +198,14 @@ public class PurchaseOutboundNotice extends BaseDO {
     private String returnOrderType;
     
     /**
+     * 退货说明
+     */
+    @ApiModelProperty("退货说明")
+    @Column(name = "return_policy")
+    @FormParam("returnPolicy")
+    private String returnPolicy;
+    
+    /**
      * 供应商名称
      */
     @Transient
@@ -225,7 +233,15 @@ public class PurchaseOutboundNotice extends BaseDO {
     @ApiModelProperty("退货出库通知单商品明细列表")
     private List<PurchaseOutboundDetail> skuList;
 
-    public String getReceiverArea() {
+    public String getReturnPolicy() {
+		return returnPolicy;
+	}
+
+	public void setReturnPolicy(String returnPolicy) {
+		this.returnPolicy = returnPolicy;
+	}
+
+	public String getReceiverArea() {
 		return receiverArea;
 	}
 

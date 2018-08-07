@@ -25,6 +25,8 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderRequest;
 import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailRequest;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
 import org.trc.util.AppResult;
@@ -125,4 +127,11 @@ public interface IWarehouseApiService {
      * @return
      */
 	AppResult<ScmEntryReturnOrderCreateResponse> entryReturnOrderCreate(ScmEntryReturnOrderCreateRequest request);
+	
+    /**
+     * 退货出库单详情
+     * @param 
+     * @return
+     */
+	AppResult<List<ScmEntryReturnDetailResponse>> entryReturnDetail(ScmEntryReturnDetailRequest request);
 }

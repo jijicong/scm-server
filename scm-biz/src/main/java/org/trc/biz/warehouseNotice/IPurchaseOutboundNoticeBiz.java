@@ -20,5 +20,7 @@ public interface IPurchaseOutboundNoticeBiz {
 
 	void retryCancelOrder();
 
+	void entryReturnDetailQuery();
+
 
 }

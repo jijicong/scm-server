@@ -269,7 +269,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         //商品组启用，则组长为启用，否则视同组员
         String isValid = itemGroup.getIsValid();
         //保存商品组员列表数据（对手机号校验）
-        saveItemGroupUserList(groupUserList,isValid,code,aclUserAccreditInfo.getChannelCode());
+        saveItemGroupUserList(groupUserList,isValid,code,aclUserAccreditInfo.getChannelCode(),aclUserAccreditInfo.getName());
 
 
         //记录日志
@@ -331,7 +331,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         return list;
     }
 
-    private void saveItemGroupUserList(List<ItemGroupUser> groupUserList,String isValid,String itemGroupCode,String channelCode){
+    private void saveItemGroupUserList(List<ItemGroupUser> groupUserList,String isValid,String itemGroupCode,String channelCode,String name){
         List<String> list=new ArrayList<>();
 
         for (ItemGroupUser itemGroupUser : groupUserList) {
@@ -349,6 +349,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             itemGroupUser.setCreateTime(Calendar.getInstance().getTime());
             itemGroupUser.setUpdateTime(Calendar.getInstance().getTime());
             itemGroupUser.setIsValid(isValid);
+            itemGroupUser.setCreateOperator(name);
             itemGroupUser.setItemGroupCode(itemGroupCode);
             //手机号添加之前判断是否存在
             if (list.contains(phoneNumber)){
