@@ -1539,10 +1539,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         //获取异常日志
                         try {
                             logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
-                                    warehouse.getWarehouseName(), WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
+                                    warehouse.getWarehouseName(), LogOperationEnum.RECIVE_GOODS_IN.getMessage(), logMessage, null);
                             //采购单日志
                             logInfoService.recordLog(orders.get(0), orders.get(0).getId().toString(),
-                                    warehouse.getWarehouseName(), WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
+                                    warehouse.getWarehouseName(), LogOperationEnum.RECIVE_GOODS_IN.getMessage(), logMessage, null);
                         } catch (Exception e) {
                             logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e);
                         }
