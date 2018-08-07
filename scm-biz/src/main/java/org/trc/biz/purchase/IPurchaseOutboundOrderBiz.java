@@ -40,7 +40,7 @@ public interface IPurchaseOutboundOrderBiz {
      * @param form                表单数据
      * @param aclUserAccreditInfo
      */
-    void updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    String updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 根据采购退货单Id查询采购退货单

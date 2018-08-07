@@ -217,13 +217,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @PurchaseOutboundOrderCacheEvict
-    public void updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
+    public String updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         log.info("更新采购退货单，PurchaseOutboundOrder:{}", JSON.toJSONString(form));
-        AssertUtil.notNull(form, "修改采购退货单失败,采购退货单为空");
-        AssertUtil.notNull(form.getId(), "修改采购退货单失败,采购退货单ID为空");
+        AssertUtil.notNull(form, "保存或提交审核采购退货单失败,采购退货单为空");
+        AssertUtil.notNull(form.getId(), "保存或提交审核采购退货单失败,采购退货单ID为空");
 
         PurchaseOutboundOrder order = purchaseOutboundOrderService.selectByPrimaryKey(form.getId());
-        AssertUtil.notNull(order, "修改采购退货单失败,没有采购退货单信息");
+        AssertUtil.notNull(order, "保存或提交审核采购退货单失败,没有采购退货单信息");
         //校验仓库是否停用
         this.checkWarehouse(form.getWarehouseInfoId());
         //提交审核校验必填参数
@@ -259,9 +259,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
             //更新采购退货单状态
             auditStatusUpdate(form, aclUserAccreditInfo, order.getPurchaseOutboundOrderCode());
+            return "提交审核成功!";
         } else {
             //修改操作日志
             logInfoService.recordLog(form, form.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
+            return "保存成功!";
         }
     }
 
@@ -905,7 +907,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(form.getId());
         if (!StringUtils.equals(PurchaseOutboundOrderAuditStatusEnum.COMMIT.getCode(), purchaseOutboundOrder.getAuditStatus())) {
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "采购退货单审核失败，请查看审核状态");
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "采购退货单审核失败，请查看出库单状态");
         }
         //审核驳回状态，审核意见不能为空
         if (StringUtils.equals(PurchaseOutboundOrderAuditStatusEnum.REJECT.getCode(), form.getAuditStatus())) {

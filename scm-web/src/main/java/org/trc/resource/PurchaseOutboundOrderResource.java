@@ -142,8 +142,8 @@ public class PurchaseOutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("修改采购退货单")
     public Response updatePurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        purchaseOutboundOrderBiz.updatePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("修改采购退货单成功!", "");
+        String message = purchaseOutboundOrderBiz.updatePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult(message, "");
     }
 
     ///**
@@ -246,7 +246,7 @@ public class PurchaseOutboundOrderResource {
     @Path("/audit")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单审核")
-    public Response auditPurchaseOrder(@BeanParam AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) {
+    public Response auditPurchaseOrder(AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.auditPurchaseOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单审核成功", "");
     }
