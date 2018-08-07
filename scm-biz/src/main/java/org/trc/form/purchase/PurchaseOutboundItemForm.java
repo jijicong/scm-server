@@ -55,11 +55,11 @@ public class PurchaseOutboundItemForm extends QueryModel {
     private String skuCode;
 
     /**
-     * 品牌名称
+     * 品牌ID
      */
-    @QueryParam("brandName")
-    @ApiParam(value = "品牌名称")
-    private String brandName;
+    @QueryParam("brandId")
+    @ApiParam(value = "品牌ID")
+    private String brandId;
 
     /**
      * 条形码
@@ -108,12 +108,12 @@ public class PurchaseOutboundItemForm extends QueryModel {
         this.skuCode = skuCode;
     }
 
-    public String getBrandName() {
-        return brandName;
+    public String getBrandId() {
+        return brandId;
     }
 
-    public void setBrandName(String brandName) {
-        this.brandName = brandName;
+    public void setBrandId(String brandId) {
+        this.brandId = brandId;
     }
 
     public String getBarCode() {
