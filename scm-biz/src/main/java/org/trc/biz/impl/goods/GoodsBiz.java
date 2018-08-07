@@ -34,6 +34,7 @@ import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.UserAccreditInfoException;
 import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.JDModel.SkuDO;
@@ -55,6 +56,7 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.*;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
+import org.trc.service.impl.impower.AclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
@@ -80,6 +82,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -193,10 +196,15 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private IBusiSkusService busiSkusService;
 
+    @Autowired
+    private IItemGroupUserService itemGroupUserService;
+    @Autowired
+    private AclUserAccreditInfoService aclUserAccreditInfoService;
+
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.GOODS)
-    public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
+    /*@Cacheable(value = SupplyConstants.Cache.GOODS)*/
+    public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
@@ -223,6 +231,11 @@ public class GoodsBiz implements IGoodsBiz {
         }
         example.orderBy("updateTime").desc();
         page = itemsService.pagination(example, page, queryModel);
+        List<Items> result = page.getResult();
+        for (Items items : result) {
+            String flag = selectDataAcl(items.getId(), aclUserAccreditInfo, true, items);
+            items.setUpdateAuth(flag);//V3.1数据权限0无，1有
+        }
         List<Skus> skusList = null;
         if(null != map.get("skuList")){
             skusList = (List<Skus>)map.get("skuList");
@@ -888,6 +901,9 @@ public class GoodsBiz implements IGoodsBiz {
     @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+
+        selectDataAcl(items.getId(),aclUserAccreditInfo,false,null);
+
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
@@ -1980,6 +1996,9 @@ public class GoodsBiz implements IGoodsBiz {
     @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+        //查询数据操作权限
+        selectDataAcl(id, aclUserAccreditInfo,false,null);
+
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "商品启用/停用操作参数isValid不能为空");
         Items items2 = new Items();
@@ -2024,6 +2043,88 @@ public class GoodsBiz implements IGoodsBiz {
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items2, updateSkus);
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
+    }
+
+
+    /*
+         方法返回值 ：   用于商品组分页方法
+    *    pageFlag  ：   商品组分页方法调用标志
+    * */
+    //V3.1数据权限查询,通用方法，调入分页方法分页返回给前端的值   返回值：有权限1，无权限0
+    private String selectDataAcl(Long id, AclUserAccreditInfo aclUserAccreditInfo,Boolean pageFlag,Items items) {
+        //用户数据权限查询
+        //登录用户
+        String loginPhone = aclUserAccreditInfo.getPhone();
+        //数据归属创建人
+        Items itemsCurrent = itemsService.selectByPrimaryKey(id);
+        String userId = itemsCurrent.getCreateOperator();//归属创建人
+        AclUserAccreditInfo tempAcl = new AclUserAccreditInfo();
+        tempAcl.setUserId(userId);
+        tempAcl=aclUserAccreditInfoService.selectOne(tempAcl);
+
+        Example example=new Example(ItemGroupUser.class);
+        example.createCriteria().andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode()).andEqualTo("createOperator",tempAcl.getName());
+        List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
+        if (!loginPhone.equals(tempAcl.getPhone())){
+            if (list.size()==0){
+                if (pageFlag){
+                    return ZeroToNineEnum.ZERO.getCode();
+                }else {
+                    String msg="该条数据不归属任何商品组，当前用户不是创建者本人，无此操作权限";
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
+                }
+            }
+            List<String> phoneNumberList=list.stream().map(e->e.getPhoneNumber()).collect(Collectors.toList());
+            if (!phoneNumberList.contains(loginPhone)){
+                if (pageFlag){
+                    return ZeroToNineEnum.ZERO.getCode();
+                }else {
+                    String msg="该条数据由，当前用户无此操作权限";
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
+                }
+            }else {//登录人和创建人在同一组，可能存在多个这样的组
+
+                for (ItemGroupUser itemGroupUser : list){
+                    if (StringUtils.equals(loginPhone,itemGroupUser.getPhoneNumber())){
+
+                        String itemGroupCode = itemGroupUser.getItemGroupCode();
+                        Example exp=new Example(ItemGroupUser.class);
+                        exp.createCriteria().andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode()).andEqualTo("phoneNumber",loginPhone).andEqualTo("itemGroupCode",itemGroupCode);
+                        List<ItemGroupUser> userList = itemGroupUserService.selectByExample(exp);
+                        if (userList.size()==0){//可能不存在这种可能性
+                            if (pageFlag){
+                                return ZeroToNineEnum.ZERO.getCode();
+                            }else {
+                                String msg = String.format("当前用户[%s]无此操作权限", loginPhone);
+                                throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
+                            }
+                        }else {
+                            String isLeader = userList.get(0).getIsLeader();
+                            String orginValid = userList.get(0).getIsValid();
+                            if (StringUtils.equals(isLeader,"1")){
+                                if (StringUtils.equals(orginValid,"0")){
+                                    if (pageFlag){
+                                        return ZeroToNineEnum.ZERO.getCode();
+                                    }else {
+                                        String msg = String.format("当前手机号为[%s]的用户所在组被停用了，用户无此操作权限", loginPhone);
+                                        throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
+                                    }
+                                }
+                            }else {
+                                if (pageFlag){
+                                    return ZeroToNineEnum.ZERO.getCode();
+                                }else{
+                                    String msg=String.format("当前手机号为[%s]的用户不是创建人的组长，用户无此操作权限",loginPhone);
+                                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ZeroToNineEnum.ONE.getCode();
     }
 
     /**
