@@ -17,7 +17,6 @@ public class AuditPurchaseOrderForm {
      * 采购退货单编号
      */
     @QueryParam("id")
-    @Length(max = 32)
     @ApiModelProperty("采购退货单ID")
     private Long id;
 
@@ -28,7 +27,7 @@ public class AuditPurchaseOrderForm {
     private String auditStatus;
 
     @QueryParam("auditOpinion")
-    @Length(max = 3000)
+    @Length(max = 1500)
     @ApiModelProperty("审核意见")
     private String auditOpinion;
 

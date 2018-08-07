@@ -177,20 +177,19 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * 采购退货单保存或提交审核
      *
      * @param form                采购退货单数据
-     * @param code                保存类型 0-暂存 1-提交审核
      * @param aclUserAccreditInfo
      */
     @Override
     @PurchaseOutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseOutboundOrder(PurchaseOutboundOrder form, String code, AclUserAccreditInfo aclUserAccreditInfo) {
-        log.info("采购退货单保存或提交审核，PurchaseOutboundOrder:{}, 当前操作:{} ", JSON.toJSONString(form), code.equals("0") ? "[0]暂存" : "[1]提交审核");
+    public void savePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
+        log.info("采购退货单保存或提交审核，PurchaseOutboundOrder:{}, 当前操作:{} ", JSON.toJSONString(form), form.getStatus().equals("0") ? "[0]暂存" : "[1]提交审核");
         validationRequestParam(form, aclUserAccreditInfo);
         //校验仓库是否停用
         checkWarehouse(form.getWarehouseInfoId());
 
         //提交审核校验必填参数
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), code)) {
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
             validationParam(form);
         }
         ParamsUtil.setBaseDO(form);
@@ -200,10 +199,10 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notBlank(seq, "获取编码失败");
 
         //插入采购退货单和退货详情,记录日志
-        insertPurchaseOutboundOrderAndDetail(form, code, aclUserAccreditInfo, seq);
+        insertPurchaseOutboundOrderAndDetail(form, aclUserAccreditInfo, seq);
 
         //保存提交审核，修改采购退货单状态
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), code)) {
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
             //更新采购退货单状态
             auditStatusUpdate(form, aclUserAccreditInfo, seq);
         }
@@ -664,6 +663,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             WarehouseInfo warehouseInfo = new WarehouseInfo();
             warehouseInfo.setId(purchaseOutboundOrder.getWarehouseInfoId());
             warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+            AssertUtil.notNull(warehouseInfo, "出库通知操作失败,仓库信息不存在");
 
             //初始化采购退货通知单参数
             initPurchaseOutboundNotice(purchaseOutboundOrder, notice, warehouseInfo);
@@ -983,7 +983,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         notice.setOutboundNoticeCode(purchaseOutboundNoticeCode);
         notice.setPurchaseOutboundOrderCode(purchaseOutboundOrder.getPurchaseOutboundOrderCode());
         notice.setWarehouseInfoId(purchaseOutboundOrder.getWarehouseInfoId());
-        notice.setWarehouseCode(purchaseOutboundOrder.getWarehouseCode());
+        notice.setWarehouseCode(warehouseInfo.getCode());
         //待通知收货
         notice.setStatus(PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode());
         // 默认为未完成的状态
@@ -997,6 +997,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         notice.setReturnOrderType(purchaseOutboundOrder.getReturnOrderType());
         notice.setRemark(purchaseOutboundOrder.getRemark());
 
+        //退货说明
+        notice.setReturnPolicy(purchaseOutboundOrder.getReturnPolicy());
 
         //退货收货人信息
         notice.setReceiver(purchaseOutboundOrder.getReceiver());
@@ -1372,16 +1374,14 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * 插入采购退货单和退货详情
      *
      * @param form                表单数据
-     * @param code                保存类型 0-暂存 1-提交审核
      * @param aclUserAccreditInfo
      * @param seq                 采购退货通知单编号
      */
-    private void insertPurchaseOutboundOrderAndDetail(PurchaseOutboundOrder form, String code, AclUserAccreditInfo aclUserAccreditInfo, String seq) {
+    private void insertPurchaseOutboundOrderAndDetail(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo, String seq) {
         BigDecimal totalAmount = new BigDecimal(0);
         form.setChannelCode(aclUserAccreditInfo.getChannelCode());
         form.setPurchaseOutboundOrderCode(seq);
         form.setIsValid(ValidEnum.VALID.getCode());
-        form.setStatus(code);
         form.setCreateOperator(aclUserAccreditInfo.getUserId());
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
@@ -1400,7 +1400,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         //记录操作日志
         String userId = aclUserAccreditInfo.getUserId();
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.HOLD.getCode(), code)) {
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.HOLD.getCode(), form.getStatus())) {
             logInfoService.recordLog(form, form.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
         }
     }
