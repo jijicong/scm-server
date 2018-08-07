@@ -16,6 +16,7 @@ import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
 import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;

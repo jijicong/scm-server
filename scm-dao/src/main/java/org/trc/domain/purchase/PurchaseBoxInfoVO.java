@@ -1,16 +1,14 @@
 package org.trc.domain.purchase;
 
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import javax.ws.rs.FormParam;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Created by hzcyn on 2018/7/25.
@@ -51,7 +49,6 @@ public class PurchaseBoxInfoVO implements Serializable {
 
     @FormParam("packingType")
     @ApiParam("装箱方式")
-    @NotEmpty(message = "装箱方式不能为空")
     @Size(max=50, message = "装箱方式过长，超过50字符")
     private String packingType;
 }
