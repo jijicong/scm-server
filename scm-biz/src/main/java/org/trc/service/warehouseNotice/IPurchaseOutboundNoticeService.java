@@ -8,6 +8,7 @@ import org.trc.enums.WarehouseNoticeStatusEnum;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
 import org.trc.service.IBaseService;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -27,6 +28,7 @@ public interface IPurchaseOutboundNoticeService extends IBaseService<PurchaseOut
 	PurchaseOutboundNotice selectOneByEntryOrderCode(String entryOrderCode);
 
 	void updateCancelOrder(AppResult<ScmOrderCancelResponse> responseAppResult, String orderCode);
-	
-	
+
+	void updateEntryReturn(ScmEntryReturnDetailResponse resp);
+
 }

@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.*;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.io.Serializable;
@@ -20,6 +21,7 @@ import java.util.Date;
 @Data
 public class WarehouseNotice implements Serializable{
 
+    private static final long serialVersionUID = -3697164237401747801L;
     @Id
     @PathParam("id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -178,4 +180,14 @@ public class WarehouseNotice implements Serializable{
     @Column(name ="finish_status")
     private String finishStatus;
 
+   /* @Column(name ="purchase_order_status")
+    @DefaultValue("0")
+    //V2.5采购单作废后，传给入库通知单用于帮前端区分2种已取消状态
+    private String purchaseOrderStatus; //采购单作废后，这里状态变为7已取消，否则为0*/
+
+    /**
+     * 采购入库单重新发货第几次序号-京东仓库重新发货用
+     */
+    @Column(name = "in_order_seq")
+    private Long inOrderSeq;
 }

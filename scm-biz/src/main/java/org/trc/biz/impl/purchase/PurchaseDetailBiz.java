@@ -12,16 +12,21 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.warehouseNotice.WarehouseNotice;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.exception.PurchaseOrderDetailException;
 import org.trc.service.category.IBrandService;
 import org.trc.service.impl.goods.ItemsService;
+import org.trc.service.impl.purchase.WarehouseNoticeService;
+import org.trc.service.impl.warehouseNotice.WarehouseNoticeDetailsService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 import tk.mybatis.mapper.entity.Example;
 
-import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +51,12 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
     @Autowired
     private ItemsService itemsService;
 
+    @Autowired
+    private WarehouseNoticeDetailsService warehouseNoticeDetailsService;
+
+    @Autowired
+    private WarehouseNoticeService warehouseNoticeService;
+
     @Override
     @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public List<PurchaseDetail> purchaseDetailListByPurchaseCode(String purchaseOrderCode) throws Exception{
@@ -63,7 +74,7 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public List<PurchaseDetail> purchaseDetailList(Long purchaseId) throws Exception {
 
         AssertUtil.notNull(purchaseId,"采购单id为空,采购明细查询失败");
@@ -77,20 +88,49 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
         if(CollectionUtils.isEmpty(purchaseDetailList)){
             return new ArrayList<PurchaseDetail>();
         }
+
+        PurchaseOrder purchaseOrder = purchaseOrderService.selectByPrimaryKey(purchaseId);
+
         //品牌的名称
         List<Long> brandIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
             brandIds.add(purchaseDetail.getBrandId());
             if(purchaseDetail.getPurchasePrice() != null){
-                purchaseDetail.setPurchasePriceD(new BigDecimal(purchaseDetail.getPurchasePrice()).divide(new BigDecimal(100)));
+                purchaseDetail.setPurchasePriceD(purchaseDetail.getPurchasePrice());
             }else {
                 purchaseDetail.setPurchasePriceD(null);
             }
             if(purchaseDetail.getTotalPurchaseAmount() != null){
-                purchaseDetail.setTotalPurchaseAmountD(new BigDecimal(purchaseDetail.getTotalPurchaseAmount()).divide(new BigDecimal(100)));
+                purchaseDetail.setTotalPurchaseAmountD(purchaseDetail.getTotalPurchaseAmount());
             }else {
                 purchaseDetail.setTotalPurchaseAmountD(null);
+            }
+
+            //当采购单状态为入库通知状态才有 商品入库状态和仓库反馈入库信息
+            if(StringUtils.equals(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode(), purchaseOrder.getStatus())){
+                Example warehouseNoticeExample = new Example(WarehouseNotice.class);
+                warehouseNoticeExample.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+                List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(warehouseNoticeExample);
+                if(warehouseNotices != null && !warehouseNotices.isEmpty()){
+                    Example warehouseNoticeDetailsExample = new Example(WarehouseNoticeDetails.class);
+                    warehouseNoticeDetailsExample.createCriteria().andEqualTo("warehouseNoticeCode", warehouseNotices.get(0).getWarehouseNoticeCode());
+                    List<WarehouseNoticeDetails> details = warehouseNoticeDetailsService.selectByExample(warehouseNoticeDetailsExample);
+                    for (WarehouseNoticeDetails detail : details){
+                        if(StringUtils.equals(detail.getSkuCode(), purchaseDetail.getSkuCode())){
+                            String storageTime = null;
+                            if(detail.getStorageTime() != null){
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                storageTime = format.format(detail.getStorageTime());
+                            }
+                            purchaseDetail.setStorageTime(storageTime);
+                            purchaseDetail.setActualStorageQuantity(detail.getActualStorageQuantity());
+                            purchaseDetail.setNormalStorageQuantity(detail.getNormalStorageQuantity());
+                            purchaseDetail.setDefectiveStorageQuantity(detail.getDefectiveStorageQuantity());
+                            break;
+                        }
+                    }
+                }
             }
         }
 

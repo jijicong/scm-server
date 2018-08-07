@@ -30,10 +30,9 @@ public interface IPurchaseOutboundOrderBiz {
      * 采购退货单保存或提交审核
      *
      * @param form                采购退货单数据
-     * @param code                保存类型 0-暂存 1-提交审核
      * @param aclUserAccreditInfo
      */
-    void savePurchaseOutboundOrder(PurchaseOutboundOrder form, String code, AclUserAccreditInfo aclUserAccreditInfo);
+    void savePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 更新采购退货单
@@ -41,7 +40,7 @@ public interface IPurchaseOutboundOrderBiz {
      * @param form                表单数据
      * @param aclUserAccreditInfo
      */
-    void updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    String updatePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 根据采购退货单Id查询采购退货单

@@ -41,7 +41,10 @@ public class PurchaseOutboundOrderTest {
 
     @Test
     public void getPurchaseOutboundOrderListTest(){
-        Pagenation<PurchaseOutboundOrder> purchaseOutboundOrderPagenation = purchaseOutboundOrderBiz.purchaseOutboundOrderPageList(new PurchaseOutboundOrderForm(), new Pagenation<>(), "YWX001");
+        PurchaseOutboundOrderForm form = new PurchaseOutboundOrderForm();
+        //退货类型1-正品，2-残品
+        form.setReturnOrderType("1");
+        Pagenation<PurchaseOutboundOrder> purchaseOutboundOrderPagenation = purchaseOutboundOrderBiz.purchaseOutboundOrderPageList(form, new Pagenation<>(), "YWX001");
         System.out.println(JSON.toJSONString(purchaseOutboundOrderPagenation));
     }
 
@@ -91,7 +94,7 @@ public class PurchaseOutboundOrderTest {
         info.setChannelCode("YWX001");
         info.setUserId("B571346F625E44DB8FCBA8116E72593D");
         //code [0]暂存，[1]提交审核
-        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(order,"1",info);
+        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(order, info);
     }
 
     /**
@@ -182,11 +185,11 @@ public class PurchaseOutboundOrderTest {
         PurchaseOutboundItemForm form = new PurchaseOutboundItemForm();
         form.setStartDate("2018-02-02");
         form.setEndDate("2018-08-02");
-        form.setSupplierCode("GYS000009");
-        form.setWarehouseInfoId("128");
+        form.setSupplierCode("GYS000166");
+        form.setWarehouseInfoId("107");
         //退货类型1-正品，2-残品
         form.setReturnOrderType("2");
-        form.setSkuCode("SP0201707280000058");
+        form.setSkuCode("SP0201805190000768");
 
         Pagenation<WarehouseNoticeDetails> pagenation = new Pagenation<>();
         Pagenation<WarehouseNoticeDetails> purchaseHistory = purchaseOutboundOrderBiz.getPurchaseHistory(form, pagenation);
@@ -217,7 +220,7 @@ public class PurchaseOutboundOrderTest {
     @Test
     public void auditPurchaseOrderTest(){
         AuditPurchaseOrderForm order = new AuditPurchaseOrderForm();
-        order.setId(17L);
+        order.setId(27L);
         //2-审核驳回,3-审核通过
         order.setAuditStatus("3");
         order.setAuditOpinion("asdsd");
@@ -238,7 +241,7 @@ public class PurchaseOutboundOrderTest {
         AclUserAccreditInfo info = new AclUserAccreditInfo();
         info.setChannelCode("YWX001");
         info.setUserId("B571346F625E44DB8FCBA8116E72593D");
-        purchaseOutboundOrderBiz.warehouseAdvice(13L, info);
+        purchaseOutboundOrderBiz.warehouseAdvice(27L, info);
     }
 
     /**
@@ -264,5 +267,11 @@ public class PurchaseOutboundOrderTest {
     public void findSupplierBrand(){
         List<SupplierBrandExt> supplierBrand = purchaseOutboundOrderBiz.findSupplierBrand("GYS000009");
         System.out.println(JSON.toJSONString(supplierBrand));
+    }
+
+    @Test
+    public void getsupplierTest(){
+        System.out.println(JSON.toJSONString(purchaseOutboundOrderBiz.getSuppliersByChannelCode("YWX001")));
+
     }
 }

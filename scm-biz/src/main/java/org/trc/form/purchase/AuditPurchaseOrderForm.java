@@ -3,7 +3,7 @@ package org.trc.form.purchase;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.FormParam;
 
 /**
  * Description〈采购退货单审核form〉
@@ -16,19 +16,18 @@ public class AuditPurchaseOrderForm {
     /**
      * 采购退货单编号
      */
-    @QueryParam("id")
-    @Length(max = 32)
+    @FormParam("id")
     @ApiModelProperty("采购退货单ID")
     private Long id;
 
 
-    @QueryParam("auditStatus")
+    @FormParam("auditStatus")
     @Length(max = 1)
     @ApiModelProperty("审核状态")
     private String auditStatus;
 
-    @QueryParam("auditOpinion")
-    @Length(max = 3000)
+    @FormParam("auditOpinion")
+    @Length(max = 1500)
     @ApiModelProperty("审核意见")
     private String auditOpinion;
 

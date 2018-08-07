@@ -1,9 +1,9 @@
 package org.trc.mapper.purchase;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
-import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.util.BaseMapper;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
 
-    List<Supplier> findSuppliersByChannelCode(String channelCode);
+    List<Supplier> findSuppliersByChannelCode(@Param("channelCode") String channelCode, @Param("supplierName") String supplierName);
 
     List<PurchaseDetail> selectItemsBySupplierCode(Map<String, Object> map);
 

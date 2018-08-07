@@ -3,7 +3,6 @@ package org.trc.domain.warehouseNotice;
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
-import org.trc.custom.MoneySerializer;
 import org.trc.custom.SimpleDateSerializer;
 
 import javax.persistence.*;
@@ -17,6 +16,7 @@ import java.util.Date;
 @Table(name = "warehouse_notice_details")
 public class WarehouseNoticeDetails implements Serializable{
 
+    private static final long serialVersionUID = 4965049151059317121L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,7 +44,7 @@ public class WarehouseNoticeDetails implements Serializable{
     //'采购价,单位/分',
     @ApiModelProperty("含税单价")
     @Column(name = "purchase_price")
-    private Long purchasePrice;
+    private BigDecimal purchasePrice;
     //采购价格转化成元
     @Transient
     private BigDecimal purchasePriceT;
@@ -89,8 +89,8 @@ public class WarehouseNoticeDetails implements Serializable{
     @Column(name = "expired_day")
     private Integer expiredDay;
     //采购总金额, 单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long purchaseAmount;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal purchaseAmount;
     //收货状态
     @Column(name = "status")
     private Integer status;
@@ -129,6 +129,20 @@ public class WarehouseNoticeDetails implements Serializable{
 
     public void setPurchaseOrderCode(String purchaseOrderCode) {
         this.purchaseOrderCode = purchaseOrderCode;
+    }
+
+
+    //采购商品税率
+    @Column(name = "tax_rate")
+    @ApiModelProperty("采购商品税率")
+    private BigDecimal taxRate;
+
+    public BigDecimal getTaxRate() {
+        return taxRate;
+    }
+
+    public void setTaxRate(BigDecimal taxRate) {
+        this.taxRate = taxRate;
     }
 
     public Date getActualInstockTime() {
@@ -219,11 +233,11 @@ public class WarehouseNoticeDetails implements Serializable{
 		this.expiredDay = expiredDay;
 	}
 
-	public Long getPurchaseAmount() {
+	public BigDecimal getPurchaseAmount() {
 		return purchaseAmount;
 	}
 
-	public void setPurchaseAmount(Long purchaseAmount) {
+	public void setPurchaseAmount(BigDecimal purchaseAmount) {
 		this.purchaseAmount = purchaseAmount;
 	}
 
@@ -323,11 +337,11 @@ public class WarehouseNoticeDetails implements Serializable{
         this.categoryId = categoryId;
     }
 
-    public Long getPurchasePrice() {
+    public BigDecimal getPurchasePrice() {
         return purchasePrice;
     }
 
-    public void setPurchasePrice(Long purchasePrice) {
+    public void setPurchasePrice(BigDecimal purchasePrice) {
         this.purchasePrice = purchasePrice;
     }
 
