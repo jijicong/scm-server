@@ -1438,6 +1438,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         List<WarehouseNoticeDetails> warehouseNoticeDetailsList = warehouseNoticeDetailsService.select(warehouseNoticeDetail);
                         List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList = entryOrderDetail.getScmEntryOrderDetailResponseItemList();
                         if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList) && !AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseItemList)) {
+                            logger.error("=====>>> start <<<=====");
                             for (WarehouseNoticeDetails warehouseDetail : warehouseNoticeDetailsList) {
                                 //获取当前入库单详情的库存情况,目前只有两种状态
                                 Map<String, Long> stockMap = delStock(scmEntryOrderDetailResponseItemList, warehouseDetail);
