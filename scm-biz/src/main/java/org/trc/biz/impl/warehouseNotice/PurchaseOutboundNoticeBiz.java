@@ -20,6 +20,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.warehouseNotice.IPurchaseOutboundNoticeBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.enums.LogOperationEnum;
@@ -49,8 +50,6 @@ import org.trc.util.ListSplit;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
-
-import com.alibaba.fastjson.JSON;
 
 /**
  * Description〈〉
@@ -122,7 +121,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		}
 		
 		ScmEntryReturnOrderCreateRequest request = new ScmEntryReturnOrderCreateRequest();
-		String whName = commonService.getWarehoueType(notice.getWarehouseCode(), request); // 获取仓库类型，并设置到request中
+		WarehouseInfo whi = commonService.getWarehoueType(notice.getWarehouseCode(), request); // 获取仓库类型，并设置到request中
 		
 		/**
 		 * 京东仓库处理逻辑
@@ -130,6 +129,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		if (WarehouseTypeEnum.Jingdong.getCode().equals(request.getWarehouseType())) {
 			BeanUtils.copyProperties(notice, request);
 			request.setDeptNo(jDWmsConstantConfig.getDeptNo()); // 事业部编号
+			request.setWarehouseCode(whi.getWmsWarehouseCode()); // 京东事业部退库库房编号
 			
 			/**
 			 * 组装商品详情
@@ -186,10 +186,10 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		 * 更新操作
 		 */
 		noticeService.updateById(status, notice.getId(), errMsg, wmsEntryRtCode);
-		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
+		detailService.updateByOrderCode(status, null, null, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：出库仓接收成功（失败）; 操作人：仓库名称; 备注：失败原因)
-        logInfoService.recordLog(notice, notice.getId().toString(), whName,
+        logInfoService.recordLog(notice, notice.getId().toString(), whi.getWarehouseName(),
         		logOp, errMsg, null);
 	}
 
@@ -241,7 +241,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		 * 更新操作
 		 */
 		noticeService.updateById(cancelSts, notice.getId(), null, null);
-		detailService.updateByOrderCode(cancelSts, notice.getOutboundNoticeCode());
+		detailService.updateByOrderCode(cancelSts, null, null, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：取消出库; 操作人：仓库名称; 备注：取消原因+取消结果)
         logInfoService.recordLog(notice, notice.getId().toString(), useInfo.getUserId(),
