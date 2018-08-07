@@ -1423,7 +1423,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     if (null != noticeOrder) {
 
                         //入库商品日志
-                        StringBuffer logMessage = new StringBuffer();
+                        StringBuilder logMessage = new StringBuilder();
 
                         //记录部分收货的通知单详情
                         List<WarehouseNoticeDetails> partialNoticeDetailList = new ArrayList<>();
@@ -1562,7 +1562,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param warehouseDetail
      * @param noticeOrder
      */
-    private void updatePurchaseDetailStatus(WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder, StringBuffer logMessage) {
+    private void updatePurchaseDetailStatus(WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder, StringBuilder logMessage) {
         Example example1 = new Example(PurchaseDetail.class);
         example1.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
         List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(example1);
