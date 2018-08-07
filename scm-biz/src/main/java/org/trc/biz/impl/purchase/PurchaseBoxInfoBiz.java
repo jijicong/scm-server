@@ -60,6 +60,9 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
         AssertUtil.notNull(purchaseBoxInfoVO,"装箱信息对象为空");
         String purchaseOrderCode = purchaseBoxInfoVO.getPurchaseOrderCode();
         AssertUtil.notBlank(purchaseOrderCode, "采购单号为空");
+        if(StringUtils.equals(PurchaseBoxInfoStatusEnum.FINISH.getCode(), status)){
+            AssertUtil.notBlank(purchaseBoxInfoVO.getPackingType(),"装箱方式不能为空");
+        }
 
         //获取采购单信息并
         PurchaseOrder purchaseOrder = new PurchaseOrder();

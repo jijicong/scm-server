@@ -41,9 +41,9 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
+    public Response goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page,@Context ContainerRequestContext requestContext) throws Exception {
         //return goodsBiz.itemsPage(form, page);
-        return ResultUtil.createSuccessPageResult(goodsBiz.itemsPage(form, page));
+        return ResultUtil.createSuccessPageResult(goodsBiz.itemsPage(form, page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @GET
@@ -64,6 +64,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("保存商品成功", "");
     }
 
+    //V3.1增加数据权限
     @PUT
     @Path(SupplyConstants.Goods.GOODS + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -73,6 +74,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("更新商品成功", "");
     }
 
+    //V3.1增加数据权限
     @PUT
     @Path(SupplyConstants.Goods.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -85,6 +87,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
+    //V3.1增加数据权限
     @PUT
     @Path(SupplyConstants.Goods.SKU_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)

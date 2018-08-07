@@ -43,8 +43,8 @@ public class PurchaseOrderForm extends QueryModel{
     /**
      * 采购组
      */
-    @QueryParam("purchaseGroup")
-    private String  purchaseGroup;
+    @QueryParam("purchaseGroupCode")
+    private String  purchaseGroupCode;
 
     /**
      * v2.5 入库状态:0-等待入库,1-全部入库,2-部分入库,3-入库异常,其他情况为null
@@ -98,6 +98,14 @@ public class PurchaseOrderForm extends QueryModel{
 
     public void setPurchaseType(String purchaseType) {
         this.purchaseType = purchaseType;
+    }
+
+    public String getPurchaseGroupCode() {
+        return purchaseGroupCode;
+    }
+
+    public void setPurchaseGroupCode(String purchaseGroupCode) {
+        this.purchaseGroupCode = purchaseGroupCode;
     }
 
     @Override

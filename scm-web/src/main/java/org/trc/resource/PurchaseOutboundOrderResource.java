@@ -9,7 +9,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
-import org.trc.enums.purchase.PurchaseOutboundOrderStatusEnum;
 import org.trc.form.purchase.AuditPurchaseOrderForm;
 import org.trc.form.purchase.PurchaseOutboundItemForm;
 import org.trc.form.purchase.PurchaseOutboundOrderForm;
@@ -113,14 +112,14 @@ public class PurchaseOutboundOrderResource {
 
 
     /**
-     * 保存采购退货单
+     * 采购退货单保存或提交审核
      */
     @POST
     @Path("/save")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("保存采购退货单")
+    @ApiOperation("采购退货单保存或提交审核")
     public Response savePurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, PurchaseOutboundOrderStatusEnum.HOLD.getCode(), (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("保存采购退货单成功!", "");
     }
 
@@ -143,21 +142,21 @@ public class PurchaseOutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("修改采购退货单")
     public Response updatePurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        purchaseOutboundOrderBiz.updatePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("修改采购退货单成功!", "");
+        String message = purchaseOutboundOrderBiz.updatePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult(message, "");
     }
 
-    /**
-     * 提交采购退货单
-     */
-    @POST
-    @Path("/commit")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("提交审核采购退货单")
-    public Response commitAuditPurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("提交审核采购退货单成功!", "");
-    }
+    ///**
+    // * 提交采购退货单
+    // */
+    //@POST
+    //@Path("/commit")
+    //@Produces(MediaType.APPLICATION_JSON)
+    //@ApiOperation("提交审核采购退货单")
+    //public Response commitAuditPurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
+    //    purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    //    return ResultUtil.createSuccessResult("提交审核采购退货单成功!", "");
+    //}
 
     /**
      * 获取采购退货单商品详情
@@ -247,10 +246,9 @@ public class PurchaseOutboundOrderResource {
     @Path("/audit")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单审核")
-    public Response auditPurchaseOrder(@BeanParam AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) {
+    public Response auditPurchaseOrder(AuditPurchaseOrderForm form, @Context ContainerRequestContext requestContext) {
         purchaseOutboundOrderBiz.auditPurchaseOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("采购退货单审核成功", "");
-
     }
 
 }

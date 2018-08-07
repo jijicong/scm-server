@@ -39,7 +39,7 @@ public class ItemGroup implements Serializable{
     private String itemGroupCode;
 
     @FormParam("itemGroupName")
-    @Length(max=40,message = "商品名称字母和数字不能超过40个,汉字不能超过20个")
+    @Length(max=20,message = "商品名称字母和数字不能超过20个,汉字不能超过10个")
     @ApiModelProperty("商品组名称")
     private String itemGroupName;
 
@@ -49,7 +49,7 @@ public class ItemGroup implements Serializable{
     private String channelCode;
 
     @FormParam("leaderName")
-    @Length(max=32,message = "组长名称字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max=10,message = "组长名称字母和数字不能超过10个,汉字不能超过5个")
     @ApiModelProperty("组长名字")
     private String leaderName;
 
@@ -59,7 +59,7 @@ public class ItemGroup implements Serializable{
     private String memberName;
 
     @FormParam("remark")
-    @Length(max =400, message = "商品组的备注字母和数字不能超过400个,汉字不能超过个200")
+    @Length(max =200, message = "商品组的备注字母和数字不能超过200个,汉字不能超过个100")
     @ApiModelProperty("备注")
     private  String remark;
 

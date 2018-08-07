@@ -94,7 +94,7 @@ public class PurchaseOutboundOrderTest {
         info.setChannelCode("YWX001");
         info.setUserId("B571346F625E44DB8FCBA8116E72593D");
         //code [0]暂存，[1]提交审核
-        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(order,"1",info);
+        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(order, info);
     }
 
     /**
