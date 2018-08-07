@@ -1,5 +1,6 @@
 package org.trc.service.impl.purchase;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,9 +44,11 @@ public class PurchaseOutboundDetailService extends BaseService<PurchaseOutboundD
 	}
 
 	@Override
-	public void updateByOrderCode(PurchaseOutboundNoticeStatusEnum status, String outboundNoticeCode) {
+	public void updateByOrderCode(PurchaseOutboundNoticeStatusEnum status, Date nowTime, Long actualQty, String outboundNoticeCode) {
 		PurchaseOutboundDetail updateRecord = new PurchaseOutboundDetail();
 		updateRecord.setStatus(status.getCode());
+		updateRecord.setActualStorageQuantity(actualQty);
+		updateRecord.setStorageTime(nowTime);
 		Example example = new Example(PurchaseOutboundDetail.class);
 		Example.Criteria ca = example.createCriteria();
 		if (StringUtils.isBlank(outboundNoticeCode)) {

@@ -3,6 +3,8 @@ package org.trc.service.impl.warehouseNotice;
 import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +163,6 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		updateRecord.setStatus(status.getCode());
 		updateRecord.setFailureCause(errMsg);
 		updateRecord.setEntryOrderId(wmsEntryRtCode);
-		//updateRecord.setOutboundNoticeCode(entryRtCode);
 		noticeMapper.updateByPrimaryKeySelective(updateRecord);		
 	}
 
@@ -278,7 +279,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
     		 * 更新操作
     		 */
     		this.updateById(status, notice.getId(), null, null);
-    		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
+    		detailService.updateByOrderCode(status, null, null, notice.getOutboundNoticeCode());
     		// 日志 admin??
             logInfoService.recordLog(notice, notice.getId().toString(), "admin",
             		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), logRemark, null);
@@ -297,6 +298,15 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		 if (CANCELLED.equals(resp.getStatus())) { // 已取消
 			 
 			 this.updateByCode(PurchaseOutboundNoticeStatusEnum.CANCEL, null, noticeCode);
+			 // 日志处理
+			 try {
+				 PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(wmsCode);
+	             WarehouseInfo warehouse = warehouseInfoService.selectOneByCode(notice.getWarehouseCode());
+		         logInfoService.recordLog(notice, notice.getId().toString(), warehouse.getWarehouseName(),
+		        		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), "京东后台取消", null);
+			 } catch (Exception e) {
+				 logger.error("采购退货出库单定时任务获取出库取消状态时，日志记录异常，原因:", e);
+			 }			 
 			 
 		 } else if (FINISH.equals(resp.getStatus())) { // 已完成
 			 
@@ -316,6 +326,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 			 List<String> remarkList = new ArrayList<>();  // 日志备注显示 eg. (sku编号1：出库完成/出库异常)
 			 List<String> skuList = new ArrayList<>(); // 出库异常的商品编码列表
 			 String exceptionCause = null;
+			 Date nowTime = Calendar.getInstance().getTime();
 			 for (ScmEntryReturnDetailItem item : itemList) {
 				 PurchaseOutboundNoticeStatusEnum detailStatus = PurchaseOutboundNoticeStatusEnum.PASS; // 商品详情状态
 				 PurchaseOutboundDetail detail = detailMap.get(item.getItemId());
@@ -331,7 +342,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 				 }
 				 remarkList.add(detail.getSkuCode() + ":" + result);
 				 // 更新商品详情
-				 detailService.updateByOrderCode(detailStatus, detail.getOutboundNoticeCode());
+				 detailService.updateByOrderCode(detailStatus, nowTime, item.getActualQty(), detail.getOutboundNoticeCode());
 			 }
 			 if (!CollectionUtils.isEmpty(skuList)) {
 				 exceptionCause = "[" + StringUtils.join(skuList, SupplyConstants.Symbol.COMMA) + "]实际出库数量不等于要求退货数量";

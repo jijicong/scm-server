@@ -32,6 +32,7 @@ public class ItemGroupUser implements Serializable{
     private Long id;
 
     @FormParam("name")
+    @Length(max=10,message = "组员姓名不能超过10个字符,汉字不能超过5个")
     @ApiModelProperty("用户名字")
     private String name;
 
@@ -41,6 +42,7 @@ public class ItemGroupUser implements Serializable{
     private String channelCode;
 
     @FormParam("phoneNumber")
+    @Length(max = 11, message = "手机号码不超过11位")
     @ApiModelProperty("用户手机号码")
     private String phoneNumber;
 
