@@ -10,10 +10,9 @@ import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.ItemGroupException;
+import org.trc.exception.ParamValidException;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.form.goods.ItemGroupQuery;
 import org.trc.service.config.ILogInfoService;
@@ -54,7 +53,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
     /**
      * 正则表达式：验证手机号
      */
-    private static final String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
+    private static final String REGEX_MOBILE = "^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}$";
 
     private static final Integer LENGTH = 5;//商品组编号5位流水号
 
@@ -120,7 +119,6 @@ public class ItemGroupBiz implements IitemGroupBiz {
         //查询详情便于记录日志
         ItemGroup orginEntity = queryDetailByCode(itemGroup.getItemGroupCode());
 
-
         AssertUtil.notNull(itemGroup,"根据商品组信息修改商品组失败,商品组信息为null");
         String itemGroupName=itemGroup.getItemGroupName();
         AssertUtil.notNull(itemGroupName,"商品组名称为空！");
@@ -132,14 +130,29 @@ public class ItemGroupBiz implements IitemGroupBiz {
                 logger.error(msg);
                 throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
             }
-
         }
-
-
         String leaderName = itemGroup.getLeaderName();
-
         AssertUtil.notNull(leaderName,"请选择组长！");
         AssertUtil.notNull(groupUserList,"请至少添加一个组员！");
+        List<String> phoneListNew=groupUserList.stream().map(e -> e.getPhoneNumber()).collect(Collectors.toList());
+        List<String> phoneListCheck=new ArrayList<>();
+        for (String phone : phoneListNew) {
+            if (phoneListCheck.contains(phone)){
+                  String msg="该手机号在组内已存在！";
+              logger.error(msg);
+              throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+            }
+            AssertUtil.notBlank(phone,"手机号码不能为空！");
+            if (Pattern.compile(REGEX_MOBILE).matcher(phone).matches()){
+                String msg="手机号码"+phone+"格式错误";
+                logger.error(msg);
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,msg);
+            }
+            phoneListCheck.add(phone);
+        }
+        for (ItemGroupUser itemGroupUser : groupUserList) {
+            AssertUtil.notBlank(itemGroupUser.getName(),"商品组员名字不能为空！");
+        }
         itemGroup.setUpdateTime(Calendar.getInstance().getTime());
         itemGroupService.updateByPrimaryKeySelective(itemGroup);
 
@@ -165,8 +178,9 @@ public class ItemGroupBiz implements IitemGroupBiz {
                 }
 
                 if (itemGroupUser.getId()==null){//id不存在为新增成员
+                    String name=itemGroupUser.getName();
                     ItemGroupUser insertEntity = new ItemGroupUser();
-                    insertEntity.setName(itemGroupUser.getName());
+                    insertEntity.setName(name);
                     insertEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
                     insertEntity.setIsLeader(itemGroupUser.getIsLeader());
                     insertEntity.setItemGroupCode(itemGroup.getItemGroupCode());
@@ -186,13 +200,27 @@ public class ItemGroupBiz implements IitemGroupBiz {
                     }
                 }else {//修改操作
                     ItemGroupUser updateEntity = itemGroupUserService.selectByPrimaryKey(itemGroupUser.getId());
-                    updateEntity.setName(itemGroupUser.getName());
-                    updateEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
-                    updateEntity.setIsLeader(itemGroupUser.getIsLeader());
+                    if (!StringUtils.equals(itemGroupUser.getName(),updateEntity.getName())){
+                        updateEntity.setName(itemGroupUser.getName());
+                        logMsg=logMsg+"商品组员名称由\""+updateEntity.getName()+"\"改为\""+itemGroupUser.getName()+"\";";
+                    }
+                    if (!StringUtils.equals(itemGroupUser.getPhoneNumber(),updateEntity.getPhoneNumber())){
+                        updateEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
+                        logMsg=logMsg+"商品组员手机号码由\""+updateEntity.getPhoneNumber()+"\"改为\""+itemGroupUser.getPhoneNumber()+"\";";
+                    }
+                    if (!StringUtils.equals(itemGroupUser.getIsLeader(),updateEntity.getIsLeader())){
+                        updateEntity.setIsLeader(itemGroupUser.getIsLeader());
+                        if (StringUtils.equals(itemGroupUser.getIsLeader(),ZeroToNineEnum.ZERO.getCode())){
+                            logMsg=logMsg+"原组员名字：\""+updateEntity.getName()+"\"由组长改为组员;";
+                        }else {
+                            logMsg=logMsg+"原组员名字：\""+updateEntity.getName()+"\"由组员改为组长;";
+                        }
+                    }
                     updateEntity.setItemGroupCode(itemGroup.getItemGroupCode());
                     updateEntity.setCreateTime(itemGroup.getCreateTime());
                     updateEntity.setUpdateTime(Calendar.getInstance().getTime());
                     Integer countUpd = itemGroupUserService.updateByPrimaryKeySelective(updateEntity);
+                    logDetail.add(logMsg);
                     if (countUpd==null){
                         String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户修改失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
                         logger.error(msg);
@@ -290,6 +318,17 @@ public class ItemGroupBiz implements IitemGroupBiz {
     //启停用
     @Override
     public void updateStatus(String isValid, String itemGroupCode,AclUserAccreditInfo aclUserAccreditInfo) {
+        ItemGroup temp = new ItemGroup();
+        temp.setItemGroupCode(itemGroupCode);
+        temp = itemGroupService.selectOne(temp);
+        if (StringUtils.equals(temp.getIsValid(),isValid)){
+            if (StringUtils.equals(isValid,ZeroToNineEnum.ZERO.getCode())){
+                throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,"当前状态已经是停用状态，不能再停用");
+            }else {
+                throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,"当前状态已经是启用状态，不能再启用");
+            }
+
+        }
         ItemGroup itemGroup = queryDetailByCode(itemGroupCode);
         itemGroup.setIsValid(isValid);
         itemGroup.setUpdateTime(Calendar.getInstance().getTime());
@@ -319,7 +358,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
         //记录日志
         String orginIsValid = itemGroup.getIsValid();
-        String logMsg="状态由\""+orginIsValid+"\"改为\""+isValid+"\"。";
+        String logMsg="状态由\""+ValidEnum.getValidEnumByCode(orginIsValid)+"\"改为\""+ValidEnum.getValidEnumByCode(isValid)+"\"。";
         logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),logMsg,null);
     }
 
@@ -338,14 +377,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
             String phoneNumber = itemGroupUser.getPhoneNumber();
             AssertUtil.notBlank(phoneNumber,"手机号码不能为空！");
             AssertUtil.notBlank(itemGroupUser.getName(),"商品组员名字不能为空！");
-            if (Pattern.matches(REGEX_MOBILE,phoneNumber)){
-                String msg="手机号码格式错误"+itemGroupUser.getPhoneNumber();
+            if (Pattern.compile(REGEX_MOBILE).matcher(phoneNumber).matches()){
+                String msg="手机号码"+phoneNumber+"格式错误";
                 logger.error(msg);
-                throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_SAVE_EXCEPTION,msg);
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,msg);
             }
-
             itemGroupUser.setChannelCode(channelCode);
-
             itemGroupUser.setCreateTime(Calendar.getInstance().getTime());
             itemGroupUser.setUpdateTime(Calendar.getInstance().getTime());
             itemGroupUser.setIsValid(isValid);
