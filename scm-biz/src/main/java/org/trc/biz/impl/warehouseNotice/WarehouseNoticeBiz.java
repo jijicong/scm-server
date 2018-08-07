@@ -1497,9 +1497,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             }
                             if (!AssertUtil.collectionIsEmpty(exceptionSkuCount)) {
                                 exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量。");
-
                             }
-                            warehouseNotice.setExceptionCause(((warehouseNotice.getExceptionCause()) == null ? "" : (warehouseNotice.getExceptionCause() + ",")) + StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
+                            warehouseNotice.setExceptionCause((StringUtils.isBlank(warehouseNotice.getExceptionCause()) ? "" : (warehouseNotice.getExceptionCause() + ",")) + StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                             purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                         } else if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)) {
@@ -1534,7 +1533,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         WarehouseInfo whi = new WarehouseInfo();
                         whi.setCode(warehouseNotice.getWarehouseCode());
                         WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
-
+                        logger.info("--------采购单日志:{}", logMessage);
                         //更新完成 记录日志
                         //获取异常日志
                         try {
