@@ -1438,7 +1438,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         List<WarehouseNoticeDetails> warehouseNoticeDetailsList = warehouseNoticeDetailsService.select(warehouseNoticeDetail);
                         List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList = entryOrderDetail.getScmEntryOrderDetailResponseItemList();
                         if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList) && !AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseItemList)) {
-                            logger.error("=====>>> start <<<=====");
                             for (WarehouseNoticeDetails warehouseDetail : warehouseNoticeDetailsList) {
                                 //获取当前入库单详情的库存情况,目前只有两种状态
                                 Map<String, Long> stockMap = delStock(scmEntryOrderDetailResponseItemList, warehouseDetail);
@@ -1456,7 +1455,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                  * 同步采购单商品详情 入库状态
                                  */
                                 updatePurchaseDetailStatus(warehouseDetail, noticeOrder, logMessage);
-                                logger.error("=====>>> logMessage:{}", logMessage.toString());
                                 //更新库存
                                 updateSkuStockTable(warehouseNotice, warehouseDetail, stockMap.get("defectiveQ") - oldDefectiveQ, stockMap.get("normalQ") - oldNormalQ);
                                 //分批记录收货状态
@@ -1537,7 +1535,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         WarehouseInfo whi = new WarehouseInfo();
                         whi.setCode(warehouseNotice.getWarehouseCode());
                         WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
-                        logger.error("=====>>> logMessage:{}", logMessage.toString());
                         //更新完成 记录日志
                         //获取异常日志
                         try {
@@ -1569,7 +1566,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example example1 = new Example(PurchaseDetail.class);
         example1.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
         List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(example1);
-        logger.error("====>>>>purchaseDetails:{}", JSON.toJSONString(purchaseDetails));
         for (PurchaseDetail p : purchaseDetails) {
             if(StringUtils.equals(p.getSkuCode(), warehouseDetail.getSkuCode())){
                 PurchaseDetail purchaseDetail = new PurchaseDetail();
