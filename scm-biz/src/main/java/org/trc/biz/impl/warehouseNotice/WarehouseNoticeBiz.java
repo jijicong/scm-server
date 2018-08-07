@@ -1423,7 +1423,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     if (null != noticeOrder) {
 
                         //入库商品日志
-                        StringBuffer logMessage = null;
+                        StringBuffer logMessage = new StringBuffer();
 
                         //记录部分收货的通知单详情
                         List<WarehouseNoticeDetails> partialNoticeDetailList = new ArrayList<>();
@@ -1569,6 +1569,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example example1 = new Example(PurchaseDetail.class);
         example1.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
         List<PurchaseDetail> purchaseDetails = purchaseDetailService.selectByExample(example1);
+        logger.error("====>>>>purchaseDetails:{}", JSON.toJSONString(purchaseDetails));
         for (PurchaseDetail p : purchaseDetails) {
             if(StringUtils.equals(p.getSkuCode(), warehouseDetail.getSkuCode())){
                 PurchaseDetail purchaseDetail = new PurchaseDetail();
