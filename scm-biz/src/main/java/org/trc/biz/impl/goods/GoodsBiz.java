@@ -233,7 +233,7 @@ public class GoodsBiz implements IGoodsBiz {
         page = itemsService.pagination(example, page, queryModel);
         List<Items> result = page.getResult();
         for (Items items : result) {
-            String flag = selectDataAcl(items.getId(), aclUserAccreditInfo, true, items);
+            String flag = selectDataAcl(items.getId(), aclUserAccreditInfo, true);
             items.setUpdateAuth(flag);//V3.1数据权限0无，1有
         }
         List<Skus> skusList = null;
@@ -902,7 +902,7 @@ public class GoodsBiz implements IGoodsBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
 
-        selectDataAcl(items.getId(),aclUserAccreditInfo,false,null);
+        selectDataAcl(items.getId(),aclUserAccreditInfo,false);
 
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
@@ -1997,13 +1997,14 @@ public class GoodsBiz implements IGoodsBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         //查询数据操作权限
-        selectDataAcl(id, aclUserAccreditInfo,false,null);
+        selectDataAcl(id, aclUserAccreditInfo,false);
 
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "商品启用/停用操作参数isValid不能为空");
         Items items2 = new Items();
         items2.setId(id);
         items2 = itemsService.selectOne(items2);
+
         AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
         Items items = new Items();
         items.setId(id);
@@ -2038,8 +2039,9 @@ public class GoodsBiz implements IGoodsBiz {
         //商品启停用通知渠道
         itemsUpdateNoticeChannel(items2, updateSkus, TrcActionTypeEnum.ITEMS_IS_VALID);
         //记录操作日志
+       String logMsg= String.format("SPU信息：SPU状态由[%s]改为[%s]",ValidEnum.getValidEnumByCode(_isValid).getName(),ValidEnum.getValidEnumByCode(isValid).getName());
         logInfoService.recordLog(items2,items.getId().toString(),aclUserAccreditInfo.getUserId(),
-                LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+                LogOperationEnum.UPDATE.getMessage(),logMsg, null);
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items2, updateSkus);
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
@@ -2051,7 +2053,7 @@ public class GoodsBiz implements IGoodsBiz {
     *    pageFlag  ：   商品组分页方法调用标志
     * */
     //V3.1数据权限查询,通用方法，调入分页方法分页返回给前端的值   返回值：有权限1，无权限0
-    private String selectDataAcl(Long id, AclUserAccreditInfo aclUserAccreditInfo,Boolean pageFlag,Items items) {
+    private String selectDataAcl(Long id, AclUserAccreditInfo aclUserAccreditInfo,Boolean pageFlag) {
         //用户数据权限查询
         //登录用户
         String loginPhone = aclUserAccreditInfo.getPhone();
@@ -2177,6 +2179,13 @@ public class GoodsBiz implements IGoodsBiz {
     @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSkusValid(Long id, String spuCode, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+        //数据权限查询
+        Items tempItems = new Items();
+        tempItems.setSpuCode(spuCode);
+        tempItems = itemsService.selectOne(tempItems);
+        selectDataAcl(tempItems.getId(),aclUserAccreditInfo,false);
+
+
         AssertUtil.notNull(id, "SKU启用/停用操作参数ID不能为空");
         AssertUtil.notBlank(spuCode, "SKU启用/停用操作参数spuCode不能为空");
         AssertUtil.notBlank(isValid, "SKU启用/停用操作参数isValid不能为空");
@@ -2223,9 +2232,14 @@ public class GoodsBiz implements IGoodsBiz {
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items, updateSkus);
+
         //记录操作日志
+        String logMsg="";
+        logMsg=String.format("商品信息：①%s:SKU状态由[%s]改为[%s]",spuCode,ValidEnum.getValidEnumByCode(_isValid).getName(),ValidEnum.getValidEnumByCode(isValid).getName());
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
-                LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+                    LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+
+
     }
 
     private void itemsUpdateNoticeWarehouseItemInfo(Skus skus, String _isValid) {

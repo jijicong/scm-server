@@ -87,6 +87,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
+    //V3.1增加数据权限
     @PUT
     @Path(SupplyConstants.Goods.SKU_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
