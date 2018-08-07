@@ -302,7 +302,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         allocateOrderExtService.setAllocateOrderWarehouseName(allocateInOrder);
 
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
-		String whName = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
+		WarehouseInfo whi = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
 		
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService
 				.getDetailListByOrderCode(allocateInOrder.getAllocateOrderCode());
@@ -393,7 +393,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 			allocateInOrderService.updateInOrderById(status, allocateInOrder.getId(), errMsg, wmsAllocatInCode, orderSeq);
 			allocateSkuDetailService.updateInSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
 //		}
-        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whName,
+        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whi.getWarehouseName(),
         		logOp, errMsg, null);
         return succ;
     }

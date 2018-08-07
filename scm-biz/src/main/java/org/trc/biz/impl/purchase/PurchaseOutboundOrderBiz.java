@@ -19,7 +19,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
-import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.taxrate.TaxRate;
 import org.trc.domain.util.Area;
@@ -1103,7 +1102,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         boolean flag = false;
         if (StringUtils.isNotBlank(form.getSkuCode())
                 || StringUtils.isNotBlank(form.getSkuName())
-                || StringUtils.isNotBlank(form.getBrandName())
+                || StringUtils.isNotBlank(form.getBrandId())
                 || StringUtils.isNotBlank(form.getBarCode())) {
             flag = true;
         }
@@ -1112,39 +1111,21 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
          * 查询入库单SKU，条件:供应商名称且入库状态为全部入库、部分入库、入库异常
          * skuCode已去重
          */
-        Set<String> skuCodes = getSkuCodesBySupplier(form);
+        List<WarehouseNoticeDetails> warehouseNoticeDetails = getSkuCodesBySupplier(form, flag);
+            if(CollectionUtils.isEmpty(warehouseNoticeDetails)){
+                if (!flag) {
+                    throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
+                            String.format("无数据，%s供应商对应入库单详情为空", form.getSupplierCode()));
+                }
+                return new ArrayList<>();
+            }
+        //skuCode去重
+        Set<String> skuCodes = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getSkuCode).collect(Collectors.toSet());
+        //获取brandIds
+        Set<Long> brandIds = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getBrandId).collect(Collectors.toSet());
+        //获取categoryIds
+        Set<Long> categoryIds = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getCategoryId).collect(Collectors.toSet());
         log.info("查询入库单SKU:{}", skuCodes);
-
-        //查询供应商相关品牌
-        SupplierBrand supplierBrand = new SupplierBrand();
-        supplierBrand.setSupplierCode(form.getSupplierCode());
-        supplierBrand.setIsValid(ValidStateEnum.ENABLE.getCode().toString());
-        List<SupplierBrand> supplierBrandList = supplierBrandService.select(supplierBrand);
-        AssertUtil.notEmpty(supplierBrandList, String.format("供应商%s没有关联品牌", form.getSupplierCode()));
-        Set<Long> brandIds = supplierBrandList.stream().map(SupplierBrand::getBrandId).collect(Collectors.toSet());
-        Set<Long> categoryIds = supplierBrandList.stream().map(SupplierBrand::getCategoryId).collect(Collectors.toSet());
-        /*Set<Long> categoryIds = new HashSet<>();
-        Set<Long> brandIds = new HashSet<>();
-        for (SupplierBrand sb : supplierBrandList) {
-            categoryIds.add(sb.getCategoryId());
-            brandIds.add(sb.getBrandId());
-        }*/
-
-        //查询品牌信息
-        Example brandExample = new Example(Brand.class);
-        Example.Criteria brandCriteria = brandExample.createCriteria();
-        brandCriteria.andIn("id", brandIds);
-        if (StringUtils.isNotBlank(form.getBrandName())) {
-            brandCriteria.andLike("name", "%" + form.getBrandName() + "%");
-        }
-        List<Brand> brandList = brandService.selectByExample(brandExample);
-        AssertUtil.notEmpty(brandList, String.format("根据品牌ID[%s]批量查询品牌信息为空",
-                CommonUtil.converCollectionToString(new ArrayList<>(brandIds))));
-        List<Long> brandIdList = brandList.stream().map(Brand::getId).collect(Collectors.toList());
-       /* List<String> brandIdList = new ArrayList<>();
-        for (Brand brand : brandList) {
-            brandIdList.add(brand.getId().toString());
-        }*/
 
         //查询退货仓库，退货类型对应的sku
         Example warehouseItemExample = new Example(WarehouseItemInfo.class);
@@ -1167,28 +1148,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
         List<String> skuCodeList = warehouseItemInfoList.stream().map(WarehouseItemInfo::getSkuCode).collect(Collectors.toList());
 
-        //查询供应商相关商品
-        Example itemExample = new Example(Items.class);
-        Example.Criteria itemCriteria = itemExample.createCriteria();
-        itemCriteria.andIn("categoryId", categoryIds);
-        itemCriteria.andIn("brandId", brandIdList);
-        itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
-        List<Items> itemsList = itemsService.selectByExample(itemExample);
-        if (CollectionUtils.isEmpty(itemsList)) {
-            log.error(String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
-                    CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));
-            if (!flag) {
-                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
-            }
-            return new ArrayList<>();
-        }
-
-        //查询供应商，退货仓库对应sku
-        List<Long> itemIds = itemsList.stream().map(Items::getId).collect(Collectors.toList());
-
+        //分页查询sku
         Example skusExample = new Example(Skus.class);
         Example.Criteria skusCriteria = skusExample.createCriteria();
-        skusCriteria.andIn("itemId", itemIds);
         skusCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         skusCriteria.andIn("skuCode", skuCodeList);
         if (StringUtils.isNotBlank(form.getSkuCode())) {
@@ -1216,15 +1178,16 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             return new ArrayList<>();
         }
 
-        return setDetails(result, warehouseItemInfoList, form.getReturnOrderType(), itemsList, brandList);
+        return setDetails(result, warehouseItemInfoList, form.getReturnOrderType(), brandIds, categoryIds);
     }
 
     /**
      * 查询入库单供应商名称且入库状态为全部入库、部分入库、入库异常”的采购单中的SKU
      * @param form
+     * @param flag
      * @return
      */
-    private Set<String> getSkuCodesBySupplier(PurchaseOutboundItemForm form) {
+    private List<WarehouseNoticeDetails> getSkuCodesBySupplier(PurchaseOutboundItemForm form, boolean flag) {
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierCode", form.getSupplierCode());
@@ -1236,19 +1199,20 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     String.format("无数据，%s供应商对应入库单为空", form.getSupplierCode()));
         }
 
+
         Example details = new Example(WarehouseNoticeDetails.class);
         Example.Criteria detailsCriteria = details.createCriteria();
         detailsCriteria.andIn("warehouseNoticeCode", warehouseNoticeCodes);
-        List<WarehouseNoticeDetails> warehouseNoticeDetails = warehouseNoticeDetailsService.selectByExample(details);
-        if(CollectionUtils.isEmpty(warehouseNoticeDetails)){
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                    String.format("无数据，%s供应商对应入库单详情为空", form.getSupplierCode()));
+        //查询品牌ID 过滤条件
+        if(StringUtils.isNotBlank(form.getBrandId())){
+            detailsCriteria.andEqualTo("brandId", form.getBrandId());
         }
-        //skuCode去重
-        return warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getSkuCode).collect(Collectors.toSet());
+
+        return warehouseNoticeDetailsService.selectByExample(details);
+
     }
 
-    private List<PurchaseOutboundDetail> setDetails(List<Skus> result, List<WarehouseItemInfo> warehouseItemInfoList, String returnOrderType, List<Items> itemsList, List<Brand> brandList) {
+    private List<PurchaseOutboundDetail> setDetails(List<Skus> result, List<WarehouseItemInfo> warehouseItemInfoList, String returnOrderType, Set<Long> brandIds, Set<Long> categoryIds) {
         List<WarehouseItemInfo> warehouseItemInfos = new ArrayList<>();
         for (Skus sku : result) {
             for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfoList) {
@@ -1270,6 +1234,24 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<TaxRate> taxRates = taxRateService.selectByExample(example);
 
         List<PurchaseOutboundDetail> list = new ArrayList<>();
+
+        //查询品牌信息
+        Example brandExample = new Example(Brand.class);
+        Example.Criteria brandCriteria = brandExample.createCriteria();
+        brandCriteria.andIn("id", brandIds);
+
+        List<Brand> brandList = brandService.selectByExample(brandExample);
+        AssertUtil.notEmpty(brandList, String.format("根据品牌ID[%s]批量查询品牌信息为空",
+                CommonUtil.converCollectionToString(new ArrayList<>(brandIds))));
+
+        //查询供应商相关商品
+        Example itemExample = new Example(Items.class);
+        Example.Criteria itemCriteria = itemExample.createCriteria();
+        itemCriteria.andIn("categoryId", categoryIds);
+        itemCriteria.andIn("brandId", brandIds);
+        itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        List<Items> itemsList = itemsService.selectByExample(itemExample);
+
         for (Skus sku : result) {
             PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
             detail.setSpuCode(sku.getSpuCode());

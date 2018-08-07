@@ -364,6 +364,26 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 purchaseGroupUserService.insert(user);
             }
             if (user.getStatus().equals(RecordStatusEnum.DELETE.getCode())) {
+                PurchaseGroupUserRelation purchaseGroupUserRelation = new PurchaseGroupUserRelation();
+                purchaseGroupUserRelation.setUserId(user.getId().toString());
+                purchaseGroupUserRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                purchaseGroupUserRelation.setIsValid(ZeroToNineEnum.ONE.getCode());
+                List<PurchaseGroupUserRelation> purchaseGroupUserRelationList =
+                        purchaseGroupuUserRelationService.select(purchaseGroupUserRelation);
+                if(purchaseGroupUserRelationList.size() > 1){
+                    String message = "";
+                    for(PurchaseGroupUserRelation relation : purchaseGroupUserRelationList){
+                        if(StringUtils.isEmpty(message)){
+                            message = relation.getPurchaseGroupCode();
+                        }else{
+                            message = message + "," + relation.getPurchaseGroupCode();
+                        }
+                    }
+                    String msg = "不允许删除，还存在其他关联组:," + message;
+                    logger.error(msg);
+                    throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
+                }
+
                 PurchaseGroupUser userDelete = new PurchaseGroupUser();
                 userDelete.setId(user.getId());
                 userDelete.setIsDeleted(ZeroToNineEnum.ONE.getCode());

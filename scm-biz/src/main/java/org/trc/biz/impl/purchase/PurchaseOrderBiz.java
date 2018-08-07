@@ -422,6 +422,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             criteria.andEqualTo("purchaseType", form.getPurchaseType());
         }
 
+        if (!StringUtils.isBlank(form.getPurchaseGroupCode())) {
+            criteria.andEqualTo("purchaseGroupCode", form.getPurchaseGroupCode());
+        }
+
         if(!StringUtils.isBlank(form.getPurchaseStatus())){
             criteria.andEqualTo("status", form.getPurchaseStatus());
         }else{
