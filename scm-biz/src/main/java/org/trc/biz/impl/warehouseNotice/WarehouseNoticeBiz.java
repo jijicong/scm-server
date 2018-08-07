@@ -1513,11 +1513,14 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         }
 
                         //同步采购单入库状态
-                        StringUtils.isNotBlank(purchaseOrder.getWarehouseNoticeStatus());
                         purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
                         Example example = new Example(PurchaseOrder.class);
                         example.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
                         purchaseOrderService.updateByExampleSelective(purchaseOrder, example);
+
+                        Example example1 = new Example(PurchaseOrder.class);
+                        example1.createCriteria().andEqualTo("purchaseOrderCode", noticeOrder.getPurchaseOrderCode());
+                        List<PurchaseOrder> orders = purchaseOrderService.selectByExample(example1);
 
                         //更新入库通知单
                         //把完成状态修改为完成
@@ -1533,23 +1536,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
 
                         //更新完成 记录日志
-                        if (StringUtils.equals(warehouseNotice.getStatus(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
-                            //获取异常日志
-                            try {
-                                logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
-                                        warehouse.getWarehouseName(),
-                                        WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName()
-                                        , getExceptionLog(warehouseNotice, warehouseNoticeDetailsList), null);
-                            } catch (Exception e) {
-                                logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e);
-                            }
-                        } else {
-                            try {
-                                logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
-                                        warehouse.getWarehouseName(), WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
-                            } catch (Exception e) {
-                                logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e);
-                            }
+                        //获取异常日志
+                        try {
+                            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
+                                    warehouse.getWarehouseName(), WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
+                            //采购单日志
+                            logInfoService.recordLog(orders.get(0), orders.get(0).getId().toString(),
+                                    warehouse.getWarehouseName(), WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName(), logMessage, null);
+                        } catch (Exception e) {
+                            logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e);
                         }
                     } else {
                         logger.error("未查询到通知单编号为" + entryOrderDetail.getEntryOrderCode() + "的入库通知单");
