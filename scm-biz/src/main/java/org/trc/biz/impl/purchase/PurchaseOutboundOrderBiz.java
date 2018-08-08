@@ -774,6 +774,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             }
             if (!CollectionUtils.isEmpty(canBackQuantity) && canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
                 purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
+                detail.setId(purchaseOutboundDetail.getId());
+                detail.setAuditQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(detail);
+                if(i < 1){
+                    log.error("同步审核时可退数量失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
+                }
             }
         }
 
