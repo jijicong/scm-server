@@ -242,13 +242,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     @FormParam("auditOperator")
     private String auditOperator;
 
-
-    @ApiModelProperty("供应商名称")
-    @Transient
-    @FormParam("supplierName")
-    @Column(name = "supplier_name")
-    private String supplierName;
-
     /**
      * 提交审核时间
      */
@@ -265,12 +258,18 @@ public class PurchaseOutboundOrder extends BaseDO {
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateAuditTime;
 
-
-
     @ApiModelProperty("采购退货单退货商品详情")
     @Transient
     @FormParam("purchaseOutboundDetailList")
     private List<PurchaseOutboundDetail> purchaseOutboundDetailList;
+
+    @ApiModelProperty("供应商名称")
+    @Transient
+    private String supplierName;
+
+    @ApiModelProperty("退货类型名称")
+    @Transient
+    private String returnOrderTypeName;
 
 	public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
         return purchaseOutboundDetailList;
@@ -799,6 +798,14 @@ public class PurchaseOutboundOrder extends BaseDO {
 
     public void setUpdateAuditTime(Date updateAuditTime) {
         this.updateAuditTime = updateAuditTime;
+    }
+
+    public String getReturnOrderTypeName() {
+        return returnOrderTypeName;
+    }
+
+    public void setReturnOrderTypeName(String returnOrderTypeName) {
+        this.returnOrderTypeName = returnOrderTypeName;
     }
 
 ///**

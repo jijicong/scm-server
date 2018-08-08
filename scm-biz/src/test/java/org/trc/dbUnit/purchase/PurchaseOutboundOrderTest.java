@@ -68,7 +68,7 @@ public class PurchaseOutboundOrderTest {
         order.setReceiverArea("330108");
         order.setReceiverAddress("奥斯卡刘德华");
         order.setReturnPolicy("存在残次品");
-
+        order.setStatus("0");
         List<PurchaseOutboundDetail> list = new ArrayList<>();
 
         PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
@@ -112,6 +112,8 @@ public class PurchaseOutboundOrderTest {
         order.setReturnOrderType("2");
         //提货方式1-到仓自提，2-京东配送，3-其他物流
         order.setPickType("1");
+
+        order.setStatus("0");
 
         order.setReceiver("liu");
         order.setReceiverNumber("17826821234");
@@ -201,7 +203,7 @@ public class PurchaseOutboundOrderTest {
      */
     @Test
     public void getPurchaseOutboundOrderTest(){
-        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(12L);
+        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(37L);
         System.out.println(JSON.toJSONString(order));
     }
 
@@ -210,7 +212,7 @@ public class PurchaseOutboundOrderTest {
      */
     @Test
     public void getPurchaseOutboundAuditOrderTest() {
-        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundAuditOrder(12L);
+        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundAuditOrder(37L);
         System.out.println(JSON.toJSONString(order));
     }
 

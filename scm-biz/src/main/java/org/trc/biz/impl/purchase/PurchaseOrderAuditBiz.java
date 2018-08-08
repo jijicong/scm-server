@@ -130,8 +130,8 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         //selectAssignmentPurchaseGroupName(pageDateList);
         _renderPurchaseOrders(pageDateList);
         page.setResult(pageDateList);
-        int count = purchaseOrderAuditService.selectCountAuditPurchaseOrder(map);
-        page.setTotalCount(count);
+//        int count = purchaseOrderAuditService.selectCountAuditPurchaseOrder(map);
+        page.setTotalCount(pageDateList.size());
         return page;
 
     }
