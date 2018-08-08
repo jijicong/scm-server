@@ -124,13 +124,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
         AssertUtil.notNull(itemGroupName,"商品组名称为空！");
         //商品组名称非重校验
         ItemGroup temp =findItemGroupByName(itemGroupName);
-        if (temp!=null){
-            if(!StringUtils.equals(temp.getId().toString(),itemGroup.getId().toString())){
-                String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
-                logger.error(msg);
-                throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
-            }
+        if(temp!=null&&!StringUtils.equals(temp.getId().toString(),itemGroup.getId().toString())){
+            String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
+            logger.error(msg);
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
         }
+
         String leaderName = itemGroup.getLeaderName();
         AssertUtil.notNull(leaderName,"请选择组长！");
         AssertUtil.notNull(groupUserList,"请至少添加一个组员！");
