@@ -3278,6 +3278,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //设置发货单创建参数渠道名称
             setScmDeliveryOrderCreateParamChannelNames(requestJD, channelList, sellChannelList);
             AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = warehouseApiService.deliveryOrderCreate(requestJD);
+            this.saveWaybill(appResult);
             responseList.addAll(getDeliveryOrderCreateResult(scmDeliveryOrderDOListJD, appResult));
         }
         if(scmDeliveryOrderDOListZY.size()> 0){
@@ -3288,6 +3289,69 @@ public class ScmOrderBiz implements IScmOrderBiz {
             responseList.addAll(getDeliveryOrderCreateResult(scmDeliveryOrderDOListZY, appResult));
         }
         return new AppResult<>(ResponseAck.SUCCESS_CODE, "", responseList);
+    }
+
+    //保存京东运单号
+    private void saveWaybill(AppResult<List<ScmDeliveryOrderCreateResponse>> appResult){
+        new Thread(() -> {
+            if(StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
+                List<ScmDeliveryOrderCreateResponse> result =
+                        (List<ScmDeliveryOrderCreateResponse>)appResult.getResult();
+
+                //组装信息
+                List<ScmDeliveryOrderDetailRequest> requests = new ArrayList<>();
+                for(ScmDeliveryOrderCreateResponse response : result){
+                    if(StringUtils.equals(ResponseAck.SUCCESS_CODE, response.getCode())){
+                        //组装请求信息
+                        ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
+                        request.setOrderId(response.getWmsOrderCode());
+                        requests.add(request);
+                    }
+                }
+
+                //请求详情,并回写数据
+                this.scmOrderDeliveryOrderDetail(requests);
+            }
+        }).start();
+    }
+
+    //调用获取商品详情接口
+    private void scmOrderDeliveryOrderDetail (List<ScmDeliveryOrderDetailRequest> requests){
+        try{
+            for (ScmDeliveryOrderDetailRequest request : requests) {
+                new Thread(() -> {
+                    //调用接口
+                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult =
+                            warehouseApiService.deliveryOrderDetail(request);
+
+                    //回写数据
+                    try {
+                        this.updateWaybill(responseAppResult);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        log.error("发货单号:{},物流信息获取异常{}", request.getOrderCode(),e.getMessage());
+                    }
+                }).start();
+            }
+        }catch(Exception e){
+            log.error("获取商品详情失败", e);
+        }
+    }
+
+    private void updateWaybill(AppResult<ScmDeliveryOrderDetailResponse> responseAppResult){
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAppResult.getAppcode())){
+            ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
+
+            String outboundOrderCode = response.getDeliveryOrderCode().substring(0, 19);
+
+            //获取发货单
+            OutboundOrder outboundOrder = new OutboundOrder();
+            outboundOrder.setWaybillNumber(response.getExpressCode());
+            Example example = new Example(OutboundOrder.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("outboundOrderCode", outboundOrderCode);
+            outBoundOrderService.updateByExampleSelective(outboundOrder, example);
+        }
     }
 
     /**

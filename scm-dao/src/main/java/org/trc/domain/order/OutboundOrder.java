@@ -114,4 +114,9 @@ public class OutboundOrder extends OrderBase {
      * 是否门店订单:1-非门店,2-门店'
      */
     private Integer isStoreOrder;
+
+    /**
+     * 运单号
+     */
+    private String waybillNumber;
 }
