@@ -128,6 +128,14 @@ public class PurchaseOutboundDetail extends BaseDO {
     private Long canBackQuantity;
 
     /**
+     * 审核时可退数量
+     */
+    @ApiModelProperty("审核时可退数量")
+    @Column(name = "audit_quantity")
+    @FormParam("auditQuantity")
+    private Long auditQuantity;
+
+    /**
      * 退货数量
      */
     @ApiModelProperty("退货数量")
@@ -694,7 +702,15 @@ public class PurchaseOutboundDetail extends BaseDO {
         this.outboundException = outboundException;
     }
 
-    /**
+    public Long getAuditQuantity() {
+        return auditQuantity;
+    }
+
+    public void setAuditQuantity(Long auditQuantity) {
+        this.auditQuantity = auditQuantity;
+    }
+
+/**
      * 获取是否有效:0-无效,1-有效
      *
      * @return is_valid - 是否有效:0-无效,1-有效
