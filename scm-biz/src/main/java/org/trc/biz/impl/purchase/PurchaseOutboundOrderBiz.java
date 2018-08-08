@@ -688,6 +688,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
             //更新采购退货单商品详情状态
             PurchaseOutboundDetail purchaseOutboundDetail = new PurchaseOutboundDetail();
+            purchaseOutboundDetail.setOutboundNoticeCode(notice.getOutboundNoticeCode());
             purchaseOutboundDetail.setOutboundStatus(PurchaseOutboundStatusEnum.WAIT.getCode());
             purchaseOutboundDetail.setStatus(PurchaseOutboundDetailStatusEnum.TO_BE_NOTIFIED.getCode());
             Example example = new Example(PurchaseOutboundDetail.class);
