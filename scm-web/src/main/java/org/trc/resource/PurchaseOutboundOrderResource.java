@@ -119,8 +119,8 @@ public class PurchaseOutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单保存或提交审核")
     public Response savePurchaseOutboundOrder(PurchaseOutboundOrder form, @Context ContainerRequestContext requestContext) {
-        purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("保存采购退货单成功!", "");
+        String message = purchaseOutboundOrderBiz.savePurchaseOutboundOrder(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult(message, "");
     }
 
     /**

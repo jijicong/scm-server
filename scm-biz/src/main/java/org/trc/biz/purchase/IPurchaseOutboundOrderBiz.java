@@ -32,7 +32,7 @@ public interface IPurchaseOutboundOrderBiz {
      * @param form                采购退货单数据
      * @param aclUserAccreditInfo
      */
-    void savePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
+    String savePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 更新采购退货单
