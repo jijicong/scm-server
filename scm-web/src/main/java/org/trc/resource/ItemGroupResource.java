@@ -85,7 +85,7 @@ public class ItemGroupResource {
     @ApiOperation(value = "根据商品组编码编辑详情")
     public Response editDetail(ItemGroupForm form , @Context ContainerRequestContext requestContext){
         itemGroupBiz.editDetail(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("商品组编辑成功","");
+        return ResultUtil.createSuccessResult("商品组编辑操作成功","");
 
     }
 
@@ -98,7 +98,7 @@ public class ItemGroupResource {
         String itemGroupCode=formEdit.getItemGroupCode();
         String isValid = formEdit.getIsValid();
         itemGroupBiz.updateStatus(isValid,itemGroupCode,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("商品组停用成功","");
+        return ResultUtil.createSuccessResult("商品组停用操作成功","");
     }
 
 }
