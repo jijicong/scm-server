@@ -904,6 +904,33 @@ public class GoodsBiz implements IGoodsBiz {
 
         selectDataAcl(items.getId(),aclUserAccreditInfo,false);
 
+        //记录操作日志
+        String logMsg = "";
+        List<String> logDetails=new ArrayList();
+        ItemNaturePropery orginItemNaturePropery = itemNatureProperyService.selectByPrimaryKey(itemNaturePropery.getId());
+        Items orginItems = itemsService.selectByPrimaryKey(items.getId());
+        if (!StringUtils.equals(orginItems.getName(),items.getName())|!StringUtils.equals(orginItems.getBrandName(),items.getBrandName())
+                |!StringUtils.equals(orginItems.getItemNo(),items.getItemNo())){
+            logMsg=logMsg+"SPU信息：";
+            if (!StringUtils.equals(orginItems.getName(),items.getName())){
+                logMsg=logMsg+"商品名称由\""+orginItems.getName()+"\"改为\""+items.getName();
+                logDetails.add(logMsg);
+            }
+            if (StringUtils.equals(orginItems.getBrandName(),items.getBrandName())){
+                logMsg=logMsg+"所属品牌由\""+orginItems.getBrandName()+"\"改为\""+items.getBrandName();
+                logDetails.add(logMsg);
+            }
+            if (StringUtils.equals(orginItems.getItemNo(),items.getItemNo())){
+                logMsg=logMsg+"商品货号由\""+orginItems.getItemNo()+"\"改为\""+items.getItemNo();
+                logDetails.add(logMsg);
+            }
+
+        }
+
+
+
+
+
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
@@ -934,11 +961,13 @@ public class GoodsBiz implements IGoodsBiz {
         for(Skus s : updateSkus){
             itemsUpdateNoticeWarehouseItemInfo(s, s.getIsValid());
         }
-        //记录操作日志
-        String remark = "SPU信息更新";
-        /*if(isValidUpdate)
-            remark = String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(items.getIsValid()).getName());*/
-        logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),remark, null);
+
+
+
+
+
+
+        logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),"", null);
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items, updateSkus);
     }

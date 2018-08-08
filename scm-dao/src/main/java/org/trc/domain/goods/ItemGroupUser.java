@@ -56,7 +56,7 @@ public class ItemGroupUser implements Serializable{
 
     @Transient
     @FormParam("status")
-    @ApiModelProperty("商品组员操作：0无操作，1新增,2更新,3：删除)")
+    @ApiModelProperty("暂不使用)")
     private Integer status;
 
     //公共字段
