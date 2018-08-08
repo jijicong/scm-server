@@ -1207,9 +1207,10 @@ public class SupplyConstants {
         public static final String JING_DONG_ORDER = "jingDongOrder";
         //订单取消
         public static final String ORDER_CANCEL = "orderCancel";
-
+        //订单导出
+        public static final String EXPORT_ORDER = "exportOrder";
+        //供应商订单导出
         public static final String EXPORT_SUPPLIER_ORDER = "exportSupplierOrder";
-
         //拆单异常订单分页查询路径
         public static final String EXCEPTION_ORDER_PAGE = "exceptionOrderPage";
         //根据拆单异常订单编码查询拆单异常订单详情路径
