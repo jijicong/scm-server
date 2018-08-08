@@ -358,7 +358,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
         //记录日志
         String orginIsValid = itemGroup.getIsValid();
-        String logMsg="状态由\""+ValidEnum.getValidEnumByCode(orginIsValid)+"\"改为\""+ValidEnum.getValidEnumByCode(isValid)+"\"。";
+        String logMsg="状态由\""+ValidEnum.getValidEnumByCode(orginIsValid).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(isValid).getName()+"\"。";
         logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),logMsg,null);
     }
 
