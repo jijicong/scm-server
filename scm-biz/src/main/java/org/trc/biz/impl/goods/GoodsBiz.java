@@ -906,28 +906,79 @@ public class GoodsBiz implements IGoodsBiz {
 
         //记录操作日志
         String logMsg = "";
-        List<String> logDetails=new ArrayList();
-        ItemNaturePropery orginItemNaturePropery = itemNatureProperyService.selectByPrimaryKey(itemNaturePropery.getId());
         Items orginItems = itemsService.selectByPrimaryKey(items.getId());
-        if (!StringUtils.equals(orginItems.getName(),items.getName())|!StringUtils.equals(orginItems.getBrandName(),items.getBrandName())
-                |!StringUtils.equals(orginItems.getItemNo(),items.getItemNo())){
+        if (StringUtils.equals(orginItems.getName(),items.getName()) && StringUtils.equals(orginItems.getBrandName(),items.getBrandName())
+                &&StringUtils.equals(orginItems.getItemNo(),items.getItemNo()) &&StringUtils.equals(orginItems.getRemark(),items.getRemark())){
+            logMsg="";
+        }else {
             logMsg=logMsg+"SPU信息：";
             if (!StringUtils.equals(orginItems.getName(),items.getName())){
-                logMsg=logMsg+"商品名称由\""+orginItems.getName()+"\"改为\""+items.getName();
-                logDetails.add(logMsg);
+                logMsg=logMsg+"商品名称由\""+orginItems.getName()+"\"改为\""+items.getName()+";";
             }
-            if (StringUtils.equals(orginItems.getBrandName(),items.getBrandName())){
-                logMsg=logMsg+"所属品牌由\""+orginItems.getBrandName()+"\"改为\""+items.getBrandName();
-                logDetails.add(logMsg);
+            if (!StringUtils.equals(orginItems.getBrandId().toString(),items.getBrandId().toString())){
+                Brand orginBrand = brandService.selectOneById(orginItems.getBrandId());
+                Brand brand = brandService.selectOneById(items.getBrandId());
+                logMsg=logMsg+"所属品牌由\""+orginBrand.getName()+"\"改为\""+brand.getName()+";";
             }
-            if (StringUtils.equals(orginItems.getItemNo(),items.getItemNo())){
-                logMsg=logMsg+"商品货号由\""+orginItems.getItemNo()+"\"改为\""+items.getItemNo();
-                logDetails.add(logMsg);
+            if (!StringUtils.equals(orginItems.getItemNo(),items.getItemNo())){
+                logMsg=logMsg+"商品货号由\""+orginItems.getItemNo()+"\"改为\""+items.getItemNo()+";";
             }
-
+            if (!StringUtils.equals(orginItems.getRemark(),items.getRemark())){
+                logMsg=logMsg+"商品备注由\""+orginItems.getRemark()+"\"改为\""+items.getRemark()+";";
+            }
+            logMsg=logMsg.substring(0,logMsg.lastIndexOf(";"))+"。\r\n";
         }
 
-
+        String logMsg2 = "";
+        JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
+        String propertyValue="";
+        String propertyId="";
+        for (Object obj : categoryArray) {
+            JSONObject jbo = (JSONObject) obj;
+            propertyValue=jbo.getString("propertyValue");
+            propertyId=jbo.getString("propertyId");
+            //TODO
+        }
+       /* if (!StringUtils.equals(propertyId,"")){
+            ItemNaturePropery tempPropery = itemNatureProperyService.selectByPrimaryKey(Long.parseLong(propertyId));
+            if (!StringUtils.equals(tempPropery.getPropertyValueId().toString(),propertyId)){
+                logMsg2=logMsg2+tempPropery.getPropertyName()+"由\""+tempPropery.getPropertyValue()+"\"改为\""+propertyValue+";";
+            }
+        }*/
+        JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
+        for (Object obj: skuArray) {
+            JSONObject jbo = (JSONObject) obj;
+            Skus temp = new Skus();
+            String skuCode = jbo.getString("skuCode");
+            temp.setSkuCode(skuCode);
+            Skus orginSkus = skusService.selectOne(temp);
+            if (StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))&&StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))
+            && StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
+                logMsg2 = logMsg2+"";
+            }else {
+                logMsg2 = logMsg2+skuCode+":";
+                if (!StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))){
+                    logMsg2=logMsg2+"SKU名称由\""+orginSkus.getSkuName()+"\"改为\""+jbo.getString("skuName")+";";
+                }
+                if (!StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))){
+                    logMsg2=logMsg2+"条形码由\""+orginSkus.getBarCode()+"\"改为\""+jbo.getString("barCode")+";";
+                }
+                if (!StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
+                    logMsg2=logMsg2+"sku状态由\""+ValidEnum.getValidEnumByCode(orginSkus.getIsValid())+"\"改为\""+ValidEnum.getValidEnumByCode(jbo.getString("isValid"))
+                    +";";
+                }
+               /* if (!StringUtils.equals(orginSkus.getMarketPrice2().toString(),jbo.getString("marketPrice2"))){
+                    logMsg2=logMsg2+"参考市场价由\""+orginSkus.getMarketPrice2()+"\"改为\""+jbo.getString("marketPrice2")+";";
+                }
+                if (!StringUtils.equals(orginSkus.getWeight2().toString(),jbo.getString("weight2"))){
+                    logMsg2=logMsg2+"重量由\""+orginSkus.getWeight2()+"\"改为\""+jbo.getString("weight2")+";";
+                }*/
+                logMsg2 = logMsg2+"\r\n";
+            }
+        }
+        if (!StringUtils.isEmpty(logMsg2)){
+            logMsg2="商品信息："+logMsg2.substring(0,logMsg2.lastIndexOf(";"))+"。\r\n";
+        }
 
 
 
@@ -963,11 +1014,15 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
 
+        //记录日志
+        if (StringUtils.equals(logMsg2,"商品信息：")){
+            logMsg2="";
+        }
+        logMsg=logMsg2+logMsg;
+        if (!StringUtils.equals(logMsg,"")){
+            logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+        }
 
-
-
-
-        logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),"", null);
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items, updateSkus);
     }
