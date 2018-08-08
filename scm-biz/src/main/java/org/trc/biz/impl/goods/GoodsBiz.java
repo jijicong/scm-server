@@ -913,18 +913,18 @@ public class GoodsBiz implements IGoodsBiz {
         }else {
             logMsg=logMsg+"SPU信息：";
             if (!StringUtils.equals(orginItems.getName(),items.getName())){
-                logMsg=logMsg+"商品名称由\""+orginItems.getName()+"\"改为\""+items.getName()+";";
+                logMsg=logMsg+"商品名称由\""+orginItems.getName()+"\"改为\""+items.getName()+"\";";
             }
             if (!StringUtils.equals(orginItems.getBrandId().toString(),items.getBrandId().toString())){
                 Brand orginBrand = brandService.selectOneById(orginItems.getBrandId());
                 Brand brand = brandService.selectOneById(items.getBrandId());
-                logMsg=logMsg+"所属品牌由\""+orginBrand.getName()+"\"改为\""+brand.getName()+";";
+                logMsg=logMsg+"所属品牌由\""+orginBrand.getName()+"\"改为\""+brand.getName()+"\";";
             }
             if (!StringUtils.equals(orginItems.getItemNo(),items.getItemNo())){
-                logMsg=logMsg+"商品货号由\""+orginItems.getItemNo()+"\"改为\""+items.getItemNo()+";";
+                logMsg=logMsg+"商品货号由\""+orginItems.getItemNo()+"\"改为\""+items.getItemNo()+"\";";
             }
             if (!StringUtils.equals(orginItems.getRemark(),items.getRemark())){
-                logMsg=logMsg+"商品备注由\""+orginItems.getRemark()+"\"改为\""+items.getRemark()+";";
+                logMsg=logMsg+"商品备注由\""+orginItems.getRemark()+"\"改为\""+items.getRemark()+"\";";
             }
             logMsg=logMsg.substring(0,logMsg.lastIndexOf(";"))+"。\r\n";
         }
@@ -958,14 +958,14 @@ public class GoodsBiz implements IGoodsBiz {
             }else {
                 logMsg2 = logMsg2+skuCode+":";
                 if (!StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))){
-                    logMsg2=logMsg2+"SKU名称由\""+orginSkus.getSkuName()+"\"改为\""+jbo.getString("skuName")+";";
+                    logMsg2=logMsg2+"SKU名称由\""+orginSkus.getSkuName()+"\"改为\""+jbo.getString("skuName")+"\";";
                 }
                 if (!StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))){
-                    logMsg2=logMsg2+"条形码由\""+orginSkus.getBarCode()+"\"改为\""+jbo.getString("barCode")+";";
+                    logMsg2=logMsg2+"条形码由\""+orginSkus.getBarCode()+"\"改为\""+jbo.getString("barCode")+"\";";
                 }
                 if (!StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
-                    logMsg2=logMsg2+"sku状态由\""+ValidEnum.getValidEnumByCode(orginSkus.getIsValid())+"\"改为\""+ValidEnum.getValidEnumByCode(jbo.getString("isValid"))
-                    +";";
+                    logMsg2=logMsg2+"sku状态由\""+ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
+                    +"\";";
                 }
                /* if (!StringUtils.equals(orginSkus.getMarketPrice2().toString(),jbo.getString("marketPrice2"))){
                     logMsg2=logMsg2+"参考市场价由\""+orginSkus.getMarketPrice2()+"\"改为\""+jbo.getString("marketPrice2")+";";
@@ -2319,7 +2319,7 @@ public class GoodsBiz implements IGoodsBiz {
 
         //记录操作日志
         String logMsg="";
-        logMsg=String.format("商品信息：①%s:SKU状态由[%s]改为[%s]",spuCode,ValidEnum.getValidEnumByCode(_isValid).getName(),ValidEnum.getValidEnumByCode(isValid).getName());
+        logMsg=String.format("商品信息：①%s:SKU状态由\"%s\"改为\"%s\"",spuCode,ValidEnum.getValidEnumByCode(_isValid).getName(),ValidEnum.getValidEnumByCode(isValid).getName());
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                     LogOperationEnum.UPDATE.getMessage(),logMsg, null);
 
