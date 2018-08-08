@@ -1492,12 +1492,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         if (!AssertUtil.collectionIsEmpty(exceptionSku) || !AssertUtil.collectionIsEmpty(exceptionSkuCount)) {
                             List<String> exceptionCauseList = new ArrayList<>();
                             if (!AssertUtil.collectionIsEmpty(exceptionSku)) {
-                                exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSku, SupplyConstants.Symbol.COMMA) + "]存在残品入库。");
+                                exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSku, SupplyConstants.Symbol.COMMA) + "]存在残品入库");
                             }
                             if (!AssertUtil.collectionIsEmpty(exceptionSkuCount)) {
-                                exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量。");
+                                exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量");
                             }
-                            warehouseNotice.setExceptionCause((StringUtils.isBlank(warehouseNotice.getExceptionCause()) ? "" : (warehouseNotice.getExceptionCause() + ",")) + StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
+                            warehouseNotice.setExceptionCause(StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                             purchaseOrder.setWarehouseNoticeStatus(PurchaseOrderWarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                         } else if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)) {
