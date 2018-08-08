@@ -20,8 +20,10 @@ public class EntryReturnNoticeTest {
 	public void entryReturnNoticeCreate () {
 		AclUserAccreditInfo user = new AclUserAccreditInfo();
 		user.setUserId("userIdTest");
-		String code = "THCKTZ2018080600013";
+		String code = "THCKTZ2018080800017";
 		biz.noticeOut(code, user);
 	}
+	
+	
 	
 }
