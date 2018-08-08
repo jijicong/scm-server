@@ -1462,12 +1462,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                     //通知单详情收货异常
                                     //1.残品入库
                                     if (StringUtils.equals(warehouseDetail.getInstockException(), "存在残品入库.")) {
-                                        exceptionSku = new HashSet<>();
                                         exceptionSku.add(warehouseDetail.getSkuCode());
                                     }
                                     //2.正品入库数量大于采购数量
                                     if (StringUtils.equals(warehouseDetail.getInstockException(), "入库数量大于采购数量.")) {
-                                        exceptionSkuCount = new HashSet<>();
                                         exceptionSkuCount.add(warehouseDetail.getSkuCode());
                                     }
                                 }
