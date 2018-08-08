@@ -332,7 +332,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 				 PurchaseOutboundDetail detail = detailMap.get(item.getItemId());
 				 String result = "出库完成";
 				// 商品状态和数量是否相当 (枚举值：1.良品)
-				 if (!detail.getReturnOrderType().equals(item.getGoodsStatus())
+				 if (StringUtils.equals(detail.getReturnOrderType(), item.getGoodsStatus())
 						 || detail.getOutboundQuantity().longValue() == item.getActualQty().longValue()) { 
 					 
 					 detailStatus = PurchaseOutboundNoticeStatusEnum.RECEIVE_EXCEPTION; // 商品详情状态-出库异常
