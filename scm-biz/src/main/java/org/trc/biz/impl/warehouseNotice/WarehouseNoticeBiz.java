@@ -877,7 +877,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    //@Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public List<WarehouseNoticeDetails> warehouseNoticeDetailList(Long warehouseNoticeId) {
 
         AssertUtil.notNull(warehouseNoticeId, "入库通知的id为空");
@@ -1616,7 +1616,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
                     normalQuantity = (warehouseDetail.getNormalStorageQuantity() == null ? 0 : warehouseDetail.getNormalStorageQuantity()) + (entryOrderDetailOrder.getActualQty()) + (normalQuantity);
                 }else if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
-                    defectiveQuantity =warehouseDetail.getDefectiveStorageQuantity()==null?0:warehouseDetail.getDefectiveStorageQuantity()+entryOrderDetailOrder.getActualQty()+defectiveQuantity;
+                    defectiveQuantity = (warehouseDetail.getDefectiveStorageQuantity() == null ? 0 : warehouseDetail.getDefectiveStorageQuantity()) 
+                    		+ entryOrderDetailOrder.getActualQty() + defectiveQuantity;
                 }
             }
         }
