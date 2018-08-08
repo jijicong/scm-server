@@ -127,7 +127,7 @@ public class PurchaseOutboundOrderResource {
      * 根据采购退货单Id查询采购退货单
      */
     @GET
-    @Path("getOrder/{id}")
+    @Path("/getOrder/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据采购退货单Id查询采购退货单", response = PurchaseOutboundOrder.class)
     public Response getPurchaseOutboundOrder(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id) {
@@ -184,7 +184,7 @@ public class PurchaseOutboundOrderResource {
      * 更新采购退货单状态或出库通知作废操作
      */
     @PUT
-    @Path("updateStatus/{id}")
+    @Path("/updateStatus/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("更新采购退货单状态或出库通知作废操作")
     public Response updatePurchaseState(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id, @Context ContainerRequestContext requestContext) {
@@ -232,7 +232,7 @@ public class PurchaseOutboundOrderResource {
      * 采购退货单审核操作，获取详情
      */
     @GET
-    @Path("getAudit/{id}")
+    @Path("/getAudit/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "采购退货单审核操作，获取详情", response = PurchaseOutboundOrder.class)
     public Response getPurchaseOutboundAuditOrder(@ApiParam(value = "采购退货单Id", required = true) @PathParam("id") Long id) {
