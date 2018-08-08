@@ -304,6 +304,33 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(purchaseOutboundOrder, "采购单货单根据主键id查询失败，没有对应采购退货单");
 
+        //设置供应商名称
+        if(StringUtils.isNotBlank(purchaseOutboundOrder.getSupplierCode())){
+            Example supplierExample = new Example(Supplier.class);
+            Example.Criteria criteria = supplierExample.createCriteria();
+            criteria.andEqualTo("supplierCode", purchaseOutboundOrder.getSupplierCode());
+            List<Supplier> suppliers = supplierService.selectByExample(supplierExample);
+            if(!CollectionUtils.isEmpty(suppliers)){
+                purchaseOutboundOrder.setSupplierName(suppliers.get(0).getSupplierName());
+            }
+        }
+        //设置退货仓库名称
+        if(purchaseOutboundOrder.getWarehouseInfoId() != null){
+            WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(purchaseOutboundOrder.getWarehouseInfoId());
+            if(warehouseInfo != null){
+                purchaseOutboundOrder.setWarehouseName(warehouseInfo.getWarehouseName());
+            }
+        }
+
+        //设置退货类型名称1-正品，2-残品
+        if(StringUtils.isNotBlank(purchaseOutboundOrder.getReturnOrderType())){
+            if(StringUtils.equals(purchaseOutboundOrder.getReturnOrderType(), ZeroToNineEnum.ONE.getCode())){
+                purchaseOutboundOrder.setReturnOrderTypeName("正品");
+            }else if (StringUtils.equals(purchaseOutboundOrder.getReturnOrderType(), ZeroToNineEnum.TWO.getCode())){
+                purchaseOutboundOrder.setReturnOrderTypeName("残品");
+            }
+        }
+
         Example example = new Example(PurchaseOutboundDetail.class);
         example.createCriteria().andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
         List<PurchaseOutboundDetail> purchaseOutboundDetails = purchaseOutboundDetailService.selectByExample(example);
@@ -1258,7 +1285,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         itemCriteria.andIn("brandId", brandIds);
         itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         List<Items> itemsList = itemsService.selectByExample(itemExample);
-
+        AssertUtil.notEmpty(itemsList, String.format("根据品牌ID[%s]，分类ID[%s]批量查询供应商相关商品为空",
+                CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), CommonUtil.converCollectionToString(new ArrayList<>(categoryIds))));
         for (Skus sku : result) {
             PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
             detail.setSpuCode(sku.getSpuCode());
