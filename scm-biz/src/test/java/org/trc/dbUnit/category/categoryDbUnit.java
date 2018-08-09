@@ -227,7 +227,7 @@ public class categoryDbUnit extends BaseTest {
 
     @Test
     public void testPushOrder() throws Exception{
-        for(int i=940; i<950; i++){
+        for(int i=950; i<1000; i++){
             String platformOrderCode = "wdx807261128293165009-"+i;
             String shopOrderCode = "wdx1807261128293175009-"+i;
             String orderInfo = "{\n" +
