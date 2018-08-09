@@ -201,6 +201,11 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		// 入参校验
 		PurchaseOutboundNotice notice = checkCode(code);
 		
+		if (!PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode()
+				.equals(notice.getStatus())) {
+			throw new IllegalArgumentException("当前退货出库通知单状态不能取消!");
+		}
+		
 		PurchaseOutboundNoticeStatusEnum cancelSts = null;// 取消状态
     	String cancelResult = null;// 取消结果
     	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
