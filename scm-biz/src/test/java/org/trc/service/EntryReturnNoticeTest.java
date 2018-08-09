@@ -1,5 +1,7 @@
 package org.trc.service;
 
+import java.io.IOException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class EntryReturnNoticeTest {
 	private IPurchaseOutboundNoticeBiz biz;
 	
 	
+	/**
+	 * 创建
+	 */
 	@Test
 	public void entryReturnNoticeCreate () {
 		AclUserAccreditInfo user = new AclUserAccreditInfo();
@@ -24,6 +29,34 @@ public class EntryReturnNoticeTest {
 		biz.noticeOut(code, user);
 	}
 	
+	/**
+	 * 定时任务取消中状态 取消
+	 */
+    @Test
+    public void retryOrderTest() throws IOException {
+    	biz.retryCancelOrder();
+    	System.in.read();
+    }
+    
+	/**
+	 * 手动取消
+	 */
+    @Test
+    public void orderCancel() throws IOException {
+		AclUserAccreditInfo user = new AclUserAccreditInfo();
+		user.setUserId("userIdTest");
+    	biz.cancel("THCKTZ2018080800017", "cancel reason", user);
+    }
+	
+	/**
+	 * 详情查询
+	 */
+    @Test
+    public void entryReturnDetailQuery() throws IOException {
+    	biz.entryReturnDetailQuery();
+    	System.in.read();
+    }
+    
 	
 	
 }
