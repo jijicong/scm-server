@@ -1392,7 +1392,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * 京东接口查询库存信息
      *
      * @param warehouseItemInfos
-     * @param returnOrderType
+     * @param returnOrderType    退货类型 1.正品，2.残品
      * @return
      */
     private Map<String, Long> skuInventoryQuery(List<WarehouseItemInfo> warehouseItemInfos, String returnOrderType) {
@@ -1424,11 +1424,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
                 Map<String, Long> retMap = new HashMap<>();
                 for (WarehouseItemInfo itemInfo : warehouseItemInfos) {
-                    retTempMap.forEach((k, v) -> {
-                        if (StringUtils.equals(k, itemInfo.getSkuCode())) {
-                            retMap.put(itemInfo.getSkuCode(), retTempMap.get(itemInfo.getWarehouseItemId()));
-                        }
-                    });
+                    if (retTempMap.get(itemInfo.getWarehouseItemId()) != null) {
+                        retMap.put(itemInfo.getSkuCode(), retTempMap.get(itemInfo.getWarehouseItemId()));
+                    }
                 }
                 return retMap;
             } catch (Exception e) {
@@ -1496,7 +1494,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货商品含税单价不能小于0");
                 }
             }
-
         }
     }
 
@@ -1521,6 +1518,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 }
             }
         }
+
         form.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
         int count = purchaseOutboundOrderService.insert(form);
         if (count < 1) {
@@ -1597,8 +1595,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
         AssertUtil.notBlank(form.getReturnPolicy(), "退货说明不能为空");
         AssertUtil.notEmpty(form.getPurchaseOutboundDetailList(), "退货商品不能为空");
-
-
 
         for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
 
