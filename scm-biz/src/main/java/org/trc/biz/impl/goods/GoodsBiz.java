@@ -334,6 +334,13 @@ public class GoodsBiz implements IGoodsBiz {
         example.orderBy("updateTime").desc();
         page = skusService.pagination(example, page, queryModel);
         if(page.getResult().size() > 0){
+            for (Skus skus : page.getResult()) {
+                Items tempItems = new Items();
+                tempItems.setSpuCode(skus.getSpuCode());
+                tempItems = itemsService.selectOne(tempItems);
+                String flag = selectDataAcl(tempItems.getId(), aclUserAccreditInfo, true);
+                skus.setUpdateAuth(flag);
+            }
             handerSkusPage(page, aclUserAccreditInfo.getChannelCode());
         }
         //分页查询
@@ -1020,7 +1027,14 @@ public class GoodsBiz implements IGoodsBiz {
         }
         logMsg=logMsg2+logMsg;
         if (!StringUtils.equals(logMsg,"")){
-            logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+
+            try {
+                logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+            }catch (Exception e){
+                e.printStackTrace();
+                log.error("自采商品：更新商品日志传参异常：{}", e);
+            }
+
         }
 
         //更新商品同步到企业购

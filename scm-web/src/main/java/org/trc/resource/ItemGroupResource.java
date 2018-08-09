@@ -3,17 +3,26 @@ package org.trc.resource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.DistributeLockEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.ItemGroupException;
+import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.form.goods.ItemGroupFormEdit;
 import org.trc.form.goods.ItemGroupQuery;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
+import org.trc.util.lock.RedisLock;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -31,8 +40,11 @@ import java.util.List;
 @Path(SupplyConstants.ItemGroupConstants.ROOT)
 public class ItemGroupResource {
 
+    private Logger logger = LoggerFactory.getLogger(WarehouseNoticeResource.class);
     @Resource
     private IitemGroupBiz itemGroupBiz;
+    @Autowired
+    private RedisLock redisLock;
 
 
     @GET
@@ -50,7 +62,31 @@ public class ItemGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "新增商品组")
     public Response itemGroupSave( ItemGroupForm form, @Context ContainerRequestContext requestContext){
-        itemGroupBiz.itemGroupSave(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        String identifier = "";
+        identifier = redisLock.Lock(DistributeLockEnum.ITEM_GROUP_SAVE.getCode() +
+                form.getItemGroup().getItemGroupName(), 0, 10000);
+        if (StringUtils.isBlank(identifier)) {
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_SAVE_EXCEPTION, "请不要重复操作!");
+        }
+        try {
+            itemGroupBiz.itemGroupSave(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }finally {
+            String itemGroupName =  form.getItemGroup().getItemGroupName();
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.ITEM_GROUP_SAVE.getCode()
+                        + itemGroupName, identifier)) {
+                    logger.info("itemGroupName:{} 商品组新增，解锁成功，identifier:{}", itemGroupName, identifier);
+                } else {
+                    logger.error("itemGroupName:{} 商品组新增，解锁失败，identifier:{}", itemGroupName, identifier);
+                }
+
+            } catch (Exception e) {
+                logger.error("商品组新增:{} 入库通知，解锁失败，identifier:{}, err:",
+                        itemGroupName, identifier, e);
+                e.printStackTrace();
+            }
+        }
+
         return ResultUtil.createSuccessResult("商品组新增成功","");
 
     }
@@ -84,9 +120,32 @@ public class ItemGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据商品组编码编辑详情")
     public Response editDetail(ItemGroupForm form , @Context ContainerRequestContext requestContext){
-        itemGroupBiz.editDetail(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("商品组编辑操作成功","");
+        String identifier = "";
+        identifier = redisLock.Lock(DistributeLockEnum.ITEM_GROUP_EDIT.getCode() +
+                form.getItemGroup().getItemGroupName(), 0, 10000);
+        if (StringUtils.isBlank(identifier)) {
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION, "请不要重复操作!");
+        }
+        try {
+            itemGroupBiz.editDetail(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
 
+        }finally {
+            String itemGroupName =  form.getItemGroup().getItemGroupName();
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.ITEM_GROUP_SAVE.getCode()
+                        + itemGroupName, identifier)) {
+                    logger.info("itemGroupName:{} 商品组更新，解锁成功，identifier:{}", itemGroupName, identifier);
+                } else {
+                    logger.error("itemGroupName:{} 商品组更新，解锁失败，identifier:{}", itemGroupName, identifier);
+                }
+
+            } catch (Exception e) {
+                logger.error("商品组更新:{} 入库通知，解锁失败，identifier:{}, err:",
+                        itemGroupName, identifier, e);
+                e.printStackTrace();
+            }
+        }
+        return ResultUtil.createSuccessResult("商品组编辑操作成功", "");
     }
 
 
