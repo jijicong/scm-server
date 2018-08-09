@@ -2165,7 +2165,7 @@ public class GoodsBiz implements IGoodsBiz {
                 if (pageFlag){
                     return ZeroToNineEnum.ZERO.getCode();
                 }else {
-                    String msg="该条数据由，当前用户无此操作权限";
+                    String msg="当前用户不在该条数据所属的某个商品组内，无此操作权限";
                     throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
                 }
             }else {//登录人和创建人在同一组，可能存在多个这样的组

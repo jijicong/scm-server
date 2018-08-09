@@ -142,7 +142,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
               throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
             }
             AssertUtil.notBlank(phone,"手机号码不能为空！");
-            if (Pattern.compile(REGEX_MOBILE).matcher(phone).matches()){
+            if (!Pattern.compile(REGEX_MOBILE).matcher(phone).matches()){
                 String msg="手机号码"+phone+"格式错误";
                 logger.error(msg);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,msg);
@@ -376,7 +376,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             String phoneNumber = itemGroupUser.getPhoneNumber();
             AssertUtil.notBlank(phoneNumber,"手机号码不能为空！");
             AssertUtil.notBlank(itemGroupUser.getName(),"商品组员名字不能为空！");
-            if (Pattern.compile(REGEX_MOBILE).matcher(phoneNumber).matches()){
+            if (!Pattern.compile(REGEX_MOBILE).matcher(phoneNumber).matches()){
                 String msg="手机号码"+phoneNumber+"格式错误";
                 logger.error(msg);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,msg);
