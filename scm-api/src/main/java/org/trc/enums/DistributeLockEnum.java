@@ -15,7 +15,8 @@ public enum DistributeLockEnum {
     ALLOCATE_IN_ORDER("allocateInOrder", "调拨入库"),
     PURCHASE_OUTBOUND_NOTICE("purchaseOutboundNotice", "采购退货出库"),
     ALLOCATE_ORDER_AUDIT("allocateOrderAudit", "调拨单审核"),
-    SERIAL_GENERATE("serialGenerate", "序列号生成");
+    SERIAL_GENERATE("serialGenerate", "序列号生成"),
+    ITEM_GROUP_SAVE("item_group_save","商品组新增");
 
     private String code;
     private String name;

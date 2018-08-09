@@ -3,17 +3,26 @@ package org.trc.resource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IitemGroupBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.DistributeLockEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.ItemGroupException;
+import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.form.goods.ItemGroupFormEdit;
 import org.trc.form.goods.ItemGroupQuery;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
+import org.trc.util.lock.RedisLock;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -31,8 +40,11 @@ import java.util.List;
 @Path(SupplyConstants.ItemGroupConstants.ROOT)
 public class ItemGroupResource {
 
+    private Logger logger = LoggerFactory.getLogger(WarehouseNoticeResource.class);
     @Resource
     private IitemGroupBiz itemGroupBiz;
+    @Autowired
+    private RedisLock redisLock;
 
 
     @GET
@@ -50,6 +62,12 @@ public class ItemGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "新增商品组")
     public Response itemGroupSave( ItemGroupForm form, @Context ContainerRequestContext requestContext){
+        String identifier = "";
+        identifier = redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() +
+                form.getItemGroup().getItemGroupName(), 0, 10000);
+        if (StringUtils.isBlank(identifier)) {
+            throw new ItemGroupException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, "请不要重复操作!");
+        }
         itemGroupBiz.itemGroupSave(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("商品组新增成功","");
 
