@@ -136,6 +136,8 @@ public class ShopOrder extends OrderBase {
     private String tradeMemo;
     //供应商订单状态：1-待发货,2-部分发货,3-全部发货,4-已取消
     private String supplierOrderStatus;
+    // 0-接口,1-导入
+    private String reciverType;
     /**
      * 订单商品明细
      */
@@ -756,5 +758,13 @@ public class ShopOrder extends OrderBase {
 
     public void setIsStoreOrder(boolean storeOrder) {
         isStoreOrder = storeOrder;
+    }
+
+    public String getReciverType() {
+        return reciverType;
+    }
+
+    public void setReciverType(String reciverType) {
+        this.reciverType = reciverType;
     }
 }
