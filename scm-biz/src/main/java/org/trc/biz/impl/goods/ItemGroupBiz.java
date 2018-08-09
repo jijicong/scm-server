@@ -124,13 +124,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
         AssertUtil.notNull(itemGroupName,"商品组名称为空！");
         //商品组名称非重校验
         ItemGroup temp =findItemGroupByName(itemGroupName);
-        if (temp!=null){
-            if(!StringUtils.equals(temp.getId().toString(),itemGroup.getId().toString())){
-                String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
-                logger.error(msg);
-                throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
-            }
+        if(temp!=null&&!StringUtils.equals(temp.getId().toString(),itemGroup.getId().toString())){
+            String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
+            logger.error(msg);
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
         }
+
         String leaderName = itemGroup.getLeaderName();
         AssertUtil.notNull(leaderName,"请选择组长！");
         AssertUtil.notNull(groupUserList,"请至少添加一个组员！");
@@ -143,7 +142,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
               throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
             }
             AssertUtil.notBlank(phone,"手机号码不能为空！");
-            if (Pattern.compile(REGEX_MOBILE).matcher(phone).matches()){
+            if (!Pattern.compile(REGEX_MOBILE).matcher(phone).matches()){
                 String msg="手机号码"+phone+"格式错误";
                 logger.error(msg);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,msg);
@@ -241,14 +240,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
             logMsg=logMsg+"商品组名称由\""+orginItemGroupName+"\"改为\""+itemGroupName+"\";";
             logDetail.add(logMsg);
         }
-        if (!StringUtils.equals(orginRemark,itemGroup.getRemark())){
-            logMsg=logMsg+"备注由\""+orginRemark+"\"改为\""+itemGroup.getRemark()+"\";";
+        if (!StringUtils.equals(orginRemark.trim(),itemGroup.getRemark().trim())){
+            logMsg=logMsg+"备注由\""+orginRemark.trim()+"\"改为\""+itemGroup.getRemark().trim()+"\";";
             logDetail.add(logMsg);
         }
         if (!StringUtils.equals(orginIsValid,itemGroup.getIsValid())){
-            String orginIsValidLog=(orginIsValid==ZeroToNineEnum.ZERO.getCode())?"停用":"启用";
-            String newIsValidLog=(itemGroup.getIsValid()==ZeroToNineEnum.ZERO.getCode())?"停用":"启用";
-            logMsg=logMsg+"状态由\""+orginIsValidLog+"\"改为\""+newIsValidLog+"\";";
+            logMsg=logMsg+"状态由\""+ValidEnum.getValidEnumByCode(orginIsValid).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(itemGroup.getIsValid()).getName()+"\";";
             logDetail.add(logMsg);
         }
 
@@ -358,7 +355,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
         //记录日志
         String orginIsValid = itemGroup.getIsValid();
-        String logMsg="状态由\""+ValidEnum.getValidEnumByCode(orginIsValid)+"\"改为\""+ValidEnum.getValidEnumByCode(isValid)+"\"。";
+        String logMsg="状态由\""+ValidEnum.getValidEnumByCode(orginIsValid).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(isValid).getName()+"\"。";
         logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),logMsg,null);
     }
 
@@ -377,7 +374,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             String phoneNumber = itemGroupUser.getPhoneNumber();
             AssertUtil.notBlank(phoneNumber,"手机号码不能为空！");
             AssertUtil.notBlank(itemGroupUser.getName(),"商品组员名字不能为空！");
-            if (Pattern.compile(REGEX_MOBILE).matcher(phoneNumber).matches()){
+            if (!Pattern.compile(REGEX_MOBILE).matcher(phoneNumber).matches()){
                 String msg="手机号码"+phoneNumber+"格式错误";
                 logger.error(msg);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,msg);
