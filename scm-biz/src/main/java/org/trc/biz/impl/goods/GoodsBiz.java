@@ -1027,7 +1027,13 @@ public class GoodsBiz implements IGoodsBiz {
         }
         logMsg=logMsg2+logMsg;
         if (!StringUtils.equals(logMsg,"")){
-            logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+
+            try {
+                logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+            }catch (Exception e){
+                log.error("自采商品：更新商品日志传参异常");
+            }
+
         }
 
         //更新商品同步到企业购
