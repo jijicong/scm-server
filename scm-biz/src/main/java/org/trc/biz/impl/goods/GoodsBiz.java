@@ -1031,7 +1031,8 @@ public class GoodsBiz implements IGoodsBiz {
             try {
                 logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),logMsg, null);
             }catch (Exception e){
-                log.error("自采商品：更新商品日志传参异常");
+                e.printStackTrace();
+                log.error("自采商品：更新商品日志传参异常：{}", e);
             }
 
         }
