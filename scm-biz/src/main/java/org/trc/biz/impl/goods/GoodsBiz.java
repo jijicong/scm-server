@@ -938,20 +938,26 @@ public class GoodsBiz implements IGoodsBiz {
 
         String logMsg2 = "";
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
-        String propertyValue="";
         String propertyId="";
+        String propertyValueId="";
+        String propertyValue="";
         for (Object obj : categoryArray) {
             JSONObject jbo = (JSONObject) obj;
-            propertyValue=jbo.getString("propertyValue");
             propertyId=jbo.getString("propertyId");
-            //TODO
+            propertyValueId=jbo.getString("propertyValueId");
+            propertyValue = jbo.getString("propertyValue");
         }
-       /* if (!StringUtils.equals(propertyId,"")){
-            ItemNaturePropery tempPropery = itemNatureProperyService.selectByPrimaryKey(Long.parseLong(propertyId));
-            if (!StringUtils.equals(tempPropery.getPropertyValueId().toString(),propertyId)){
-                logMsg2=logMsg2+tempPropery.getPropertyName()+"由\""+tempPropery.getPropertyValue()+"\"改为\""+propertyValue+";";
+        if (!StringUtils.equals(propertyId,"")){//商品没自然属性
+            ItemNaturePropery temp=new ItemNaturePropery();
+            temp.setSpuCode(items.getSpuCode());
+            temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            temp = itemNatureProperyService.selectOne(temp);
+            if (!StringUtils.equals(temp.getPropertyValueId().toString(),propertyValueId)){
+                Property property = propertyService.selectOneById(Long.parseLong(propertyId));
+                PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(temp.getPropertyValueId());
+                logMsg2=logMsg2+property.getName()+"由\""+propertyValueTemp.getValue()+"\"改为\""+propertyValue+"\";";
             }
-        }*/
+        }
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         for (Object obj: skuArray) {
             JSONObject jbo = (JSONObject) obj;
