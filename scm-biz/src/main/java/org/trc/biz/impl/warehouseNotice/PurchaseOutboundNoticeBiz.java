@@ -201,6 +201,11 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		// 入参校验
 		PurchaseOutboundNotice notice = checkCode(code);
 		
+		if (!PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode()
+				.equals(notice.getStatus())) {
+			throw new IllegalArgumentException("当前退货出库通知单状态不能取消!");
+		}
+		
 		PurchaseOutboundNoticeStatusEnum cancelSts = null;// 取消状态
     	String cancelResult = null;// 取消结果
     	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
@@ -290,7 +295,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
         	cancelRequest = new ScmOrderCancelRequest();
         	cancelRequest.setOrderCode(notice.getEntryOrderId());
         	cancelRequest.setWarehouseType("JD");
-        	cancelRequest.setOrderType(CancelOrderType.PURCHASE.getCode());
+        	cancelRequest.setOrderType(CancelOrderType.ENTRY_RETURN.getCode());
             requests.add(cancelRequest);
         }
 
@@ -351,11 +356,11 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
         					 this.updateEntryReturn(resp);
         				 }
     				 } else {
-    					 logger.error("采购退货出库单号:{},定时任务查询出库单详情异常:{}", 
+    					 logger.error("采购退货出库单号:{}定时任务查询出库单详情异常:{}", 
     							 req.getWmsEntryReturnNoticeCode(),responseResult.getDatabuffer());
     				 }
         		} catch (Exception e) {
-        			logger.error("采购退货出库单号:{},定时任务查询出库单详情异常：{}, 异常原因：", 
+        			logger.error("采购退货出库单号:{}定时任务查询出库单详情异常：{}, 异常原因：", 
         					req.getWmsEntryReturnNoticeCode(), e);
         		}
         	});

@@ -3,6 +3,7 @@ package org.trc.service.impl.warehouseNotice;
 import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OrderCancelResultEnum;
+import org.trc.enums.WarehouseNoticeStatusEnum;
 import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.form.warehouse.PurchaseOutboundNoticeForm;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
@@ -71,8 +73,8 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
     
-    private final static String CANCELLED = "400"; //400.已取消
-    private final static String FINISH = "200";  // 200.完成
+    private static final String CANCELLED = "400"; //400.已取消
+    private static final String FINISH = "200";  // 200.完成
     
     private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeService.class);
 
@@ -108,7 +110,14 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
         
         //出库单状态
         if (StringUtils.isNotBlank(form.getStatus())) {
-        	criteria.andEqualTo("status", form.getStatus());
+        	// 已取消 （手动取消，作废）
+        	if (PurchaseOutboundNoticeStatusEnum.CANCEL.getCode().equals(form.getStatus())) {
+                List<String> statusList = Arrays.asList(PurchaseOutboundNoticeStatusEnum.CANCEL.getCode(),
+                		PurchaseOutboundNoticeStatusEnum.DROP.getCode()); 
+        		criteria.andIn("status", statusList);
+        	} else {
+        		criteria.andEqualTo("status", form.getStatus());
+        	}
         }
         
         //创建日期开始
@@ -140,6 +149,10 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
             	criteria.andIn("createOperator", userIdList);
             }
         }
+        
+		example.setOrderByClause("field(status," + PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode() +
+				"," + PurchaseOutboundNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode() + ") desc");
+        example.orderBy("createTime").desc();
         
         Pagenation<PurchaseOutboundNotice> pageResult = this.pagination(example, page, form);
        // List<PurchaseOutboundNotice> result2 = result.getResult();
@@ -332,7 +345,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 				 PurchaseOutboundDetail detail = detailMap.get(item.getItemId());
 				 String result = "出库完成";
 				// 商品状态和数量是否相当 (枚举值：1.良品)
-				 if (!detail.getReturnOrderType().equals(item.getGoodsStatus())
+				 if (StringUtils.equals(detail.getReturnOrderType(), item.getGoodsStatus())
 						 || detail.getOutboundQuantity().longValue() == item.getActualQty().longValue()) { 
 					 
 					 detailStatus = PurchaseOutboundNoticeStatusEnum.RECEIVE_EXCEPTION; // 商品详情状态-出库异常
