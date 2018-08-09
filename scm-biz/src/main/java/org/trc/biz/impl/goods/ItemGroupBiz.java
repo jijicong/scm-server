@@ -240,14 +240,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
             logMsg=logMsg+"商品组名称由\""+orginItemGroupName+"\"改为\""+itemGroupName+"\";";
             logDetail.add(logMsg);
         }
-        if (!StringUtils.equals(orginRemark,itemGroup.getRemark())){
-            logMsg=logMsg+"备注由\""+orginRemark+"\"改为\""+itemGroup.getRemark()+"\";";
+        if (!StringUtils.equals(orginRemark.trim(),itemGroup.getRemark().trim())){
+            logMsg=logMsg+"备注由\""+orginRemark.trim()+"\"改为\""+itemGroup.getRemark().trim()+"\";";
             logDetail.add(logMsg);
         }
         if (!StringUtils.equals(orginIsValid,itemGroup.getIsValid())){
-            String orginIsValidLog=(orginIsValid==ZeroToNineEnum.ZERO.getCode())?"停用":"启用";
-            String newIsValidLog=(itemGroup.getIsValid()==ZeroToNineEnum.ZERO.getCode())?"停用":"启用";
-            logMsg=logMsg+"状态由\""+orginIsValidLog+"\"改为\""+newIsValidLog+"\";";
+            logMsg=logMsg+"状态由\""+ValidEnum.getValidEnumByCode(orginIsValid).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(itemGroup.getIsValid()).getName()+"\";";
             logDetail.add(logMsg);
         }
 

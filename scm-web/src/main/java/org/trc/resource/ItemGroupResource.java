@@ -63,12 +63,30 @@ public class ItemGroupResource {
     @ApiOperation(value = "新增商品组")
     public Response itemGroupSave( ItemGroupForm form, @Context ContainerRequestContext requestContext){
         String identifier = "";
-        identifier = redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() +
+        identifier = redisLock.Lock(DistributeLockEnum.ITEM_GROUP_SAVE.getCode() +
                 form.getItemGroup().getItemGroupName(), 0, 10000);
         if (StringUtils.isBlank(identifier)) {
-            throw new ItemGroupException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, "请不要重复操作!");
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_SAVE_EXCEPTION, "请不要重复操作!");
         }
-        itemGroupBiz.itemGroupSave(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        try {
+            itemGroupBiz.itemGroupSave(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }finally {
+            String itemGroupName =  form.getItemGroup().getItemGroupName();
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.ITEM_GROUP_SAVE.getCode()
+                        + itemGroupName, identifier)) {
+                    logger.info("itemGroupName:{} 商品组新增，解锁成功，identifier:{}", itemGroupName, identifier);
+                } else {
+                    logger.error("itemGroupName:{} 商品组新增，解锁失败，identifier:{}", itemGroupName, identifier);
+                }
+
+            } catch (Exception e) {
+                logger.error("商品组新增:{} 入库通知，解锁失败，identifier:{}, err:",
+                        itemGroupName, identifier, e);
+                e.printStackTrace();
+            }
+        }
+
         return ResultUtil.createSuccessResult("商品组新增成功","");
 
     }
@@ -102,9 +120,32 @@ public class ItemGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据商品组编码编辑详情")
     public Response editDetail(ItemGroupForm form , @Context ContainerRequestContext requestContext){
-        itemGroupBiz.editDetail(form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("商品组编辑操作成功","");
+        String identifier = "";
+        identifier = redisLock.Lock(DistributeLockEnum.ITEM_GROUP_EDIT.getCode() +
+                form.getItemGroup().getItemGroupName(), 0, 10000);
+        if (StringUtils.isBlank(identifier)) {
+            throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION, "请不要重复操作!");
+        }
+        try {
+            itemGroupBiz.editDetail(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
 
+        }finally {
+            String itemGroupName =  form.getItemGroup().getItemGroupName();
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.ITEM_GROUP_SAVE.getCode()
+                        + itemGroupName, identifier)) {
+                    logger.info("itemGroupName:{} 商品组更新，解锁成功，identifier:{}", itemGroupName, identifier);
+                } else {
+                    logger.error("itemGroupName:{} 商品组更新，解锁失败，identifier:{}", itemGroupName, identifier);
+                }
+
+            } catch (Exception e) {
+                logger.error("商品组更新:{} 入库通知，解锁失败，identifier:{}, err:",
+                        itemGroupName, identifier, e);
+                e.printStackTrace();
+            }
+        }
+        return ResultUtil.createSuccessResult("商品组编辑操作成功", "");
     }
 
 
