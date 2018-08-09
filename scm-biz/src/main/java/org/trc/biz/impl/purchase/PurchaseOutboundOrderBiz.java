@@ -1588,16 +1588,17 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notBlank(form.getPickType(), "提货方式不能为空");
         AssertUtil.notBlank(form.getReceiver(), "退货收货人不能为空");
         AssertUtil.notBlank(form.getReceiverNumber(), "收货人手机号不能为空");
-        AssertUtil.notBlank(form.getReturnPolicy(), "退货说明不能为空");
-        AssertUtil.notEmpty(form.getPurchaseOutboundDetailList(), "退货商品不能为空");
-
-        //当提货方式为“物流配送”时必填
+        //当提货方式为“物流配送,JD”时必填
         if (StringUtils.equals(PickTypeEnum.OTHER_DELIVERY.getCode(), form.getPickType()) || StringUtils.equals(PickTypeEnum.JD_DELIVERY.getCode(), form.getPickType())) {
             AssertUtil.notBlank(form.getReceiverProvince(), "退货省份不能为空");
             AssertUtil.notBlank(form.getReceiverCity(), "退货城市不能为空");
             AssertUtil.notBlank(form.getReceiverArea(), "退货地区不能为空");
             AssertUtil.notBlank(form.getReceiverAddress(), "退货详细地址不能为空");
         }
+        AssertUtil.notBlank(form.getReturnPolicy(), "退货说明不能为空");
+        AssertUtil.notEmpty(form.getPurchaseOutboundDetailList(), "退货商品不能为空");
+
+
 
         for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
 
