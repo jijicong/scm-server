@@ -71,7 +71,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Description〈〉
+ * Description〈采购退货单管理〉
  *
  * @author hzliuwei
  * @create 2018/7/24
@@ -1376,7 +1376,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     String.format("无数据，%s供应商对应入库单为空", form.getSupplierCode()));
         }
 
-
         Example details = new Example(WarehouseNoticeDetails.class);
         Example.Criteria detailsCriteria = details.createCriteria();
         detailsCriteria.andIn("warehouseNoticeCode", warehouseNoticeCodes);
@@ -1593,7 +1592,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notEmpty(form.getPurchaseOutboundDetailList(), "退货商品不能为空");
 
         //当提货方式为“物流配送”时必填
-        if (StringUtils.equals(PickTypeEnum.OTHER_DELIVERY.getCode(), form.getPickType())) {
+        if (StringUtils.equals(PickTypeEnum.OTHER_DELIVERY.getCode(), form.getPickType()) || StringUtils.equals(PickTypeEnum.JD_DELIVERY.getCode(), form.getPickType())) {
             AssertUtil.notBlank(form.getReceiverProvince(), "退货省份不能为空");
             AssertUtil.notBlank(form.getReceiverCity(), "退货城市不能为空");
             AssertUtil.notBlank(form.getReceiverArea(), "退货地区不能为空");
