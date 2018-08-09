@@ -1530,9 +1530,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
         //记录操作日志
         String userId = aclUserAccreditInfo.getUserId();
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.HOLD.getCode(), form.getStatus())) {
-            logInfoService.recordLog(form, form.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
-        }
+        logInfoService.recordLog(form, form.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
     }
 
     /**
