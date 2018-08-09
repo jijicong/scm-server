@@ -227,9 +227,9 @@ public class categoryDbUnit extends BaseTest {
 
     @Test
     public void testPushOrder() throws Exception{
-        for(int i=300; i<350; i++){
-            String platformOrderCode = "P1807261128293165009-"+i;
-            String shopOrderCode = "S1807261128293175009-"+i;
+        for(int i=940; i<950; i++){
+            String platformOrderCode = "wdx807261128293165009-"+i;
+            String shopOrderCode = "wdx1807261128293175009-"+i;
             String orderInfo = "{\n" +
                     "    \"noticeNum\":\"54d9c6f246f69226cd32b649f545781d\",\n" +
                     "    \"operateTime\":1532575708,\n" +
@@ -348,11 +348,134 @@ public class categoryDbUnit extends BaseTest {
                     "        }\n" +
                     "    ]\n" +
                     "}";
+
+
+            String orderInfo2 = "{\n" +
+                    "    \"noticeNum\":\"784809f2464afd2f6018e1e80c0e1591\",\n" +
+                    "    \"operateTime\":1533777187,\n" +
+                    "    \"sign\":\"6fee3574497c0c55e8915eda8da1e2337b3d005d75a74717024b553afe65613b\",\n" +
+                    "    \"check\":\"784809f2464afd2f6018e1e80c0e1591|1533777187|P1808090909482194567|S1808090909482204567|94567|cally|1|7.000|5.000|2.000|0.000|WAIT_SELLER_SEND|342901199001010808|13666665057\",\n" +
+                    "    \"platformOrder\":{\n" +
+                    "        \"adjustFee\":\"7.00\",\n" +
+                    "        \"anony\":0,\n" +
+                    "        \"buyerArea\":\"330000/330100/330106\",\n" +
+                    "        \"cancelReason\":null,\n" +
+                    "        \"cancelStatus\":\"NO_APPLY_CANCEL\",\n" +
+                    "        \"couponCode\":\"\",\n" +
+                    "        \"createTime\":\"2018-08-09 09:09:48\",\n" +
+                    "        \"discountCouponPlatform\":0,\n" +
+                    "        \"discountCouponShop\":0,\n" +
+                    "        \"discountFee\":\"0.00\",\n" +
+                    "        \"discountPromotion\":\"0.000\",\n" +
+                    "        \"endTime\":null,\n" +
+                    "        \"ip\":null,\n" +
+                    "        \"isClearing\":0,\n" +
+                    "        \"isDeleted\":0,\n" +
+                    "        \"isVirtual\":0,\n" +
+                    "        \"itemNum\":1,\n" +
+                    "        \"needInvoice\":0,\n" +
+                    "        \"payTime\":\"2018-08-09 09:10:06\",\n" +
+                    "        \"payType\":\"online\",\n" +
+                    "        \"payment\":\"7.000\",\n" +
+                    "        \"platformOrderCode\":"+"\""+platformOrderCode+"\""+",\n" +
+                    "        \"platformType\":\"WX\",\n" +
+                    "        \"pointsFee\":0,\n" +
+                    "        \"postageFee\":\"2.000\",\n" +
+                    "        \"receiveTime\":null,\n" +
+                    "        \"receiverAddress\":\"墩莳家园9-2103\",\n" +
+                    "        \"receiverCity\":\"杭州市\",\n" +
+                    "        \"receiverDistrict\":\"西湖区\",\n" +
+                    "        \"receiverProvince\":\"浙江省\",\n" +
+                    "        \"receiverMobile\":\"13666665057\",\n" +
+                    "        \"receiverName\":\"叶永周\",\n" +
+                    "        \"receiverPhone\":\"\",\n" +
+                    "        \"receiverEmail\":\"595287573@qq.com\",\n" +
+                    "        \"receiverIdCard\":\"342901199001010808\",\n" +
+                    "        \"shippingType\":\"express\",\n" +
+                    "        \"status\":\"WAIT_SELLER_SEND\",\n" +
+                    "        \"totalFee\":\"5.000\",\n" +
+                    "        \"totalTax\":\"0.000\",\n" +
+                    "        \"type\":0,\n" +
+                    "        \"userId\":94567,\n" +
+                    "        \"userName\":\"cally\"\n" +
+                    "    },\n" +
+                    "    \"shopOrders\":[\n" +
+                    "        {\n" +
+                    "            \"shopOrder\":{\n" +
+                    "        \"platformOrderCode\":"+"\""+platformOrderCode+"\""+",\n" +
+                    "                \"shopOrderCode\":"+"\""+shopOrderCode+"\""+",\n" +
+                    "                \"sellCode\":\"XSQD001\",\n" +
+                    "                \"channelCode\":\"YWX001\",\n" +
+                    "                \"adjustFee\":\"7.000\",\n" +
+                    "                \"consignTime\":null,\n" +
+                    "                \"createTime\":\"2018-08-09 09:09:48\",\n" +
+                    "                \"discountFee\":\"0.00\",\n" +
+                    "                \"discountPromotion\":\"0.000\",\n" +
+                    "                \"isDeleted\":0,\n" +
+                    "                \"isPartConsign\":0,\n" +
+                    "                \"itemNum\":1,\n" +
+                    "                \"payment\":\"7.000\",\n" +
+                    "                \"postageFee\":\"2.000\",\n" +
+                    "                \"totalFee\":\"5.000\",\n" +
+                    "                \"totalTax\":\"0.000\",\n" +
+                    "                \"totalWeight\":\"1.950\",\n" +
+                    "                \"shopId\":169,\n" +
+                    "                \"shopName\":\"京东（自营店铺）\",\n" +
+                    "                \"status\":\"WAIT_SELLER_SEND\",\n" +
+                    "                \"title\":\"花王（Merries）纸尿裤 新生儿NB90【5kg以下】（日本原装进口）\",\n" +
+                    "                \"tradeMemo\":\"\",\n" +
+                    "                \"userId\":94567\n" +
+                    "            },\n" +
+                    "            \"orderItems\":[\n" +
+                    "                {\n" +
+                    "                \"shopOrderCode\":"+"\""+shopOrderCode+"\""+",\n" +
+                    "        \"platformOrderCode\":"+"\""+platformOrderCode+"\""+",\n" +
+                    "                    \"itemNo\":\"SP1201710100000637\",\n" +
+                    "                    \"createTime\":\"2018-08-09 09:09:48\",\n" +
+                    "                    \"payTime\":\"2018-08-09 09:10:06\",\n" +
+                    "                    \"itemName\":\"花王（Merries）纸尿裤 新生儿NB90【5kg以下】（日本原装进口）\",\n" +
+                    "                    \"category\":296,\n" +
+                    "                    \"adjustFee\":\"7.00\",\n" +
+                    "                    \"barCode\":\"SP1201710100000637\",\n" +
+                    "                    \"complaintsStatus\":\"NOT_COMPLAINTS\",\n" +
+                    "                    \"consignTime\":null,\n" +
+                    "                    \"endTime\":null,\n" +
+                    "                    \"customsPrice\":\"9000.00\",\n" +
+                    "                    \"marketPrice\":\"177.00\",\n" +
+                    "                    \"price\":\"5.00\",\n" +
+                    "                    \"promotionPrice\":\"5.00\",\n" +
+                    "                    \"discountFee\":\"0.00\",\n" +
+                    "                    \"discountPromotion\":0,\n" +
+                    "                    \"num\":1,\n" +
+                    "                    \"skuCode\":128220,\n" +
+                    "                    \"outerSkuId\":\"SP1201710100000637\",\n" +
+                    "                    \"payment\":\"7.00\",\n" +
+                    "                    \"postDiscount\":\"2.00\",\n" +
+                    "                    \"totalFee\":\"5.00\",\n" +
+                    "                    \"priceTax\":\"0.00\",\n" +
+                    "                    \"picPath\":\"http://image.tairanmall.com/FszL9-QVATA8T0E7E0E4n90cdO1T\",\n" +
+                    "                    \"shopId\":169,\n" +
+                    "                    \"shopName\":\"京东（自营店铺）\",\n" +
+                    "                    \"status\":\"WAIT_SELLER_SEND\",\n" +
+                    "                    \"subStock\":0,\n" +
+                    "                    \"taxRate\":\"0.000\",\n" +
+                    "                    \"totalWeight\":\"1.950\",\n" +
+                    "                    \"transactionPrice\":\"7.00\",\n" +
+                    "                    \"type\":0,\n" +
+                    "                    \"userId\":94567\n" +
+                    "                }\n" +
+                    "            ]\n" +
+                    "        }\n" +
+                    "    ]\n" +
+                    "}";
+
+
+
             new Thread(
                     new Runnable() {
                         @Override
                         public void run() {
-                            pushOrder(orderInfo);
+                            pushOrder(orderInfo2);
                         }
                     }
             ).start();
@@ -370,10 +493,10 @@ public class categoryDbUnit extends BaseTest {
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
         try{
-            HttpPost httpPost = new HttpPost("http://127.0.0.1/scm-web/tairan/orderProcessing");
+            HttpPost httpPost = new HttpPost("http://10.200.146.8/scm-web/tairan/orderProcessing");
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            response = HttpClientUtil.httpPostJsonRequest("http://127.0.0.1/scm-web/tairan/orderProcessing", params, httpPost, 20000);
+            response = HttpClientUtil.httpPostJsonRequest("http://10.200.146.8/scm-web/tairan/orderProcessing", params, httpPost, 200000);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 responseAck = jbo.toJavaObject(ResponseAck.class);
