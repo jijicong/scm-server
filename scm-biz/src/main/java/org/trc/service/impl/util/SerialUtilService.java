@@ -41,11 +41,11 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
     }
 
     private String getRedisKey(String lockKey, int count){
-        if(count == 20){
+        if(count == 30){
             return null;
         }
         log.info("获取锁"+lockKey+"操作当前重试第"+(count+1)+"次");
-        String identifier = redisLock.Lock(lockKey, 5000, 6000);
+        String identifier = redisLock.Lock(lockKey, 6000, 8000);
         if (StringUtils.isBlank(identifier)){
             count++;
             try {
@@ -65,7 +65,7 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
         try {
             this.updateSerialByName(name,number);//修改流水的长度
         }catch (Exception e){
-            if(count < 15){
+            if(count < 30){
                 count++;
                 try {
                     Thread.sleep(100L);
