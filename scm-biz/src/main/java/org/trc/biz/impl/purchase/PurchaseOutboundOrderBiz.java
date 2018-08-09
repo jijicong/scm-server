@@ -282,7 +282,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(purchaseOutboundOrder, "采购单货单根据主键id查询失败，没有对应采购退货单");
 
-        //设置仓库名称，供应商名称，退货类型名称1-正品，2-残品
+        //设置仓库名称，供应商名称，退货类型名称1-正品，2-残品，地址信息回显
         setResult(purchaseOutboundOrder);
 
         Example example = new Example(PurchaseOutboundDetail.class);
@@ -643,7 +643,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(purchaseOutboundOrder, "采购退货单审核操作，获取详情失败，没有对应采购退货单");
 
-        //设置仓库名称，供应商名称，退货类型名称1-正品，2-残品
+        //设置仓库名称，供应商名称，退货类型名称1-正品，2-残品，地址信息回显
         setResult(purchaseOutboundOrder);
 
         Example example = new Example(PurchaseOutboundDetail.class);
@@ -754,8 +754,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //运营性质(0:第三方仓库 1:自营仓库)
         //过滤掉“运营性质”为“自营仓库”的仓库
         warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
-        //已通知仓库
-        //warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
         AssertUtil.notEmpty(warehouseList, "无数据，请确认【仓储管理-仓库信息管理】中存在“启用”状态，并且货主仓库状态为“通知成功”的仓库！");
 
@@ -913,11 +911,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     /**
-     * 设置仓库名称，供应商名称，退货类型名称1-正品，2-残品
+     * 设置仓库名称，供应商名称，退货类型名称1-正品，2-残品，地址信息回显
      *
      * @param purchaseOutboundOrder
      */
     private void setResult(PurchaseOutboundOrder purchaseOutboundOrder) {
+
         //设置供应商名称
         if (StringUtils.isNotBlank(purchaseOutboundOrder.getSupplierCode())) {
             Example supplierExample = new Example(Supplier.class);
@@ -928,6 +927,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 purchaseOutboundOrder.setSupplierName(suppliers.get(0).getSupplierName());
             }
         }
+
         //设置退货仓库名称
         if (purchaseOutboundOrder.getWarehouseInfoId() != null) {
             WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(purchaseOutboundOrder.getWarehouseInfoId());
@@ -942,6 +942,36 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 purchaseOutboundOrder.setReturnOrderTypeName("正品");
             } else if (StringUtils.equals(purchaseOutboundOrder.getReturnOrderType(), ZeroToNineEnum.TWO.getCode())) {
                 purchaseOutboundOrder.setReturnOrderTypeName("残品");
+            }
+        }
+
+        //退货省份
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getReceiverProvince())) {
+            Area area = new Area();
+            area.setCode(purchaseOutboundOrder.getReceiverProvince());
+            area = locationUtilService.selectOne(area);
+            if (area != null) {
+                purchaseOutboundOrder.setReceiverProvinceName(area.getProvince());
+            }
+        }
+
+        //退货城市
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getReceiverCity())) {
+            Area area = new Area();
+            area.setCode(purchaseOutboundOrder.getReceiverCity());
+            area = locationUtilService.selectOne(area);
+            if (area != null) {
+                purchaseOutboundOrder.setReceiverCityName(area.getCity());
+            }
+        }
+
+        //退货地区
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getReceiverArea())) {
+            Area area = new Area();
+            area.setCode(purchaseOutboundOrder.getReceiverArea());
+            area = locationUtilService.selectOne(area);
+            if (area != null) {
+                purchaseOutboundOrder.setReceiverAreaName(area.getDistrict());
             }
         }
     }
@@ -989,7 +1019,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
 
         if (StringUtils.isNotBlank(form.getStartDate())) {
-            criteria.andGreaterThan("commitAuditTime", form.getCommitAuditTime());
+            criteria.andGreaterThan("commitAuditTime", form.getStartDate());
         }
         if (StringUtils.isNotBlank(form.getEndDate())) {
             SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.NORMAL_DATE_FORMAT);
@@ -1003,7 +1033,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             }
             date = DateUtils.addDays(date, 1);
             form.setEndDate(sdf.format(date));
-            criteria.andLessThan("commitAuditTime", form.getCommitAuditTime());
+            criteria.andLessThan("commitAuditTime", form.getEndDate());
         }
         criteria.andEqualTo("isDeleted", "0");
         example.setOrderByClause("instr('1,2,3',`audit_status`) ASC");
