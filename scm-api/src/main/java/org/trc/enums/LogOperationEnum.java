@@ -39,7 +39,8 @@ public enum LogOperationEnum {
     ENTRY_RETURN_NOTICE_SUCC("仓库接收成功"),
     ENTRY_RETURN_NOTICE_FAIL("仓库接收失败"),
     ENTRY_RETURN_NOTICE_CANCEL("取消出库"),
-	ENTRY_RETURN_NOTICE_FINISH("出库");
+	ENTRY_RETURN_NOTICE_FINISH("出库"),
+	ENTRY_RETURN_NOTICE_SYNCHRONIZE("退货出库");
 
     private String message;
 
