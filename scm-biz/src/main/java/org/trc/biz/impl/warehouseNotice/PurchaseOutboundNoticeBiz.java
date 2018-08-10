@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.warehouseNotice.IPurchaseOutboundNoticeBiz;
+import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
@@ -37,6 +38,7 @@ import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnItem;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
+import org.trc.service.category.IBrandService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.purchase.IPurchaseOutboundDetailService;
@@ -50,6 +52,8 @@ import org.trc.util.ListSplit;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
+
+import net.bytebuddy.description.ByteCodeElement.Token.TokenList;
 
 /**
  * Description〈〉
@@ -76,6 +80,8 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     private IRealIpService realIpService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private IBrandService brandService;
     
     private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeBiz.class);
     
@@ -98,6 +104,24 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		AssertUtil.notNull(notice, "未找到相应的退货单号");
 		
 		List<PurchaseOutboundDetail> skuList = detailService.selectDetailByNoticeCode(notice.getOutboundNoticeCode());
+        //设置品牌名称
+		try {
+			if (!CollectionUtils.isEmpty(skuList)) {
+				List<Long> bandIdList = skuList.stream().map(item -> Long.valueOf(item.getBrandId())).collect(Collectors.toList());
+				List<Brand> brandList = brandService.selectBrandList(bandIdList);
+				for (PurchaseOutboundDetail sku : skuList) {
+					for (Brand band : brandList) {
+						if (StringUtils.equals(band.getId().toString(), sku.getBrandId())) {
+							sku.setBrandName(band.getName());
+							break;
+						}
+					}
+				}
+				
+			}
+		} catch (Exception e) {
+			logger.error("获取采购退货入库单详情时，设置品牌名称异常", e);
+		}
 		notice.setSkuList(skuList);
 		return notice;
 	}
