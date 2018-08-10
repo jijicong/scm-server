@@ -1408,6 +1408,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         updatePurchaseOrderAudit.setId(purchaseOrderAudit.getId());
         //待审核的状态
         updatePurchaseOrderAudit.setStatus(ZeroToNineEnum.ONE.getCode());
+        updatePurchaseOrderAudit.setAuditOpinion("");
         updatePurchaseOrderAudit.setUpdateTime(Calendar.getInstance().getTime());
         int count = iPurchaseOrderAuditService.updateByPrimaryKeySelective(updatePurchaseOrderAudit);
         if (count == 0) {
