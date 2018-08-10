@@ -640,10 +640,6 @@ public class GoodsBiz implements IGoodsBiz {
                 List<Skus> _tmpSkus = new ArrayList<Skus>();
                 for(Skus skus : _skusList){
                     if(StringUtils.equals(item.getSpuCode(), skus.getSpuCode())){
-                        Items tempItems = new Items();
-                        tempItems.setSpuCode(skus.getSpuCode());
-                        tempItems = itemsService.selectOne(tempItems);
-                        skus.setUpdateAuth(tempItems.getUpdateAuth());
                         _tmpSkus.add(skus);
                     }
                 }
