@@ -379,7 +379,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                             message = message + "," + relation.getPurchaseGroupCode();
                         }
                     }
-                    String msg = "不允许删除，还存在其他关联组:," + message;
+                    String msg = "不允许删除，还存在其他关联组:" + message;
                     logger.error(msg);
                     throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
                 }

@@ -1356,7 +1356,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             boolean isDelete = true;
             for(PurchaseDetail purchaseDetailNew : purchaseDetailListNew){
                 if(purchaseDetailNew.getId() != null &&
-                        purchaseDetailOld.getId().longValue() == purchaseDetailNew.getId().longValue()){
+                        StringUtils.equals(purchaseDetailOld.getSkuCode(), purchaseDetailNew.getSkuCode())){
                     isDelete = false;
                     if((purchaseDetailOld.getPurchasingQuantity()==null?0L:purchaseDetailOld.getPurchasingQuantity().longValue())
                             !=

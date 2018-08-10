@@ -284,6 +284,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if (StringUtil.isNotEmpty(queryModel.getShopName())) {//店铺名称
             criteria.andLike("shopName", "%" + queryModel.getShopName() + "%");
         }
+        if (StringUtil.isNotEmpty(queryModel.getReciverType())) {//店铺名称
+            criteria.andEqualTo("reciverType", queryModel.getReciverType());
+        }
         if (StringUtil.isNotEmpty(queryModel.getSupplierOrderStatus())) {//发货状态
             criteria.andEqualTo("supplierOrderStatus", queryModel.getSupplierOrderStatus());
         }
