@@ -76,6 +76,8 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
     private IRealIpService realIpService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private IBrandService brandService;
     
     private Logger logger = LoggerFactory.getLogger(PurchaseOutboundNoticeBiz.class);
     
@@ -98,6 +100,24 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		AssertUtil.notNull(notice, "未找到相应的退货单号");
 		
 		List<PurchaseOutboundDetail> skuList = detailService.selectDetailByNoticeCode(notice.getOutboundNoticeCode());
+        //设置品牌名称
+		try {
+			if (!CollectionUtils.isEmpty(skuList)) {
+				List<Long> bandIdList = skuList.stream().map(item -> Long.valueOf(item.getBrandId())).collect(toList());
+				List<Brand> brandList = brandService.selectBrandList(bandIdList);
+				for (PurchaseOutboundDetail sku : skuList) {
+					for (Brand band : brandList) {
+						if (StringUtils.equals(band.getId().toString(), sku.getBrandId())) {
+							sku.setBrandName(band.getName());
+							break;
+						}
+					}
+				}
+				
+			}
+		} catch (Exception e) {
+			logger.error("获取采购退货入库单详情时，设置品牌名称异常", e);
+		}
 		notice.setSkuList(skuList);
 		return notice;
 	}

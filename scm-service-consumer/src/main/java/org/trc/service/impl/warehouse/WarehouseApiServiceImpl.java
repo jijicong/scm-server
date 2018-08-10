@@ -271,7 +271,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmEntryReturnOrderCreateRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmEntryReturnOrderCreateResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmEntryReturnDetailRequest){
-            response = JSON.parseArray(appResult.getResult().toString()).toJavaObject(ScmEntryReturnDetailResponse.class);
+            response = JSON.parseArray(appResult.getResult().toString(), ScmEntryReturnDetailResponse.class);
         }
         appResult.setResult(response);
     }

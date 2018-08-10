@@ -324,6 +324,10 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 				throw new IllegalArgumentException("查询采购出库单详情异常，系统或者接口返回的商品列表为空!");
 			}
 			
+			if (detailList.size() != itemList.size()) {
+				throw new IllegalArgumentException("系统与接口返回的商品列表长度不相等");
+			}
+			
 			Map<String, PurchaseOutboundDetail> detailMap = detailList.stream()
 					.collect(Collectors.toMap(PurchaseOutboundDetail :: getWarehouseItemId, detail -> detail));	
 		        
@@ -338,10 +342,15 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 			 for (ScmEntryReturnDetailItem item : itemList) {
 				 PurchaseOutboundNoticeStatusEnum detailStatus = PurchaseOutboundNoticeStatusEnum.PASS; // 商品详情状态
 				 PurchaseOutboundDetail detail = detailMap.get(item.getItemId());
+				 
+				 if (detail == null) {
+					throw new IllegalArgumentException("接口返回商品id有误");
+				 }
+				 
 				 String result = "出库完成";
 				// 商品状态和数量是否相当 (枚举值：1.良品)
-				 if (StringUtils.equals(detail.getReturnOrderType(), item.getGoodsStatus())
-						 || detail.getOutboundQuantity().longValue() == item.getActualQty().longValue()) { 
+				 if (!StringUtils.equals(detail.getReturnOrderType(), item.getGoodsStatus())
+						 || detail.getOutboundQuantity().longValue() != item.getActualQty().longValue()) { 
 					 
 					 detailStatus = PurchaseOutboundNoticeStatusEnum.RECEIVE_EXCEPTION; // 商品详情状态-出库异常
 					 exceptionFlg = true;
@@ -358,7 +367,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 			 String remark = StringUtils.join(remarkList,"\n");
 			 
 			 // 存在"出库异常"的商品 或者 商品总数不相等时
-			 if (exceptionFlg || detailList.size() != itemList.size()) {
+			 if (exceptionFlg) {
 				 status =  PurchaseOutboundNoticeStatusEnum.RECEIVE_EXCEPTION; // 出库通知单状态-出库异常
 				 orderStatus = PurchaseOutboundStatusEnum.EXCEPTION;
 			 } else {
@@ -399,7 +408,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 
 		PurchaseOutboundOrder order = new PurchaseOutboundOrder();
 		order.setOutboundStatus(orderStatus.getCode());
-		purchaseOutboundOrderMapper.updateByExample(order, example);
+		purchaseOutboundOrderMapper.updateByExampleSelective(order, example);
 	}
 
 	private PurchaseOutboundOrder selectOneOrder(String code) {
