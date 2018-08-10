@@ -69,6 +69,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     private final static String PASS_API_URL = "api";
     //渠道访问路径
     private final static String  PASS_TAI_RAN_URL= "tairan";
+    // swagger 路径
+    private final static String  SWAGGER_URL = "swagger.json";
     /**
      * 奇门访问路径
      */
@@ -95,7 +97,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String url = ((ContainerRequest) requestContext).getPath(true);
         //"/api"开头的给外部调用的接口直接放行
-        if (!url.startsWith(PASS_API_URL) && !url.startsWith(PASS_TAI_RAN_URL) &&!url.startsWith(SupplyConstants.Metadata.ROOT)&&!url.startsWith(SupplyConstants.Qimen.QI_MEN)) {
+        if (!url.startsWith(PASS_API_URL) && !url.startsWith(PASS_TAI_RAN_URL) 
+        		&& !url.startsWith(SupplyConstants.Metadata.ROOT) && !url.startsWith(SupplyConstants.Qimen.QI_MEN)
+        		&& !url.endsWith(SWAGGER_URL)) {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
                 TokenDeliverDTO tokenInfo = getCSPKernelSDK(token,url);

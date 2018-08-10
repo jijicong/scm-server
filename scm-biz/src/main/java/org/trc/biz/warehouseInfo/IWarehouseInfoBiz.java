@@ -55,7 +55,7 @@ public interface IWarehouseInfoBiz {
      * @param warehouseInfo 货主信息
      * @return
      */
-    Response saveOwnerInfo(WarehouseInfo warehouseInfo);
+    Response saveOwnerInfo(WarehouseInfo warehouseInfo, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 删除仓库信息
@@ -77,7 +77,7 @@ public interface IWarehouseInfoBiz {
      *
      * @param id
      */
-    void deleteWarehouseItemInfoById(Long id);
+    void deleteWarehouseItemInfoById(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 编辑仓库商品信息
@@ -102,7 +102,7 @@ public interface IWarehouseInfoBiz {
      * @param warehouseInfoId
      * @return
      */
-    Response saveWarehouseItemsSku(String items, Long warehouseInfoId);
+    Response saveWarehouseItemsSku(String items, Long warehouseInfoId, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 新增商品信息分页查询
@@ -122,14 +122,15 @@ public interface IWarehouseInfoBiz {
      * @param warehouseInfoId
      * @return
      */
-    Response uploadNoticeStatus(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String warehouseInfoId);
+    Response uploadNoticeStatus(InputStream uploadedInputStream, FormDataContentDisposition fileDetail,
+                                String warehouseInfoId, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 本地仓库商品同步仓库
      * @param itemIds
      * @return
      */
-    Response warehouseItemNoticeQimen(String itemIds);
+    Response warehouseItemNoticeQimen(String itemIds, AclUserAccreditInfo aclUserAccreditInfo);
 
     void setWmsService(IWarehouseApiService service);
 

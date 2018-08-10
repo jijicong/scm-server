@@ -25,7 +25,7 @@ public class SupplyConstants {
         public static final String EQUAL = "=";
     }
 
-    public static final class WarehouseConstant{
+    public static final class WarehouseConstant {
         public static final String OWNER_NAME = "浙江小泰电子商务有限公司";
 
         public static final String CHANNEL_CODE = "TRMALL";
@@ -108,7 +108,7 @@ public class SupplyConstants {
 
     }
 
-        /**
+    /**
      * 配置管理
      */
     public static final class Config {
@@ -299,13 +299,13 @@ public class SupplyConstants {
         /**
          * 编辑时回写的数据
          */
-        public static final String CHANNEL_ID_SELL_CHANNEL= "channelInSellChannel";
+        public static final String CHANNEL_ID_SELL_CHANNEL = "channelInSellChannel";
         /**
          * 查询所有的销售渠道
          */
-        public static final String SELL_CHANNEL_LIST= "channelList";
+        public static final String SELL_CHANNEL_LIST = "channelList";
         //查询业务线相关销售渠道
-        public static final String YWX_SELL_CHANNEL_LIST= "ywxSellChannelList";
+        public static final String YWX_SELL_CHANNEL_LIST = "ywxSellChannelList";
     }
 
     /**
@@ -335,10 +335,11 @@ public class SupplyConstants {
          */
         public static final String SELL_CHANNEL_SAVE = "save/sellChannel";
         /**
-         *根据主键查询销售渠道
+         * 根据主键查询销售渠道
          */
         public static final String SELL_CHANNEL = "sellChannel";
     }
+
     /**
      * 仓库管理
      */
@@ -580,14 +581,14 @@ public class SupplyConstants {
         public static final String CANCEL = "cancel";
 
     }
-    
+
     /**
      * 调拨单
      */
     public static final class AllocateOrder {
 //    	//根路径
 //    	public static final String ROOT = "allocateOrder";
-    	
+
     }
 
     /**
@@ -860,7 +861,7 @@ public class SupplyConstants {
         public static final String WAREHOUSE_ORDER_CODE = "CKDD";
         //仓库订单编码长度
         public static final Integer WAREHOUSE_ORDER_CODE_LENGTH = 7;
-        
+
         //调拨单前缀
         public static final String ALLOCATE_ORDER_CODE = "DBD";
         //调拨单编码长度
@@ -976,7 +977,7 @@ public class SupplyConstants {
         //用户授权列表
         public static final String ACL_USER_ACCREDIT_INFO = "aclUserAccreditInfo";
         /**
-         *业务线ID
+         * 业务线ID
          */
         public static final String CHANNEL_CODE = "channelCode";
 
@@ -1086,9 +1087,9 @@ public class SupplyConstants {
         public static final String CANCEL_CLOSE = "cancelClose";
 
         public static final String ALLOCATE_OUT_ORDER = "allocateOutOrder";
-        
+
         public static final String ALLOCATE_ORDER_OUT_NOTICE = "allocateOrderOutNotice";
-        
+
         public static final String ALLOCATE_ORDER_OUT_CANCEL = "allocateOrderOutCancel";
 
         public static final String NOTICE_SEND_GOODS = "noticeSendGoods";
@@ -1372,6 +1373,10 @@ public class SupplyConstants {
         public final static String PURCHASE_GROUP = "purchase_group";
         //采购单
         public final static String PURCHASE_ORDER = "purchase_order";
+        /**
+         * 采购退货单
+         */
+        public final static String PURCHASE_OUTBOUND_ORDER = "purchaseOutboundOrder";
         //采购单审核
         public final static String PURCHASE_ORDER_AUDIT = "purchase_order_audit";
         //入库通知
@@ -1390,14 +1395,35 @@ public class SupplyConstants {
         public final static String JD_ADDRESS = "jd_address";
 
         public final static String WAREHOUSE_ITEM = "warehouse_item";
-        
+
         //调拨单
         public final static String ALLOCATE_ORDER = "allocate_order";
 
         //调拨发货单
         public final static String ALLOCATE_OUT_ORDER = "allocate_out_order";
 
+        //商品组
+        public final static String ITEM_GROUP = "item_group";
+
     }
 
+    /**
+     * 商品组
+     */
+    public static final class ItemGroupConstants {
 
+        public final static String ROOT = "itemGroup";
+        //商品组查询分页
+        public final static String ITEM_GROUP_PAGE = "itemGroupPage";
+        //商品组详情查询
+        public final static String ITEM_GROUP_DETAIL_QUERY = "itemGroupDetailQuery";
+        //商品组员信息列表查询
+        public final static String ITEM_GROUP_USERS_QUERY = "itemGroupUsersQuery";
+        //商品组详情编辑
+        public final static String ITEM_GROUP_EDIT = "itemGroupEdit";
+        //商品组新增
+        public final static String ITEM_GROUP_SAVE = "itemGroupSave";
+        //商品组新增
+        public final static String ITEM_GROUP_ISVALID = "isValid";
+    }
 }

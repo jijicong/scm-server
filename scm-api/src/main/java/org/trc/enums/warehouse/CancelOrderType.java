@@ -1,7 +1,7 @@
 package org.trc.enums.warehouse;
 
 /**
- * 商品同步动作类型
+ * 取消订单类型
  */
 public enum CancelOrderType {
 
@@ -10,11 +10,13 @@ public enum CancelOrderType {
     * 1：采购单 
     * 2：调拨出库单 
     * 3：调拨入库单
+    * 4：采购退货出库单
     */
     DELIVERY("0"), 
     PURCHASE("1"), 
     ALLOCATE_OUT("2"), 
-    ALLOCATE_IN("3");
+    ALLOCATE_IN("3"),
+    ENTRY_RETURN("4");
 
     CancelOrderType(String code) {
         this.code = code;

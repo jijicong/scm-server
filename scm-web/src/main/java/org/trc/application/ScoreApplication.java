@@ -21,6 +21,8 @@ public class ScoreApplication extends ResourceConfig {
         register(ExceptionMapperSupport.class);
 
         packages("org.trc.resource");
+        packages("io.swagger.jaxrs.listing");
+        
     }
 
 }

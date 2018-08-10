@@ -35,6 +35,7 @@ import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
+import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.PurchaseOrderDetailException;
 import org.trc.exception.PurchaseOrderException;
@@ -129,6 +130,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private TaxRateService taxRateService;
 
 
+    @Autowired
+    private IPurchaseBoxInfoService purchaseBoxInfoService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -417,6 +420,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         if (!StringUtils.isBlank(form.getPurchaseType())) {
             criteria.andEqualTo("purchaseType", form.getPurchaseType());
+        }
+
+        if (!StringUtils.isBlank(form.getPurchaseGroupCode())) {
+            criteria.andEqualTo("purchaseGroupCode", form.getPurchaseGroupCode());
         }
 
         if(!StringUtils.isBlank(form.getPurchaseStatus())){
@@ -1128,7 +1135,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
         }
         /**
-         * 获取审核意见 20180720 
+         * 获取审核意见 20180720
          **/
         PurchaseOrderAudit record = new PurchaseOrderAudit();
         record.setPurchaseOrderId(id);
@@ -1280,7 +1287,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
+
+        //获取操作前所有采购单详情
+        PurchaseDetail purchaseDetailOld = new PurchaseDetail();
+        purchaseDetailOld.setPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetailListOld = purchaseDetailService.select(purchaseDetailOld);
+
         purchaseDetailService.deletePurchaseDetailByPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
+
         Object obj =aclUserAccreditInfo.getUserId();
         AssertUtil.notNull(obj,"采购单更新失败,获取授权信息失败");
         purchaseOrderAddData.setCreateOperator((String) obj);
@@ -1305,6 +1319,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
         }
 
+        //获取操作后采购单详情
+        PurchaseDetail purchaseDetailNew = new PurchaseDetail();
+        purchaseDetailNew.setPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetailListNew = purchaseDetailService.select(purchaseDetailNew);
+
+        //修改装箱信息
+        this.updatePurchaseBoxInfo(purchaseDetailListOld, purchaseDetailListNew, purchaseOrder);
+
         //修改操作日志
         String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
@@ -1316,6 +1338,56 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
     }
+
+    /**
+     * 修改装箱信息
+     * @param purchaseDetailListOld
+     * @param purchaseDetailListNew
+     * @param purchaseOrder
+     */
+    private void updatePurchaseBoxInfo(List<PurchaseDetail> purchaseDetailListOld,
+                                       List<PurchaseDetail> purchaseDetailListNew,
+                                       PurchaseOrder purchaseOrder){
+        boolean isUpdateOrder = false;
+
+        int countNew = purchaseDetailListNew.size();
+
+        for(PurchaseDetail purchaseDetailOld : purchaseDetailListOld){
+            boolean isDelete = true;
+            for(PurchaseDetail purchaseDetailNew : purchaseDetailListNew){
+                if(purchaseDetailNew.getId() != null &&
+                        StringUtils.equals(purchaseDetailOld.getSkuCode(), purchaseDetailNew.getSkuCode())){
+                    isDelete = false;
+                    if((purchaseDetailOld.getPurchasingQuantity()==null?0L:purchaseDetailOld.getPurchasingQuantity().longValue())
+                            !=
+                            (purchaseDetailNew.getPurchasingQuantity()==null?0L:purchaseDetailNew.getPurchasingQuantity().longValue()) ){
+                        isUpdateOrder = true;
+                    }
+                    countNew--;
+                }
+            }
+            if(isDelete){
+                PurchaseBoxInfo purchaseBoxInfo = new PurchaseBoxInfo();
+                purchaseBoxInfo.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                Example example = new Example(PurchaseBoxInfo.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+                criteria.andEqualTo("skuCode", purchaseDetailOld.getSkuCode());
+                purchaseBoxInfoService.updateByExampleSelective(purchaseBoxInfo, example);
+            }
+        }
+
+        if(isUpdateOrder || countNew > 0){
+            purchaseOrder.setBoxInfoStatus(PurchaseBoxInfoStatusEnum.UNFINISH.getCode());
+            int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
+            if (count == 0) {
+                String msg = String.format("修改采购单%s数据库操作失败",JSON.toJSONString(purchaseOrder));
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+            }
+        }
+    }
+
     /**
      * 修改提交审核的采购信息
      */
@@ -1336,6 +1408,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         updatePurchaseOrderAudit.setId(purchaseOrderAudit.getId());
         //待审核的状态
         updatePurchaseOrderAudit.setStatus(ZeroToNineEnum.ONE.getCode());
+        updatePurchaseOrderAudit.setAuditOpinion("");
         updatePurchaseOrderAudit.setUpdateTime(Calendar.getInstance().getTime());
         int count = iPurchaseOrderAuditService.updateByPrimaryKeySelective(updatePurchaseOrderAudit);
         if (count == 0) {
@@ -1438,6 +1511,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(order,"根据主键查询该采购单为空");
         if(!StringUtils.equals(order.getStatus(), PurchaseOrderStatusEnum.PASS.getCode())){
             String msg = "保存入库通知单数据库操作失败,入库单状态不为审核通过！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+
+        //判断是否维护装箱信息完成
+        String boxInfoStatus = order.getBoxInfoStatus();
+        if(boxInfoStatus == null || !StringUtils.equals(boxInfoStatus, PurchaseBoxInfoStatusEnum.FINISH.getCode())){
+            String msg = "请先完成“装箱信息”维护!";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
@@ -1946,7 +2027,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
             PurchaseDetail detail = new PurchaseDetail();
 
-            //TODO 添加商品详情，采购税率
+            //添加商品详情，采购税率
             Example example = new Example(TaxRate.class);
             example.createCriteria().andEqualTo("taxRateCode", TaxRateEnum.PURCHASE_RATE.getCode());
             List<TaxRate> taxRates = taxRateService.selectByExample(example);

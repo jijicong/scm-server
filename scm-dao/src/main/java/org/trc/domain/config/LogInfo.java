@@ -1,6 +1,10 @@
 package org.trc.domain.config;
 
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.trc.util.DateUtils;
+
 import java.util.Date;
 
 /**
@@ -18,8 +22,22 @@ public class LogInfo {
     private String remark;
     private Date operateTime;
     private String operateType;
+    @Transient
+    private String operateTimeString;
 
-    public Long getId() {
+    public String getOperateTimeString() {
+    	if (this.operateTime != null) {
+    		return DateUtils.dateToString(this.operateTime, DateUtils.DATETIME_FORMAT);
+    	} else {
+    		return null;
+    	}
+	}
+
+	public void setOperateTimeString(String operateTimeString) {
+		this.operateTimeString = operateTimeString;
+	}
+
+	public Long getId() {
         return id;
     }
 

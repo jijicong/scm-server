@@ -284,6 +284,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if (StringUtil.isNotEmpty(queryModel.getShopName())) {//店铺名称
             criteria.andLike("shopName", "%" + queryModel.getShopName() + "%");
         }
+        if (StringUtil.isNotEmpty(queryModel.getReciverType())) {//店铺名称
+            criteria.andEqualTo("reciverType", queryModel.getReciverType());
+        }
         if (StringUtil.isNotEmpty(queryModel.getSupplierOrderStatus())) {//发货状态
             criteria.andEqualTo("supplierOrderStatus", queryModel.getSupplierOrderStatus());
         }
@@ -3542,8 +3545,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             page.setPageSize(300);
             page=warehouseOrderPage(queryModel, page, aclUserAccreditInfo);
             warehouseOrderList.addAll(page.getResult());
-            if (page.getTotalPages()>1){
-                for (int i = 2; i <= page.getTotalPages(); i++) {
+            if (page.pageGetTotalPages()>1){
+                for (int i = 2; i <= page.pageGetTotalPages(); i++) {
                     page.setPageNo(i);
                     page=warehouseOrderPage(queryModel, page, aclUserAccreditInfo);
                     warehouseOrderList.addAll(page.getResult());

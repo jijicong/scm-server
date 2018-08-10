@@ -21,6 +21,7 @@ import java.util.Date;
 @Table(name = "external_item_sku")
 public class ExternalItemSku implements Serializable{
 
+    private static final long serialVersionUID = 1795135627029382258L;
     // 主键
     @PathParam("id")
     @Id

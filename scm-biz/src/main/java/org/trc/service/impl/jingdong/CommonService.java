@@ -27,7 +27,7 @@ public class CommonService extends BaseService<Common, Long> implements ICommonS
         return commonMapper.selectByCode(code);
     }
 
-    public String getWarehoueType (String whCode, ScmWarehouseRequestBase request) {
+    public WarehouseInfo getWarehoueType (String whCode, ScmWarehouseRequestBase request) {
         WarehouseInfo whi = new WarehouseInfo();
         whi.setCode(whCode);
         WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
@@ -40,6 +40,6 @@ public class CommonService extends BaseService<Common, Long> implements ICommonS
         } else {
         	throw new RuntimeException("请确认仓库的运营性质是否正确");
         }
-        return warehouse.getWarehouseName();
+        return warehouse;
     }
 }
