@@ -71,7 +71,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Description〈〉
+ * Description〈采购退货单管理〉
  *
  * @author hzliuwei
  * @create 2018/7/24
@@ -181,7 +181,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Override
     @PurchaseOutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
+    public String savePurchaseOutboundOrder(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         log.info("采购退货单保存或提交审核，PurchaseOutboundOrder:{}, 当前操作:{} ", JSON.toJSONString(form), form.getStatus().equals("0") ? "[0]暂存" : "[1]提交审核");
         validationRequestParam(form, aclUserAccreditInfo);
         //校验仓库是否停用
@@ -204,6 +204,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
             //更新采购退货单状态
             auditStatusUpdate(form, aclUserAccreditInfo, seq);
+            return "采购退货单提交审核成功！";
+        } else {
+            return "保存采购退货单成功！";
         }
     }
 
@@ -253,6 +256,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, "采购退货单更新异常");
         }
 
+        //插入采购退货单详情
         insertPurchaseOutboundDetail(form);
 
         if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
@@ -267,32 +271,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     /**
-     * 更新采购退货单状态
-     *
-     * @param form
-     * @param aclUserAccreditInfo
-     * @param purchaseOutboundOrderCode
-     */
-    private void auditStatusUpdate(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo, String purchaseOutboundOrderCode) {
-        PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
-        purchaseOutboundOrder.setCreateOperator(aclUserAccreditInfo.getName());
-        purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
-        purchaseOutboundOrder.setAuditStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
-        purchaseOutboundOrder.setCommitAuditTime(Calendar.getInstance().getTime());
-        purchaseOutboundOrder.setAuditDescription(form.getAuditDescription());
-        Example example = new Example(PurchaseOutboundOrder.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrderCode);
-        int i = purchaseOutboundOrderService.updateByExampleSelective(purchaseOutboundOrder, example);
-        if (i < 1) {
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "提交审核采购退货单失败");
-        }
-
-        //记录日志
-        logInfoService.recordLog(form, form.getId().toString(), aclUserAccreditInfo.getUserId(), AuditStatusEnum.COMMIT.getName(), null, ZeroToNineEnum.ZERO.getCode());
-    }
-
-    /**
      * 根据采购退货单Id查询采购退货单
      *
      * @param id 采购退货单Id
@@ -303,6 +281,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notNull(id, "根据采购退货单Id查询采购退货单失败，采购退货单Id为空");
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(purchaseOutboundOrder, "采购单货单根据主键id查询失败，没有对应采购退货单");
+
+        //设置仓库名称，供应商名称，退货类型名称1-正品，2-残品，地址信息回显
+        setResult(purchaseOutboundOrder);
 
         Example example = new Example(PurchaseOutboundDetail.class);
         example.createCriteria().andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
@@ -318,35 +299,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         return purchaseOutboundOrder;
     }
 
-    private Map<String, Long> selectCanBackQuantity(PurchaseOutboundOrder purchaseOutboundOrder, List<String> skus) {
-
-        //查询退货仓库
-        Example warehouseItemExample = new Example(WarehouseItemInfo.class);
-        Example.Criteria warehouseItemCriteria = warehouseItemExample.createCriteria();
-        warehouseItemCriteria.andEqualTo("warehouseInfoId", purchaseOutboundOrder.getWarehouseInfoId());
-        warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
-        warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
-        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
-        AssertUtil.notEmpty(warehouseItemInfoList, "退货仓库商品异常");
-
-        List<WarehouseItemInfo> warehouseItemInfos = new ArrayList<>();
-        for (String skuCode : skus) {
-            for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfoList) {
-                if (StringUtils.equals(skuCode, warehouseItemInfo.getSkuCode())) {
-                    warehouseItemInfos.add(warehouseItemInfo);
-                    break;
-                }
-            }
-        }
-
-        Map<String, Long> inventoryInfo = new HashMap<>();
-        if (!CollectionUtils.isEmpty(warehouseItemInfos)) {
-            //京东接口查询库存信息
-            inventoryInfo = skuInventoryQuery(warehouseItemInfos, purchaseOutboundOrder.getReturnOrderType());
-        }
-
-        return inventoryInfo;
-    }
 
     /**
      * 获取采购退货单商品详情
@@ -576,7 +528,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         PurchaseOutboundNotice notice = new PurchaseOutboundNotice();
         notice.setId(purchaseOutboundNotice.getId());
         notice.setStatus(PurchaseOutboundNoticeStatusEnum.CANCEL.getCode());
-        notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
         int num = purchaseOutboundNoticeService.updateByPrimaryKeySelective(notice);
         if (num < 1) {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购单操作失败,出库通知单已经被执行操作", JSON.toJSONString(order.getPurchaseOutboundOrderCode())));
@@ -599,38 +550,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //记录操作日志
         logInfoService.recordLog(order, order.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
         logInfoService.recordLog(purchaseOutboundNotice, purchaseOutboundNotice.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, null);
-    }
-
-
-    /**
-     * 更新采购退货单状态
-     *
-     * @param form
-     * @param aclUserAccreditInfo
-     * @return
-     */
-    @PurchaseOutboundOrderCacheEvict
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public String updateStatus(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notNull(form, "状态修改失败，采购退货单信息为空");
-        AssertUtil.notNull(form.getId(), "状态修改失败，采购退货单ID为空");
-        PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(form.getId());
-        //暂存：的删除操作
-        if (PurchaseOutboundOrderStatusEnum.HOLD.getCode().equals(purchaseOutboundOrder.getStatus())) {
-            handleDeleted(form, aclUserAccreditInfo);
-            return "删除成功!";
-        }
-        //审核驳回：的删除操作
-        if (PurchaseOutboundOrderStatusEnum.REJECT.getCode().equals(purchaseOutboundOrder.getStatus())) {
-            handleDeleted(form, aclUserAccreditInfo);
-            return "删除成功!";
-        }
-        //审核通过：的作废操作
-        if (PurchaseOutboundOrderStatusEnum.PASS.getCode().equals(purchaseOutboundOrder.getStatus())) {
-            handleCancel(form, aclUserAccreditInfo);
-            return "作废成功!";
-        }
-        return "操作失败!";
     }
 
     /**
@@ -685,6 +604,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
             //更新采购退货单商品详情状态
             PurchaseOutboundDetail purchaseOutboundDetail = new PurchaseOutboundDetail();
+            purchaseOutboundDetail.setOutboundNoticeCode(notice.getOutboundNoticeCode());
             purchaseOutboundDetail.setOutboundStatus(PurchaseOutboundStatusEnum.WAIT.getCode());
             purchaseOutboundDetail.setStatus(PurchaseOutboundDetailStatusEnum.TO_BE_NOTIFIED.getCode());
             Example example = new Example(PurchaseOutboundDetail.class);
@@ -711,36 +631,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
     }
 
-    private void setDetailColumn(PurchaseOutboundOrder purchaseOutboundOrder) {
-        Example example1 = new Example(PurchaseOutboundDetail.class);
-        Example.Criteria criteria1 = example1.createCriteria();
-        criteria1.andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
-        List<PurchaseOutboundDetail> list = purchaseOutboundDetailService.selectByExample(example1);
-        AssertUtil.notEmpty(list, String.format("出库通知失败，%s对应仓库商品信息为空", purchaseOutboundOrder.getPurchaseOutboundOrderCode()));
-        List<String> skuCodes = list.stream().map(PurchaseOutboundDetail::getSkuCode).collect(Collectors.toList());
-
-        Example example = new Example(WarehouseItemInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("warehouseInfoId", purchaseOutboundOrder.getWarehouseInfoId());
-        criteria.andIn("skuCode", skuCodes);
-        List<WarehouseItemInfo> itemInfos = warehouseItemInfoService.selectByExample(example);
-        AssertUtil.notEmpty(itemInfos, "出库通知失败，对应仓库商品信息异常");
-        for (PurchaseOutboundDetail detail : list) {
-            for (WarehouseItemInfo item : itemInfos) {
-                if (StringUtils.equals(detail.getSkuCode(), item.getSkuCode())) {
-                    PurchaseOutboundDetail outboundDetail = new PurchaseOutboundDetail();
-                    outboundDetail.setId(detail.getId());
-                    outboundDetail.setWarehouseItemId(item.getWarehouseItemId());
-                    int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(outboundDetail);
-                    if (i < 1) {
-                        throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, String.format("%s出库通知失败，添加仓库商品id失败", purchaseOutboundOrder.getPurchaseOutboundOrderCode()));
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
     /**
      * 采购退货单审核操作，获取详情
      *
@@ -753,9 +643,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(purchaseOutboundOrder, "采购退货单审核操作，获取详情失败，没有对应采购退货单");
 
-        //仓库名称
-        WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(purchaseOutboundOrder.getWarehouseInfoId());
-        purchaseOutboundOrder.setWarehouseName(warehouseInfo.getWarehouseName());
+        //设置仓库名称，供应商名称，退货类型名称1-正品，2-残品，地址信息回显
+        setResult(purchaseOutboundOrder);
 
         Example example = new Example(PurchaseOutboundDetail.class);
         example.createCriteria().andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
@@ -774,6 +663,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             }
             if (!CollectionUtils.isEmpty(canBackQuantity) && canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
                 purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
+                detail.setId(purchaseOutboundDetail.getId());
+                detail.setAuditQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(detail);
+                if (i < 1) {
+                    log.error("同步审核时可退数量失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
+                }
             }
         }
 
@@ -790,7 +686,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_OUTBOUND_ORDER)
     public Pagenation<PurchaseOutboundOrder> getAuditPagelist(PurchaseOutboundOrderForm form, Pagenation<PurchaseOutboundOrder> page, String channelCode) {
         AssertUtil.notBlank(channelCode, "未获得授权");
         Example example = setAuditSelectCondition(form, channelCode);
@@ -859,8 +754,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //运营性质(0:第三方仓库 1:自营仓库)
         //过滤掉“运营性质”为“自营仓库”的仓库
         warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
-        //已通知仓库
-        //warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
         AssertUtil.notEmpty(warehouseList, "无数据，请确认【仓储管理-仓库信息管理】中存在“启用”状态，并且货主仓库状态为“通知成功”的仓库！");
 
@@ -899,6 +792,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         return purchaseOrderService.findSuppliersByChannelCode(channelCode, "");
     }
 
+    /**
+     * 采购退货单审核参数校验
+     *
+     * @param form
+     */
     private void checkParam(AuditPurchaseOrderForm form) {
         AssertUtil.notNull(form, "采购退货单信息为空");
         AssertUtil.notNull(form.getId(), "采购退货单ID为空");
@@ -914,6 +812,177 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
     }
 
+    /**
+     * 出库通知添加字段
+     *
+     * @param purchaseOutboundOrder
+     */
+    private void setDetailColumn(PurchaseOutboundOrder purchaseOutboundOrder) {
+        Example example1 = new Example(PurchaseOutboundDetail.class);
+        Example.Criteria criteria1 = example1.createCriteria();
+        criteria1.andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
+        List<PurchaseOutboundDetail> list = purchaseOutboundDetailService.selectByExample(example1);
+        AssertUtil.notEmpty(list, String.format("出库通知失败，%s对应仓库商品信息为空", purchaseOutboundOrder.getPurchaseOutboundOrderCode()));
+        List<String> skuCodes = list.stream().map(PurchaseOutboundDetail::getSkuCode).collect(Collectors.toList());
+
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseInfoId", purchaseOutboundOrder.getWarehouseInfoId());
+        criteria.andIn("skuCode", skuCodes);
+        List<WarehouseItemInfo> itemInfos = warehouseItemInfoService.selectByExample(example);
+        AssertUtil.notEmpty(itemInfos, "出库通知失败，对应仓库商品信息异常");
+        for (PurchaseOutboundDetail detail : list) {
+            for (WarehouseItemInfo item : itemInfos) {
+                if (StringUtils.equals(detail.getSkuCode(), item.getSkuCode())) {
+                    PurchaseOutboundDetail outboundDetail = new PurchaseOutboundDetail();
+                    outboundDetail.setId(detail.getId());
+                    outboundDetail.setWarehouseItemId(item.getWarehouseItemId());
+                    int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(outboundDetail);
+                    if (i < 1) {
+                        throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, String.format("%s出库通知失败，添加仓库商品id失败", purchaseOutboundOrder.getPurchaseOutboundOrderCode()));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 实时查询商品可退数量
+     *
+     * @param purchaseOutboundOrder
+     * @param skus
+     * @return
+     */
+    private Map<String, Long> selectCanBackQuantity(PurchaseOutboundOrder purchaseOutboundOrder, List<String> skus) {
+
+        //查询退货仓库
+        Example warehouseItemExample = new Example(WarehouseItemInfo.class);
+        Example.Criteria warehouseItemCriteria = warehouseItemExample.createCriteria();
+        warehouseItemCriteria.andEqualTo("warehouseInfoId", purchaseOutboundOrder.getWarehouseInfoId());
+        warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
+        warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
+        AssertUtil.notEmpty(warehouseItemInfoList, "退货仓库商品异常");
+
+        List<WarehouseItemInfo> warehouseItemInfos = new ArrayList<>();
+        for (String skuCode : skus) {
+            for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfoList) {
+                if (StringUtils.equals(skuCode, warehouseItemInfo.getSkuCode())) {
+                    warehouseItemInfos.add(warehouseItemInfo);
+                    break;
+                }
+            }
+        }
+
+        Map<String, Long> inventoryInfo = new HashMap<>();
+        if (!CollectionUtils.isEmpty(warehouseItemInfos)) {
+            //京东接口查询库存信息
+            inventoryInfo = skuInventoryQuery(warehouseItemInfos, purchaseOutboundOrder.getReturnOrderType());
+        }
+
+        return inventoryInfo;
+    }
+
+    /**
+     * 更新采购退货单状态
+     *
+     * @param form
+     * @param aclUserAccreditInfo
+     * @param purchaseOutboundOrderCode
+     */
+    private void auditStatusUpdate(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo, String purchaseOutboundOrderCode) {
+        PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
+        purchaseOutboundOrder.setCreateOperator(aclUserAccreditInfo.getName());
+        purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
+        purchaseOutboundOrder.setAuditStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
+        purchaseOutboundOrder.setCommitAuditTime(Calendar.getInstance().getTime());
+        purchaseOutboundOrder.setAuditDescription(form.getAuditDescription());
+        Example example = new Example(PurchaseOutboundOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrderCode);
+        int i = purchaseOutboundOrderService.updateByExampleSelective(purchaseOutboundOrder, example);
+        if (i < 1) {
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "提交审核采购退货单失败");
+        }
+
+        //记录日志
+        logInfoService.recordLog(form, form.getId().toString(), aclUserAccreditInfo.getUserId(), AuditStatusEnum.COMMIT.getName(), null, ZeroToNineEnum.ZERO.getCode());
+    }
+
+    /**
+     * 设置仓库名称，供应商名称，退货类型名称1-正品，2-残品，地址信息回显
+     *
+     * @param purchaseOutboundOrder
+     */
+    private void setResult(PurchaseOutboundOrder purchaseOutboundOrder) {
+
+        //设置供应商名称
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getSupplierCode())) {
+            Example supplierExample = new Example(Supplier.class);
+            Example.Criteria criteria = supplierExample.createCriteria();
+            criteria.andEqualTo("supplierCode", purchaseOutboundOrder.getSupplierCode());
+            List<Supplier> suppliers = supplierService.selectByExample(supplierExample);
+            if (!CollectionUtils.isEmpty(suppliers)) {
+                purchaseOutboundOrder.setSupplierName(suppliers.get(0).getSupplierName());
+            }
+        }
+
+        //设置退货仓库名称
+        if (purchaseOutboundOrder.getWarehouseInfoId() != null) {
+            WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(purchaseOutboundOrder.getWarehouseInfoId());
+            if (warehouseInfo != null) {
+                purchaseOutboundOrder.setWarehouseName(warehouseInfo.getWarehouseName());
+            }
+        }
+
+        //设置退货类型名称1-正品，2-残品
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getReturnOrderType())) {
+            if (StringUtils.equals(purchaseOutboundOrder.getReturnOrderType(), ZeroToNineEnum.ONE.getCode())) {
+                purchaseOutboundOrder.setReturnOrderTypeName("正品");
+            } else if (StringUtils.equals(purchaseOutboundOrder.getReturnOrderType(), ZeroToNineEnum.TWO.getCode())) {
+                purchaseOutboundOrder.setReturnOrderTypeName("残品");
+            }
+        }
+
+        //退货省份
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getReceiverProvince())) {
+            Area area = new Area();
+            area.setCode(purchaseOutboundOrder.getReceiverProvince());
+            area = locationUtilService.selectOne(area);
+            if (area != null) {
+                purchaseOutboundOrder.setReceiverProvinceName(area.getProvince());
+            }
+        }
+
+        //退货城市
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getReceiverCity())) {
+            Area area = new Area();
+            area.setCode(purchaseOutboundOrder.getReceiverCity());
+            area = locationUtilService.selectOne(area);
+            if (area != null) {
+                purchaseOutboundOrder.setReceiverCityName(area.getCity());
+            }
+        }
+
+        //退货地区
+        if (StringUtils.isNotBlank(purchaseOutboundOrder.getReceiverArea())) {
+            Area area = new Area();
+            area.setCode(purchaseOutboundOrder.getReceiverArea());
+            area = locationUtilService.selectOne(area);
+            if (area != null) {
+                purchaseOutboundOrder.setReceiverAreaName(area.getDistrict());
+            }
+        }
+    }
+
+    /**
+     * 获取采购退货单审核列表 (查询条件设置)
+     *
+     * @param form
+     * @param channelCode
+     * @return
+     */
     private Example setAuditSelectCondition(PurchaseOutboundOrderForm form, String channelCode) {
         Example example = new Example(PurchaseOutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
@@ -950,7 +1019,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
 
         if (StringUtils.isNotBlank(form.getStartDate())) {
-            criteria.andGreaterThan("commitAuditTime", form.getCommitAuditTime());
+            criteria.andGreaterThan("commitAuditTime", form.getStartDate());
         }
         if (StringUtils.isNotBlank(form.getEndDate())) {
             SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.NORMAL_DATE_FORMAT);
@@ -964,7 +1033,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             }
             date = DateUtils.addDays(date, 1);
             form.setEndDate(sdf.format(date));
-            criteria.andLessThan("commitAuditTime", form.getCommitAuditTime());
+            criteria.andLessThan("commitAuditTime", form.getEndDate());
         }
         criteria.andEqualTo("isDeleted", "0");
         example.setOrderByClause("instr('1,2,3',`audit_status`) ASC");
@@ -982,13 +1051,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     private void initPurchaseOutboundNotice(PurchaseOutboundOrder purchaseOutboundOrder, PurchaseOutboundNotice notice, WarehouseInfo warehouseInfo) {
         String purchaseOutboundNoticeCode = serialUtilService.generateCode(LENGTH, SequenceEnum.TH_CKTZ_PREFIX.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         notice.setOutboundNoticeCode(purchaseOutboundNoticeCode);
+        notice.setChannelCode(purchaseOutboundOrder.getChannelCode());
         notice.setPurchaseOutboundOrderCode(purchaseOutboundOrder.getPurchaseOutboundOrderCode());
         notice.setWarehouseInfoId(purchaseOutboundOrder.getWarehouseInfoId());
         notice.setWarehouseCode(warehouseInfo.getCode());
         //待通知收货
         notice.setStatus(PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode());
-        // 默认为未完成的状态
-        notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
+
         notice.setSupplierId(purchaseOutboundOrder.getSupplierId());
         notice.setSupplierCode(purchaseOutboundOrder.getSupplierCode());
 
@@ -1090,12 +1159,26 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
     }
 
+    /**
+     * 校验参数
+     *
+     * @param form
+     */
     private void validateParam(PurchaseOutboundItemForm form) {
         AssertUtil.notBlank(form.getSupplierCode(), "供应商不能为空");
         AssertUtil.notBlank(form.getWarehouseInfoId(), "退货仓库不能为空");
         AssertUtil.notBlank(form.getReturnOrderType(), "退货类型不能为空");
     }
 
+    /**
+     * 获取采购退货单商品详情
+     *
+     * @param form       表单数据
+     * @param skus       过滤skuCode
+     * @param page
+     * @param pagenation
+     * @return
+     */
     private List<PurchaseOutboundDetail> getDetails(PurchaseOutboundItemForm form, String skus, Pagenation<PurchaseOutboundDetail> page, Pagenation<Skus> pagenation) {
 
         //是否条件查询的标记
@@ -1112,13 +1195,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
          * skuCode已去重
          */
         List<WarehouseNoticeDetails> warehouseNoticeDetails = getSkuCodesBySupplier(form, flag);
-            if(CollectionUtils.isEmpty(warehouseNoticeDetails)){
-                if (!flag) {
-                    throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                            String.format("无数据，%s供应商对应入库单详情为空", form.getSupplierCode()));
-                }
-                return new ArrayList<>();
+        if (CollectionUtils.isEmpty(warehouseNoticeDetails)) {
+            if (!flag) {
+                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
+                        String.format("无数据，%s供应商对应入库单详情为空", form.getSupplierCode()));
             }
+            return new ArrayList<>();
+        }
         //skuCode去重
         Set<String> skuCodes = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getSkuCode).collect(Collectors.toSet());
         //获取brandIds
@@ -1172,9 +1255,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             result = skusService.selectByExample(skusExample);
         }
         if (CollectionUtils.isEmpty(result)) {
-            if (!flag) {
-                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
-            }
             return new ArrayList<>();
         }
 
@@ -1182,36 +1262,15 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     /**
-     * 查询入库单供应商名称且入库状态为全部入库、部分入库、入库异常”的采购单中的SKU
-     * @param form
-     * @param flag
+     * 获取采购退货单商品详情 (分页后数据回显填充)
+     *
+     * @param result                分页sku数据
+     * @param warehouseItemInfoList 仓库商品list
+     * @param returnOrderType       退货类型1-正品，2-残品
+     * @param brandIds              品牌ids
+     * @param categoryIds           分类ids
      * @return
      */
-    private List<WarehouseNoticeDetails> getSkuCodesBySupplier(PurchaseOutboundItemForm form, boolean flag) {
-        Example example = new Example(WarehouseNotice.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("supplierCode", form.getSupplierCode());
-        criteria.andIn("status", Arrays.asList(WarehouseNoticeStatusEnum.ALL_GOODS.getCode(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
-        List<WarehouseNotice> notices = warehouseNoticeService.selectByExample(example);
-        List<String> warehouseNoticeCodes = notices.stream().map(WarehouseNotice::getWarehouseNoticeCode).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(warehouseNoticeCodes)){
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                    String.format("无数据，%s供应商对应入库单为空", form.getSupplierCode()));
-        }
-
-
-        Example details = new Example(WarehouseNoticeDetails.class);
-        Example.Criteria detailsCriteria = details.createCriteria();
-        detailsCriteria.andIn("warehouseNoticeCode", warehouseNoticeCodes);
-        //查询品牌ID 过滤条件
-        if(StringUtils.isNotBlank(form.getBrandId())){
-            detailsCriteria.andEqualTo("brandId", form.getBrandId());
-        }
-
-        return warehouseNoticeDetailsService.selectByExample(details);
-
-    }
-
     private List<PurchaseOutboundDetail> setDetails(List<Skus> result, List<WarehouseItemInfo> warehouseItemInfoList, String returnOrderType, Set<Long> brandIds, Set<Long> categoryIds) {
         List<WarehouseItemInfo> warehouseItemInfos = new ArrayList<>();
         for (Skus sku : result) {
@@ -1251,7 +1310,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         itemCriteria.andIn("brandId", brandIds);
         itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         List<Items> itemsList = itemsService.selectByExample(itemExample);
-
+        AssertUtil.notEmpty(itemsList, String.format("根据品牌ID[%s]，分类ID[%s]批量查询供应商相关商品为空",
+                CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), CommonUtil.converCollectionToString(new ArrayList<>(categoryIds))));
         for (Skus sku : result) {
             PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
             detail.setSpuCode(sku.getSpuCode());
@@ -1298,10 +1358,41 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     }
 
     /**
+     * 查询入库单供应商名称且入库状态为全部入库、部分入库、入库异常”的采购单中的SKU
+     *
+     * @param form
+     * @param flag
+     * @return
+     */
+    private List<WarehouseNoticeDetails> getSkuCodesBySupplier(PurchaseOutboundItemForm form, boolean flag) {
+        Example example = new Example(WarehouseNotice.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("supplierCode", form.getSupplierCode());
+        criteria.andIn("status", Arrays.asList(WarehouseNoticeStatusEnum.ALL_GOODS.getCode(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode(), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+        List<WarehouseNotice> notices = warehouseNoticeService.selectByExample(example);
+        List<String> warehouseNoticeCodes = notices.stream().map(WarehouseNotice::getWarehouseNoticeCode).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(warehouseNoticeCodes)) {
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
+                    String.format("无数据，%s供应商对应入库单为空", form.getSupplierCode()));
+        }
+
+        Example details = new Example(WarehouseNoticeDetails.class);
+        Example.Criteria detailsCriteria = details.createCriteria();
+        detailsCriteria.andIn("warehouseNoticeCode", warehouseNoticeCodes);
+        //查询品牌ID 过滤条件
+        if (StringUtils.isNotBlank(form.getBrandId())) {
+            detailsCriteria.andEqualTo("brandId", form.getBrandId());
+        }
+
+        return warehouseNoticeDetailsService.selectByExample(details);
+
+    }
+
+    /**
      * 京东接口查询库存信息
      *
      * @param warehouseItemInfos
-     * @param returnOrderType
+     * @param returnOrderType    退货类型 1.正品，2.残品
      * @return
      */
     private Map<String, Long> skuInventoryQuery(List<WarehouseItemInfo> warehouseItemInfos, String returnOrderType) {
@@ -1333,11 +1424,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
                 Map<String, Long> retMap = new HashMap<>();
                 for (WarehouseItemInfo itemInfo : warehouseItemInfos) {
-                    retTempMap.forEach((k, v) -> {
-                        if (StringUtils.equals(k, itemInfo.getSkuCode())) {
-                            retMap.put(itemInfo.getSkuCode(), retTempMap.get(itemInfo.getWarehouseItemId()));
-                        }
-                    });
+                    if (retTempMap.get(itemInfo.getWarehouseItemId()) != null) {
+                        retMap.put(itemInfo.getSkuCode(), retTempMap.get(itemInfo.getWarehouseItemId()));
+                    }
                 }
                 return retMap;
             } catch (Exception e) {
@@ -1350,6 +1439,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
     }
 
+    /**
+     * sql条件拼接
+     *
+     * @param barCodes
+     * @return
+     */
     private String setConditionSql(List<String> barCodes) {
         StringBuilder sql = new StringBuilder("(");
         for (String bc : barCodes) {
@@ -1359,7 +1454,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         return substring + ")";
     }
 
-
+    /**
+     * 校验仓库是否停用
+     *
+     * @param warehouseInfoId
+     */
     private void checkWarehouse(Long warehouseInfoId) {
         if (warehouseInfoId != null) {
             WarehouseInfo warehouse = new WarehouseInfo();
@@ -1373,6 +1472,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
     }
 
+    /**
+     * 采购退货单保存或提交审核
+     * 校验请求参数
+     *
+     * @param form
+     * @param aclUserAccreditInfo
+     */
     private void validationRequestParam(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(form, "采购退货单数据不能为空");
         AssertUtil.notNull(aclUserAccreditInfo, "用户信息异常");
@@ -1388,7 +1494,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_PARAM_VALIDATION_EXCEPTION, "采购退货单退货商品含税单价不能小于0");
                 }
             }
-
         }
     }
 
@@ -1413,20 +1518,26 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 }
             }
         }
+
         form.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
         int count = purchaseOutboundOrderService.insert(form);
         if (count < 1) {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "保存采购退货单失败");
         }
+
+        //插入采购退货单详情
         insertPurchaseOutboundDetail(form);
 
         //记录操作日志
         String userId = aclUserAccreditInfo.getUserId();
-        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.HOLD.getCode(), form.getStatus())) {
-            logInfoService.recordLog(form, form.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
-        }
+        logInfoService.recordLog(form, form.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
     }
 
+    /**
+     * 插入采购退货单详情
+     *
+     * @param form
+     */
     private void insertPurchaseOutboundDetail(PurchaseOutboundOrder form) {
         List<PurchaseOutboundDetail> purchaseOutboundDetailList = form.getPurchaseOutboundDetailList();
         if (!CollectionUtils.isEmpty(purchaseOutboundDetailList)) {
@@ -1473,16 +1584,15 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notBlank(form.getPickType(), "提货方式不能为空");
         AssertUtil.notBlank(form.getReceiver(), "退货收货人不能为空");
         AssertUtil.notBlank(form.getReceiverNumber(), "收货人手机号不能为空");
-        AssertUtil.notBlank(form.getReturnPolicy(), "退货说明不能为空");
-        AssertUtil.notEmpty(form.getPurchaseOutboundDetailList(), "退货商品不能为空");
-
-        //当提货方式为“物流配送”时必填
-        if (StringUtils.equals(PickTypeEnum.OTHER_DELIVERY.getCode(), form.getPickType())) {
+        //当提货方式为“物流配送,JD”时必填
+        if (StringUtils.equals(PickTypeEnum.OTHER_DELIVERY.getCode(), form.getPickType()) || StringUtils.equals(PickTypeEnum.JD_DELIVERY.getCode(), form.getPickType())) {
             AssertUtil.notBlank(form.getReceiverProvince(), "退货省份不能为空");
             AssertUtil.notBlank(form.getReceiverCity(), "退货城市不能为空");
             AssertUtil.notBlank(form.getReceiverArea(), "退货地区不能为空");
             AssertUtil.notBlank(form.getReceiverAddress(), "退货详细地址不能为空");
         }
+        AssertUtil.notBlank(form.getReturnPolicy(), "退货说明不能为空");
+        AssertUtil.notEmpty(form.getPurchaseOutboundDetailList(), "退货商品不能为空");
 
         for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
 
@@ -1507,6 +1617,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
     }
 
+    /**
+     * 设置供应商，仓库名称
+     *
+     * @param pagination
+     */
     private void setSupplierName(Pagenation<PurchaseOutboundOrder> pagination) {
         pagination.getResult().forEach(purchaseOutboundOrder -> {
             if (StringUtils.isNotBlank(purchaseOutboundOrder.getSupplierCode())) {
@@ -1527,6 +1642,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         });
     }
 
+    /**
+     * 查询条件设置
+     *
+     * @param form
+     * @param channelCode
+     * @return
+     */
     private Example setSelectCondition(PurchaseOutboundOrderForm form, String channelCode) {
 
         Example example = new Example(PurchaseOutboundOrder.class);

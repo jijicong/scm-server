@@ -242,13 +242,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     @FormParam("auditOperator")
     private String auditOperator;
 
-
-    @ApiModelProperty("供应商名称")
-    @Transient
-    @FormParam("supplierName")
-    @Column(name = "supplier_name")
-    private String supplierName;
-
     /**
      * 提交审核时间
      */
@@ -265,12 +258,33 @@ public class PurchaseOutboundOrder extends BaseDO {
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateAuditTime;
 
-
-
     @ApiModelProperty("采购退货单退货商品详情")
     @Transient
     @FormParam("purchaseOutboundDetailList")
     private List<PurchaseOutboundDetail> purchaseOutboundDetailList;
+
+    @ApiModelProperty("供应商名称")
+    @Transient
+    private String supplierName;
+
+    @ApiModelProperty("退货类型名称")
+    @Transient
+    private String returnOrderTypeName;
+
+    /**
+     * 退货省份名称
+     */
+    @ApiModelProperty("退货省份名称")
+    @Transient
+    private String receiverProvinceName;
+
+    @ApiModelProperty("退货城市名称")
+    @Transient
+    private String receiverCityName;
+
+    @ApiModelProperty("退货地区名称")
+    @Transient
+    private String receiverAreaName;
 
 	public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
         return purchaseOutboundDetailList;
@@ -799,6 +813,38 @@ public class PurchaseOutboundOrder extends BaseDO {
 
     public void setUpdateAuditTime(Date updateAuditTime) {
         this.updateAuditTime = updateAuditTime;
+    }
+
+    public String getReturnOrderTypeName() {
+        return returnOrderTypeName;
+    }
+
+    public void setReturnOrderTypeName(String returnOrderTypeName) {
+        this.returnOrderTypeName = returnOrderTypeName;
+    }
+
+    public String getReceiverProvinceName() {
+        return receiverProvinceName;
+    }
+
+    public void setReceiverProvinceName(String receiverProvinceName) {
+        this.receiverProvinceName = receiverProvinceName;
+    }
+
+    public String getReceiverCityName() {
+        return receiverCityName;
+    }
+
+    public void setReceiverCityName(String receiverCityName) {
+        this.receiverCityName = receiverCityName;
+    }
+
+    public String getReceiverAreaName() {
+        return receiverAreaName;
+    }
+
+    public void setReceiverAreaName(String receiverAreaName) {
+        this.receiverAreaName = receiverAreaName;
     }
 
 ///**

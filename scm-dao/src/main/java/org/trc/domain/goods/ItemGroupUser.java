@@ -54,10 +54,6 @@ public class ItemGroupUser implements Serializable{
     @ApiModelProperty("是否组长，0组员，1组长")
     private String isLeader;
 
-    @Transient
-    @FormParam("status")
-    @ApiModelProperty("商品组员操作：0无操作，1新增,2更新,3：删除)")
-    private Integer status;
 
     //公共字段
     @FormParam("isDeleted")
