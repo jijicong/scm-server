@@ -1155,9 +1155,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                 if (!flag) {
                     throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,
                             "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
+                } else {
+                	return new ArrayList<AllocateSkuDetail>();
                 }
             }
-
+            
 			Example tmpExample = new Example(WarehouseItemInfo.class);
 			Example.Criteria tmpCriteria = tmpExample.createCriteria();
 
