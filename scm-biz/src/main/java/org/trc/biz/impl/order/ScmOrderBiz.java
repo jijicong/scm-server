@@ -35,7 +35,10 @@ import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
-import org.trc.domain.goods.*;
+import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.goods.Items;
+import org.trc.domain.goods.SkuStock;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
@@ -2000,7 +2003,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        orderCheck(orderObj);
+        //orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -2040,7 +2043,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
         }
         //校验商品是否从供应链新增
-        //isScmItems(tmpOrderItemList);
+        isScmItems(tmpOrderItemList);
         //校验失败的商品
         List<ExceptionOrderItem> exceptionOrderItemList = new ArrayList<>();
         //设置门店订单状态
@@ -4572,7 +4575,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 校验是否供应链商品
      * @param orderItemList
      */
-    private void isScmItems(List<OrderItem> orderItemList){
+    /*private void isScmItems(List<OrderItem> orderItemList){
         Set<String> skuCodes = new HashSet<String>();
         for(OrderItem orderItem: orderItemList){
             skuCodes.add(orderItem.getSkuCode());
@@ -4602,6 +4605,62 @@ public class ScmOrderBiz implements IScmOrderBiz {
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
+    }*/
+
+    private void isScmItems(List<OrderItem> orderItemList){
+        Set<String> selfSkuCodes = new HashSet<>();
+        Set<String> supplierSkuCodes = new HashSet<>();
+        List<String> errorSkusList = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            if (orderItem.getSkuCode().startsWith(SP0)) {
+                selfSkuCodes.add(orderItem.getSkuCode());
+            }else if (orderItem.getSkuCode().startsWith(SP1)) {
+                supplierSkuCodes.add(orderItem.getSkuCode());
+            }else{
+                errorSkusList.add(orderItem.getSkuCode());
+            }
+        }
+
+        if(selfSkuCodes.size() > 0){
+            //查询自采商品
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("skuCode", selfSkuCodes);
+            List<Skus> skusList = skusService.selectByExample(example);
+            for(String _skuCode: selfSkuCodes){
+                boolean flag = false;
+                for(Skus skus: skusList){
+                    if(StringUtils.equals(_skuCode, skus.getSkuCode())){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    errorSkusList.add(_skuCode);
+                }
+            }
+        }
+
+        if(supplierSkuCodes.size() > 0){
+            //查询代发商品
+            Example example = new Example(ExternalItemSku.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("skuCode", supplierSkuCodes);
+            List<ExternalItemSku> skusList = externalItemSkuService.selectByExample(example);
+            for(String _skuCode: supplierSkuCodes){
+                boolean flag = false;
+                for(ExternalItemSku skus: skusList){
+                    if(StringUtils.equals(_skuCode, skus.getSkuCode())){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    errorSkusList.add(_skuCode);
+                }
+            }
+        }
+        AssertUtil.isTrue(errorSkusList.size() == 0, String.format("skuCode为[%s]的订单商品在供应链系统无法识别", CommonUtil.converCollectionToString(errorSkusList)));
     }
 
 
