@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUser;
@@ -340,6 +341,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         List<PurchaseGroupUser> valueList = JSONArray.parseArray(purchaseGroupUser.getGridValue(), PurchaseGroupUser.class);
         AssertUtil.notNull(valueList, "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
         String userId= aclUserAccreditInfo.getUserId();
+        String code = purchaseGroupUser.getCode();
         String channelCode = aclUserAccreditInfo.getChannelCode();
         for (PurchaseGroupUser user : valueList) {
             AssertUtil.notNull(user.getName(), "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
@@ -364,13 +366,16 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 purchaseGroupUserService.insert(user);
             }
             if (user.getStatus().equals(RecordStatusEnum.DELETE.getCode())) {
-                PurchaseGroupUserRelation purchaseGroupUserRelation = new PurchaseGroupUserRelation();
-                purchaseGroupUserRelation.setUserId(user.getId().toString());
-                purchaseGroupUserRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                purchaseGroupUserRelation.setIsValid(ZeroToNineEnum.ONE.getCode());
+                Example example = new Example(PurchaseGroupUserRelation.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("userId", user.getId().toString());
+                criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                criteria.andNotIn("purchaseGroupCode", new ArrayList<String>(){{add(code);}});
                 List<PurchaseGroupUserRelation> purchaseGroupUserRelationList =
-                        purchaseGroupuUserRelationService.select(purchaseGroupUserRelation);
-                if(purchaseGroupUserRelationList.size() > 1){
+                        purchaseGroupuUserRelationService.selectByExample(example);
+
+                if(purchaseGroupUserRelationList.size() > 0){
                     String message = "";
                     for(PurchaseGroupUserRelation relation : purchaseGroupUserRelationList){
                         if(StringUtils.isEmpty(message)){
