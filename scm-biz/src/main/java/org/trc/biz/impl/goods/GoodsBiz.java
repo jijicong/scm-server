@@ -2161,8 +2161,9 @@ public class GoodsBiz implements IGoodsBiz {
         tempAcl.setUserId(userId);
         tempAcl=aclUserAccreditInfoService.selectOne(tempAcl);
 
+
         Example example=new Example(ItemGroupUser.class);
-        example.createCriteria().andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode()).andEqualTo("createOperator",tempAcl.getName());
+        example.createCriteria().andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode()).andEqualTo("phoneNumber",tempAcl.getPhone());
         List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
         if (!loginPhone.equals(tempAcl.getPhone())){
             if (list.size()==0){
@@ -2172,58 +2173,47 @@ public class GoodsBiz implements IGoodsBiz {
                     String msg="该条数据不归属任何商品组，当前用户不是创建者本人，无此操作权限";
                     throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
                 }
-            }
-            List<String> phoneNumberList=list.stream().map(e->e.getPhoneNumber()).collect(Collectors.toList());
-            if (!phoneNumberList.contains(loginPhone)){
-                if (pageFlag){
-                    return ZeroToNineEnum.ZERO.getCode();
-                }else {
-                    String msg="当前用户不在该条数据所属的某个商品组内，无此操作权限";
-                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
-                }
-            }else {//登录人和创建人在同一组，可能存在多个这样的组
-
+            }else {//该条数据归属某个或多个商品组
                 for (ItemGroupUser itemGroupUser : list){
-                    if (StringUtils.equals(loginPhone,itemGroupUser.getPhoneNumber())){
-
-                        String itemGroupCode = itemGroupUser.getItemGroupCode();
-                        Example exp=new Example(ItemGroupUser.class);
-                        exp.createCriteria().andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode()).andEqualTo("phoneNumber",loginPhone).andEqualTo("itemGroupCode",itemGroupCode);
-                        List<ItemGroupUser> userList = itemGroupUserService.selectByExample(exp);
-                        if (userList.size()==0){//可能不存在这种可能性
-                            if (pageFlag){
-                                return ZeroToNineEnum.ZERO.getCode();
-                            }else {
-                                String msg = String.format("当前用户[%s]无此操作权限", loginPhone);
-                                throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
-                            }
-                        }else {
-                            String isLeader = userList.get(0).getIsLeader();
-                            String orginValid = userList.get(0).getIsValid();
-                            if (StringUtils.equals(isLeader,"1")){
-                                if (StringUtils.equals(orginValid,"0")){
+                    String itemGroupCode = itemGroupUser.getItemGroupCode();
+                    Example exampleTemp=new Example(ItemGroupUser.class);
+                    exampleTemp.createCriteria().andEqualTo("channelCode", itemGroupUser.getChannelCode()).andEqualTo("itemGroupCode", itemGroupCode);
+                    List<ItemGroupUser> list1 = itemGroupUserService.selectByExample(exampleTemp);
+                    List<String> phoneNumberList=list1.stream().map(e->e.getPhoneNumber()).collect(Collectors.toList());
+                    if(!phoneNumberList.contains(loginPhone)){
+                        continue;
+                    }else {
+                        for (ItemGroupUser groupUser : list1) {
+                            if (StringUtils.equals(groupUser.getPhoneNumber(),loginPhone)){
+                                String isLeader = groupUser.getIsLeader();
+                                String isValid = groupUser.getIsValid();
+                                if (StringUtils.equals(isLeader,ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(isValid,ZeroToNineEnum.ONE.getCode())){
+                                    return ZeroToNineEnum.ONE.getCode();
+                                }else {
                                     if (pageFlag){
                                         return ZeroToNineEnum.ZERO.getCode();
                                     }else {
-                                        String msg = String.format("当前手机号为[%s]的用户所在组被停用了，用户无此操作权限", loginPhone);
-                                        throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
+                                        String msg=String.format("当前手机号为[%s]的用户不是启用组的组长，用户无此操作权限",loginPhone);
+                                        throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
                                     }
                                 }
-                            }else {
-                                if (pageFlag){
-                                    return ZeroToNineEnum.ZERO.getCode();
-                                }else{
-                                    String msg=String.format("当前手机号为[%s]的用户不是创建人的组长，用户无此操作权限",loginPhone);
-                                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
-                                }
-
                             }
                         }
+
                     }
+
+                }
+                if (pageFlag){
+                    return ZeroToNineEnum.ZERO.getCode();
+                }else {
+                    String msg="当前数据不归属任何商品组，当前用户不是创建者本人，无此操作权限";
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
                 }
             }
+
+        }else {
+                return ZeroToNineEnum.ONE.getCode();
         }
-        return ZeroToNineEnum.ONE.getCode();
     }
 
     /**

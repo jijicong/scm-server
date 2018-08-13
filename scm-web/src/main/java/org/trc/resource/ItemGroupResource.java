@@ -16,7 +16,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.DistributeLockEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ItemGroupException;
-import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.goods.ItemGroupForm;
 import org.trc.form.goods.ItemGroupFormEdit;
 import org.trc.form.goods.ItemGroupQuery;
@@ -40,7 +39,7 @@ import java.util.List;
 @Path(SupplyConstants.ItemGroupConstants.ROOT)
 public class ItemGroupResource {
 
-    private Logger logger = LoggerFactory.getLogger(WarehouseNoticeResource.class);
+    private Logger logger = LoggerFactory.getLogger(ItemGroupResource.class);
     @Resource
     private IitemGroupBiz itemGroupBiz;
     @Autowired
