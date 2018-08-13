@@ -84,6 +84,19 @@ public class OrderResource {
     }
 
     /**
+     * 订单导出
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.Order.EXPORT_ORDER)
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/octet-stream")
+    public Response exportOrder(@BeanParam ShopOrderForm queryModel,@Context ContainerRequestContext requestContext) throws Exception {
+        return scmOrderBiz.exportOrder( queryModel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+
+    /**
      * 供应商订单导出
      * @return
      * @throws Exception
@@ -92,9 +105,10 @@ public class OrderResource {
     @Path(SupplyConstants.Order.EXPORT_SUPPLIER_ORDER)
     @Consumes("text/plain;charset=utf-8")
     @Produces("application/octet-stream")
-    public Response exportBalanceDetail(@BeanParam WarehouseOrderForm queryModel,@Context ContainerRequestContext requestContext) throws Exception {
+    public Response exportSupplierOrder(@BeanParam WarehouseOrderForm queryModel,@Context ContainerRequestContext requestContext) throws Exception {
         return scmOrderBiz.exportSupplierOrder( queryModel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
+
     @PUT
     @Path(SupplyConstants.Order.ORDER_CANCEL)
     @Produces(MediaType.APPLICATION_JSON)

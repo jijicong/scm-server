@@ -66,6 +66,11 @@ public class SupplierBiz implements ISupplierBiz {
     private Logger log = LoggerFactory.getLogger(SupplierBiz.class);
     //停用供应商自动拒绝提交审核的申请原因
     private static final String STOP_SUPPLIER_REJECT_APPLY_REASON = "供应商停用，系统自动驳回";
+    //业务线被取消可见
+    private static final String SUPPLIER_CHANNEL_CANCEL_RELATION = "业务线被取消可见";
+    //业务线被取消可见，系统自动驳回
+    private static final String SUPPLIER_CHANNEL_CANCEL_RELATION_AUTO_REJECT = "业务线被取消可见，系统自动驳回";
+
 
     @Autowired
     private ISupplierService supplierService;
@@ -99,6 +104,8 @@ public class SupplierBiz implements ISupplierBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private IPageNationService pageNationService;
+    @Autowired
+    private ISupplierApplyAuditService supplierApplyAuditService;
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
@@ -477,7 +484,7 @@ public class SupplierBiz implements ISupplierBiz {
         //更新供应商渠道关系
         String channels = supplier.getChannel();
         List<SupplierChannelRelation> supplierChannelRelations = getSupplierChannelRelations(channels, supplier);
-        updateSupplierChannelRelation(supplierChannelRelations, supplier);
+        List<SupplierChannelRelation> delRelations = updateSupplierChannelRelation(supplierChannelRelations, supplier);
         //禁用供应商时将申请该供应商的审批状态为提交审批的供应商申请记录状态改为驳回
         if (StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())) {
             Supplier _supplier = new Supplier();
@@ -486,11 +493,54 @@ public class SupplierBiz implements ISupplierBiz {
             AssertUtil.notNull(_supplier, String.format("根据供应商编码[%s]查询供应商信息为空", supplier.getSupplierCode()));
             rejectSupplierApply(supplier.getId(), aclUserAccreditInfo);
         }
+        //删除可见业务线操作
+        deleteChannelRelationOperation(supplier.getSupplierCode(), delRelations, aclUserAccreditInfo);
         //记录操作日志
         String remark = null;
         if (isValidFlag)
             remark = String.format("状态更新为%s", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName());
         logInfoService.recordLog(supplier, supplier.getId().toString(),aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), remark, null);
+    }
+
+    /**
+     * 删除可见业务线操作
+     * @param delRelations
+     */
+    private void deleteChannelRelationOperation(String supplierCode, List<SupplierChannelRelation> delRelations, AclUserAccreditInfo aclUserAccreditInfo){
+        if(CollectionUtils.isEmpty(delRelations)){
+            return;
+        }
+        List<Long> delRelationChannelIds = new ArrayList<>();
+        for(SupplierChannelRelation r: delRelations){
+            delRelationChannelIds.add(r.getChannelId());
+        }
+        Example example = new Example(SupplierApply.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("supplierCode", supplierCode);
+        criteria.andIn("channelId", delRelationChannelIds);
+        List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
+        for(SupplierApply apply: supplierApplyList){
+            logInfoService.recordLog(apply,apply.getId().toString(),aclUserAccreditInfo.getUserId(),
+                    "",SUPPLIER_CHANNEL_CANCEL_RELATION,ZeroToNineEnum.ZERO.getCode());
+        }
+        Example example2 = new Example(SupplierApplyAudit.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("supplierCode", supplierCode);
+        criteria2.andIn("channelId", delRelationChannelIds);
+        example2.selectProperties("id","applyCode","supplierId","supplierCode","channelId","channelCode","status","auditOpinion","description","createOperator","createTime","updateTime","isDeleted");
+        List<SupplierApplyAudit> supplierApplyAuditList = supplierApplyAuditService.selectByExample(example2);
+        for(SupplierApplyAudit applyAudit: supplierApplyAuditList){
+            if(AuditStatusEnum.COMMIT.getCode().intValue() == applyAudit.getStatus().intValue()){
+                applyAudit.setStatus(AuditStatusEnum.REJECT.getCode());//审核驳回
+                applyAudit.setAuditOpinion(SUPPLIER_CHANNEL_CANCEL_RELATION_AUTO_REJECT);
+                supplierApplyAuditService.updateByPrimaryKeySelective(applyAudit);
+                //审核日志
+                SupplierApply supplierApply=new SupplierApply();
+                supplierApply.setCreateTime(applyAudit.getUpdateTime());
+                logInfoService.recordLog(supplierApply,applyAudit.getId().toString(),aclUserAccreditInfo.getUserId(),
+                        AuditStatusEnum.REJECT.getName(),SUPPLIER_CHANNEL_CANCEL_RELATION_AUTO_REJECT,null);
+            }
+        }
     }
 
     /**
@@ -791,7 +841,7 @@ public class SupplierBiz implements ISupplierBiz {
      * @param supplierChannelRelations
      * @return
      */
-    private void updateSupplierChannelRelation(List<SupplierChannelRelation> supplierChannelRelations, Supplier supplier) {
+    private List<SupplierChannelRelation> updateSupplierChannelRelation(List<SupplierChannelRelation> supplierChannelRelations, Supplier supplier) {
         //查询当前供应商渠道关系
         SupplierChannelRelation relation = new SupplierChannelRelation();
         relation.setSupplierId(supplier.getId());
@@ -821,7 +871,7 @@ public class SupplierBiz implements ISupplierBiz {
             }
         }
         //删除关系列表
-        List<Long> delIds = new ArrayList<Long>();
+        List<SupplierChannelRelation> deleteRelation = new ArrayList<>();
         for (SupplierChannelRelation r : currentRelation) {
             Boolean flag = false;
             for (SupplierChannelRelation r2 : supplierChannelRelations) {
@@ -831,7 +881,7 @@ public class SupplierBiz implements ISupplierBiz {
             }
             if (!flag) {
                 r.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-                delIds.add(r.getId());
+                deleteRelation.add(r);
             }
         }
         int count = 0;
@@ -843,16 +893,17 @@ public class SupplierBiz implements ISupplierBiz {
                 throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
             }
         }
-        if (delIds.size() > 0) {
-            for (Long id : delIds) {
-                count = supplierChannelRelationService.deleteByPrimaryKey(id);
+        if (deleteRelation.size() > 0) {
+            for (SupplierChannelRelation r : deleteRelation) {
+                count = supplierChannelRelationService.deleteByPrimaryKey(r.getId());
                 if (count == 0) {
-                    String msg = CommonUtil.joinStr("根据供应商渠道关系ID[%s]删除供应商渠道关系", id.toString(), "失败").toString();
+                    String msg = CommonUtil.joinStr("根据供应商渠道关系ID[%s]删除供应商渠道关系", r.getId().toString(), "失败").toString();
                     log.error(msg);
                     throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
                 }
             }
         }
+        return deleteRelation;
     }
 
     /**
