@@ -1420,7 +1420,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             log.info("----采购退货，京东查询库存结果:{}", JSON.toJSONString(resList));
             try {
                 Map<String, Long> retTempMap = resList.stream()
-                        .collect(Collectors.toMap(ScmInventoryQueryResponse::getItemCode, ScmInventoryQueryResponse::getQuantity));
+                        .collect(Collectors.toMap(ScmInventoryQueryResponse::getItemId, ScmInventoryQueryResponse::getQuantity));
 
                 Map<String, Long> retMap = new HashMap<>();
                 for (WarehouseItemInfo itemInfo : warehouseItemInfos) {

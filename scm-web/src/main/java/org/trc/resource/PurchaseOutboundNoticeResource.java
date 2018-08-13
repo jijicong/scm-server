@@ -7,6 +7,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -123,7 +124,7 @@ public class PurchaseOutboundNoticeResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "取消出库")
     public Response cancel(@ApiParam(value = "退货出库通知单号") @PathParam("code") String code, 
-    		@ApiParam(value = "取消原因") @FormParam("cancelReson") String cancelReson,
+    		@ApiParam(value = "取消原因") @QueryParam("cancelReson") String cancelReson,
     		@Context ContainerRequestContext requestContext) {
         String identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_OUTBOUND_NOTICE.getCode() + code, 0, 10000);
     	if (StringUtils.isBlank(identifier)) {

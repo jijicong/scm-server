@@ -1408,6 +1408,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         updatePurchaseOrderAudit.setId(purchaseOrderAudit.getId());
         //待审核的状态
         updatePurchaseOrderAudit.setStatus(ZeroToNineEnum.ONE.getCode());
+        updatePurchaseOrderAudit.setAuditOpinion("");
         updatePurchaseOrderAudit.setUpdateTime(Calendar.getInstance().getTime());
         int count = iPurchaseOrderAuditService.updateByPrimaryKeySelective(updatePurchaseOrderAudit);
         if (count == 0) {
@@ -1618,7 +1619,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setSkuCode(purchaseDetail.getSkuCode());
             details.setSkuName(purchaseDetail.getSkuName());
             //采购商品税率
-            //details.setTaxRate(purchaseDetail.getTaxRate());
+            details.setTaxRate(purchaseDetail.getTaxRate());
             //details.setActualStorageQuantity(0L);//初始化0
             details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
             //details.setCreateTime(Calendar.getInstance().getTime());
