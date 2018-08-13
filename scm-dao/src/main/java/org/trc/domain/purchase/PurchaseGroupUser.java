@@ -32,6 +32,9 @@ public class PurchaseGroupUser extends BaseDO {
     private String gridValue;
     @Transient
     private Integer status;
+    @Transient
+    @FormParam("code")
+    private String code;
 
     public Long getId() {
         return id;
@@ -79,5 +82,13 @@ public class PurchaseGroupUser extends BaseDO {
 
     public void setChannelCode(String channelCode) {
         this.channelCode = channelCode;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }
