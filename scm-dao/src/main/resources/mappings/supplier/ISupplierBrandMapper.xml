@@ -62,7 +62,8 @@
 
     <select id="selectSupplierBrandNames" resultMap="supplierBrandExtMap">
         SELECT
-        distinct(b. NAME) AS brand_name
+        distinct(b. NAME) AS brand_name,
+        b.id as brand_id
         FROM
         supplier_brand sb
         LEFT JOIN
