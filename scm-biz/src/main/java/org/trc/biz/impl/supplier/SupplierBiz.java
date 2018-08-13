@@ -355,6 +355,9 @@ public class SupplierBiz implements ISupplierBiz {
             if(!StringUtils.isBlank(supplierForm.getSupplierName())) {
                 criteria.andLike("supplierName", "%" + supplierForm.getSupplierName() + "%");
             }
+            if (StringUtils.isNotBlank(supplierForm.getSupplierKindCode())) {
+                criteria.andEqualTo("supplierKindCode", supplierForm.getSupplierKindCode());
+            }
             return supplierService.selectByExample(example);
         }
     }
