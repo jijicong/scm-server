@@ -196,7 +196,7 @@ public class PurchaseOutboundOrderResource {
      * 采购退货单出库通知
      */
     @PUT
-    @Path("warahouseAdvice/{id}")
+    @Path("/warahouseAdvice/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("采购退货单出库通知")
     public Response saveWarahouseAdvice(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id, @Context ContainerRequestContext requestContext) {
