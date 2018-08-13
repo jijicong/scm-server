@@ -112,10 +112,10 @@ public class PurchaseGroupResource {
     }
 
     @PUT
-    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER_NEW+"/{code}")
+    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER_NEW)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response savePurchaseGroupUser(@PathParam("code") String code, @BeanParam PurchaseGroupUser purchaseGroupUser,@Context ContainerRequestContext requestContext){
-        purchaseGroupBiz.savePurchaseCroupUser(code, purchaseGroupUser, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response savePurchaseGroupUser(@BeanParam PurchaseGroupUser purchaseGroupUser,@Context ContainerRequestContext requestContext){
+        purchaseGroupBiz.savePurchaseCroupUser(purchaseGroupUser, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSuccessResult("保存采购组员成功","");
     }
 }

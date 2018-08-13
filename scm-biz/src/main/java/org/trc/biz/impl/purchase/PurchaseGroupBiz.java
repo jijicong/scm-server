@@ -336,11 +336,12 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     @Override
     @PurchaseGroupCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseCroupUser(String code, PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo) {
+    public void savePurchaseCroupUser(PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo) {
         //需判断用户是否有改变属性启停用状态如果有变更需要更改关联关系表
         List<PurchaseGroupUser> valueList = JSONArray.parseArray(purchaseGroupUser.getGridValue(), PurchaseGroupUser.class);
         AssertUtil.notNull(valueList, "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
         String userId= aclUserAccreditInfo.getUserId();
+        String code = purchaseGroupUser.getCode();
         String channelCode = aclUserAccreditInfo.getChannelCode();
         for (PurchaseGroupUser user : valueList) {
             AssertUtil.notNull(user.getName(), "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
