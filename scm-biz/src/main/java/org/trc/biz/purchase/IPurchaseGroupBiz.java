@@ -65,5 +65,5 @@ public interface IPurchaseGroupBiz {
      * 保存采购组员
      * @param id
      */
-    void savePurchaseCroupUser(PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo);
+    void savePurchaseCroupUser(String code, PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo);
 }
