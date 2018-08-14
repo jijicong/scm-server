@@ -6627,7 +6627,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             ImportOrderResult importOrderResult = new ImportOrderResult(importOrderCode, successCount, failCount);
             if(failCount > 0){
-                return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "订单导入失败", importOrderResult);
+                //return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "订单导入失败", importOrderResult);
+                return ResultUtil.createSuccessPageResult(new AppResult<>(ZeroToNineEnum.ONE.getCode(),"订单导入失败", importOrderResult));
             }
         } catch (Exception e) {
             String msg = e.getMessage();
