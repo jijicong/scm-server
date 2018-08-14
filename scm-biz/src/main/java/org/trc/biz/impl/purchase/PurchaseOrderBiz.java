@@ -251,7 +251,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
              * 采购总数量
              */
             Example example = new Example(PurchaseDetail.class);
-            example.createCriteria().andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            criteria.andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
             List<PurchaseDetail> details = purchaseDetailService.selectByExample(example);
             Long count = 0L;
             for(PurchaseDetail purchaseDetail : details){
