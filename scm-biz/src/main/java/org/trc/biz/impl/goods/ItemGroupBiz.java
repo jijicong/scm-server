@@ -137,7 +137,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         List<String> phoneListCheck=new ArrayList<>();
         for (String phone : phoneListNew) {
             if (phoneListCheck.contains(phone)){
-                  String msg="该手机号在组内已存在！";
+                  String msg= String.format("该手机号[%s]在组内已存在！",phone);
               logger.error(msg);
               throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
             }
