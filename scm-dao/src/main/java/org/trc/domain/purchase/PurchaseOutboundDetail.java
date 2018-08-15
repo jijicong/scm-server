@@ -54,14 +54,6 @@ public class PurchaseOutboundDetail extends BaseDO {
     @FormParam("outboundStatus")
     private String outboundStatus;
 
-    /**
-     * 商品名称
-     */
-    @ApiModelProperty("商品名称")
-    @Column(name = "item_name")
-    @FormParam("itemName")
-    private String itemName;
-
     @ApiModelProperty("skuCode")
     @Column(name = "sku_code")
     @FormParam("skuCode")
@@ -87,14 +79,6 @@ public class PurchaseOutboundDetail extends BaseDO {
     @Column(name = "category_id")
     @FormParam("categoryId")
     private String categoryId;
-
-    /**
-     * 所有分类id
-     */
-    @ApiModelProperty("所有分类id")
-    @Column(name = "all_category")
-    @FormParam("allCategory")
-    private String allCategory;
 
     /**
      * 条形码
@@ -152,14 +136,6 @@ public class PurchaseOutboundDetail extends BaseDO {
     private Long actualStorageQuantity;
 
     /**
-     * 库存ID
-     */
-    @ApiModelProperty("库存ID")
-    @Column(name = "sku_stock_id")
-    @FormParam("skuStockId")
-    private Long skuStockId;
-
-    /**
      * 商品SPU编号
      */
     @ApiModelProperty("商品SPU编号")
@@ -190,14 +166,6 @@ public class PurchaseOutboundDetail extends BaseDO {
     @Column(name = "tax_rate")
     @FormParam("taxRate")
     private BigDecimal taxRate;
-
-    /**
-     * 货主编码
-     */
-    @ApiModelProperty("货主编码")
-    @Column(name = "owner_code")
-    @FormParam("ownerCode")
-    private String ownerCode;
 
     /**
      * 实际出库时间
@@ -365,24 +333,6 @@ public class PurchaseOutboundDetail extends BaseDO {
     }
 
     /**
-     * 获取商品名称
-     *
-     * @return item_name - 商品名称
-     */
-    public String getItemName() {
-        return itemName;
-    }
-
-    /**
-     * 设置商品名称
-     *
-     * @param itemName 商品名称
-     */
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
-    }
-
-    /**
      * @return sku_code
      */
     public String getSkuCode() {
@@ -430,24 +380,6 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
-    }
-
-    /**
-     * 获取所有分类id
-     *
-     * @return all_category - 所有分类id
-     */
-    public String getAllCategory() {
-        return allCategory;
-    }
-
-    /**
-     * 设置所有分类id
-     *
-     * @param allCategory 所有分类id
-     */
-    public void setAllCategory(String allCategory) {
-        this.allCategory = allCategory;
     }
 
     /**
@@ -559,24 +491,6 @@ public class PurchaseOutboundDetail extends BaseDO {
     }
 
     /**
-     * 获取库存ID
-     *
-     * @return sku_stock_id - 库存ID
-     */
-    public Long getSkuStockId() {
-        return skuStockId;
-    }
-
-    /**
-     * 设置库存ID
-     *
-     * @param skuStockId 库存ID
-     */
-    public void setSkuStockId(Long skuStockId) {
-        this.skuStockId = skuStockId;
-    }
-
-    /**
      * 获取商品SPU编号
      *
      * @return spu_code - 商品SPU编号
@@ -646,24 +560,6 @@ public class PurchaseOutboundDetail extends BaseDO {
      */
     public void setTaxRate(BigDecimal taxRate) {
         this.taxRate = taxRate;
-    }
-
-    /**
-     * 获取货主编码
-     *
-     * @return owner_code - 货主编码
-     */
-    public String getOwnerCode() {
-        return ownerCode;
-    }
-
-    /**
-     * 设置货主编码
-     *
-     * @param ownerCode 货主编码
-     */
-    public void setOwnerCode(String ownerCode) {
-        this.ownerCode = ownerCode;
     }
 
     /**
