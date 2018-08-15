@@ -856,11 +856,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getAllCategoryName(), "商品分类不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuCode(), "商品sku编码不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuName(), "商品sku名称不能为空");
-        AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
 
-        if(purchaseDetail.getTaxRate().doubleValue() < 0 || purchaseDetail.getTaxRate().doubleValue() > 100){
-            throw new PurchaseOrderDetailException(ExceptionEnum.GOODS_SAVE_EXCEPTION, "采购税率范围需满足0~100");
-        }
     }
 
     @Override
