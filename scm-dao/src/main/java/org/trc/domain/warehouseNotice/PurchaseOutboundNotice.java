@@ -44,14 +44,6 @@ public class PurchaseOutboundNotice extends BaseDO {
     private String entryOrderId;
 
     /**
-     * 所在仓库id
-     */
-    @ApiModelProperty("所在仓库id")
-    @Column(name = "warehouse_id")
-    @FormParam("warehouseId")
-    private Long warehouseId;
-
-    /**
      * warehouse_info_id
      */
     @ApiModelProperty("warehouseInfoId")
@@ -89,14 +81,6 @@ public class PurchaseOutboundNotice extends BaseDO {
     @ApiModelProperty("状态:0-待通知出库,1-出库仓接收成功,2-出库仓接收失败,3-出库完成,4-出库异常,5-已取消")
     @FormParam("status")
     private String status;
-
-    /**
-     * 供应商id
-     */
-    @ApiModelProperty("供应商id")
-    @Column(name = "supplier_id")
-    @FormParam("supplierId")
-    private Long supplierId;
 
     /**
      * 供应商编号
@@ -152,14 +136,6 @@ public class PurchaseOutboundNotice extends BaseDO {
     @Column(name = "receiver_address")
     @FormParam("receiverAddress")
     private String receiverAddress;
-
-    /**
-     * 货主编码
-     */
-    @ApiModelProperty("货主编码")
-    @Column(name = "owner_code")
-    @FormParam("ownerCode")
-    private String ownerCode;
 
     @ApiModelProperty("备注")
     @FormParam("remark")
@@ -334,24 +310,6 @@ public class PurchaseOutboundNotice extends BaseDO {
     }
 
     /**
-     * 获取所在仓库id
-     *
-     * @return warehouse_id - 所在仓库id
-     */
-    public Long getWarehouseId() {
-        return warehouseId;
-    }
-
-    /**
-     * 设置所在仓库id
-     *
-     * @param warehouseId 所在仓库id
-     */
-    public void setWarehouseId(Long warehouseId) {
-        this.warehouseId = warehouseId;
-    }
-
-    /**
      * 获取warehouse_info_id
      *
      * @return warehouse_info_id - warehouse_info_id
@@ -439,24 +397,6 @@ public class PurchaseOutboundNotice extends BaseDO {
      */
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    /**
-     * 获取供应商id
-     *
-     * @return supplier_id - 供应商id
-     */
-    public Long getSupplierId() {
-        return supplierId;
-    }
-
-    /**
-     * 设置供应商id
-     *
-     * @param supplierId 供应商id
-     */
-    public void setSupplierId(Long supplierId) {
-        this.supplierId = supplierId;
     }
 
     /**
@@ -565,24 +505,6 @@ public class PurchaseOutboundNotice extends BaseDO {
      */
     public void setReceiverAddress(String receiverAddress) {
         this.receiverAddress = receiverAddress;
-    }
-
-    /**
-     * 获取货主编码
-     *
-     * @return owner_code - 货主编码
-     */
-    public String getOwnerCode() {
-        return ownerCode;
-    }
-
-    /**
-     * 设置货主编码
-     *
-     * @param ownerCode 货主编码
-     */
-    public void setOwnerCode(String ownerCode) {
-        this.ownerCode = ownerCode;
     }
 
     /**
