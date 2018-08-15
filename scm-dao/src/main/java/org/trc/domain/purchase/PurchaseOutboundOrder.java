@@ -33,14 +33,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     private String purchaseOutboundOrderCode;
 
     /**
-     * 采购渠道ID
-     */
-    @ApiModelProperty("采购渠道ID")
-    @Column(name = "channel_id")
-    @FormParam("channelId")
-    private Long channelId;
-
-    /**
      * 采购渠道编号
      */
     @ApiModelProperty("采购渠道编号")
@@ -49,49 +41,12 @@ public class PurchaseOutboundOrder extends BaseDO {
     private String channelCode;
 
     /**
-     * 供应商ID
-     */
-    @ApiModelProperty("供应商ID")
-    @Column(name = "supplier_id")
-    @FormParam("supplierId")
-    private Long supplierId;
-
-    /**
      * 供应商编号
      */
     @ApiModelProperty("供应商编号")
     @Column(name = "supplier_code")
     @FormParam("supplierCode")
     private String supplierCode;
-
-    /**
-     * 采购合同ID
-     */
-    @ApiModelProperty("采购合同ID")
-    @Column(name = "contract_id")
-    @FormParam("contractId")
-    private Long contractId;
-
-    /**
-     * 退货仓库ID
-     */
-    @ApiModelProperty("退货仓库ID")
-    @Column(name = "warehouse_id")
-    @FormParam("warehouseId")
-    private String warehouseId;
-
-    @ApiModelProperty("purchasePersonId")
-    @Column(name = "purchase_person_id")
-    @FormParam("purchasePersonId")
-    private String purchasePersonId;
-
-    /**
-     * 退货仓库编号
-     */
-    @ApiModelProperty("退货仓库编号")
-    @Column(name = "warehouse_code")
-    @FormParam("warehouseCode")
-    private String warehouseCode;
 
     /**
      * 状态:0-暂存,1-提交审核,2-审核驳回,3-审核通过,4-出库通知,5-作废
@@ -130,14 +85,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     @Column(name = "warehouse_info_id")
     @FormParam("warehouseInfoId")
     private Long warehouseInfoId;
-
-    /**
-     * 仓库名称
-     */
-    @ApiModelProperty("仓库名称")
-    @Column(name = "warehouse_name")
-    @FormParam("warehouseName")
-    private String warehouseName;
 
     /**
      * 退货人手机号
@@ -272,6 +219,13 @@ public class PurchaseOutboundOrder extends BaseDO {
     private String returnOrderTypeName;
 
     /**
+     * 仓库名称
+     */
+    @ApiModelProperty("仓库名称")
+    @Transient
+    private String warehouseName;
+
+    /**
      * 退货省份名称
      */
     @ApiModelProperty("退货省份名称")
@@ -360,24 +314,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     }
 
     /**
-     * 获取采购渠道ID
-     *
-     * @return channel_id - 采购渠道ID
-     */
-    public Long getChannelId() {
-        return channelId;
-    }
-
-    /**
-     * 设置采购渠道ID
-     *
-     * @param channelId 采购渠道ID
-     */
-    public void setChannelId(Long channelId) {
-        this.channelId = channelId;
-    }
-
-    /**
      * 获取采购渠道编号
      *
      * @return channel_code - 采购渠道编号
@@ -396,24 +332,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     }
 
     /**
-     * 获取供应商ID
-     *
-     * @return supplier_id - 供应商ID
-     */
-    public Long getSupplierId() {
-        return supplierId;
-    }
-
-    /**
-     * 设置供应商ID
-     *
-     * @param supplierId 供应商ID
-     */
-    public void setSupplierId(Long supplierId) {
-        this.supplierId = supplierId;
-    }
-
-    /**
      * 获取供应商编号
      *
      * @return supplier_code - 供应商编号
@@ -429,74 +347,6 @@ public class PurchaseOutboundOrder extends BaseDO {
      */
     public void setSupplierCode(String supplierCode) {
         this.supplierCode = supplierCode;
-    }
-
-    /**
-     * 获取采购合同ID
-     *
-     * @return contract_id - 采购合同ID
-     */
-    public Long getContractId() {
-        return contractId;
-    }
-
-    /**
-     * 设置采购合同ID
-     *
-     * @param contractId 采购合同ID
-     */
-    public void setContractId(Long contractId) {
-        this.contractId = contractId;
-    }
-
-    /**
-     * 获取退货仓库ID
-     *
-     * @return warehouse_id - 退货仓库ID
-     */
-    public String getWarehouseId() {
-        return warehouseId;
-    }
-
-    /**
-     * 设置退货仓库ID
-     *
-     * @param warehouseId 退货仓库ID
-     */
-    public void setWarehouseId(String warehouseId) {
-        this.warehouseId = warehouseId;
-    }
-
-    /**
-     * @return purchase_person_id
-     */
-    public String getPurchasePersonId() {
-        return purchasePersonId;
-    }
-
-    /**
-     * @param purchasePersonId
-     */
-    public void setPurchasePersonId(String purchasePersonId) {
-        this.purchasePersonId = purchasePersonId;
-    }
-
-    /**
-     * 获取退货仓库编号
-     *
-     * @return warehouse_code - 退货仓库编号
-     */
-    public String getWarehouseCode() {
-        return warehouseCode;
-    }
-
-    /**
-     * 设置退货仓库编号
-     *
-     * @param warehouseCode 退货仓库编号
-     */
-    public void setWarehouseCode(String warehouseCode) {
-        this.warehouseCode = warehouseCode;
     }
 
     /**

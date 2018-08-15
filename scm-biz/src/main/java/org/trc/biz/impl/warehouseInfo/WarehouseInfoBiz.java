@@ -531,17 +531,19 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             if(StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
                 warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.SUCCESS.getCode());
                 warehouseItemInfo.setWarehouseItemId(sku.getSkuCode());
-                logInfoService.recordLog(warehouseItemInfo, warehouseCode + sku.getSkuCode(), userId,
+                warehouseItemInfoService.insert(warehouseItemInfo);
+                logInfoService.recordLog(warehouseItemInfo, String.valueOf(warehouseItemInfo.getId()), userId,
                         LogOperationEnum.ADD_ITEM.getMessage(), null, null);
-                logInfoService.recordLog(warehouseItemInfo, warehouseCode + sku.getSkuCode(), warehouseName,
+                logInfoService.recordLog(warehouseItemInfo, String.valueOf(warehouseItemInfo.getId()), warehouseName,
                         LogOperationEnum.NOTICE_SUCCESS.getMessage(), null, null);
             }else{
-                logInfoService.recordLog(warehouseItemInfo, warehouseCode + sku.getSkuCode(), userId,
+                warehouseItemInfoService.insert(warehouseItemInfo);
+                logInfoService.recordLog(warehouseItemInfo, String.valueOf(warehouseItemInfo.getId()), userId,
                         LogOperationEnum.ADD_ITEM.getMessage(), null, null);
             }
             list.add(warehouseItemInfo);
         }
-        warehouseItemInfoService.insertList(list);
+//        warehouseItemInfoService.insertList(list);
         countSkuNum(warehouseInfoId);
         //新增库存表信息
         if(StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){

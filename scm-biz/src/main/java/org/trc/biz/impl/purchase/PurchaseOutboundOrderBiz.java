@@ -1058,7 +1058,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //待通知收货
         notice.setStatus(PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode());
 
-        notice.setSupplierId(purchaseOutboundOrder.getSupplierId());
         notice.setSupplierCode(purchaseOutboundOrder.getSupplierCode());
 
         //提货方式1-到仓自提，2-京东配送，3-其他物流
