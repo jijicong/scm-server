@@ -4112,7 +4112,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                                     }
                                 }
                                 if(outboundLogisticsList.size() > 0){
-                                    exportOrderDO.setSendNum(outboundLogisticsList.get(0).getItemNum().intValue());
+                                    exportOrderDO.setSendNum(outboundLogisticsList.get(0).getItemNum() != null? outboundLogisticsList.get(0).getItemNum().intValue(): null);
                                     exportOrderDO.setLogisticsCompany(outboundLogisticsList.get(0).getLogisticsCorporation());
                                     exportOrderDO.setWaybill(outboundLogisticsList.get(0).getWaybillNumber());
                                 }
