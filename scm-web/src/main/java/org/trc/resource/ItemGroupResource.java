@@ -24,6 +24,7 @@ import org.trc.util.ResultUtil;
 import org.trc.util.lock.RedisLock;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -60,7 +61,7 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_SAVE)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "新增商品组")
-    public Response itemGroupSave( ItemGroupForm form, @Context ContainerRequestContext requestContext){
+    public Response itemGroupSave(@BeanParam @Valid ItemGroupForm form, @Context ContainerRequestContext requestContext){
         String identifier = "";
         identifier = redisLock.Lock(DistributeLockEnum.ITEM_GROUP_SAVE.getCode() +
                 form.getItemGroup().getItemGroupName(), 0, 10000);
@@ -118,7 +119,7 @@ public class ItemGroupResource {
     @Path(SupplyConstants.ItemGroupConstants.ITEM_GROUP_EDIT)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据商品组编码编辑详情")
-    public Response editDetail(ItemGroupForm form , @Context ContainerRequestContext requestContext){
+    public Response editDetail(@BeanParam @Valid ItemGroupForm form , @Context ContainerRequestContext requestContext){
         String identifier = "";
         identifier = redisLock.Lock(DistributeLockEnum.ITEM_GROUP_EDIT.getCode() +
                 form.getItemGroup().getItemGroupName(), 0, 10000);

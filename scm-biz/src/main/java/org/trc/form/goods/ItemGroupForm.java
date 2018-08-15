@@ -10,6 +10,7 @@ import org.trc.domain.BaseDO;
 import org.trc.domain.goods.ItemGroup;
 import org.trc.domain.goods.ItemGroupUser;
 
+import javax.validation.Valid;
 import javax.ws.rs.FormParam;
 import java.io.Serializable;
 import java.util.Date;
@@ -24,8 +25,10 @@ public class ItemGroupForm implements Serializable{
 
     private static final long serialVersionUID = -196159265196008620L;
 
+    @Valid
     private ItemGroup itemGroup;
 
+    @Valid
     private List<ItemGroupUser> groupUserList;
 
 }

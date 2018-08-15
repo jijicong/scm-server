@@ -227,9 +227,11 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     public void discardedAllocateInOrder(String allocateOrderCode) {
         AllocateInOrderParamForm form = this.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.TWO.getCode(),
         		ZeroToNineEnum.ZERO.getCode(), ALLOCATE_ORDER_DESCARD, null);
-        //记录操作日志
-        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), 
-        		SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+        if(form != null){
+            //记录操作日志
+            logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(),
+                    SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+        }
     }
 
     @Override
@@ -307,7 +309,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         //当操作是关闭、取消发货时校验状态是否已经是取消状态
         if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())) {//关闭/取消发货
             if(StringUtils.equals(AllocateInOrderStatusEnum.CANCEL.getCode().toString(), allocateInOrder.getStatus())){
-                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
+                return null;
+//                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
             }
         }else{//当操作是取消关闭、重新发货时校验状态是否是取消状态
             if(!StringUtils.equals(AllocateInOrderStatusEnum.CANCEL.getCode().toString(), allocateInOrder.getStatus())){
