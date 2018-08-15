@@ -256,7 +256,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             criteria.andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
             List<PurchaseDetail> details = purchaseDetailService.selectByExample(example);
-            long count = 0L;
+            long count = 0;
             for(PurchaseDetail purchaseDetail : details){
                 if(purchaseDetail.getPurchasingQuantity() != null){
                     count += purchaseDetail.getPurchasingQuantity();
