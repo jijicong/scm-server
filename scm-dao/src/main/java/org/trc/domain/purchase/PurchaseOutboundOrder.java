@@ -184,10 +184,18 @@ public class PurchaseOutboundOrder extends BaseDO {
     /**
      * 审核人
      */
-    @ApiModelProperty("提交审核说明")
+    @ApiModelProperty("审核人")
     @Column(name = "audit_operator")
     @FormParam("auditOperator")
     private String auditOperator;
+
+    /**
+     * 提交审核人
+     */
+    @ApiModelProperty("提交审核人")
+    @Column(name = "audit_create_operator")
+    @FormParam("auditOperator")
+    private String auditCreateOperator;
 
     /**
      * 提交审核时间
@@ -697,7 +705,15 @@ public class PurchaseOutboundOrder extends BaseDO {
         this.receiverAreaName = receiverAreaName;
     }
 
-///**
+    public String getAuditCreateOperator() {
+        return auditCreateOperator;
+    }
+
+    public void setAuditCreateOperator(String auditCreateOperator) {
+        this.auditCreateOperator = auditCreateOperator;
+    }
+
+    ///**
     // * 获取是否有效:0-无效,1-有效
     // *
     // * @return is_valid - 是否有效:0-无效,1-有效

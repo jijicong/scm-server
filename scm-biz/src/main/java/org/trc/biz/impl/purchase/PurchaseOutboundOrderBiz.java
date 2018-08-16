@@ -891,7 +891,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      */
     private void auditStatusUpdate(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo, String purchaseOutboundOrderCode) {
         PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
-        purchaseOutboundOrder.setCreateOperator(aclUserAccreditInfo.getName());
+        purchaseOutboundOrder.setAuditCreateOperator(aclUserAccreditInfo.getName());
         purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
         purchaseOutboundOrder.setAuditStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
         purchaseOutboundOrder.setCommitAuditTime(Calendar.getInstance().getTime());
