@@ -50,7 +50,7 @@ public class PurchaseOutboundOrderResource {
     }
 
     /**
-     * 获取退货仓库下拉列表
+     * 获取退货JD仓库下拉列表
      */
     @GET
     @Path("/getWarehouse")
