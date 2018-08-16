@@ -2289,6 +2289,11 @@ public class GoodsBiz implements IGoodsBiz {
             barSku.setId(id);
             barSku = skusService.selectOne(barSku);
             checkBarcodeOnly(barSku.getBarCode(),"","");
+            //如果spu停用，则开启spu
+            if(tempItems.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
+            	tempItems.setIsValid(ZeroToNineEnum.ONE.getCode());
+            	itemsService.updateByPrimaryKey(tempItems);
+            }
         }
         int count = skusService.updateByPrimaryKeySelective(skus);
         if(count == 0){
