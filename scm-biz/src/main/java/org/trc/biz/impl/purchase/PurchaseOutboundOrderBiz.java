@@ -527,7 +527,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //同步出库单状态
         PurchaseOutboundNotice notice = new PurchaseOutboundNotice();
         notice.setId(purchaseOutboundNotice.getId());
-        notice.setStatus(PurchaseOutboundNoticeStatusEnum.CANCEL.getCode());
+        notice.setStatus(PurchaseOutboundNoticeStatusEnum.DROP.getCode());
         int num = purchaseOutboundNoticeService.updateByPrimaryKeySelective(notice);
         if (num < 1) {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购单操作失败,出库通知单已经被执行操作", JSON.toJSONString(order.getPurchaseOutboundOrderCode())));
