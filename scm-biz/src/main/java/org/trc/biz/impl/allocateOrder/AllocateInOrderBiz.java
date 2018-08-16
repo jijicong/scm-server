@@ -438,8 +438,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                         skuDetail.setNornalInNum(detailRequest.getNornalInNum());
                         Long realInNum = detailRequest.getNornalInNum() + detailRequest.getDefectInNum();
                         skuDetail.setRealInNum(realInNum);
-                        if(skuDetail.getRealOutNum().longValue() == skuDetail.getNornalInNum().longValue() &&
-                                skuDetail.getDefectInNum().longValue() == 0){
+                        if(checkIsException(skuDetail)){
                             skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode());
                             skuDetail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()));
                             logMessage += skuDetail.getSkuCode() + ":" + "入库完成<br>";
@@ -489,6 +488,21 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                 LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
 
         return ResultUtil.createSuccessResult("反填调拨入库信息成功！", "");
+    }
+
+    private boolean checkIsException(AllocateSkuDetail skuDetail){
+        if(StringUtils.equals(skuDetail.getInventoryType(), ZeroToNineEnum.ONE.getCode())){
+            if(skuDetail.getRealOutNum().longValue() == skuDetail.getNornalInNum().longValue() &&
+                    skuDetail.getDefectInNum().longValue() == 0 ){
+                return true;
+            }
+        }else{
+            if(skuDetail.getRealOutNum().longValue() == skuDetail.getDefectInNum().longValue() &&
+                    skuDetail.getNornalInNum().longValue() == 0 ){
+                return true;
+            }
+        }
+        return false;
     }
 
     private Map<String,Long> delStock(List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList, AllocateSkuDetail detail, String warehouseCode) {
