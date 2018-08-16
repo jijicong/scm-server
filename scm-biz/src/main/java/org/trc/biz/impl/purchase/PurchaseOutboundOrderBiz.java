@@ -746,7 +746,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
-
     public List<WarehouseInfo> getWarehousesByChannelCode(String channelCode) {
         //获取仓库信息(包括未启用的)
         WarehouseInfo warehouse = new WarehouseInfo();
@@ -761,6 +760,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
     /**
      * 所有仓库下拉列表
+     * (包括未启用的)
      *
      * @return
      */
@@ -768,7 +768,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     public List<WarehouseInfo> getAllWarehouses() {
         //获取已启用仓库信息
         WarehouseInfo warehouse = new WarehouseInfo();
-        warehouse.setIsValid(ZeroToNineEnum.ONE.getCode());
         //已通知仓库
         warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
