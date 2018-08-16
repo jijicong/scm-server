@@ -235,7 +235,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 }
             }
             /**
-             * v2.5 当采购单状态为入库通知状态，对应采购入库通知的状态=“待通知收货”或“仓库接收失败”或“已取消”：才具备作废操作
+             * v2.5 新增状态
              */
             if(StringUtils.equals(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode(), purchaseOrder.getStatus())){
                 Example example = new Example(WarehouseNotice.class);
@@ -246,8 +246,24 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                     purchaseOrder.setNoticeStatus(warehouseNotice.getStatus());
                 }
             }
-        }
 
+            /**
+             * 采购总数量
+             */
+            Example example = new Example(PurchaseDetail.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            criteria.andEqualTo("purchaseOrderCode", purchaseOrder.getPurchaseOrderCode());
+            List<PurchaseDetail> details = purchaseDetailService.selectByExample(example);
+            long count = 0;
+            for(PurchaseDetail purchaseDetail : details){
+                if(purchaseDetail.getPurchasingQuantity() != null){
+                    count += purchaseDetail.getPurchasingQuantity();
+                }
+            }
+            purchaseOrder.setPurchaseCount(count);
+        }
     }
     //为仓库名称赋值
     private void selectAssignmentWarehouseName(List<PurchaseOrder> purchaseOrderList) {
@@ -840,11 +856,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseDetail.getAllCategoryName(), "商品分类不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuCode(), "商品sku编码不能为空");
         AssertUtil.notNull(purchaseDetail.getSkuName(), "商品sku名称不能为空");
-        AssertUtil.notNull(purchaseDetail.getTaxRate(),"采购税率不能为空!");
 
-        if(purchaseDetail.getTaxRate().doubleValue() < 0 || purchaseDetail.getTaxRate().doubleValue() > 100){
-            throw new PurchaseOrderDetailException(ExceptionEnum.GOODS_SAVE_EXCEPTION, "采购税率范围需满足0~100");
-        }
     }
 
     @Override

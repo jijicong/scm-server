@@ -19,6 +19,7 @@ import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.domain.supplier.SupplierBrand;
 import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.SupplierException;
 import org.trc.form.supplier.SupplierApplyAuditForm;
@@ -309,6 +310,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     private List<SupplierApply> handleApplyBrandsStr(List<SupplierApply> list) {
         Set<Long> supplierIdsSet = new HashSet<>();
         for (SupplierApply supplierApply : list) {
+            if(null == supplierApply.getChannelRelationId()){
+                supplierApply.setSupplierStatus(ValidEnum.NOVALID.getCode());
+            }
             supplierIdsSet.add(supplierApply.getSupplierId());
         }
         Long[] supplierIdsArr = new Long[supplierIdsSet.size()];

@@ -47,6 +47,8 @@ public class SupplierApply extends CommonDO {
     private String brandNames;//供应商代理品牌
     @Transient
     private String supplierStatus;//供应商状态
+    @Transient
+    private Long channelRelationId;//供应商渠道关系ID
 
     public Long getId() {
         return id;
@@ -166,5 +168,13 @@ public class SupplierApply extends CommonDO {
 
     public void setSupplierStatus(String supplierStatus) {
         this.supplierStatus = supplierStatus;
+    }
+
+    public Long getChannelRelationId() {
+        return channelRelationId;
+    }
+
+    public void setChannelRelationId(Long channelRelationId) {
+        this.channelRelationId = channelRelationId;
     }
 }
