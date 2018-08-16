@@ -784,10 +784,10 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                 if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
                     ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
 
-                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), allocateOutOrderCode)){
-                        logger.error("调拨出库单号:{},物流信息获取异常", allocateOutOrderCode);
-                        return;
-                    }
+//                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), allocateOutOrderCode)){
+//                        logger.error("调拨出库单号:{},物流信息获取异常", allocateOutOrderCode);
+//                        return;
+//                    }
 
                     //更新发货单信息
                     this.updateAllocateSkuDetail(packsResponse, allocateOutOrder);
