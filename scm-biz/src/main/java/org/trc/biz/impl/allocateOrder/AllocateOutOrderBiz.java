@@ -445,7 +445,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			orderDo.setSalePlatformSource(jDWmsConstantConfig.getSalePlatformSource());//销售平台编号
 			orderDo.setReciverName(outOrder.getReceiver());//客户姓名
 			orderDo.setReciverMobile(outOrder.getReceiverMobile());//客户手机
-			orderDo.setOrderType(JdDeliverOrderTypeEnum.B2B.getCode()); // b2b
+			orderDo.setOrderType(JdDeliverOrderTypeEnum.B2C.getCode()); // b2c
 			
 			orderDo.setReciverProvince(getAreaName(inWarehouse.getProvince(), "Province"));// 省
 			orderDo.setReciverCity(getAreaName(inWarehouse.getCity(), "City"));// 城市
