@@ -8,7 +8,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateDeserializer;
 import org.trc.custom.CustomDateSerializer;
-import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

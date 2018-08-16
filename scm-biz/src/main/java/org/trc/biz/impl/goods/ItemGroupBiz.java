@@ -137,7 +137,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         List<String> phoneListCheck=new ArrayList<>();
         for (String phone : phoneListNew) {
             if (phoneListCheck.contains(phone)){
-                  String msg="该手机号在组内已存在！";
+                  String msg= String.format("该手机号[%s]在组内已存在！",phone);
               logger.error(msg);
               throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
             }
@@ -159,72 +159,67 @@ public class ItemGroupBiz implements IitemGroupBiz {
         //更新用户数据
         String logMsg="";
         List<ItemGroupUser> orginlist = queryItemGroupUserListByCode(itemGroup.getItemGroupCode());
+        List<Long> ids = groupUserList.stream().map(e -> e.getId()).collect(Collectors.toList());
         for (ItemGroupUser oldItemGroupUser : orginlist) {
-            List<Long> ids = groupUserList.stream().map(e -> e.getId()).collect(Collectors.toList());
+            if(!ids.contains(oldItemGroupUser.getId())){//删除
+                Integer countDel = itemGroupUserService.deleteByPrimaryKey(oldItemGroupUser.getId());
+                logMsg=logMsg+"商品组员手机号为\""+oldItemGroupUser.getPhoneNumber()+"\"的成员被删除了;";
+                if (countDel==null){
+                    String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户删除失败，数据库操作失败",itemGroup.getItemGroupName(),oldItemGroupUser.getPhoneNumber());
+                    logger.error(msg);
+                    throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+                }
+            }
+        }
+        for (ItemGroupUser itemGroupUser : groupUserList) {
+            if (itemGroupUser.getId()==null){//id不存在为新增成员
+                String name=itemGroupUser.getName();
+                ItemGroupUser insertEntity = new ItemGroupUser();
+                insertEntity.setName(name);
+                insertEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
+                insertEntity.setIsLeader(itemGroupUser.getIsLeader());
+                insertEntity.setItemGroupCode(itemGroup.getItemGroupCode());
+                insertEntity.setChannelCode(aclUserAccreditInfo.getChannelCode());
+                insertEntity.setCreateTime(Calendar.getInstance().getTime());
+                insertEntity.setUpdateTime(Calendar.getInstance().getTime());
+                insertEntity.setCreateOperator(aclUserAccreditInfo.getName());
+                insertEntity.setIsValid(itemGroup.getIsValid());
+                Integer countIns = itemGroupUserService.insertSelective(insertEntity);
 
-            for (ItemGroupUser itemGroupUser : groupUserList) {
-
-                if(!ids.contains(oldItemGroupUser.getId())){//删除
-                    Integer countDel = itemGroupUserService.deleteByPrimaryKey(oldItemGroupUser.getId());
-                    logMsg=logMsg+"商品组员手机号为\""+oldItemGroupUser.getPhoneNumber()+"\"的成员被删除了;";
-                    if (countDel==null){
-                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户删除失败，数据库操作失败",itemGroup.getItemGroupName(),oldItemGroupUser.getPhoneNumber());
-                        logger.error(msg);
-                        throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+                logMsg=logMsg+"商品组员新增了手机号为\""+itemGroupUser.getPhoneNumber()+"\"的成员;";
+                if (countIns==null){
+                    String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户插入失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
+                    logger.error(msg);
+                    throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
+                }
+            }else {//修改操作
+                ItemGroupUser updateEntity = itemGroupUserService.selectByPrimaryKey(itemGroupUser.getId());
+                if (!StringUtils.equals(itemGroupUser.getName(),updateEntity.getName())){
+                    updateEntity.setName(itemGroupUser.getName());
+                    logMsg=logMsg+"商品组员名称由\""+updateEntity.getName()+"\"改为\""+itemGroupUser.getName()+"\";";
+                }
+                if (!StringUtils.equals(itemGroupUser.getPhoneNumber(),updateEntity.getPhoneNumber())){
+                    updateEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
+                    logMsg=logMsg+"商品组员手机号码由\""+updateEntity.getPhoneNumber()+"\"改为\""+itemGroupUser.getPhoneNumber()+"\";";
+                }
+                if (!StringUtils.equals(itemGroupUser.getIsLeader(),updateEntity.getIsLeader())){
+                    updateEntity.setIsLeader(itemGroupUser.getIsLeader());
+                    if (StringUtils.equals(itemGroupUser.getIsLeader(),ZeroToNineEnum.ZERO.getCode())){
+                        logMsg=logMsg+"原组员名字：\""+updateEntity.getName()+"\"由组长改为组员;";
+                    }else {
+                        logMsg=logMsg+"原组员名字：\""+updateEntity.getName()+"\"由组员改为组长;";
                     }
                 }
-
-                if (itemGroupUser.getId()==null){//id不存在为新增成员
-                    String name=itemGroupUser.getName();
-                    ItemGroupUser insertEntity = new ItemGroupUser();
-                    insertEntity.setName(name);
-                    insertEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
-                    insertEntity.setIsLeader(itemGroupUser.getIsLeader());
-                    insertEntity.setItemGroupCode(itemGroup.getItemGroupCode());
-                    insertEntity.setChannelCode(aclUserAccreditInfo.getChannelCode());
-                    insertEntity.setCreateTime(Calendar.getInstance().getTime());
-                    insertEntity.setUpdateTime(Calendar.getInstance().getTime());
-                    insertEntity.setCreateOperator(aclUserAccreditInfo.getName());
-                    insertEntity.setIsValid(itemGroup.getIsValid());
-                    Integer countIns = itemGroupUserService.insertSelective(insertEntity);
-
-                    logMsg=logMsg+"商品组员新增了手机号为\""+itemGroupUser.getPhoneNumber()+"\"的成员;";
-                    if (countIns==null){
-                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户插入失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
-                        logger.error(msg);
-                        throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
-                    }
-                }else {//修改操作
-                    ItemGroupUser updateEntity = itemGroupUserService.selectByPrimaryKey(itemGroupUser.getId());
-                    if (!StringUtils.equals(itemGroupUser.getName(),updateEntity.getName())){
-                        updateEntity.setName(itemGroupUser.getName());
-                        logMsg=logMsg+"商品组员名称由\""+updateEntity.getName()+"\"改为\""+itemGroupUser.getName()+"\";";
-                    }
-                    if (!StringUtils.equals(itemGroupUser.getPhoneNumber(),updateEntity.getPhoneNumber())){
-                        updateEntity.setPhoneNumber(itemGroupUser.getPhoneNumber());
-                        logMsg=logMsg+"商品组员手机号码由\""+updateEntity.getPhoneNumber()+"\"改为\""+itemGroupUser.getPhoneNumber()+"\";";
-                    }
-                    if (!StringUtils.equals(itemGroupUser.getIsLeader(),updateEntity.getIsLeader())){
-                        updateEntity.setIsLeader(itemGroupUser.getIsLeader());
-                        if (StringUtils.equals(itemGroupUser.getIsLeader(),ZeroToNineEnum.ZERO.getCode())){
-                            logMsg=logMsg+"原组员名字：\""+updateEntity.getName()+"\"由组长改为组员;";
-                        }else {
-                            logMsg=logMsg+"原组员名字：\""+updateEntity.getName()+"\"由组员改为组长;";
-                        }
-                    }
-                    updateEntity.setItemGroupCode(itemGroup.getItemGroupCode());
-                    updateEntity.setCreateTime(itemGroup.getCreateTime());
-                    updateEntity.setUpdateTime(Calendar.getInstance().getTime());
-                    Integer countUpd = itemGroupUserService.updateByPrimaryKeySelective(updateEntity);
-                    if (countUpd==null){
+                updateEntity.setItemGroupCode(itemGroup.getItemGroupCode());
+                updateEntity.setCreateTime(itemGroup.getCreateTime());
+                updateEntity.setUpdateTime(Calendar.getInstance().getTime());
+                Integer countUpd = itemGroupUserService.updateByPrimaryKeySelective(updateEntity);
+                if (countUpd==null){
                         String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户修改失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
                         logger.error(msg);
                         throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
-                    }
                 }
-
             }
-
         }
 
         //记录日志
@@ -347,7 +342,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         }
 
         //记录日志
-        String orginIsValid = itemGroup.getIsValid();
+        String orginIsValid = temp.getIsValid();
         String logMsg="状态由\""+ValidEnum.getValidEnumByCode(orginIsValid).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(isValid).getName()+"\"。";
         logInfoService.recordLog(itemGroup,itemGroup.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),logMsg,null);
     }

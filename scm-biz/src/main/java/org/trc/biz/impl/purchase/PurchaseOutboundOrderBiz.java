@@ -748,9 +748,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Override
 
     public List<WarehouseInfo> getWarehousesByChannelCode(String channelCode) {
-        //获取已启用仓库信息
+        //获取仓库信息(包括未启用的)
         WarehouseInfo warehouse = new WarehouseInfo();
-        warehouse.setIsValid(ZeroToNineEnum.ONE.getCode());
         //运营性质(0:第三方仓库 1:自营仓库)
         //过滤掉“运营性质”为“自营仓库”的仓库
         warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
@@ -1058,7 +1057,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //待通知收货
         notice.setStatus(PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode());
 
-        notice.setSupplierId(purchaseOutboundOrder.getSupplierId());
         notice.setSupplierCode(purchaseOutboundOrder.getSupplierCode());
 
         //提货方式1-到仓自提，2-京东配送，3-其他物流
