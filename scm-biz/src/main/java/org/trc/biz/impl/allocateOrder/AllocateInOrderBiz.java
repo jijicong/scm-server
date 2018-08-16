@@ -623,6 +623,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                     List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
                     //修改状态
                     allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+                    allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
 
                     for (AllocateSkuDetail detail: allocateSkuDetailList) {
                         detail.setInStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
