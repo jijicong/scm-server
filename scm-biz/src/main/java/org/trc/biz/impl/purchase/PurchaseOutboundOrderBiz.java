@@ -143,7 +143,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Autowired
     private IPurchaseOrderService purchaseOrderService;
 
-
     /**
      * 查询采购退货单列表
      *
@@ -787,7 +786,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     public List<Supplier> getSuppliersByChannelCode(String channelCode) {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode, "获取渠道编号失败");
-        return purchaseOrderService.findSuppliersByChannelCode(channelCode, "");
+
+        return supplierService.selectAllSuppliers(channelCode);
     }
 
     /**

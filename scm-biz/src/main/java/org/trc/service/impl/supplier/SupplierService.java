@@ -38,4 +38,15 @@ public class SupplierService extends BaseService<Supplier, Long> implements ISup
     public List<Supplier> selectSupplierByName(String name){
         return supplierMapper.selectSupplierByName(name);
     }
+
+    /**
+     * 查询所有供应商（包括停用）
+     *
+     * @param channelCode
+     * @return
+     */
+    @Override
+    public List<Supplier> selectAllSuppliers(String channelCode) {
+        return supplierMapper.selectAllSuppliers(channelCode);
+    }
 }
