@@ -2195,12 +2195,7 @@ public class GoodsBiz implements IGoodsBiz {
                                 if (StringUtils.equals(isLeader,ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(isValid,ZeroToNineEnum.ONE.getCode())){
                                     return ZeroToNineEnum.ONE.getCode();
                                 }else {
-                                    if (pageFlag){
-                                        return ZeroToNineEnum.ZERO.getCode();
-                                    }else {
-                                        String msg=String.format("当前手机号为[%s]的用户不是启用组的组长，用户无此操作权限",loginPhone);
-                                        throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
-                                    }
+                                   continue;
                                 }
                             }
                         }
