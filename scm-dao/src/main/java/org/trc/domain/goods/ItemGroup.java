@@ -53,7 +53,7 @@ public class ItemGroup implements Serializable{
     private String leaderName;
 
     @FormParam("memberName")
-    @Length(max=1024,message = "组员名称字母和数字不能超过1024个,汉字不能超过512个")
+    @Length(max=2048,message = "组员名称字母和数字不能超过2048个,汉字不能超过1024个")
     @ApiModelProperty("所有组员名字，以逗号分隔")
     private String memberName;
 
