@@ -40,6 +40,7 @@
         <property name="balancestatisticsUrl" value="${get.jd.statistics.balance.url}"/>
         <property name="reportCompensateUrl" value="${jd.report.compensate.url}"/>
         <property name="jdOrderStatusUrl" value="${jd.order.status.url}"/>
+        <property name="SkuStockQuery" value="${jd.sku.stock.url}"/>
 
         <property name="itemsSyncUrl" value="${wms.itemsSync.url}"/>
         <property name="inventoryQueryUrl" value="${wms.inventoryQuery.url}"/>

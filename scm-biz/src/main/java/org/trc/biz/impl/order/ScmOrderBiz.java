@@ -1502,7 +1502,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
     }
 
-
     /**
      * 调用京东下单服务接口
      * @param orderInfo
@@ -3153,6 +3152,127 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return responseAck;
     }
 
+    @Override
+    public ResponseAck<List<StockNewResultVo>> getSkuStockQuery(String skuArray, String area) throws Exception {
+        //参数校验
+        ResponseAck responseAck = null;
+        checkSkuQuery(skuArray, area);
+        //查询商品映射,将供应链的sku转换成京东的sku
+        List<JdSkuStockQueryDO> jdSkuList = checkSkuQuery(skuArray, area);
+        Set<String> skuIdSet = new HashSet<>();
+        Map<String,String> skuMap = new HashMap<>();
+        for (JdSkuStockQueryDO sku : jdSkuList) {
+            skuIdSet.add(sku.getSkuId());
+        }
+        if (!AssertUtil.collectionIsEmpty(skuIdSet)) {
+            Example example = new Example(ExternalItemSku.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("skuCode", skuIdSet);
+            criteria.andEqualTo("supplierCode", SupplyConstants.Order.SUPPLIER_JD_CODE);
+            List<ExternalItemSku> itemSkuList = externalItemSkuService.selectByExample(example);
+            if (!AssertUtil.collectionIsEmpty(itemSkuList)) {
+                //获取无法识别的sku
+                List<String> errorSkuCode = getErrorSku(skuIdSet, itemSkuList);
+                //整理需要查询库存的数据
+                List<JdSkuStockQueryDO> skuStockQueryDOList = getJdSkuStockQueryDOList(jdSkuList, skuMap, itemSkuList);
+                //发送到external
+                JdSkuStockForm jdSkuStockForm = new JdSkuStockForm(skuStockQueryDOList, area);
+                ReturnTypeDO returnTypeDO = ijdService.getSkuStockQuery(jdSkuStockForm);
+                if (null != returnTypeDO.getResult()) {
+                    JSONObject object = JSON.parseObject(returnTypeDO.getResult().toString());
+                    String date = object.getString("data") == null ? "" : object.getString("data");
+                    List<StockNewResultVo> stockNewResultVoList;
+                    List<StockNewResultVo> resultVoList = new ArrayList<>();
+                    if (StringUtils.isNotBlank(date)) {
+                        stockNewResultVoList = JSON.parseArray(date, StockNewResultVo.class);
+                        for (StockNewResultVo resultVo : stockNewResultVoList) {
+                            if (StringUtils.isNotBlank(skuMap.get(resultVo.getSkuId()))) {
+                                StockNewResultVo newResultVo = new StockNewResultVo();
+                                BeanUtils.copyProperties(resultVo, newResultVo);
+                                newResultVo.setSkuId(skuMap.get(resultVo.getSkuId()));
+                                resultVoList.add(newResultVo);
+                            }
+                        }
+                    }
+                    if (!AssertUtil.collectionIsEmpty(errorSkuCode)) {
+                        for (String sku : errorSkuCode) {
+                            StockNewResultVo newResultVo = new StockNewResultVo();
+                            newResultVo.setSkuId(sku);
+                            newResultVo.setStockStateId("222");
+                            newResultVo.setStockStateDesc("sku无法识别");
+                            resultVoList.add(newResultVo);
+                        }
+                    }
+                    responseAck = new ResponseAck(ResponseAck.SUCCESS_CODE, "库存查询成功", resultVoList);
+                } else {
+                    String msg = JSON.toJSONString(skuIdSet) + "不存在!";
+                    log.error(msg);
+                    throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+                }
+            }
+
+        }
+        return responseAck;
+    }
+
+    private List<JdSkuStockQueryDO> getJdSkuStockQueryDOList(List<JdSkuStockQueryDO> jdSkuList, Map<String, String> skuMap, List<ExternalItemSku> itemSkuList) {
+        List<JdSkuStockQueryDO> skuStockQueryDOList = new ArrayList<>();
+        for (ExternalItemSku itemSku : itemSkuList) {
+            //sku键值对
+            skuMap.put(itemSku.getSupplierSkuCode(),itemSku.getSkuCode());
+            JdSkuStockQueryDO stockQueryDO = new JdSkuStockQueryDO();
+            for (JdSkuStockQueryDO skuDo : jdSkuList) {
+                if (StringUtils.equals(itemSku.getSkuCode(), skuDo.getSkuId())) {
+                    stockQueryDO.setSkuId(itemSku.getSupplierSkuCode());
+                    stockQueryDO.setNum(skuDo.getNum());
+                    break;
+                }
+            }
+            skuStockQueryDOList.add(stockQueryDO);
+        }
+        return skuStockQueryDOList;
+    }
+
+    private List<String> getErrorSku(Set<String> skuIdSet, List<ExternalItemSku> itemSkuList) {
+        List<String> errorSkuList = new ArrayList<>();
+        for (String sku : skuIdSet) {
+            boolean flag = false;
+            for (ExternalItemSku externalSku : itemSkuList) {
+                if (StringUtils.equals(sku,externalSku.getSkuCode())){
+                    flag =true;
+                    break;
+                }
+            }
+            if (!flag){
+                errorSkuList.add(sku);
+            }
+        }
+
+
+        return errorSkuList;
+    }
+
+    private List<JdSkuStockQueryDO> checkSkuQuery(String skuArray, String area) {
+        List<JdSkuStockQueryDO> jdSkuList;
+        try {
+            jdSkuList = JSONArray.parseArray(skuArray, JdSkuStockQueryDO.class);
+        } catch (Exception e) {
+            String msg = skuArray + "参数格式异常!";
+            log.error(msg, e);
+            throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+        }
+        if (AssertUtil.collectionIsEmpty(jdSkuList)) {
+            String msg = String.format("sku输入信息为空");
+            log.error(msg);
+            throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+        }
+        if (StringUtils.isBlank(area)) {
+            String msg = String.format("地址输入信息为空");
+            log.error(msg);
+            throw new OrderException(ExceptionEnum.TRC_PARAM_EXCEPTION, msg);
+        }
+        return jdSkuList;
+    }
 
     @Override
     public void fetchLogisticsInfo() {

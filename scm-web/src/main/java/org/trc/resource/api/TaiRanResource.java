@@ -27,6 +27,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.OrderException;
+import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.OrderSubmitResult;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
@@ -343,6 +344,14 @@ public class TaiRanResource {
     public ResponseAck JDLogistics(@QueryParam("channelCode")String channelCode, @QueryParam("shopOrderCode")String shopOrderCode) throws Exception{
         return scmOrderBiz.getJDLogistics(channelCode, shopOrderCode);
     }
+
+    @POST
+    @Path(SupplyConstants.TaiRan.JD_SKUSTOCK)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck getSkuStockQuery(@FormParam("skuArray") String skuArray, @FormParam("area")String area) throws Exception{
+        return scmOrderBiz.getSkuStockQuery(skuArray, area);
+    }
+
 
 
 }
