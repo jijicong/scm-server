@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.trc.enums.warehouse.PurchaseOutboundNoticeStatusEnum;
 import org.trc.service.IBaseService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
@@ -33,16 +34,15 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
         AssertUtil.isTrue(pagenation.getPageNo() > 0, "分页每页记录条数参数pageNo值必须大于等于1");
         AssertUtil.isTrue(pagenation.getPageSize() <= Pagenation.MAX_PAGE_SIZE, String.format("分页每页记录条数参数pageSize值不能大于%s", Pagenation.MAX_PAGE_SIZE));
         if(StringUtil.isNotEmpty(queryModel.getOrderBy())) {
-            for(int i=0; i<queryModel.getOrderBys().length; i++){
-                setPageOrder(example, queryModel.getOrderBys()[i], queryModel.getOrders()[i]);
+            for(int i=0; i<queryModel.pageGetOrderBys().length; i++){
+                setPageOrder(example, queryModel.pageGetOrderBys()[i], queryModel.pageGetOrders()[i]);
             }
         }
         //int totalCount = mapper.selectCountByExample(example);
-        Page<Object> page = PageHelper.startPage(pagenation.getPageNo(), pagenation.getPageSize());
+        Page<T> page = PageHelper.startPage(pagenation.getPageNo(), pagenation.getPageSize());
         List<T> list = mapper.selectByExample(example);
-        long total = page.getTotal();
-        pagenation.setTotalCount(total);
-        pagenation.setResult(list);
+        pagenation.setTotalCount(page.getTotal());
+        pagenation.setResult(page.getResult());
         return pagenation;
     }
 

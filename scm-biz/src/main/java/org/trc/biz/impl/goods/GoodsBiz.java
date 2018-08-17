@@ -34,6 +34,7 @@ import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.UserAccreditInfoException;
 import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.JDModel.SkuDO;
@@ -55,6 +56,7 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.*;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
+import org.trc.service.impl.impower.AclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
@@ -80,6 +82,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -193,10 +196,15 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private IBusiSkusService busiSkusService;
 
+    @Autowired
+    private IItemGroupUserService itemGroupUserService;
+    @Autowired
+    private AclUserAccreditInfoService aclUserAccreditInfoService;
+
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.GOODS)
-    public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
+    /*@Cacheable(value = SupplyConstants.Cache.GOODS)*/
+    public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
@@ -223,6 +231,11 @@ public class GoodsBiz implements IGoodsBiz {
         }
         example.orderBy("updateTime").desc();
         page = itemsService.pagination(example, page, queryModel);
+        List<Items> result = page.getResult();
+        for (Items items : result) {
+            String flag = selectDataAcl(items.getId(), aclUserAccreditInfo, true);
+            items.setUpdateAuth(flag);//V3.1数据权限0无，1有
+        }
         List<Skus> skusList = null;
         if(null != map.get("skuList")){
             skusList = (List<Skus>)map.get("skuList");
@@ -888,6 +901,98 @@ public class GoodsBiz implements IGoodsBiz {
     @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+
+        selectDataAcl(items.getId(),aclUserAccreditInfo,false);
+
+        //记录操作日志
+        String logMsg = "";
+        Items orginItems = itemsService.selectByPrimaryKey(items.getId());
+        if (StringUtils.equals(orginItems.getName(),items.getName()) && StringUtils.equals(orginItems.getBrandName(),items.getBrandName())
+                &&StringUtils.equals(orginItems.getItemNo(),items.getItemNo()) &&StringUtils.equals(orginItems.getRemark(),items.getRemark())){
+            logMsg="";
+        }else {
+            logMsg=logMsg+"SPU信息：";
+            if (!StringUtils.equals(orginItems.getName(),items.getName())){
+                logMsg=logMsg+"商品名称由\""+orginItems.getName()+"\"改为\""+items.getName()+"\";";
+            }
+            if (!StringUtils.equals(orginItems.getBrandId().toString(),items.getBrandId().toString())){
+                Brand orginBrand = brandService.selectOneById(orginItems.getBrandId());
+                Brand brand = brandService.selectOneById(items.getBrandId());
+                logMsg=logMsg+"所属品牌由\""+orginBrand.getName()+"\"改为\""+brand.getName()+"\";";
+            }
+            if (!StringUtils.equals(orginItems.getItemNo(),items.getItemNo())){
+                logMsg=logMsg+"商品货号由\""+orginItems.getItemNo()+"\"改为\""+items.getItemNo()+"\";";
+            }
+            if (!StringUtils.equals(orginItems.getRemark(),items.getRemark())){
+                logMsg=logMsg+"商品备注由\""+orginItems.getRemark()+"\"改为\""+items.getRemark()+"\";";
+            }
+            logMsg=logMsg.substring(0,logMsg.lastIndexOf(";"))+"。\r\n";
+        }
+
+        String logMsg2 = "";
+        JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
+        String propertyId="";
+        String propertyValueId="";
+        String propertyValue="";
+        for (Object obj : categoryArray) {
+            JSONObject jbo = (JSONObject) obj;
+            propertyId=jbo.getString("propertyId");
+            propertyValueId=jbo.getString("propertyValueId");
+            propertyValue = jbo.getString("propertyValue");
+        }
+        if (!StringUtils.equals(propertyId,"")){//商品没自然属性
+            ItemNaturePropery temp=new ItemNaturePropery();
+            temp.setSpuCode(items.getSpuCode());
+            temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            temp = itemNatureProperyService.selectOne(temp);
+            if (!StringUtils.equals(temp.getPropertyValueId().toString(),propertyValueId)){
+                Property property = propertyService.selectOneById(Long.parseLong(propertyId));
+                PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(temp.getPropertyValueId());
+                logMsg2=logMsg2+property.getName()+"由\""+propertyValueTemp.getValue()+"\"改为\""+propertyValue+"\";";
+            }
+        }
+        JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
+        for (Object obj: skuArray) {
+            JSONObject jbo = (JSONObject) obj;
+            Skus temp = new Skus();
+            String skuCode = jbo.getString("skuCode");
+            if(StringUtils.equals(skuCode,"")){
+                logMsg2=logMsg2+"新增了名称为\""+jbo.getString("skuName")+"\"的sku;";
+            }else {
+                temp.setSkuCode(skuCode);
+                Skus orginSkus = skusService.selectOne(temp);
+                if (StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))&&StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))
+                        && StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
+                    logMsg2 = logMsg2+"";
+                }else {
+                    logMsg2 = logMsg2+skuCode+":";
+                    if (!StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))){
+                        logMsg2=logMsg2+"SKU名称由\""+orginSkus.getSkuName()+"\"改为\""+jbo.getString("skuName")+"\";";
+                    }
+                    if (!StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))){
+                        logMsg2=logMsg2+"条形码由\""+orginSkus.getBarCode()+"\"改为\""+jbo.getString("barCode")+"\";";
+                    }
+                    if (!StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
+                        logMsg2=logMsg2+"sku状态由\""+ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
+                                +"\";";
+                    }
+               /* if (!StringUtils.equals(orginSkus.getMarketPrice2().toString(),jbo.getString("marketPrice2"))){
+                    logMsg2=logMsg2+"参考市场价由\""+orginSkus.getMarketPrice2()+"\"改为\""+jbo.getString("marketPrice2")+";";
+                }
+                if (!StringUtils.equals(orginSkus.getWeight2().toString(),jbo.getString("weight2"))){
+                    logMsg2=logMsg2+"重量由\""+orginSkus.getWeight2()+"\"改为\""+jbo.getString("weight2")+";";
+                }*/
+                    logMsg2 = logMsg2+"\r\n";
+                }
+            }
+
+        }
+        if (!StringUtils.isEmpty(logMsg2)){
+            logMsg2="商品信息："+logMsg2.substring(0,logMsg2.lastIndexOf(";"))+"。\r\n";
+        }
+
+
+
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
@@ -918,11 +1023,24 @@ public class GoodsBiz implements IGoodsBiz {
         for(Skus s : updateSkus){
             itemsUpdateNoticeWarehouseItemInfo(s, s.getIsValid());
         }
-        //记录操作日志
-        String remark = "SPU信息更新";
-        /*if(isValidUpdate)
-            remark = String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(items.getIsValid()).getName());*/
-        logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),remark, null);
+
+
+        //记录日志
+        if (StringUtils.equals(logMsg2,"商品信息：")){
+            logMsg2="";
+        }
+        logMsg=logMsg2+logMsg;
+        if (!StringUtils.equals(logMsg,"")){
+
+            try {
+                logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+            }catch (Exception e){
+                e.printStackTrace();
+                log.error("自采商品：更新商品日志传参异常：{}", e);
+            }
+
+        }
+
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items, updateSkus);
     }
@@ -1980,11 +2098,15 @@ public class GoodsBiz implements IGoodsBiz {
     @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+        //查询数据操作权限
+        selectDataAcl(id, aclUserAccreditInfo,false);
+
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "商品启用/停用操作参数isValid不能为空");
         Items items2 = new Items();
         items2.setId(id);
         items2 = itemsService.selectOne(items2);
+
         AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
         Items items = new Items();
         items.setId(id);
@@ -2019,11 +2141,79 @@ public class GoodsBiz implements IGoodsBiz {
         //商品启停用通知渠道
         itemsUpdateNoticeChannel(items2, updateSkus, TrcActionTypeEnum.ITEMS_IS_VALID);
         //记录操作日志
+       String logMsg= String.format("SPU信息：SPU状态由[%s]改为[%s]",ValidEnum.getValidEnumByCode(_isValid).getName(),ValidEnum.getValidEnumByCode(isValid).getName());
         logInfoService.recordLog(items2,items.getId().toString(),aclUserAccreditInfo.getUserId(),
-                LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+                LogOperationEnum.UPDATE.getMessage(),logMsg, null);
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items2, updateSkus);
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
+    }
+
+
+    /*
+         方法返回值 ：   用于商品组分页方法
+    *    pageFlag  ：   商品组分页方法调用标志
+    * */
+    //V3.1数据权限查询,通用方法，调入分页方法分页返回给前端的值   返回值：有权限1，无权限0
+    private String selectDataAcl(Long id, AclUserAccreditInfo aclUserAccreditInfo,Boolean pageFlag) {
+        //用户数据权限查询
+        //登录用户
+        String loginPhone = aclUserAccreditInfo.getPhone();
+        //数据归属创建人
+        Items itemsCurrent = itemsService.selectByPrimaryKey(id);
+        String userId = itemsCurrent.getCreateOperator();//归属创建人
+        AclUserAccreditInfo tempAcl = new AclUserAccreditInfo();
+        tempAcl.setUserId(userId);
+        tempAcl=aclUserAccreditInfoService.selectOne(tempAcl);
+
+
+        Example example=new Example(ItemGroupUser.class);
+        example.createCriteria().andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode()).andEqualTo("phoneNumber",tempAcl.getPhone());
+        List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
+        if (!loginPhone.equals(tempAcl.getPhone())){
+            if (list.size()==0){
+                if (pageFlag){
+                    return ZeroToNineEnum.ZERO.getCode();
+                }else {
+                    String msg="该条数据不归属任何商品组，当前用户不是创建者本人，无此操作权限";
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
+                }
+            }else {//该条数据归属某个或多个商品组
+                for (ItemGroupUser itemGroupUser : list){
+                    String itemGroupCode = itemGroupUser.getItemGroupCode();
+                    Example exampleTemp=new Example(ItemGroupUser.class);
+                    exampleTemp.createCriteria().andEqualTo("channelCode", itemGroupUser.getChannelCode()).andEqualTo("itemGroupCode", itemGroupCode);
+                    List<ItemGroupUser> list1 = itemGroupUserService.selectByExample(exampleTemp);
+                    List<String> phoneNumberList=list1.stream().map(e->e.getPhoneNumber()).collect(Collectors.toList());
+                    if(!phoneNumberList.contains(loginPhone)){
+                        continue;
+                    }else {
+                        for (ItemGroupUser groupUser : list1) {
+                            if (StringUtils.equals(groupUser.getPhoneNumber(),loginPhone)){
+                                String isLeader = groupUser.getIsLeader();
+                                String isValid = groupUser.getIsValid();
+                                if (StringUtils.equals(isLeader,ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(isValid,ZeroToNineEnum.ONE.getCode())){
+                                    return ZeroToNineEnum.ONE.getCode();
+                                }else {
+                                   continue;
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+                if (pageFlag){
+                    return ZeroToNineEnum.ZERO.getCode();
+                }else {
+                    String msg="当前数据不归属任何商品组，当前用户不是创建者本人，无此操作权限";
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
+                }
+            }
+
+        }else {
+                return ZeroToNineEnum.ONE.getCode();
+        }
     }
 
     /**
@@ -2076,6 +2266,13 @@ public class GoodsBiz implements IGoodsBiz {
     @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSkusValid(Long id, String spuCode, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+        //数据权限查询
+        Items tempItems = new Items();
+        tempItems.setSpuCode(spuCode);
+        tempItems = itemsService.selectOne(tempItems);
+        selectDataAcl(tempItems.getId(),aclUserAccreditInfo,false);
+
+
         AssertUtil.notNull(id, "SKU启用/停用操作参数ID不能为空");
         AssertUtil.notBlank(spuCode, "SKU启用/停用操作参数spuCode不能为空");
         AssertUtil.notBlank(isValid, "SKU启用/停用操作参数isValid不能为空");
@@ -2092,6 +2289,11 @@ public class GoodsBiz implements IGoodsBiz {
             barSku.setId(id);
             barSku = skusService.selectOne(barSku);
             checkBarcodeOnly(barSku.getBarCode(),"","");
+            //如果spu停用，则开启spu
+            if(tempItems.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
+            	tempItems.setIsValid(ZeroToNineEnum.ONE.getCode());
+            	itemsService.updateByPrimaryKey(tempItems);
+            }
         }
         int count = skusService.updateByPrimaryKeySelective(skus);
         if(count == 0){
@@ -2122,9 +2324,14 @@ public class GoodsBiz implements IGoodsBiz {
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //更新商品同步到企业购
         updateItemsNotifyToBusinessPurchase(items, updateSkus);
+
         //记录操作日志
+        String logMsg="";
+        logMsg=String.format("商品信息：①%s:SKU状态由\"%s\"改为\"%s\"",spuCode,ValidEnum.getValidEnumByCode(_isValid).getName(),ValidEnum.getValidEnumByCode(isValid).getName());
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
-                LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+                    LogOperationEnum.UPDATE.getMessage(),logMsg, null);
+
+
     }
 
     private void itemsUpdateNoticeWarehouseItemInfo(Skus skus, String _isValid) {
@@ -2145,8 +2352,8 @@ public class GoodsBiz implements IGoodsBiz {
                 if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
                         oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
                     warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
-                }else{
-
+                    logInfoService.recordLog(warehouseItemInfo1, warehouseItemInfo1.getId().toString(), "admin",
+                            LogOperationEnum.CANCEL_NOTICE.getMessage(), "商品被停用", null);
                 }
             }else{
                 Integer oldNoticeStatus = warehouseItemInfo1.getOldNoticeStatus();
@@ -2157,6 +2364,8 @@ public class GoodsBiz implements IGoodsBiz {
                         oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
                     if(warehouseItemInfo1.getOldNoticeStatus() != null){
                         warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
+                        logInfoService.recordLog(warehouseItemInfo1, warehouseItemInfo1.getId().toString(), "admin",
+                                LogOperationEnum.RECOVER_NOTICE.getMessage(), "商品重新启用", null);
                     }
                     warehouseItemInfo1.setOldNoticeStatus(null);
                 }

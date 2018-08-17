@@ -17,4 +17,6 @@ public interface IWarehouseItemInfoService extends IBaseService<WarehouseItemInf
     int selectWarehouseItemInfoCount(Map<String, Object> map);
 
     List<WarehouseItemInfo> selectWarehouseItemInfo(Map<String, Object> map);
+
+	List<WarehouseItemInfo> selectInfoListBySkuCodeAndWarehouseCode(List<String> skuCodeList, String warehouseCode);
 }

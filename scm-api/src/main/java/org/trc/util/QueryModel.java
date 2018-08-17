@@ -7,6 +7,8 @@ import org.hibernate.validator.constraints.Length;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;
 
+import io.swagger.annotations.ApiParam;
+
 import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 
@@ -17,11 +19,14 @@ public class QueryModel implements Serializable{
 
     @QueryParam("isValid")
     @Length(max = 2, message = "是否启用编码长度不能超过2个")
+    @ApiParam("是否启用，0否，1是")
     protected String isValid;
     @QueryParam("startDate")
+    @ApiParam("开始时间")
     @Length(max = 10, message = "开始日期长度不能超过2个")
     protected String startDate;//开始日期，格式：yyyy-mm-dd
     @QueryParam("endDate")
+    @ApiParam("结束日期")
     @Length(max = 10, message = "截止日期长度不能超过2个")
     protected String endDate;//截止日期，格式：yyyy-mm-dd
 
@@ -58,7 +63,7 @@ public class QueryModel implements Serializable{
      * 获取排序字段数组
      * @return
      */
-    public String[] getOrderBys(){
+    public String[] pageGetOrderBys(){
         checkOrder(this.orderBy, this.order);
         if(StringUtils.isNotEmpty(this.orderBy))
             return this.orderBy.split(ORDER_SPLIT);
@@ -95,7 +100,7 @@ public class QueryModel implements Serializable{
      * 获取排序方向数组
      * @return
      */
-    public String[] getOrders(){
+    public String[] pageGetOrders(){
         if(StringUtils.isNotEmpty(this.order))
             return this.order.split(ORDER_SPLIT);
         else
@@ -108,7 +113,7 @@ public class QueryModel implements Serializable{
      * @param order
      * 可选值为desc或asc,多个排序字段时用','分隔.
      */
-    public void setOrder(final String order) {
+    public void pageSetOrder(final String order) {
         String lowcaseOrder = StringUtils.lowerCase(order);
         // 检查order字符串的合法值
         String[] orders = StringUtils.split(lowcaseOrder, ORDER_SPLIT);

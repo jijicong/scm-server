@@ -7,12 +7,18 @@ import org.trc.mapper.warehouseInfo.IWarehouseInfoMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Created by wangyz on 2017/11/15.
  */
 @Service("warehouseInfoService")
 public class WarehouseInfoServiceImpl extends BaseService<WarehouseInfo,Long> implements IWarehouseInfoService {
+	@Autowired
+	private IWarehouseInfoMapper mapper;
+	
+	@Override
+	public WarehouseInfo selectOneByCode(String warehouseCode) {
+        WarehouseInfo whi = new WarehouseInfo();
+        whi.setCode(warehouseCode);
+        return mapper.selectOne(whi);
+	}
 }

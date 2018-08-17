@@ -67,12 +67,12 @@ public class ExternalSupplierConfig {
     private String allocateOrderInCancelUrl;
 
     /**
-     * 商品同步接口地址
+     * 商品同步接口URL
      */
     private String itemsSyncUrl;
 
     /**
-     * 商品库存查询接口地址
+     * 商品库存查询接口URL
      */
     private String inventoryQueryUrl;
 
@@ -120,6 +120,16 @@ public class ExternalSupplierConfig {
      * 京东仓间调拨单创建接口URL
      */
     private String josAllocateOrderCreateUrl;
+    
+    /**
+     * 采购退货出库单创建URL
+     */
+    private String entryReturnOrderCreateUrl;
+    
+    /**
+     * 采购退货出库单详情URL
+     */
+    private String entryReturnDetailUrl;
 
 
 

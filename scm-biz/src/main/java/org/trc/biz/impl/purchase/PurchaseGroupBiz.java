@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUser;
@@ -334,11 +335,13 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @PurchaseGroupCacheEvict
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void savePurchaseCroupUser(PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo) {
         //需判断用户是否有改变属性启停用状态如果有变更需要更改关联关系表
         List<PurchaseGroupUser> valueList = JSONArray.parseArray(purchaseGroupUser.getGridValue(), PurchaseGroupUser.class);
         AssertUtil.notNull(valueList, "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
         String userId= aclUserAccreditInfo.getUserId();
+        String code = purchaseGroupUser.getCode();
         String channelCode = aclUserAccreditInfo.getChannelCode();
         for (PurchaseGroupUser user : valueList) {
             AssertUtil.notNull(user.getName(), "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
@@ -363,6 +366,29 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 purchaseGroupUserService.insert(user);
             }
             if (user.getStatus().equals(RecordStatusEnum.DELETE.getCode())) {
+                Example example = new Example(PurchaseGroupUserRelation.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("userId", user.getId().toString());
+                criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                criteria.andNotIn("purchaseGroupCode", new ArrayList<String>(){{add(code);}});
+                List<PurchaseGroupUserRelation> purchaseGroupUserRelationList =
+                        purchaseGroupuUserRelationService.selectByExample(example);
+
+                if(purchaseGroupUserRelationList.size() > 0){
+                    String message = "";
+                    for(PurchaseGroupUserRelation relation : purchaseGroupUserRelationList){
+                        if(StringUtils.isEmpty(message)){
+                            message = relation.getPurchaseGroupCode();
+                        }else{
+                            message = message + "," + relation.getPurchaseGroupCode();
+                        }
+                    }
+                    String msg = "不允许删除，还存在其他关联组:" + message;
+                    logger.error(msg);
+                    throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
+                }
+
                 PurchaseGroupUser userDelete = new PurchaseGroupUser();
                 userDelete.setId(user.getId());
                 userDelete.setIsDeleted(ZeroToNineEnum.ONE.getCode());

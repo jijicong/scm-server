@@ -1,19 +1,10 @@
 package org.trc.dbUnit.warehouseNotice;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.alibaba.fastjson.JSON;
+import com.qimen.api.request.EntryorderCreateRequest;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.trc.biz.impl.purchase.PurchaseOrderAuditBiz;
-import org.trc.biz.impl.warehouseNotice.WarehouseNoticeBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
@@ -22,10 +13,12 @@ import org.trc.service.IQimenService;
 import org.trc.service.impl.purchase.WarehouseNoticeService;
 import org.trc.util.AppResult;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.qimen.api.request.EntryorderCreateRequest;
-import com.qimen.api.response.EntryorderCreateResponse;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class WarehouseNoticeDbUnit extends BaseTest {
 	
@@ -222,5 +215,5 @@ public class WarehouseNoticeDbUnit extends BaseTest {
         tableNameList.add("purchase_order");
         exportData(tableNameList, "src/test/resources/warehouseNotice/expPurchaseOrder.xml");
     }
-    
+
 }

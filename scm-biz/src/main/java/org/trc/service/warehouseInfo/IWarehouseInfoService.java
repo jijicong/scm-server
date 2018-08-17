@@ -10,4 +10,6 @@ import java.util.Map;
  * Created by wangyz on 2017/11/15.
  */
 public interface IWarehouseInfoService extends IBaseService<WarehouseInfo,Long> {
+
+	WarehouseInfo selectOneByCode(String warehouseCode);
 }

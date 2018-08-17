@@ -23,4 +23,15 @@ public class AssertUtil extends Assert{
     public static boolean collectionIsEmpty(Collection collection){
         return (collection==null||collection.isEmpty());
     }
+    
+    /**
+     * 判断列表为空
+     * @param collection  列表
+     * @param msg  提示语
+     * 
+     */
+    public static void listNotEmpty(Collection collection, String msg) {
+        if(collectionIsEmpty(collection))
+            throw new IllegalArgumentException(msg);
+    }
 }

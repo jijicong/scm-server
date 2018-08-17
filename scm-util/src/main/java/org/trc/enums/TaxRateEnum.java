@@ -10,7 +10,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum TaxRateEnum {
 
-    PURCHASE_RATE("purchaseRate", "采购税率");
+    PURCHASE_RATE("purchaseRate", "采购税率"),
+    PURCHASE_OUTBOUND_RATE("purchaseOutBoundRate", "采购退货税率");
 
     private String code;
     private String name;

@@ -211,7 +211,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前状态不能进行重新发货");
             }
             
-            if (AllocateInOrderStatusEnum.CANCEL.getCode().equals(allocateInOrder.getStatus())
+            if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(allocateInOrder.getStatus())
             		&& DateCheckUtil.checkDate(allocateInOrder.getUpdateTime())) {
             	throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前调拨入单取消时间过长，不能重新收货");
             }
@@ -302,7 +302,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         allocateOrderExtService.setAllocateOrderWarehouseName(allocateInOrder);
 
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
-		String whName = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
+		WarehouseInfo whi = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
 		
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService
 				.getDetailListByOrderCode(allocateInOrder.getAllocateOrderCode());
@@ -319,6 +319,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 	        Example.Criteria ca = example.createCriteria();
 	        ca.andIn("skuCode", skuCodeList);
 	        ca.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
+	        ca.andEqualTo("warehouseCode", allocateInOrder.getInWarehouseCode());
 	        List<WarehouseItemInfo> whiList = warehouseItemInfoService.selectByExample(example);
 	        for (AllocateSkuDetail detail : detailList) {
 	        	for (WarehouseItemInfo info : whiList) {
@@ -392,7 +393,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 			allocateInOrderService.updateInOrderById(status, allocateInOrder.getId(), errMsg, wmsAllocatInCode, orderSeq);
 			allocateSkuDetailService.updateInSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
 //		}
-        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whName,
+        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whi.getWarehouseName(),
         		logOp, errMsg, null);
         return succ;
     }

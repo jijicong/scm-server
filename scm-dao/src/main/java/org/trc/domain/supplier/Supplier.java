@@ -13,8 +13,7 @@ import javax.ws.rs.PathParam;
 
 public class Supplier extends BaseDO{
 
-    private static final long serialVersionUID = 1L;
-
+    private static final long serialVersionUID = 8489560073605407179L;
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -26,7 +26,7 @@ public abstract class BaseTestContext extends BaseTest {
         aclUserAccreditInfo.setChannelName("aaa");
         aclUserAccreditInfo.setId(1L);
         aclUserAccreditInfo.setName("admin");
-        aclUserAccreditInfo.setPhone("15757195796");
+        aclUserAccreditInfo.setPhone("18012345678");
         aclUserAccreditInfo.setUserId("E2E4BDAD80354EFAB6E70120C271968C");
         aclUserAccreditInfo.setUserType("mixtureUser");
         aclUserAccreditInfo.setIsValid("1");

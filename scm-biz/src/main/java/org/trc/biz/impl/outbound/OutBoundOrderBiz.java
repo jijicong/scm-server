@@ -104,8 +104,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Autowired
     private RequestFlowService requestFlowService;
     @Autowired
-    private LogisticsCompanyService logisticsCompanyService;
-    @Autowired
     private IWarehouseInfoService warehouseInfoService;
     @Autowired
     private RedisLock redisLock;
@@ -170,10 +168,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
                     //回写数据
                     try {
-                        this.updateDeliveryOrderDetail(responseAppResult, request.getOrderCode(), request.getOrderId());
+                        outBoundOrderService.updateDeliveryOrderDetail(responseAppResult, request.getOrderCode(), request.getOrderId());
                     } catch (Exception e) {
                         e.printStackTrace();
-                        logger.error("发货单号:{},物流信息获取异常{}", request.getOrderCode(),e.getMessage());
+                        logger.error("发货单号:{},物流信息获取异常{}", request.getOrderCode(),e);
                     }
                 }).start();
             }
@@ -227,12 +225,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         this.deliveryOrderDetail(requests);
 
     }
-
-    private String getOutboundCode(OutboundOrder order){
-        String outboundCode = order.getOutboundOrderCode();
-        int newCode = order.getNewCode();
-        return outboundCode + "_" + newCode;
-    }
+//
+//    private String getOutboundCode(OutboundOrder order){
+//        String outboundCode = order.getOutboundOrderCode();
+//        int newCode = order.getNewCode();
+//        return outboundCode + "_" + newCode;
+//    }
 
     private boolean isCompound(String num){
         List<String> list = new ArrayList<>();
@@ -246,175 +244,176 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
-    //修改发货单详情
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @Cacheable(value = SupplyConstants.Cache.OUTBOUND_ORDER)
-    public void updateDeliveryOrderDetail(AppResult<ScmDeliveryOrderDetailResponse> responseAppResult,
-                                           String outboundOrderCode, String orderId) throws Exception{
-        if(StringUtils.equals("200", responseAppResult.getAppcode())){
-            ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
-            //获取发货单
-            OutboundOrder outboundOrder = new OutboundOrder();
-            outboundOrder.setOutboundOrderCode(outboundOrderCode);
-            outboundOrder = outBoundOrderService.selectOne(outboundOrder);
-
-            //获取仓库名称
-            Long warehouseId = outboundOrder.getWarehouseId();
-            WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
-
-            if(response.getCurrentStatus() != null && StringUtils.equals("10028", response.getCurrentStatus())){
-                this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
-                this.updateOrderCancelInfo(outboundOrder, "线下取消",false);
-
-                //更新库存
-                skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
-                        outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
-
-                //更新订单信息
-                this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
-
-                //记录日志
-                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
-                        "取消发货", "仓库平台取消发货", null);
-
-                // 发货单确认结果通知渠道
-                scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
-                return ;
-            }
-
-            //只获取复合过的发货单详情
-            if(response != null && response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus()) ){
-                //组装获取包裹信息
-                ScmOrderPacksRequest request = new ScmOrderPacksRequest();
-                request.setOrderIds(orderId);
-                //调用京东接口获取包裹信息
-                AppResult<ScmOrderPacksResponse> packageResponseAppResult = null;
-                if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
-                    packageResponseAppResult = warehouseMockService.orderPack(request);
-                }else{
-                    packageResponseAppResult = warehouseApiService.orderPack(request);
-                }
-                if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
-                    ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
-
-                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
-                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
-                        return;
-                    }
-
-//                    if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
-//                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
-//                        return;
+//    //修改发货单详情
+//    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+//    @Cacheable(value = SupplyConstants.Cache.OUTBOUND_ORDER)
+//    public void updateDeliveryOrderDetail(AppResult<ScmDeliveryOrderDetailResponse> responseAppResult,
+//                                           String outboundOrderCode, String orderId) throws Exception{
+//        if(StringUtils.equals("200", responseAppResult.getAppcode())){
+//            ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
+//            //获取发货单
+//            OutboundOrder outboundOrder = new OutboundOrder();
+//            outboundOrder.setOutboundOrderCode(outboundOrderCode);
+//            outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+//
+//            //获取仓库名称
+//            Long warehouseId = outboundOrder.getWarehouseId();
+//            WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
+//
+//            if(response.getCurrentStatus() != null && StringUtils.equals("10028", response.getCurrentStatus())){
+//                this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
+//                this.updateOrderCancelInfo(outboundOrder, "线下取消",false);
+//
+//                //更新库存
+//                skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
+//                        outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
+//
+//                //更新订单信息
+//                this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+//
+//                //记录日志
+//                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
+//                        "取消发货", "仓库平台取消发货", null);
+//
+//                // 发货单确认结果通知渠道
+//                scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
+//                return ;
+//            }
+//
+//            //只获取复合过的发货单详情
+//            if(response != null && response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus()) ){
+//                //组装获取包裹信息
+//                ScmOrderPacksRequest request = new ScmOrderPacksRequest();
+//                request.setOrderIds(orderId);
+//                //调用京东接口获取包裹信息
+//                AppResult<ScmOrderPacksResponse> packageResponseAppResult = null;
+//                if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+//                    packageResponseAppResult = warehouseMockService.orderPack(request);
+//                }else{
+//                    packageResponseAppResult = warehouseApiService.orderPack(request);
+//                }
+//                if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
+//                    ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
+//
+////                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
+////                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
+////                        return;
+////                    }
+//
+////                    if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
+////                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
+////                        return;
+////                    }
+//
+//                    //更新发货单信息
+//                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(packsResponse,
+//                            outboundOrder.getWarehouseCode(), outboundOrderCode);
+//
+//                    //更新发货单状态
+//                    this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
+//
+//                    //更新库存
+//                    if(list.size() > 0){
+//                        skuStockService.updateSkuStock(list);
 //                    }
+//
+//                    //更新订单信息
+//                    this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
+//
+//                    //记录日志
+//                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
+//                            LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(list, outboundOrder.getOutboundOrderCode()), null);
+//
+//                    // 发货单确认结果通知渠道
+//                    deliveryOrderConfirmNotice(outboundOrder, response);
+//
+//                }
+//
+//            }
+//
+//        }else{
+//            logger.error("发货单号:{},物流信息获取异常：{}", outboundOrderCode, responseAppResult.getResult());
+//        }
+//    }
 
-                    //更新发货单信息
-                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(packsResponse, outboundOrder.getWarehouseCode());
-
-                    //更新发货单状态
-                    this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
-
-                    //更新库存
-                    if(list.size() > 0){
-                        skuStockService.updateSkuStock(list);
-                    }
-
-                    //更新订单信息
-                    this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
-
-                    //记录日志
-                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
-                            LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(list, outboundOrder.getOutboundOrderCode()), null);
-
-                    // 发货单确认结果通知渠道
-                    deliveryOrderConfirmNotice(outboundOrder, response);
-
-                }
-
-            }
-
-        }else{
-            logger.error("发货单号:{},物流信息获取异常：{}", outboundOrderCode, responseAppResult.getResult());
-        }
-    }
-
-    private void deliveryOrderConfirmNotice(OutboundOrder outboundOrder,
-                                            ScmDeliveryOrderDetailResponse response) {
-    	try {
-    		LogisticNoticeForm noitce = new LogisticNoticeForm();
-    		//设置请求渠道的签名
-    		TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
-    		BeanUtils.copyProperties(trcParam, noitce);
-
-    		// 获取店铺级订单号
-    		noitce.setShopOrderCode(outboundOrder.getShopOrderCode());
-
-    		// 信息类型 0-物流单号,1-配送信息
-    		noitce.setType(LogsticsTypeEnum.WAYBILL_NUMBER.getCode());
-
-    		//物流公司名称
-            String logisticsName = response.getLogisticsName();
-            //物流公司编号
-            String logisticsCode = response.getLogisticsCode();
-            //物流单号
-            String expressCode = response.getExpressCode();
-            //所有商品详情
-            List<ScmDeliveryOrderDetailResponseItem> items = response.getScmDeliveryOrderDetailResponseItemList();
-
-    		// 包裹信息列表
-    		List<Logistic> logisticList = new ArrayList<>();
-            Logistic lsc = new Logistic();
-            lsc.setSupplierOrderCode(outboundOrder.getOutboundOrderCode());
-            lsc.setWaybillNumber(expressCode);
-            // 物流公司名称
-            lsc.setLogisticsCorporation(logisticsName);
-            // 物流公司编码
-            lsc.setLogisticsCorporationCode(generateLogisticsCode(logisticsName, outboundOrder.getChannelCode()));
-            lsc.setLogisticsStatus(SupplierOrderLogisticsStatusEnum.COMPLETE.getCode());//妥投
-            lsc.setLogisticInfo(new ArrayList<>());
-            //发货单明细信息
-            OutboundDetail outboundDetail = new OutboundDetail();
-            outboundDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
-            List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
-            AssertUtil.notEmpty(outboundDetailList, String.format("发货单[%s]对应的发货单明细信息为空", outboundOrder.getOutboundOrderCode()));
-            /**
-             * 包裹对应商品信息
-             **/
-            List<SkuInfo> skuList = new ArrayList<>();
-            if (!CollectionUtils.isEmpty(items)) {
-                items.forEach(item -> {
-                    SkuInfo sku = new SkuInfo();
-                    sku.setNum(item.getActualQty().intValue());
-                    for(OutboundDetail detail1: outboundDetailList){
-                        if(StringUtils.equals(detail1.getWarehouseItemId(), item.getItemId())){
-                            sku.setSkuCode(detail1.getSkuCode());
-                            sku.setSkuName(detail1.getSkuName());
-                            break;
-                        }
-                    }
-                    skuList.add(sku);
-                });
-            }
-            lsc.setSkus(skuList);
-            logisticList.add(lsc);
-            noitce.setLogistics(logisticList);
-    		//物流信息同步给渠道
-    		String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC,
-    				RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(),
-    				RequestFlowStatusEnum.SEND_INITIAL.getCode(), JSONObject.toJSONString(noitce));
-    		ToGlyResultDO toGlyResultDO = trcService.sendLogisticInfoNotice(noitce);
-    		RequestFlow requestFlowUpdate = new RequestFlow();
-    		requestFlowUpdate.setRequestNum(reqNum);
-    		requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
-    		requestFlowUpdate.setStatus(statusMap.get(toGlyResultDO.getStatus()));
-    		requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
-
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		logger.error("发货单号:{},物流信息通知渠道异常：{}",
-    				outboundOrder.getOutboundOrderCode(), e.getMessage());
-    	}
-
-    }
+//    private void deliveryOrderConfirmNotice(OutboundOrder outboundOrder,
+//                                            ScmDeliveryOrderDetailResponse response) {
+//    	try {
+//    		LogisticNoticeForm noitce = new LogisticNoticeForm();
+//    		//设置请求渠道的签名
+//    		TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
+//    		BeanUtils.copyProperties(trcParam, noitce);
+//
+//    		// 获取店铺级订单号
+//    		noitce.setShopOrderCode(outboundOrder.getShopOrderCode());
+//
+//    		// 信息类型 0-物流单号,1-配送信息
+//    		noitce.setType(LogsticsTypeEnum.WAYBILL_NUMBER.getCode());
+//
+//    		//物流公司名称
+//            String logisticsName = response.getLogisticsName();
+//            //物流公司编号
+//            String logisticsCode = response.getLogisticsCode();
+//            //物流单号
+//            String expressCode = response.getExpressCode();
+//            //所有商品详情
+//            List<ScmDeliveryOrderDetailResponseItem> items = response.getScmDeliveryOrderDetailResponseItemList();
+//
+//    		// 包裹信息列表
+//    		List<Logistic> logisticList = new ArrayList<>();
+//            Logistic lsc = new Logistic();
+//            lsc.setSupplierOrderCode(outboundOrder.getOutboundOrderCode());
+//            lsc.setWaybillNumber(expressCode);
+//            // 物流公司名称
+//            lsc.setLogisticsCorporation(logisticsName);
+//            // 物流公司编码
+//            lsc.setLogisticsCorporationCode(generateLogisticsCode(logisticsName, outboundOrder.getChannelCode()));
+//            lsc.setLogisticsStatus(SupplierOrderLogisticsStatusEnum.COMPLETE.getCode());//妥投
+//            lsc.setLogisticInfo(new ArrayList<>());
+//            //发货单明细信息
+//            OutboundDetail outboundDetail = new OutboundDetail();
+//            outboundDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
+//            List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
+//            AssertUtil.notEmpty(outboundDetailList, String.format("发货单[%s]对应的发货单明细信息为空", outboundOrder.getOutboundOrderCode()));
+//            /**
+//             * 包裹对应商品信息
+//             **/
+//            List<SkuInfo> skuList = new ArrayList<>();
+//            if (!CollectionUtils.isEmpty(items)) {
+//                items.forEach(item -> {
+//                    SkuInfo sku = new SkuInfo();
+//                    sku.setNum(item.getActualQty().intValue());
+//                    for(OutboundDetail detail1: outboundDetailList){
+//                        if(StringUtils.equals(detail1.getWarehouseItemId(), item.getItemId())){
+//                            sku.setSkuCode(detail1.getSkuCode());
+//                            sku.setSkuName(detail1.getSkuName());
+//                            break;
+//                        }
+//                    }
+//                    skuList.add(sku);
+//                });
+//            }
+//            lsc.setSkus(skuList);
+//            logisticList.add(lsc);
+//            noitce.setLogistics(logisticList);
+//    		//物流信息同步给渠道
+//    		String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC,
+//    				RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(),
+//    				RequestFlowStatusEnum.SEND_INITIAL.getCode(), JSONObject.toJSONString(noitce));
+//    		ToGlyResultDO toGlyResultDO = trcService.sendLogisticInfoNotice(noitce);
+//    		RequestFlow requestFlowUpdate = new RequestFlow();
+//    		requestFlowUpdate.setRequestNum(reqNum);
+//    		requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+//    		requestFlowUpdate.setStatus(statusMap.get(toGlyResultDO.getStatus()));
+//    		requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+//
+//    	} catch (Exception e) {
+//    		e.printStackTrace();
+//    		logger.error("发货单号:{},物流信息通知渠道异常：{}",
+//    				outboundOrder.getOutboundOrderCode(), e.getMessage());
+//    	}
+//
+//    }
 
     private String generateLogisticsCode(String logisticsName, String channelCode) {
     	String retMsg = "物流公司编码未找到";
@@ -496,16 +495,16 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         return sb.toString();
     }
 
-    //更新发货单状态
-    private void setOutboundOrderStatus(String outboundOrderCode, OutboundOrder outboundOrder){
-        List<OutboundDetail> outboundDetailList = null;
-        OutboundDetail outboundDetail = new OutboundDetail();
-        outboundDetail.setOutboundOrderCode(outboundOrderCode);
-        outboundDetailList = outboundDetailService.select(outboundDetail);
-        String outboundOrderStatus = this.getOutboundOrderStatusByDetail(outboundDetailList);
-        outboundOrder.setStatus(outboundOrderStatus);
-        outBoundOrderService.updateByPrimaryKey(outboundOrder);
-    }
+//    //更新发货单状态
+//    private void setOutboundOrderStatus(String outboundOrderCode, OutboundOrder outboundOrder){
+//        List<OutboundDetail> outboundDetailList = null;
+//        OutboundDetail outboundDetail = new OutboundDetail();
+//        outboundDetail.setOutboundOrderCode(outboundOrderCode);
+//        outboundDetailList = outboundDetailService.select(outboundDetail);
+//        String outboundOrderStatus = this.getOutboundOrderStatusByDetail(outboundDetailList);
+//        outboundOrder.setStatus(outboundOrderStatus);
+//        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+//    }
 
     //更新发货单
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -582,7 +581,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     //更新发货单
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmOrderPacksResponse response, String warehouseCode){
+    public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmOrderPacksResponse response, String warehouseCode,
+                                                                     String outboundOrderCode){
         OutboundDetail outboundDetail = null;
         OutboundDetailLogistics outboundDetailLogistics = null;
         OutboundPackageInfo outboundPackageInfo = null;
@@ -592,8 +592,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
         //遍历获取包裹信息
         for(ScmOrderDefaultResult result : results){
-            //发货单号
-            String outboundOrderCode = result.getOrderCode();
+//            //发货单号
+//            String outboundOrderCode = result.getOrderCode();
             //物流公司名称
             String logisticsName = result.getLogisticsName();
             //物流公司编号
@@ -726,21 +726,21 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         return count;
     }
 
-    //获取时间
-    private Date getTime(String operateTime) throws Exception{
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.parse(operateTime);
-    }
+//    //获取时间
+//    private Date getTime(String operateTime) throws Exception{
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        return sdf.parse(operateTime);
+//    }
 
-    //比较时间
-    private boolean compareDeliverTime(Date oldDate, String newTime) throws Exception{
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date newDate = sdf.parse(newTime);
-        if(oldDate.getTime() > newDate.getTime()){
-            return false;
-        }
-        return true;
-    }
+//    //比较时间
+//    private boolean compareDeliverTime(Date oldDate, String newTime) throws Exception{
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        Date newDate = sdf.parse(newTime);
+//        if(oldDate.getTime() > newDate.getTime()){
+//            return false;
+//        }
+//        return true;
+//    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -1055,50 +1055,50 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
-    private ScmDeliveryOrderCreateRequest setParam(WarehouseInfo warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
-        ScmDeliveryOrderCreateRequest request = new ScmDeliveryOrderCreateRequest();
-        List<ScmDeliveryOrderDO> scmDeleveryOrderDOList = new ArrayList<>();
-
-
-        DeliveryorderCreateRequest.DeliveryOrder deliveryOrder =  new DeliveryorderCreateRequest.DeliveryOrder();
-        deliveryOrder.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());
-        deliveryOrder.setOrderType(outboundOrder.getOrderType());
-        deliveryOrder.setWarehouseCode(outboundOrder.getWarehouseCode());
-        deliveryOrder.setCreateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
-        deliveryOrder.setPlaceOrderTime(DateUtils.formatDateTime(outboundOrder.getPayTime()));
-        deliveryOrder.setOperateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
-        deliveryOrder.setShopNick(outboundOrder.getShopName());
-        deliveryOrder.setSourcePlatformCode(SupplyConstants.SourcePlatformCodeType.OTHER);
-        DeliveryorderCreateRequest.SenderInfo senderInfo = new DeliveryorderCreateRequest.SenderInfo();
-        senderInfo.setName(warehouse.getWarehouseName());
-        senderInfo.setMobile(warehouse.getSenderPhoneNumber());
-        senderInfo.setProvince(warehouse.getProvince());
-        senderInfo.setCity(warehouse.getCity());
-        senderInfo.setDetailAddress(warehouse.getAddress());
-        deliveryOrder.setSenderInfo(senderInfo);
-        DeliveryorderCreateRequest.ReceiverInfo receiverInfo = new DeliveryorderCreateRequest.ReceiverInfo();
-        receiverInfo.setName(outboundOrder.getReceiverName());
-        receiverInfo.setMobile(outboundOrder.getReceiverPhone());
-        receiverInfo.setProvince(outboundOrder.getReceiverProvince());
-        receiverInfo.setCity(outboundOrder.getReceiverCity());
-        receiverInfo.setDetailAddress(outboundOrder.getReceiverAddress());
-        deliveryOrder.setReceiverInfo(receiverInfo);
-        deliveryOrder.setSellerMessage(outboundOrder.getSellerMessage());
-        deliveryOrder.setBuyerMessage(outboundOrder.getBuyerMessage());
-        List<DeliveryorderCreateRequest.OrderLine> orderLines = new ArrayList<>();
-        for (OutboundDetail outboundDetail : outboundDetails){
-            DeliveryorderCreateRequest.OrderLine orderLine = new DeliveryorderCreateRequest.OrderLine();
-            orderLine.setOwnerCode(outboundOrder.getChannelCode());
-            orderLine.setItemCode(outboundDetail.getSkuCode());
-            orderLine.setInventoryType(outboundDetail.getInventoryType());
-            orderLine.setPlanQty(String.valueOf(outboundDetail.getShouldSentItemNum()));
-            orderLine.setActualPrice(String.valueOf(CommonUtil.fenToYuan(outboundDetail.getActualAmount())));
-            orderLines.add(orderLine);
-        }
-        deliveryOrder.setOrderLines(orderLines);
-//        request.setDeliveryOrder(deliveryOrder);
-        return request;
-    }
+//    private ScmDeliveryOrderCreateRequest setParam(WarehouseInfo warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
+//        ScmDeliveryOrderCreateRequest request = new ScmDeliveryOrderCreateRequest();
+//        List<ScmDeliveryOrderDO> scmDeleveryOrderDOList = new ArrayList<>();
+//
+//
+//        DeliveryorderCreateRequest.DeliveryOrder deliveryOrder =  new DeliveryorderCreateRequest.DeliveryOrder();
+//        deliveryOrder.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());
+//        deliveryOrder.setOrderType(outboundOrder.getOrderType());
+//        deliveryOrder.setWarehouseCode(outboundOrder.getWarehouseCode());
+//        deliveryOrder.setCreateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
+//        deliveryOrder.setPlaceOrderTime(DateUtils.formatDateTime(outboundOrder.getPayTime()));
+//        deliveryOrder.setOperateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
+//        deliveryOrder.setShopNick(outboundOrder.getShopName());
+//        deliveryOrder.setSourcePlatformCode(SupplyConstants.SourcePlatformCodeType.OTHER);
+//        DeliveryorderCreateRequest.SenderInfo senderInfo = new DeliveryorderCreateRequest.SenderInfo();
+//        senderInfo.setName(warehouse.getWarehouseName());
+//        senderInfo.setMobile(warehouse.getSenderPhoneNumber());
+//        senderInfo.setProvince(warehouse.getProvince());
+//        senderInfo.setCity(warehouse.getCity());
+//        senderInfo.setDetailAddress(warehouse.getAddress());
+//        deliveryOrder.setSenderInfo(senderInfo);
+//        DeliveryorderCreateRequest.ReceiverInfo receiverInfo = new DeliveryorderCreateRequest.ReceiverInfo();
+//        receiverInfo.setName(outboundOrder.getReceiverName());
+//        receiverInfo.setMobile(outboundOrder.getReceiverPhone());
+//        receiverInfo.setProvince(outboundOrder.getReceiverProvince());
+//        receiverInfo.setCity(outboundOrder.getReceiverCity());
+//        receiverInfo.setDetailAddress(outboundOrder.getReceiverAddress());
+//        deliveryOrder.setReceiverInfo(receiverInfo);
+//        deliveryOrder.setSellerMessage(outboundOrder.getSellerMessage());
+//        deliveryOrder.setBuyerMessage(outboundOrder.getBuyerMessage());
+//        List<DeliveryorderCreateRequest.OrderLine> orderLines = new ArrayList<>();
+//        for (OutboundDetail outboundDetail : outboundDetails){
+//            DeliveryorderCreateRequest.OrderLine orderLine = new DeliveryorderCreateRequest.OrderLine();
+//            orderLine.setOwnerCode(outboundOrder.getChannelCode());
+//            orderLine.setItemCode(outboundDetail.getSkuCode());
+//            orderLine.setInventoryType(outboundDetail.getInventoryType());
+//            orderLine.setPlanQty(String.valueOf(outboundDetail.getShouldSentItemNum()));
+//            orderLine.setActualPrice(String.valueOf(CommonUtil.fenToYuan(outboundDetail.getActualAmount())));
+//            orderLines.add(orderLine);
+//        }
+//        deliveryOrder.setOrderLines(orderLines);
+////        request.setDeliveryOrder(deliveryOrder);
+//        return request;
+//    }
 
     @Override
     @OutboundOrderCacheEvict

@@ -53,6 +53,10 @@ public class ShopOrderForm extends QueryModel{
     @QueryParam("supplierOrderStatus")
     private String supplierOrderStatus;
 
+    // 0-接口,1-导入
+    @QueryParam("reciverType")
+    private String reciverType;
+
 
     public String getScmShopOrderCode() {
         return scmShopOrderCode;
@@ -124,6 +128,14 @@ public class ShopOrderForm extends QueryModel{
 
     public void setShopName(String shopName) {
         this.shopName = shopName;
+    }
+
+    public String getReciverType() {
+        return reciverType;
+    }
+
+    public void setReciverType(String reciverType) {
+        this.reciverType = reciverType;
     }
 
     @Override

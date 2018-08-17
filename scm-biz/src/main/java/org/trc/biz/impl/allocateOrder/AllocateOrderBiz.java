@@ -584,7 +584,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		/**
 		 * 以下两种情况满足其一可以作废：
 		 * 1.审核通过
-		 * 2.通知仓库 && (对应的调拨出库通知单的状态=“待通知出库”或“出库仓接收失败”)
+		 * 2.通知仓库 && (对应的调拨出库通知单的状态=“待通知出库”或“出库仓接收失败”或“已取消”)
 		 */
 
 		// 是否可以作废标识  true表示可以作废
@@ -625,7 +625,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	    /**
 	     * 以下两种情况满足其一可以作废：
 	     * 1.审核通过
-	     * 2.通知仓库 && (对应的调拨出库通知单的状态=“待通知出库”或“出库仓接收失败”)
+	     * 2.通知仓库 && (对应的调拨出库通知单的状态=“待通知出库”或“出库仓接收失败”或“已取消”)
 	     */
 		
 		// 是否可以作废标识  true表示可以作废
@@ -638,7 +638,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		    AllocateOutOrder outOrder = allocateOutOrderService.selectOne(queryOutOrder);
 		    if ((outOrder != null)
 					&& (AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
-							|| AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus()))) {
+							|| AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())
+							|| AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().equals(outOrder.getStatus()))) {
 		    	canDropFlg = true;
 		    }
 		}
@@ -1155,9 +1156,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                 if (!flag) {
                     throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,
                             "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
+                } else {
+                	return new ArrayList<AllocateSkuDetail>();
                 }
             }
-
+            
 			Example tmpExample = new Example(WarehouseItemInfo.class);
 			Example.Criteria tmpCriteria = tmpExample.createCriteria();
 
