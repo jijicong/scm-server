@@ -1582,6 +1582,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private void setShopOrderItemsDetail(ShopOrder shopOrder, PlatformOrder platformOrder, String flag){
         Example example = new Example(OrderItem.class);
         Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("scmShopOrderCode", shopOrder.getScmShopOrderCode());
         criteria.andEqualTo("shopOrderCode", shopOrder.getShopOrderCode());
         criteria.andEqualTo("platformOrderCode", shopOrder.getPlatformOrderCode());
         List<OrderItem> orderItemList = orderItemService.selectByExample(example);
