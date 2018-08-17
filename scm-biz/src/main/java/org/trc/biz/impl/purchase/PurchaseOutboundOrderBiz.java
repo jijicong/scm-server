@@ -143,7 +143,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     @Autowired
     private IPurchaseOrderService purchaseOrderService;
 
-
     /**
      * 查询采购退货单列表
      *
@@ -527,7 +526,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //同步出库单状态
         PurchaseOutboundNotice notice = new PurchaseOutboundNotice();
         notice.setId(purchaseOutboundNotice.getId());
-        notice.setStatus(PurchaseOutboundNoticeStatusEnum.CANCEL.getCode());
+        notice.setStatus(PurchaseOutboundNoticeStatusEnum.DROP.getCode());
         int num = purchaseOutboundNoticeService.updateByPrimaryKeySelective(notice);
         if (num < 1) {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, String.format("作废%s采购单操作失败,出库通知单已经被执行操作", JSON.toJSONString(order.getPurchaseOutboundOrderCode())));
@@ -746,7 +745,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
-
     public List<WarehouseInfo> getWarehousesByChannelCode(String channelCode) {
         //获取仓库信息(包括未启用的)
         WarehouseInfo warehouse = new WarehouseInfo();
@@ -761,6 +759,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
     /**
      * 所有仓库下拉列表
+     * (包括未启用的)
      *
      * @return
      */
@@ -768,7 +767,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     public List<WarehouseInfo> getAllWarehouses() {
         //获取已启用仓库信息
         WarehouseInfo warehouse = new WarehouseInfo();
-        warehouse.setIsValid(ZeroToNineEnum.ONE.getCode());
         //已通知仓库
         warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
@@ -784,11 +782,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<Supplier> getSuppliersByChannelCode(String channelCode) {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode, "获取渠道编号失败");
-        return purchaseOrderService.findSuppliersByChannelCode(channelCode, "");
+
+        return supplierService.selectAllSuppliers(channelCode);
     }
 
     /**
@@ -892,7 +890,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      */
     private void auditStatusUpdate(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo, String purchaseOutboundOrderCode) {
         PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
-        purchaseOutboundOrder.setCreateOperator(aclUserAccreditInfo.getName());
+        purchaseOutboundOrder.setAuditCreateOperator(aclUserAccreditInfo.getName());
         purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
         purchaseOutboundOrder.setAuditStatus(PurchaseOutboundOrderStatusEnum.AUDIT.getCode());
         purchaseOutboundOrder.setCommitAuditTime(Calendar.getInstance().getTime());

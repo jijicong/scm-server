@@ -33,4 +33,11 @@ public interface ISupplierService extends IBaseService<Supplier, Long>{
      * @throws Exception
      */
     List<Supplier> selectSupplierByName(String name);
+
+    /**
+     * 查询所有供应商（包括停用）
+     * @param channelCode
+     * @return
+     */
+    List<Supplier> selectAllSuppliers(String channelCode);
 }
