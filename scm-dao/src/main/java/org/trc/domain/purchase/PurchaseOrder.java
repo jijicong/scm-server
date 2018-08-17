@@ -163,6 +163,10 @@ public class PurchaseOrder extends BaseDO{
     @Transient
     private String auditOpinion;
 
+    //采购总数量
+    @Transient
+    private Long purchaseCount;
+
     public String getAuditOpinion() {
 		return auditOpinion;
 	}
@@ -602,5 +606,13 @@ public class PurchaseOrder extends BaseDO{
 
     public void setBoxInfoStatus(String boxInfoStatus) {
         this.boxInfoStatus = boxInfoStatus;
+    }
+
+    public Long getPurchaseCount() {
+        return purchaseCount;
+    }
+
+    public void setPurchaseCount(Long purchaseCount) {
+        this.purchaseCount = purchaseCount;
     }
 }

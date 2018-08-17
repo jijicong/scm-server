@@ -2,17 +2,10 @@ package org.trc.biz.order;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.order.ExceptionOrder;
-import org.trc.domain.order.PlatformOrder;
-import org.trc.domain.order.ShopOrder;
-import org.trc.domain.order.SupplierOrderInfo;
-import org.trc.domain.order.WarehouseOrder;
-import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.order.*;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.*;
-import org.trc.form.warehouse.ScmDeliveryOrderCreateRequest;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
-import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.util.IRealIpService;
@@ -20,7 +13,6 @@ import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
-import javax.ws.rs.FormParam;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.List;
@@ -119,7 +111,22 @@ public interface IScmOrderBiz {
      */
     void fetchLogisticsInfo();
 
+    /**
+     * 导出订单
+     * @param form
+     * @param aclUserAccreditInfo
+     * @return
+     */
+    Response exportOrder(ShopOrderForm form, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 导出供应商订单
+     * @param queryModel
+     * @param aclUserAccreditInfo
+     * @return
+     */
     Response exportSupplierOrder(WarehouseOrderForm queryModel,AclUserAccreditInfo aclUserAccreditInfo);
+
     /**
      *取消操作
      * @param form

@@ -208,7 +208,7 @@ public class categoryDbUnit extends BaseTest {
 
     @Test
     public void testRedisLock() throws Exception{
-        for(int i=0; i<400; i++){
+        for(int i=0; i<200; i++){
             /*if(i == 50 || i == 100 || i == 150 || i == 200 || i == 250 || i == 300 || i == 350){
                 Thread.sleep(1000L);
             }*/
@@ -227,7 +227,7 @@ public class categoryDbUnit extends BaseTest {
 
     @Test
     public void testPushOrder() throws Exception{
-        for(int i=950; i<1000; i++){
+        for(int i=2100; i<2100; i++){
             String platformOrderCode = "wdx807261128293165009-"+i;
             String shopOrderCode = "wdx1807261128293175009-"+i;
             String orderInfo = "{\n" +
@@ -515,6 +515,53 @@ public class categoryDbUnit extends BaseTest {
         Date end = new Date();
         long endL = System.nanoTime();
         log.debug("结束推送订单, 返回结果：" + response + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT) + ", 耗时" + DateUtils.getMilliSecondBetween(startL, endL) + "毫秒");
+    }
+
+    @Test
+    public void testGenterateCoe() throws Exception{
+        for(int i=0; i<100; i++){
+            /*if(i == 50 || i == 100 || i == 150 || i == 200 || i == 250 || i == 300 || i == 350){
+                Thread.sleep(1000L);
+            }*/
+            new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            invokeGenerateCode();
+                        }
+                    }
+            ).start();
+        }
+        System.in.read();
+    }
+
+    private void invokeGenerateCode(){
+        ResponseAck responseAck = null;
+        long startL = System.nanoTime();
+        log.debug("开始生成序列号, 参数： 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        String response = null;
+        try{
+            response = HttpClientUtil.httpGetRequest("http://127.0.0.1/scm-web/api/generateCode");
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                responseAck = jbo.toJavaObject(ResponseAck.class);
+            }else {
+                responseAck = new ResponseAck(ExceptionEnum.SYSTEM_BUSY, "");
+            }
+        }catch (IOException e){
+            String msg = String.format("调用生成序列号服务网络超时,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            responseAck = new ResponseAck(ExceptionEnum.REMOTE_INVOKE_TIMEOUT_EXCEPTION, "");
+        }catch (Exception e){
+            String msg = String.format("调用生成序列号服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            responseAck = new ResponseAck(ExceptionEnum.SYSTEM_EXCEPTION, "");
+        }
+        Date end = new Date();
+        long endL = System.nanoTime();
+        log.debug("结束生成序列号, 返回结果：" + response + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT) + ", 耗时" + DateUtils.getMilliSecondBetween(startL, endL) + "毫秒");
     }
 
