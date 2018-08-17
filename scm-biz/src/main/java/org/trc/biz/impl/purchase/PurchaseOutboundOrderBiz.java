@@ -671,7 +671,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 }
             }
         }
-
+        //审核页面，审核意见不显示
+        purchaseOutboundOrder.setAuditOpinion("");
         purchaseOutboundOrder.setPurchaseOutboundDetailList(purchaseOutboundDetails);
         return purchaseOutboundOrder;
     }
