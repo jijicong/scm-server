@@ -1,8 +1,6 @@
 package org.trc.domain.purchase;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
-import org.trc.custom.MoneySerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -615,4 +613,6 @@ public class PurchaseOrder extends BaseDO{
     public void setPurchaseCount(Long purchaseCount) {
         this.purchaseCount = purchaseCount;
     }
+
+
 }

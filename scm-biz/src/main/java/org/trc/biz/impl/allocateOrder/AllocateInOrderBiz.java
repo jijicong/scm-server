@@ -1,10 +1,5 @@
 package org.trc.biz.impl.allocateOrder;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.Response;
-
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,13 +19,12 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
-import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.ParamValidException;
-import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
+import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.*;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
@@ -50,9 +44,12 @@ import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
-
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
+
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
 
