@@ -286,7 +286,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
     		 * 更新操作
     		 */
     		this.updateById(status, notice.getId(), null, null);
-    		detailService.updateByOrderCode(status, null, null, notice.getOutboundNoticeCode());
+    		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
     		// 日志 admin??
             logInfoService.recordLog(notice, notice.getId().toString(), "admin",
             		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), logRemark, null);
@@ -305,6 +305,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		 if (CANCELLED.equals(resp.getStatus())) { // 已取消
 			 
 			 this.updateByCode(PurchaseOutboundNoticeStatusEnum.CANCEL, null, noticeCode);
+			 detailService.updateByOrderCode(PurchaseOutboundNoticeStatusEnum.CANCEL, noticeCode);
 			 // 日志处理
 			 try {
 				 PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(wmsCode);
@@ -359,7 +360,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 				 }
 				 remarkList.add(detail.getSkuCode() + ":" + result);
 				 // 更新商品详情
-				 detailService.updateByOrderCode(detailStatus, nowTime, item.getActualQty(), detail.getOutboundNoticeCode());
+				 detailService.updateByDetailId(detailStatus, nowTime, item.getActualQty(), detail.getId());
 			 }
 			 if (!CollectionUtils.isEmpty(skuList)) {
 				 exceptionCause = "[" + StringUtils.join(skuList, SupplyConstants.Symbol.COMMA) + "]实际出库数量不等于要求退货数量";

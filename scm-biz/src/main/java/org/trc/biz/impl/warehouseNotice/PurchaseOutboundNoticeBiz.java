@@ -210,7 +210,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		 * 更新操作
 		 */
 		noticeService.updateById(status, notice.getId(), errMsg, wmsEntryRtCode);
-		detailService.updateByOrderCode(status, null, null, notice.getOutboundNoticeCode());
+		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：出库仓接收成功（失败）; 操作人：仓库名称; 备注：失败原因)
         logInfoService.recordLog(notice, notice.getId().toString(), whi.getWarehouseName(),
@@ -270,7 +270,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		 * 更新操作
 		 */
 		noticeService.updateById(cancelSts, notice.getId(), null, null);
-		detailService.updateByOrderCode(cancelSts, null, null, notice.getOutboundNoticeCode());
+		detailService.updateByOrderCode(cancelSts, notice.getOutboundNoticeCode());
 		
 		//记录操作日志 (动作：取消出库; 操作人：仓库名称; 备注：取消原因+取消结果)
         logInfoService.recordLog(notice, notice.getId().toString(), useInfo.getUserId(),
