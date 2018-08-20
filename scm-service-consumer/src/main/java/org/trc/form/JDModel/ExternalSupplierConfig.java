@@ -131,6 +131,11 @@ public class ExternalSupplierConfig {
      */
     private String entryReturnDetailUrl;
 
+    /**
+     * 京东库存查询接口
+     */
+    private String SkuStockQuery;
+
 
 
 
