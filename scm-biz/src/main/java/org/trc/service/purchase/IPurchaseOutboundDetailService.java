@@ -11,5 +11,7 @@ public interface IPurchaseOutboundDetailService extends IBaseService<PurchaseOut
 
 	List<PurchaseOutboundDetail> selectDetailByNoticeCode(String outboundNoticeCode);
 
-	void updateByOrderCode(PurchaseOutboundNoticeStatusEnum status, Date nowTime, Long ActualQty, String outboundNoticeCode);
+	void updateByOrderCode(PurchaseOutboundNoticeStatusEnum status, String outboundNoticeCode);
+
+	void updateByDetailId(PurchaseOutboundNoticeStatusEnum detailStatus, Date nowTime, Long actualQty, Long id);
 }

@@ -42,13 +42,11 @@ public class PurchaseOutboundDetailService extends BaseService<PurchaseOutboundD
     }
 
     @Override
-    public void updateByOrderCode(PurchaseOutboundNoticeStatusEnum status, Date nowTime, Long actualQty, String outboundNoticeCode) {
+    public void updateByOrderCode(PurchaseOutboundNoticeStatusEnum status, String outboundNoticeCode) {
         PurchaseOutboundDetail updateRecord = new PurchaseOutboundDetail();
         //采购退货单详情商品出库状态
-        setOutboundStatus(status, updateRecord);
+        //setOutboundStatus(status, updateRecord);
         updateRecord.setStatus(status.getCode());
-        updateRecord.setActualStorageQuantity(actualQty);
-        updateRecord.setStorageTime(nowTime);
         Example example = new Example(PurchaseOutboundDetail.class);
         Example.Criteria ca = example.createCriteria();
         if (StringUtils.isBlank(outboundNoticeCode)) {
@@ -67,4 +65,17 @@ public class PurchaseOutboundDetailService extends BaseService<PurchaseOutboundD
             updateRecord.setOutboundStatus(PurchaseOutboundStatusEnum.EXCEPTION.getCode());
         }
     }
+
+	@Override
+	public void updateByDetailId(PurchaseOutboundNoticeStatusEnum detailStatus, Date nowTime, Long actualQty, Long id) {
+        PurchaseOutboundDetail updateRecord = new PurchaseOutboundDetail();
+        //采购退货单详情商品出库状态
+        setOutboundStatus(detailStatus, updateRecord);
+        updateRecord.setStatus(detailStatus.getCode());
+        updateRecord.setActualStorageQuantity(actualQty);
+        updateRecord.setStorageTime(nowTime);
+        updateRecord.setId(id);
+        detailMapper.updateByPrimaryKeySelective(updateRecord);
+		
+	}
 }
