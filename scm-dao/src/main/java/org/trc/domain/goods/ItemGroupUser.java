@@ -32,12 +32,12 @@ public class ItemGroupUser implements Serializable{
     private Long id;
 
     @FormParam("name")
-    @Length(max=10,message = "组员姓名不能超过10个字符,汉字不能超过5个")
+    @Length(max=10,message = "组员姓名不能超过10个")
     @ApiModelProperty("用户名字")
     private String name;
 
     @FormParam("channelCode")
-    @Length(max = 32, message = "业务线渠道编码字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max = 32, message = "业务线渠道编码不能超过32个")
     @ApiModelProperty("用户业务线编码，前端不需要传值")
     private String channelCode;
 
@@ -61,12 +61,12 @@ public class ItemGroupUser implements Serializable{
     private String isDeleted; //是否删除:0-否,1-是
 
     @FormParam("createOperator")
-    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max = 32, message = "创建人名称不能超过32个")
     @ApiModelProperty("创建人,前端不需要传值")
     private String createOperator; //创建人
 
     @FormParam("isValid")
-    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
+    @Length(max = 2, message = "是否有编码不能超过2个")
     @ApiModelProperty("启停用状态0-停用,1-启用")
     private String isValid; //是否有效:0-否,1-是
 

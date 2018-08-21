@@ -1178,26 +1178,14 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      */
     private List<PurchaseOutboundDetail> getDetails(PurchaseOutboundItemForm form, String skus, Pagenation<PurchaseOutboundDetail> page, Pagenation<Skus> pagenation) {
 
-        //是否条件查询的标记
-        boolean flag = false;
-        if (StringUtils.isNotBlank(form.getSkuCode())
-                || StringUtils.isNotBlank(form.getSkuName())
-                || StringUtils.isNotBlank(form.getBrandId())
-                || StringUtils.isNotBlank(form.getBarCode())) {
-            flag = true;
-        }
-
         /**
          * 查询入库单SKU，条件:供应商名称且入库状态为全部入库、部分入库、入库异常
          * skuCode已去重
          */
-        List<WarehouseNoticeDetails> warehouseNoticeDetails = getSkuCodesBySupplier(form, flag);
+        List<WarehouseNoticeDetails> warehouseNoticeDetails = getSkuCodesBySupplier(form);
         if (CollectionUtils.isEmpty(warehouseNoticeDetails)) {
-            if (!flag) {
-                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                        String.format("无数据，%s供应商对应入库单详情为空", form.getSupplierCode()));
-            }
-            return new ArrayList<>();
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
+                    String.format("无数据，%s供应商对应入库单详情为空", form.getSupplierCode()));
         }
         //skuCode去重
         Set<String> skuCodes = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getSkuCode).collect(Collectors.toSet());
@@ -1205,7 +1193,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         Set<Long> brandIds = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getBrandId).collect(Collectors.toSet());
         //获取categoryIds
         Set<Long> categoryIds = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getCategoryId).collect(Collectors.toSet());
-        log.info("查询入库单SKU:{}", skuCodes);
+        log.info("采购退货查询商品详情，查询入库单SKU:{}", skuCodes);
 
         //查询退货仓库，退货类型对应的sku
         Example warehouseItemExample = new Example(WarehouseItemInfo.class);
@@ -1220,11 +1208,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
         if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
-            if (!flag) {
-                throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                        "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选退货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
-            }
-            return new ArrayList<>();
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
+                    "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选退货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
         }
         List<String> skuCodeList = warehouseItemInfoList.stream().map(WarehouseItemInfo::getSkuCode).collect(Collectors.toList());
 
@@ -1358,10 +1343,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * 查询入库单供应商名称且入库状态为全部入库、部分入库、入库异常”的采购单中的SKU
      *
      * @param form
-     * @param flag
      * @return
      */
-    private List<WarehouseNoticeDetails> getSkuCodesBySupplier(PurchaseOutboundItemForm form, boolean flag) {
+    private List<WarehouseNoticeDetails> getSkuCodesBySupplier(PurchaseOutboundItemForm form) {
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierCode", form.getSupplierCode());
