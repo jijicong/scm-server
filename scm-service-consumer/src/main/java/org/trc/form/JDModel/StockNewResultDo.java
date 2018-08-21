@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class StockNewResultVO {
+public class StockNewResultDo {
 
     /**
      * 配送地址ID
@@ -15,7 +15,7 @@ public class StockNewResultVO {
     /**
      * 商品编号
      */
-    private String skuCode;
+    private String skuId;
 
     /**
      * 库存状态编号 33,39,40,36,34
