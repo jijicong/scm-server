@@ -215,7 +215,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
                 updateEntity.setUpdateTime(Calendar.getInstance().getTime());
                 Integer countUpd = itemGroupUserService.updateByPrimaryKeySelective(updateEntity);
                 if (countUpd==null){
-                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户修改失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
+                        String msg=String.format("商品组员手机号码为[%s]的用户信息修改失败，数据库操作失败",itemGroupUser.getPhoneNumber());
                         logger.error(msg);
                         throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
                 }
@@ -259,7 +259,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
         ItemGroup temp =findItemGroupByName(itemGroup.getItemGroupName());
         if (temp!=null){
-            String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
+            String msg="当前商品组名称已存在,请使用其他名称！";
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_QUERY_EXCEPTION,msg);
         }
@@ -319,7 +319,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         itemGroup.setUpdateTime(Calendar.getInstance().getTime());
         Integer count = itemGroupService.updateByPrimaryKeySelective(itemGroup);
         if (count==null){
-            String msg=String.format("更新商品组[itemGroupName=%s]的数据失败,数据库操作失败",itemGroup.getItemGroupName());
+            String msg="更新商品组信息失败,数据库操作失败！";
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
         }
@@ -335,7 +335,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
             itemGroupUser.setUpdateTime(Calendar.getInstance().getTime());
             Integer countUser = itemGroupUserService.updateByPrimaryKey(itemGroupUser);
             if (countUser==null){
-                String msg="更新商品组成员信息失败，数据库操作失败";
+                String msg="更新商品组成员信息失败，数据库操作失败！";
                 logger.error(msg);
                 throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
             }
