@@ -2151,7 +2151,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                 }else {
                     for(OrderItem orderItem: selfPurcharseOrderItemList){
                         if(StringUtils.equals(_orderItem.getScmShopOrderCode(), orderItem.getScmShopOrderCode()) &&
-                                StringUtils.equals(_orderItem.getSkuCode(), orderItem.getSkuCode())){
+                                StringUtils.equals(_orderItem.getSkuCode(), orderItem.getSkuCode()) && !isExceptionSku(orderItem, exceptionOrderItemList)){
                             orderItemList1.add(_orderItem);
                         }
                     }
@@ -2306,6 +2306,22 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         map.put("warehouseOrderList", new ArrayList());
         map.put("skuWarehouseMap", skuWarehouseMap);
         return map;
+    }
+
+    /**
+     * 是否拆单异常sku
+     * @param orderItem
+     * @param exceptionOrderItemList
+     * @return
+     */
+    private boolean isExceptionSku(OrderItem orderItem, List<ExceptionOrderItem> exceptionOrderItemList){
+        for(ExceptionOrderItem exceptionOrderItem: exceptionOrderItemList){
+            if(StringUtils.equals(orderItem.getScmShopOrderCode(), exceptionOrderItem.getScmShopOrderCode()) &&
+                    StringUtils.equals(orderItem.getSkuCode(), exceptionOrderItem.getSkuCode())){
+                return true;
+            }
+        }
+        return false;
     }
 
 
