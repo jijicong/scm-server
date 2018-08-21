@@ -808,13 +808,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             if(scmOrderPackageList == null || scmOrderPackageList.size() < 1){
                 return;
             }
-
+            Map<String, Long> itemNumMap = new HashMap<>();
+            String logMessage = "";
+            List<String> exceptionDetail = new ArrayList<>();
             //遍历所有包裹
             for(ScmOrderPackage pack : scmOrderPackageList){
                 List<ScmDeliveryOrderDetailResponseItem> items = pack.getScmDeliveryOrderDetailResponseItems();
-                String logMessage = "";
-                List<String> exceptionDetail = new ArrayList<>();
-                Set<Long> idSet = new HashSet<>();
                 //遍历所有商品详情
                 if(items != null && items.size() > 0){
                     for (ScmDeliveryOrderDetailResponseItem item : items) {
@@ -830,88 +829,87 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                         warehouseItemInfo = warehouseItemInfos.get(0);
                         String skuCode = warehouseItemInfo.getSkuCode();
 
-                        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
-                        allocateSkuDetail.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
-                        allocateSkuDetail.setSkuCode(skuCode);
-                        List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
-                        if(allocateSkuDetails == null || allocateSkuDetails.size() < 1){
-                            continue;
-                        }
-                        allocateSkuDetail = allocateSkuDetails.get(0);
-                        allocateSkuDetail.setRealOutNum(sentNum);
-                        idSet.add(allocateSkuDetail.getId());
-
-                        if(sentNum.longValue() == allocateSkuDetail.getPlanAllocateNum().longValue()){
-                            allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
-                            allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
-                            allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
-                            logMessage += skuCode + ":" + "出库完成<br>";
+                        if(itemNumMap.containsKey(skuCode)){
+                            Long itemNum = itemNumMap.get(skuCode) + sentNum;
+                            itemNumMap.put(skuCode, itemNum);
                         }else{
-                            allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
-                            allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
-                            allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
-                            logMessage += skuCode + ":" + "出库异常<br>";
-                            exceptionDetail.add(allocateSkuDetail.getSkuCode());
-                        }
-                        allocateSkuDetailList.add(allocateSkuDetail);
-                    }
-
-                    AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
-                    allocateSkuDetail.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
-                    List<AllocateSkuDetail> allocateSkuDetailAll = allocateSkuDetailService.select(allocateSkuDetail);
-                    for(AllocateSkuDetail detail : allocateSkuDetailAll){
-                        if(!idSet.contains(detail.getId())){
-                            detail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
-                            detail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
-                            detail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
-                            logMessage += detail.getSkuCode() + ":" + "出库异常<br>";
-                            exceptionDetail.add(detail.getSkuCode());
-                            allocateSkuDetailList.add(detail);
+                            itemNumMap.put(skuCode, sentNum);
                         }
                     }
-                    allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
-
-                    //更新调拨出库单状态
-                    String outStatus = getAllocateOutOrderStatusByDetail(allocateSkuDetailList);
-                    allocateOutOrder.setStatus(outStatus);
-                    if(exceptionDetail.size() > 0){
-                        allocateOutOrder.setFailedCause("["+StringUtils.join(exceptionDetail, ",")+"]实际出库数量不等于要求出库数量。");
-                    }
-                    allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
-                    //更新调拨入库单信息
-                    AllocateInOrder allocateInOrder = new AllocateInOrder();
-                    allocateInOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
-                    List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
-                    allocateInOrder = allocateInOrders.get(0);
-                    if(StringUtils.equals(outStatus, AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
-                        allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
-                    }else if(StringUtils.equals(outStatus, AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
-                        allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
-                    }
-                    allocateInOrderService.updateByPrimaryKey(allocateInOrder);
-                    //更新调拨单状态
-                    AllocateOrder allocateOrder = new AllocateOrder();
-                    allocateOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
-                    List<AllocateOrder> allocateOrders = allocateOrderService.select(allocateOrder);
-                    allocateOrder = allocateOrders.get(0);
-                    if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
-                        allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_EXCEPTION.getCode());
-                    }else if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
-                        allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_NORMAL.getCode());
-                    }
-                    allocateOrderService.updateByPrimaryKey(allocateOrder);
-
-                    //记录日志
-                    WarehouseInfo warehouseInfo = new WarehouseInfo();
-                    warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
-                    warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
-                    logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
-                            LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
-
-                    logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
-                            LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
                 }
             }
+
+            AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+            allocateSkuDetail.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+            List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
+
+            if(allocateSkuDetails != null && allocateSkuDetails.size() > 0){
+                for(AllocateSkuDetail detail : allocateSkuDetails){
+                    Long itemNum = 0L;
+                    String skuCode = detail.getSkuCode();
+                    if(itemNumMap.containsKey(skuCode)){
+                        itemNum = itemNumMap.get(skuCode);
+                    }
+
+                    detail.setRealOutNum(itemNum);
+
+                    if(itemNum.longValue() == allocateSkuDetail.getPlanAllocateNum().longValue()){
+                        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
+                        allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
+                        allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+                        logMessage += skuCode + ":" + "出库完成<br>";
+                    }else{
+                        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
+                        allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
+                        allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+                        logMessage += skuCode + ":" + "出库异常<br>";
+                        exceptionDetail.add(allocateSkuDetail.getSkuCode());
+                    }
+                    allocateSkuDetailList.add(detail);
+
+                }
+            }
+            allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
+
+            //更新调拨出库单状态
+            String outStatus = getAllocateOutOrderStatusByDetail(allocateSkuDetailList);
+            allocateOutOrder.setStatus(outStatus);
+            if(exceptionDetail.size() > 0){
+                allocateOutOrder.setFailedCause("["+StringUtils.join(exceptionDetail, ",")+"]实际出库数量不等于要求出库数量。");
+            }
+            allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+            //更新调拨入库单信息
+            AllocateInOrder allocateInOrder = new AllocateInOrder();
+            allocateInOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+            List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
+            allocateInOrder = allocateInOrders.get(0);
+            if(StringUtils.equals(outStatus, AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
+                allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+            }else if(StringUtils.equals(outStatus, AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+                allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+            }
+            allocateInOrderService.updateByPrimaryKey(allocateInOrder);
+            //更新调拨单状态
+            AllocateOrder allocateOrder = new AllocateOrder();
+            allocateOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+            List<AllocateOrder> allocateOrders = allocateOrderService.select(allocateOrder);
+            allocateOrder = allocateOrders.get(0);
+            if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
+                allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_EXCEPTION.getCode());
+            }else if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+                allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_NORMAL.getCode());
+            }
+            allocateOrderService.updateByPrimaryKey(allocateOrder);
+
+            //记录日志
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
+            warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+            logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
+                    LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
+
+            logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
+                    LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
         }
     }
 
