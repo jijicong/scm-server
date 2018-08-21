@@ -558,7 +558,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     @Override
     public void updateAllocateOutDetail() {
-        if (!iRealIpService.isRealTimerService()) return;
+//        if (!iRealIpService.isRealTimerService()) return;
 
         WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
         warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
@@ -853,17 +853,17 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
                     detail.setRealOutNum(itemNum);
 
-                    if(itemNum.longValue() == allocateSkuDetail.getPlanAllocateNum().longValue()){
-                        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
-                        allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
-                        allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+                    if(itemNum.longValue() == detail.getPlanAllocateNum().longValue()){
+                        detail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
+                        detail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
+                        detail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
                         logMessage += skuCode + ":" + "出库完成<br>";
                     }else{
-                        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
-                        allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
-                        allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+                        detail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
+                        detail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
+                        detail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
                         logMessage += skuCode + ":" + "出库异常<br>";
-                        exceptionDetail.add(allocateSkuDetail.getSkuCode());
+                        exceptionDetail.add(detail.getSkuCode());
                     }
                     allocateSkuDetailList.add(detail);
 
