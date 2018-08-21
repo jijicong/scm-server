@@ -8,9 +8,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class JdSkuStockQueryDO {
+public class JdExternalStockDO {
     //商品编号
-    private String skuCode;
+    private String skuId;
     //商品数
     private Integer num;
 }

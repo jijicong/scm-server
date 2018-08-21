@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class JdSkuStockForm {
-    public JdSkuStockForm(List<JdSkuStockQueryDO> skuArray, String area) {
+    public JdSkuStockForm(List<JdExternalStockDO> skuArray, String area) {
         this.skuArray = skuArray;
         this.area = area;
     }
@@ -16,7 +16,7 @@ public class JdSkuStockForm {
     /**
      * 商品数量列表
      */
-    private List<JdSkuStockQueryDO> skuArray;
+    private List<JdExternalStockDO> skuArray;
     /**
      * 地址
      */
