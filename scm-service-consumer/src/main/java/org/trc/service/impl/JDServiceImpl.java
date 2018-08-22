@@ -605,8 +605,9 @@ public class JDServiceImpl implements IJDService {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("date", JSONArray.toJSON(jdSkuStockForm));
             String url = externalSupplierConfig.getScmExternalUrl() + externalSupplierConfig.getSkuStockQuery();
-            log.info(">>>>>开始调用scm-external查询库存接口,参数:" + url);
+            log.info(String.format(">>>>>开始调用京东代发商品库存查询接口%s,参数: %s", url, JSON.toJSON(map).toString()));
             response = HttpClientUtil.httpPostRequest(url, map, 10000);
+            log.info(String.format("<<<<<结束调用京东代发商品库存查询接口%s,返回结果: %s", url, response));
             if (StringUtils.isNotBlank(response)) {
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -617,7 +618,6 @@ public class JDServiceImpl implements IJDService {
                 }
                 returnTypeDO.setResultMessage(appResult.getDatabuffer());
                 returnTypeDO.setResult(appResult.getResult());
-                log.info("<<<<<结束调用scm-external查询库存接口,返回结果" + JSON.toJSONString(returnTypeDO));
             } else {
                 returnTypeDO.setResultMessage("调用外部供应商品库存查询接口返回结果为空");
             }

@@ -3203,7 +3203,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
                     responseAck = new ResponseAck(ResponseAck.SUCCESS_CODE, "库存查询成功", resultVoList);
                 } else {
-                    String msg = returnTypeDO.getResult().toString();
+                    String msg = "京东代发商品库存查询接口失败: " + returnTypeDO.getResultMessage();
                     log.error(msg);
                     throw new OrderException(ExceptionEnum.EXTERNAL_GOODS_QUERY_STOCK_EXCEPTION, msg);
                 }
