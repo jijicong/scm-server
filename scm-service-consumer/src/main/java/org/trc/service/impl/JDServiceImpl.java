@@ -601,23 +601,27 @@ public class JDServiceImpl implements IJDService {
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(false);
         String response = null;
-        try{
+        try {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("date", JSONArray.toJSON(jdSkuStockForm));
-            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSkuStockQuery();
-            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
-            if(StringUtils.isNotBlank(response)){
+            String url = externalSupplierConfig.getScmExternalUrl() + externalSupplierConfig.getSkuStockQuery();
+            log.info(">>>>>开始调用scm-external查询库存接口,参数:" + url);
+            response = HttpClientUtil.httpPostRequest(url, map, 10000);
+            if (StringUtils.isNotBlank(response)) {
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) {
                     returnTypeDO.setSuccess(true);
+                }else {
+                    returnTypeDO.setSuccess(false);
                 }
                 returnTypeDO.setResultMessage(appResult.getDatabuffer());
                 returnTypeDO.setResult(appResult.getResult());
-            }else {
+                log.info("<<<<<结束调用scm-external查询库存接口,返回结果" + JSON.toJSONString(returnTypeDO));
+            } else {
                 returnTypeDO.setResultMessage("调用外部供应商品库存查询接口返回结果为空");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             String msg = String.format("调用外部供应商商品库存查询接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);

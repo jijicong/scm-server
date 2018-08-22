@@ -3177,9 +3177,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 //发送到external
                 JdSkuStockForm jdSkuStockForm = new JdSkuStockForm(skuStockQueryDOList, area);
                 ReturnTypeDO returnTypeDO = ijdService.getSkuStockQuery(jdSkuStockForm);
-                if (null != returnTypeDO.getResult()) {
-                    JSONObject object = JSON.parseObject(returnTypeDO.getResult().toString());
-                    String date = object.getString("data") == null ? "" : object.getString("data");
+                if (returnTypeDO.getSuccess()) {
+                    String date = returnTypeDO.getResult().toString();
                     List<StockNewResultDo> stockNewResultDoList;
                     List<StockNewResultVO> resultVoList = new ArrayList<>();
                     if (StringUtils.isNotBlank(date)) {
@@ -3187,7 +3186,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         for (StockNewResultDo resultDo : stockNewResultDoList) {
                             if (StringUtils.isNotBlank(skuMap.get(resultDo.getSkuId()))) {
                                 StockNewResultVO newResultVo = new StockNewResultVO();
-                                newResultVo = JSON.parseObject(JSON.toJSONString(resultDo),StockNewResultVO.class);
+                                newResultVo = JSON.parseObject(JSON.toJSONString(resultDo), StockNewResultVO.class);
                                 newResultVo.setSkuCode(skuMap.get(resultDo.getSkuId()));
                                 resultVoList.add(newResultVo);
                             }
@@ -3204,13 +3203,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
                     responseAck = new ResponseAck(ResponseAck.SUCCESS_CODE, "库存查询成功", resultVoList);
                 } else {
-                    String msg = JSON.toJSONString(skuIdSet) + "不存在!";
+                    String msg = returnTypeDO.getResult().toString();
                     log.error(msg);
-                    throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+                    throw new OrderException(ExceptionEnum.EXTERNAL_GOODS_QUERY_STOCK_EXCEPTION, msg);
                 }
+            }else {
+                List<StockNewResultVO> resultVoList = new ArrayList<>();
+                for (String sku : skuIdSet) {
+                    StockNewResultVO newResultVo = new StockNewResultVO();
+                    newResultVo.setSkuCode(sku);
+                    newResultVo.setStockStateId("222");
+                    newResultVo.setStockStateDesc("sku无法识别");
+                    resultVoList.add(newResultVo);
+                }
+                responseAck = new ResponseAck(ResponseAck.SUCCESS_CODE, "库存查询成功",resultVoList);
             }
-
-        }else {
+        } else {
             responseAck = new ResponseAck(ResponseAck.SUCCESS_CODE, "库存查询成功", new ArrayList<>());
         }
         return responseAck;
@@ -3258,8 +3266,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
         try {
             jdSkuList = JSONArray.parseArray(skuArray, JdSkuStockQueryDO.class);
         } catch (Exception e) {
-            String msg = skuArray + "参数格式异常!";
+            String msg =  "参数格式异常!";
             log.error(msg, e);
+            throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+        }
+        if (AssertUtil.collectionIsEmpty(jdSkuList)&&StringUtils.isBlank(area)) {
+            String msg = String.format("sku输入信息为空,地址信息输入为空!");
+            log.error(msg);
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
         }
         if (AssertUtil.collectionIsEmpty(jdSkuList)) {
