@@ -5488,6 +5488,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                             break;
                         }
                     }
+                    AssertUtil.notNull(_skuStock, String.format("仓库%s绑定的商品%s在商品库存信息表sku_stock中没有可用的数据", scmInventoryQueryResponse.getLocalWarehouseCode(), orderItem.getSkuCode()));
                     List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                     SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                     skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
