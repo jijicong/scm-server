@@ -40,7 +40,7 @@ public class SupplierService extends BaseService<Supplier, Long> implements ISup
     }
 
     /**
-     * 查询所有供应商（包括停用）
+     * 查询所有供应商（包括停用,国内供应商,采购）
      *
      * @param channelCode
      * @return
