@@ -1587,14 +1587,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andEqualTo("shopOrderCode", shopOrder.getShopOrderCode());
         criteria.andEqualTo("platformOrderCode", shopOrder.getPlatformOrderCode());
         List<OrderItem> orderItemList = orderItemService.selectByExample(example);
-        AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
-                shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
-        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){
-            //设置商品明细信息
-            setOrderItemDetail(shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode(), orderItemList);
-        }
-        for(OrderItem orderItem: orderItemList){
-            orderItem.setTotalFee(orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum())));
+        if(CollectionUtils.isEmpty(orderItemList)){
+            log.error(String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
+                    shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
+        }else{
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){
+                //设置商品明细信息
+                setOrderItemDetail(shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode(), orderItemList);
+            }
+            for(OrderItem orderItem: orderItemList){
+                orderItem.setTotalFee(orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum())));
+            }
         }
         //设置商品扩展信息
         OrderBase orderBase = new OrderBase();
@@ -2002,7 +2005,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        orderCheck(orderObj);
+        //orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -2028,6 +2031,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //拆分自采和代发商品
         List<OrderItem> tmpOrderItemList = new ArrayList<>();//全部商品
         for(ShopOrder shopOrder: shopOrderList){
+            shopOrder.setReciverType(orderType);
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
                 tmpOrderItemList.add(orderItem);
             }
