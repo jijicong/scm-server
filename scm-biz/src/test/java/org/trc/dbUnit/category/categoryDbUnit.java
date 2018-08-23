@@ -26,8 +26,6 @@ import org.trc.util.ResponseAck;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by hzqph on 2017/6/21.
@@ -395,9 +393,9 @@ public class categoryDbUnit extends BaseTest {
     }
 
     @Test
-    public void testJdSkuStockQuery(){
+    public void testJdSkuStockQuery() throws InterruptedException {
         long startL = System.nanoTime();
-        ExecutorService executor = Executors.newFixedThreadPool(100);
+        /*ExecutorService executor = Executors.newFixedThreadPool(100);
         for (int i = 0; i < 1000; i++) {
             executor.execute(new Thread(new Runnable() {
                 @Override
@@ -412,9 +410,31 @@ public class categoryDbUnit extends BaseTest {
         }
         executor.shutdown();
         while (!executor.isTerminated()) {
+        }*/
+
+        for(int i=0; i<500; i++){
+            Thread thread = new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                invokeJdSkuStockQuery();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+            );
+            thread.join();
+            thread.start();
         }
         long endL = System.nanoTime();
         System.out.println("耗时" + DateUtils.getMilliSecondBetween(startL, endL) + "毫秒");
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void invokeJdSkuStockQuery() throws Exception{
