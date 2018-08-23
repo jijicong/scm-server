@@ -3157,11 +3157,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String skuArray, String area) throws Exception {
+    public ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String jsonObject) throws Exception {
         //参数校验
         ResponseAck responseAck = null;
         //查询商品映射,将供应链的sku转换成京东的sku
-        List<JdSkuStockQueryDO> jdSkuList = checkSkuQuery(skuArray, area);
+        List<JdSkuStockQueryDO> jdSkuList = checkSkuQuery(jsonObject);
+        String area =JSON.parseObject(jsonObject).getString("area");
         Set<String> skuIdSet = new HashSet<>();
         Map<String,String> skuMap = new HashMap<>();
         for (JdSkuStockQueryDO sku : jdSkuList) {
@@ -3265,16 +3266,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return errorSkuList;
     }
 
-    private List<JdSkuStockQueryDO> checkSkuQuery(String skuArray, String area) {
+    private List<JdSkuStockQueryDO> checkSkuQuery(String jsonObject) {
+        if (StringUtils.isBlank(jsonObject)) {
+            String msg = String.format("参数输入信息为空!");
+            log.error(msg);
+            throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+        }
+        JSONObject object = JSON.parseObject(jsonObject);
+        String  area = object.getString("area") == null ? "" : object.getString("area");
+        String skuArray = object.getString("skuArray") == null ? "" : object.getString("skuArray");
         List<JdSkuStockQueryDO> jdSkuList;
         try {
             jdSkuList = JSONArray.parseArray(skuArray, JdSkuStockQueryDO.class);
         } catch (Exception e) {
-            String msg =  "参数格式异常!";
+            String msg = "参数格式异常!";
             log.error(msg, e);
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
         }
-        if (AssertUtil.collectionIsEmpty(jdSkuList)&&StringUtils.isBlank(area)) {
+        if (AssertUtil.collectionIsEmpty(jdSkuList) && StringUtils.isBlank(area)) {
             String msg = String.format("sku输入信息为空,地址信息输入为空!");
             log.error(msg);
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
