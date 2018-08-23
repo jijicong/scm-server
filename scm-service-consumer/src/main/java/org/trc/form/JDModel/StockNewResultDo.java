@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class StockNewResultVo {
+public class StockNewResultDo {
 
     /**
      * 配送地址ID
