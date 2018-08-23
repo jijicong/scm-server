@@ -16,6 +16,7 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
@@ -393,7 +394,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     continue;
                 }
 
-                notic.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
                 details.add(notic);
             }
         }
@@ -412,15 +412,22 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<WarehouseNoticeDetails> result = pagination.getResult();
         //setPurchaseOrderCode
         for (WarehouseNoticeDetails warehouseNoticeDetails : result) {
-            for (WarehouseNoticeDetails wd : details) {
-                if (StringUtils.equals(warehouseNoticeDetails.getWarehouseNoticeCode(), wd.getWarehouseNoticeCode())) {
-                    warehouseNoticeDetails.setPurchaseOrderCode(wd.getPurchaseOrderCode());
+            for (WarehouseNotice warehouseNotice : warehouseNotices) {
+                if (StringUtils.equals(warehouseNoticeDetails.getWarehouseNoticeCode(), warehouseNotice.getWarehouseNoticeCode())) {
+                    warehouseNoticeDetails.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
+                    //采购单ID
+                    PurchaseOrder purchaseOrder = findPurchaseOrderByCode(warehouseNotice.getPurchaseOrderCode());
+                    if (purchaseOrder != null) {
+                        warehouseNoticeDetails.setPurchaseOrderId(purchaseOrder.getId());
+                    }
                     break;
                 }
             }
         }
         return pagination;
     }
+
+
 
     /**
      * 更新采购退货单状态或出库通知作废操作
@@ -468,6 +475,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
         supplierBrandExts.sort(Comparator.comparing(SupplierBrandExt::getBrandName));
         return supplierBrandExts;
+    }
+
+    private PurchaseOrder findPurchaseOrderByCode(String purchaseOrderCode) {
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setPurchaseOrderCode(purchaseOrderCode);
+        return purchaseOrderService.selectOne(purchaseOrder);
     }
 
     /**
