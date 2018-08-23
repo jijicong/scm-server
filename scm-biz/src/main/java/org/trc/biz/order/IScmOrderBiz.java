@@ -7,10 +7,7 @@ import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.SupplierOrderInfo;
 import org.trc.domain.order.WarehouseOrder;
-import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.form.JDModel.ReturnTypeDO;
-import org.trc.form.JDModel.StockNewResultVo;
-import org.trc.domain.order.*;
+import org.trc.form.JDModel.StockNewResultDo;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.*;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
@@ -121,7 +118,7 @@ public interface IScmOrderBiz {
      * @return
      * @throws Exception
      */
-    ResponseAck<List<StockNewResultVo>> getSkuStockQuery(String skuArray, String area) throws  Exception;
+    ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String skuArray, String area) throws  Exception;
 
     /**
      * 获取物流信息

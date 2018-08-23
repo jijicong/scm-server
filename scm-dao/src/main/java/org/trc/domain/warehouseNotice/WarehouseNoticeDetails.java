@@ -123,6 +123,11 @@ public class WarehouseNoticeDetails implements Serializable{
     @ApiModelProperty("采购单号")
     private String purchaseOrderCode;
 
+    @Transient
+    @ApiModelProperty("采购单ID")
+    private Long purchaseOrderId;
+
+
     public String getPurchaseOrderCode() {
         return purchaseOrderCode;
     }
@@ -383,5 +388,13 @@ public class WarehouseNoticeDetails implements Serializable{
 
     public void setSkuStockId(Long skuStockId) {
         this.skuStockId = skuStockId;
+    }
+
+    public Long getPurchaseOrderId() {
+        return purchaseOrderId;
+    }
+
+    public void setPurchaseOrderId(Long purchaseOrderId) {
+        this.purchaseOrderId = purchaseOrderId;
     }
 }
