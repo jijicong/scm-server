@@ -5464,7 +5464,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                 warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
             }else{
                 boolean _flag = false;
-                ScmInventoryQueryResponse scmInventoryQueryResponse  = null;
+                ScmInventoryQueryResponse scmInventoryQueryResponse  = null; 
                 //检查库存
                 if (StringUtils.equals(orderItem.getIsAppointStock(), AppointStockEnum.YES.getCode())) {
                     if (!AssertUtil.collectionIsEmpty(_inventoryQueryItemList)) {
