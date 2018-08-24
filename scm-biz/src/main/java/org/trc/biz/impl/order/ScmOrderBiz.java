@@ -1587,14 +1587,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andEqualTo("shopOrderCode", shopOrder.getShopOrderCode());
         criteria.andEqualTo("platformOrderCode", shopOrder.getPlatformOrderCode());
         List<OrderItem> orderItemList = orderItemService.selectByExample(example);
-        AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
-                shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
-        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){
-            //设置商品明细信息
-            setOrderItemDetail(shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode(), orderItemList);
-        }
-        for(OrderItem orderItem: orderItemList){
-            orderItem.setTotalFee(orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum())));
+        if(CollectionUtils.isEmpty(orderItemList)){
+            log.error(String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
+                    shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
+        }else{
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){
+                //设置商品明细信息
+                setOrderItemDetail(shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode(), orderItemList);
+            }
+            for(OrderItem orderItem: orderItemList){
+                orderItem.setTotalFee(orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum())));
+            }
         }
         //设置商品扩展信息
         OrderBase orderBase = new OrderBase();
@@ -2002,7 +2005,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        orderCheck(orderObj);
+        //orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -2028,6 +2031,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //拆分自采和代发商品
         List<OrderItem> tmpOrderItemList = new ArrayList<>();//全部商品
         for(ShopOrder shopOrder: shopOrderList){
+            shopOrder.setReciverType(orderType);
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
                 tmpOrderItemList.add(orderItem);
             }
@@ -3153,11 +3157,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String skuArray, String area) throws Exception {
+    public ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String jsonObject) throws Exception {
         //参数校验
         ResponseAck responseAck = null;
         //查询商品映射,将供应链的sku转换成京东的sku
-        List<JdSkuStockQueryDO> jdSkuList = checkSkuQuery(skuArray, area);
+        List<JdSkuStockQueryDO> jdSkuList = checkSkuQuery(jsonObject);
+        String area =JSON.parseObject(jsonObject).getString("area");
         Set<String> skuIdSet = new HashSet<>();
         Map<String,String> skuMap = new HashMap<>();
         for (JdSkuStockQueryDO sku : jdSkuList) {
@@ -3261,16 +3266,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return errorSkuList;
     }
 
-    private List<JdSkuStockQueryDO> checkSkuQuery(String skuArray, String area) {
+    private List<JdSkuStockQueryDO> checkSkuQuery(String jsonObject) {
+        if (StringUtils.isBlank(jsonObject)) {
+            String msg = String.format("参数输入信息为空!");
+            log.error(msg);
+            throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+        }
+        JSONObject object = JSON.parseObject(jsonObject);
+        String  area = object.getString("area") == null ? "" : object.getString("area");
+        String skuArray = object.getString("skuArray") == null ? "" : object.getString("skuArray");
         List<JdSkuStockQueryDO> jdSkuList;
         try {
             jdSkuList = JSONArray.parseArray(skuArray, JdSkuStockQueryDO.class);
         } catch (Exception e) {
-            String msg =  "参数格式异常!";
+            String msg = "参数格式异常!";
             log.error(msg, e);
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
         }
-        if (AssertUtil.collectionIsEmpty(jdSkuList)&&StringUtils.isBlank(area)) {
+        if (AssertUtil.collectionIsEmpty(jdSkuList) && StringUtils.isBlank(area)) {
             String msg = String.format("sku输入信息为空,地址信息输入为空!");
             log.error(msg);
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
