@@ -248,6 +248,10 @@ public class PurchaseOutboundOrder extends BaseDO {
     @Transient
     private String receiverAreaName;
 
+    @ApiModelProperty("退货单出库通知单状态:0-待通知出库,1-出库仓接收成功,2-出库仓接收失败,3-出库完成,4-出库异常,5-已取消,6-作废,7-取消中")
+    @Transient
+    private String noticeStatus;
+
 	public List<PurchaseOutboundDetail> getPurchaseOutboundDetailList() {
         return purchaseOutboundDetailList;
     }
@@ -255,35 +259,6 @@ public class PurchaseOutboundOrder extends BaseDO {
     public void setPurchaseOutboundDetailList(List<PurchaseOutboundDetail> purchaseOutboundDetailList) {
         this.purchaseOutboundDetailList = purchaseOutboundDetailList;
     }
-
-    ///**
-    // * 是否有效:0-无效,1-有效
-    //@Column(name = "is_valid")
-    //private String isValid;
-    //
-    //*//**
-    // * 是否删除:0-否,1-是
-    // *//*
-    //@Column(name = "is_deleted")
-    //private String isDeleted;
-    //
-    //*//**
-    // * 创建人
-    // *//*
-    //@Column(name = "create_operator")
-    //private String createOperator;
-    //
-    //*//**
-    // * 创建时间,格式yyyy-mm-dd hh:mi:ss
-    // *//*
-    //@Column(name = "create_time")
-    //private Date createTime;
-    //
-    //*//**
-    // * 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-    // *//*
-    //@Column(name = "update_time")
-    //private Date updateTime;*/
 
     /**
      * 获取ID
@@ -713,93 +688,11 @@ public class PurchaseOutboundOrder extends BaseDO {
         this.auditCreateOperator = auditCreateOperator;
     }
 
-    ///**
-    // * 获取是否有效:0-无效,1-有效
-    // *
-    // * @return is_valid - 是否有效:0-无效,1-有效
-    // */
-    //public String getIsValid() {
-    //    return isValid;
-    //}
-    //
-    ///**
-    // * 设置是否有效:0-无效,1-有效
-    // *
-    // * @param isValid 是否有效:0-无效,1-有效
-    // */
-    //public void setIsValid(String isValid) {
-    //    this.isValid = isValid;
-    //}
-    //
-    ///**
-    // * 获取是否删除:0-否,1-是
-    // *
-    // * @return is_deleted - 是否删除:0-否,1-是
-    // */
-    //public String getIsDeleted() {
-    //    return isDeleted;
-    //}
-    //
-    ///**
-    // * 设置是否删除:0-否,1-是
-    // *
-    // * @param isDeleted 是否删除:0-否,1-是
-    // */
-    //public void setIsDeleted(String isDeleted) {
-    //    this.isDeleted = isDeleted;
-    //}
-    //
-    ///**
-    // * 获取创建人
-    // *
-    // * @return create_operator - 创建人
-    // */
-    //public String getCreateOperator() {
-    //    return createOperator;
-    //}
-    //
-    ///**
-    // * 设置创建人
-    // *
-    // * @param createOperator 创建人
-    // */
-    //public void setCreateOperator(String createOperator) {
-    //    this.createOperator = createOperator;
-    //}
-    //
-    ///**
-    // * 获取创建时间,格式yyyy-mm-dd hh:mi:ss
-    // *
-    // * @return create_time - 创建时间,格式yyyy-mm-dd hh:mi:ss
-    // */
-    //public Date getCreateTime() {
-    //    return createTime;
-    //}
-    //
-    ///**
-    // * 设置创建时间,格式yyyy-mm-dd hh:mi:ss
-    // *
-    // * @param createTime 创建时间,格式yyyy-mm-dd hh:mi:ss
-    // */
-    //public void setCreateTime(Date createTime) {
-    //    this.createTime = createTime;
-    //}
-    //
-    ///**
-    // * 获取最后更新时间,格式yyyy-mm-dd hh:mi:ss
-    // *
-    // * @return update_time - 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-    // */
-    //public Date getUpdateTime() {
-    //    return updateTime;
-    //}
-    //
-    ///**
-    // * 设置最后更新时间,格式yyyy-mm-dd hh:mi:ss
-    // *
-    // * @param updateTime 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-    // */
-    //public void setUpdateTime(Date updateTime) {
-    //    this.updateTime = updateTime;
-    //}
+    public String getNoticeStatus() {
+        return noticeStatus;
+    }
+
+    public void setNoticeStatus(String noticeStatus) {
+        this.noticeStatus = noticeStatus;
+    }
 }
