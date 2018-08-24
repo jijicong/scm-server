@@ -118,7 +118,7 @@ public interface IScmOrderBiz {
      * @return
      * @throws Exception
      */
-    ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String skuArray, String area) throws  Exception;
+    ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String jsonObject) throws  Exception;
 
     /**
      * 获取物流信息

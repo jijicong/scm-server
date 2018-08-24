@@ -263,7 +263,7 @@ public class PurchaseOutboundNoticeBiz implements IPurchaseOutboundNoticeBiz {
 		} else { // 取消异常
 			
 			logger.error(String.format("%s 取消出库异常:%s", code, response.getDatabuffer()));
-			return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "取消出库异常:" + response.getDatabuffer());
+			return ResultUtil.createfailureResult(Response.Status.OK.getStatusCode(), "取消出库异常:" + response.getDatabuffer());
 		}
 		
 		/**

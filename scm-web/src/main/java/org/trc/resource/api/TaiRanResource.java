@@ -338,8 +338,8 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.JD_SKUSTOCK)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck getSkuStockQuery(@FormParam("skuArray") String skuArray, @FormParam("area")String area) throws Exception{
-        return scmOrderBiz.getSkuStockQuery(skuArray, area);
+    public ResponseAck getSkuStockQuery(String jsonObject) throws Exception{
+        return scmOrderBiz.getSkuStockQuery(jsonObject);
     }
 
 
