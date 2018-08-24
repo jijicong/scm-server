@@ -153,7 +153,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.PURCHASE_OUTBOUND_ORDER)
     public Pagenation<PurchaseOutboundOrder> purchaseOutboundOrderPageList(PurchaseOutboundOrderForm form, Pagenation<PurchaseOutboundOrder> page, String channelCode) {
         AssertUtil.notBlank(channelCode, "未获得授权");
         Example example = setSelectCondition(form, channelCode);
@@ -164,12 +163,29 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             }
             //供应商，仓库名称
             setSupplierName(pagination);
+
+            //查询退货单对应出库单状态
+            queryNoticStatus(pagination.getResult());
             return pagination;
         }
         List<PurchaseOutboundOrder> purchaseOutboundOrderList = new ArrayList<>();
         page.setResult(purchaseOutboundOrderList);
         page.setTotalCount(0);
         return page;
+    }
+
+    private void queryNoticStatus(List<PurchaseOutboundOrder> result) {
+        for (PurchaseOutboundOrder purchaseOutboundOrder : result) {
+            //出库通知状态查询出库单状态
+            if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.WAREHOUSE_NOTICE.getCode(), purchaseOutboundOrder.getStatus())) {
+                PurchaseOutboundNotice notice = new PurchaseOutboundNotice();
+                notice.setPurchaseOutboundOrderCode(purchaseOutboundOrder.getPurchaseOutboundOrderCode());
+                PurchaseOutboundNotice purchaseOutboundNotice = purchaseOutboundNoticeService.selectOne(notice);
+                if (purchaseOutboundNotice != null) {
+                    purchaseOutboundOrder.setNoticeStatus(purchaseOutboundNotice.getStatus());
+                }
+            }
+        }
     }
 
     /**
@@ -426,7 +442,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
         return pagination;
     }
-
 
 
     /**
