@@ -605,9 +605,11 @@ public class JDServiceImpl implements IJDService {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("date", JSONArray.toJSON(jdSkuStockForm));
             String url = externalSupplierConfig.getScmExternalUrl() + externalSupplierConfig.getSkuStockQuery();
-            log.info(String.format(">>>>>开始调用京东代发商品库存查询接口%s,参数: %s", url, JSON.toJSON(map).toString()));
+            log.info(String.format(">>>>>开始调用京东代发商品库存查询接口%s,参数: %s。开始时间%s", url, JSON.toJSON(map).toString(),
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT)));
             response = HttpClientUtil.httpPostRequest(url, map, 10000);
-            log.info(String.format("<<<<<结束调用京东代发商品库存查询接口%s,返回结果: %s", url, response));
+            log.info(String.format("<<<<<结束调用京东代发商品库存查询接口%s,返回结果: %s。结束时间%s", url, response,
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT)));
             if (StringUtils.isNotBlank(response)) {
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
