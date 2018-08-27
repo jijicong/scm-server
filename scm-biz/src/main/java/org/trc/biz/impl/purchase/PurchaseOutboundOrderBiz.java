@@ -249,6 +249,13 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notNull(order, "保存或提交审核采购退货单失败,没有采购退货单信息");
         //校验仓库是否停用
         this.checkWarehouse(form.getWarehouseInfoId());
+
+        //审核驳回状态保存退货单，状态不变
+        if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.REJECT.getCode(), order.getStatus())
+                && StringUtils.equals(PurchaseOutboundOrderStatusEnum.REJECT.getCode(), order.getAuditStatus())) {
+            form.setStatus(PurchaseOutboundOrderStatusEnum.REJECT.getCode());
+        }
+
         //提交审核校验必填参数
         if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.AUDIT.getCode(), form.getStatus())) {
             validationParam(form);
@@ -824,7 +831,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             //设置售后供应商信息
             setSupplierAfterSaleInfos(suppliers);
         }
-        return supplierService.selectAllSuppliers(channelCode);
+        return suppliers;
     }
 
     private void setSupplierAfterSaleInfos(List<Supplier> suppliers) {
@@ -834,7 +841,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<SupplierAfterSaleInfo> supplierAfterSaleInfos = supplierAfterSaleInfoService.selectByExample(example);
         for (Supplier supplier : suppliers) {
             for (SupplierAfterSaleInfo info : supplierAfterSaleInfos) {
-                if(StringUtils.equals(supplier.getSupplierCode(), info.getSupplierCode())){
+                if (StringUtils.equals(supplier.getSupplierCode(), info.getSupplierCode())) {
                     //退货联系人
                     supplier.setContact(info.getGoodsReturnContactPerson());
                     //退货联系电话
@@ -847,6 +854,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                     supplier.setArea(info.getSaleArea());
                     //退货地址
                     supplier.setAddress(info.getGoodsReturnAddress());
+                    break;
                 }
             }
         }
