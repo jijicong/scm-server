@@ -1427,4 +1427,17 @@ public class SupplyConstants {
         //商品组新增
         public final static String ITEM_GROUP_ISVALID = "isValid";
     }
+    
+    /**
+     * 售后单
+     * @author hzwjie
+     *
+     */
+    public static final class AfterSaleOrder {
+    	
+    	public final static String AFTER_SALE_ORDER = "AfterSaleOrder";
+    	
+    	public final static String AFTER_SALE_ORDER_DETAIL = "AfterSaleOrderDetail";
+    }
+    
 }
