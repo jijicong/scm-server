@@ -20,6 +20,7 @@ import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOutboundDetail;
 import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierAfterSaleInfo;
 import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.taxrate.TaxRate;
 import org.trc.domain.util.Area;
@@ -49,6 +50,7 @@ import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.purchase.IPurchaseOutboundDetailService;
 import org.trc.service.purchase.IPurchaseOutboundOrderService;
 import org.trc.service.purchase.IWarehouseNoticeService;
+import org.trc.service.supplier.ISupplierAfterSaleInfoService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.taxrate.TaxRateService;
@@ -143,6 +145,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
 
     @Autowired
     private IPurchaseOrderService purchaseOrderService;
+
+    @Autowired
+    private ISupplierAfterSaleInfoService supplierAfterSaleInfoService;
 
     /**
      * 查询采购退货单列表
@@ -814,8 +819,37 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     public List<Supplier> getSuppliersByChannelCode(String channelCode) {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode, "获取渠道编号失败");
-
+        List<Supplier> suppliers = supplierService.selectAllSuppliers(channelCode);
+        if (!CollectionUtils.isEmpty(suppliers)) {
+            //设置售后供应商信息
+            setSupplierAfterSaleInfos(suppliers);
+        }
         return supplierService.selectAllSuppliers(channelCode);
+    }
+
+    private void setSupplierAfterSaleInfos(List<Supplier> suppliers) {
+        List<String> supplierCodes = suppliers.stream().map(Supplier::getSupplierCode).collect(Collectors.toList());
+        Example example = new Example(SupplierAfterSaleInfo.class);
+        example.createCriteria().andIn("supplierCode", supplierCodes);
+        List<SupplierAfterSaleInfo> supplierAfterSaleInfos = supplierAfterSaleInfoService.selectByExample(example);
+        for (Supplier supplier : suppliers) {
+            for (SupplierAfterSaleInfo info : supplierAfterSaleInfos) {
+                if(StringUtils.equals(supplier.getSupplierCode(), info.getSupplierCode())){
+                    //退货联系人
+                    supplier.setContact(info.getGoodsReturnContactPerson());
+                    //退货联系电话
+                    supplier.setPhone(info.getGoodsReturnPhone());
+                    //所在省
+                    supplier.setProvince(info.getSaleProvince());
+                    //所在城市
+                    supplier.setCity(info.getSaleCity());
+                    //所在区
+                    supplier.setArea(info.getSaleArea());
+                    //退货地址
+                    supplier.setAddress(info.getGoodsReturnAddress());
+                }
+            }
+        }
     }
 
     /**
@@ -1237,7 +1271,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
         if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                    "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选退货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
+                    "无数据，请确认选退货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
         }
         List<String> skuCodeList = warehouseItemInfoList.stream().map(WarehouseItemInfo::getSkuCode).collect(Collectors.toList());
 
