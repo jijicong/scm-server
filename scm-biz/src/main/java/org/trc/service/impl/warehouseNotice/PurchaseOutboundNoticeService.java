@@ -365,7 +365,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 			 if (!CollectionUtils.isEmpty(skuList)) {
 				 exceptionCause = "[" + StringUtils.join(skuList, SupplyConstants.Symbol.COMMA) + "]实际出库数量不等于要求退货数量";
 			 }
-			 String remark = StringUtils.join(remarkList,"\r\n");
+			 String remark = StringUtils.join(remarkList,"<br>");
 			 
 			 // 存在"出库异常"的商品 或者 商品总数不相等时
 			 if (exceptionFlg) {
