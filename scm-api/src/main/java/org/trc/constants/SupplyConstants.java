@@ -1438,6 +1438,11 @@ public class SupplyConstants {
     	public final static String AFTER_SALE_ORDER = "AfterSaleOrder";
     	
     	public final static String AFTER_SALE_ORDER_DETAIL = "AfterSaleOrderDetail";
+    	
+    	//新增售后单
+    	public final static String ADD = "add";
+    	//根据订单号查询子订单
+    	public final static String SELECT_ORDER_ITEM="selectOrderItem";
     }
     
 }

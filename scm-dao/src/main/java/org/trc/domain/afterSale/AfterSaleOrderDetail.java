@@ -9,6 +9,9 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * <p>
  * 售后单明细表
@@ -18,6 +21,8 @@ import javax.persistence.Table;
  * @since 2018-08-27
  */
 @Table(name="after_sale_order_detail")
+@Setter
+@Getter
 public class AfterSaleOrderDetail implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -32,6 +37,11 @@ public class AfterSaleOrderDetail implements Serializable {
      */
     @Column(name="after_sale_code")
 	private String afterSaleCode;
+    /**
+     * 店铺订单编号
+     */
+    @Column(name="shop_order_code")
+	private String shopOrderCode;
     /**
      * 渠道商品订单号
      */
@@ -69,91 +79,5 @@ public class AfterSaleOrderDetail implements Serializable {
 	private Date updateTime;
 
 
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getAfterSaleCode() {
-		return afterSaleCode;
-	}
-
-	public void setAfterSaleCode(String afterSaleCode) {
-		this.afterSaleCode = afterSaleCode;
-	}
-
-	public String getOrderItemCode() {
-		return orderItemCode;
-	}
-
-	public void setOrderItemCode(String orderItemCode) {
-		this.orderItemCode = orderItemCode;
-	}
-
-	public String getSkuCode() {
-		return skuCode;
-	}
-
-	public void setSkuCode(String skuCode) {
-		this.skuCode = skuCode;
-	}
-
-	public Integer getSkuNum() {
-		return skuNum;
-	}
-
-	public void setSkuNum(Integer skuNum) {
-		this.skuNum = skuNum;
-	}
-
-	public BigDecimal getSkuMoney() {
-		return skuMoney;
-	}
-
-	public void setSkuMoney(BigDecimal skuMoney) {
-		this.skuMoney = skuMoney;
-	}
-
-	public Integer getSkuType() {
-		return skuType;
-	}
-
-	public void setSkuType(Integer skuType) {
-		this.skuType = skuType;
-	}
-
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
-	public Date getUpdateTime() {
-		return updateTime;
-	}
-
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
-	}
-
-
-	@Override
-	public String toString() {
-		return "AfterSaleOrderDetail{" +
-			"id=" + id +
-			", afterSaleCode=" + afterSaleCode +
-			", orderItemCode=" + orderItemCode +
-			", skuCode=" + skuCode +
-			", skuNum=" + skuNum +
-			", skuMoney=" + skuMoney +
-			", skuType=" + skuType +
-			", createTime=" + createTime +
-			", updateTime=" + updateTime +
-			"}";
-	}
+	
 }
