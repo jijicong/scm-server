@@ -383,7 +383,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
@@ -411,6 +411,15 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                     }
                 }
             }
+        }
+
+        // 运单号
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setShopOrderCode(shopOrderList.get(0).getShopOrderCode());
+        outboundOrder.setPlatformOrderCode(shopOrderList.get(0).getPlatformOrderCode());
+        OutboundOrder order = outBoundOrderService.selectOne(outboundOrder);
+        if (order != null && shopOrderList.size() > 0) {
+            shopOrderList.get(0).setWaybillNumber(order.getWaybillNumber());
         }
         return shopOrderList;
     }
