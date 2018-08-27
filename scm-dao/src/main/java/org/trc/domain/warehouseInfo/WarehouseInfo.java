@@ -119,6 +119,9 @@ public class WarehouseInfo extends BaseDO {
     @FormParam("isNoticeSuccess")
     private Integer isNoticeSuccess;
 
+    @FormParam("isSupportReturn")
+    private Integer isSupportReturn;
+
     @FormParam("isNoticeWarehouseItems")
     private String isNoticeWarehouseItems;
 
@@ -336,5 +339,13 @@ public class WarehouseInfo extends BaseDO {
 
     public void setStoreCorrespondChannel(String storeCorrespondChannel) {
         this.storeCorrespondChannel = storeCorrespondChannel;
+    }
+
+    public Integer getIsSupportReturn() {
+        return isSupportReturn;
+    }
+
+    public void setIsSupportReturn(Integer isSupportReturn) {
+        this.isSupportReturn = isSupportReturn;
     }
 }
