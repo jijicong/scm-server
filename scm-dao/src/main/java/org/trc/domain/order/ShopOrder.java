@@ -150,6 +150,12 @@ public class ShopOrder extends OrderBase {
     @Transient
     private boolean isStoreOrder;
 
+    /**
+     * 运单号
+     */
+    @Transient
+    private String waybillNumber;
+
     public ShopOrder() {
 
     }
@@ -756,5 +762,13 @@ public class ShopOrder extends OrderBase {
 
     public void setIsStoreOrder(boolean storeOrder) {
         isStoreOrder = storeOrder;
+    }
+
+    public String getWaybillNumber() {
+        return waybillNumber;
+    }
+
+    public void setWaybillNumber(String waybillNumber) {
+        this.waybillNumber = waybillNumber;
     }
 }
