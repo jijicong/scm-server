@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -245,6 +246,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         AssertUtil.notNull(form, "保存或提交审核采购退货单失败,采购退货单为空");
         AssertUtil.notNull(form.getId(), "保存或提交审核采购退货单失败,采购退货单ID为空");
 
+        PurchaseOutboundOrder purchaseOutboundOrder = new PurchaseOutboundOrder();
+        BeanUtils.copyProperties(form, purchaseOutboundOrder);
+
         PurchaseOutboundOrder order = purchaseOutboundOrderService.selectByPrimaryKey(form.getId());
         AssertUtil.notNull(order, "保存或提交审核采购退货单失败,没有采购退货单信息");
         //校验仓库是否停用
@@ -253,7 +257,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         //审核驳回状态保存退货单，状态不变
         if (StringUtils.equals(PurchaseOutboundOrderStatusEnum.REJECT.getCode(), order.getStatus())
                 && StringUtils.equals(PurchaseOutboundOrderStatusEnum.REJECT.getCode(), order.getAuditStatus())) {
-            form.setStatus(PurchaseOutboundOrderStatusEnum.REJECT.getCode());
+            purchaseOutboundOrder.setStatus(PurchaseOutboundOrderStatusEnum.REJECT.getCode());
         }
 
         //提交审核校验必填参数
@@ -276,9 +280,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             example.createCriteria().andEqualTo("purchaseOutboundOrderCode", order.getPurchaseOutboundOrderCode());
             purchaseOutboundDetailService.deleteByExample(example);
         }
-        form.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
+        purchaseOutboundOrder.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
 
-        int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(form);
+        int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(purchaseOutboundOrder);
         if (i < 1) {
             log.error("采购退货单更新异常, 采购退货单号:{}", form.getPurchaseOutboundOrderCode());
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_UPDATE_EXCEPTION, "采购退货单更新异常");
