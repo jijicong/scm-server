@@ -805,14 +805,14 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 if (StringUtils.equals(code,SUCCESS)){
                     List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
                     if(StringUtils.equals(SUCCESS, responses.get(0).getCode())){
-                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, responses.get(0).getWmsOrderCode());
+                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, outboundOrder.getIsStoreOrder(), responses.get(0).getWmsOrderCode());
                         scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
                     }else{
                         //仓库接受失败插入一条日志
                         msg = responses.get(0).getMessage();
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
-                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, "");
+                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, outboundOrder.getIsStoreOrder(), "");
                         scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                         logger.error(msg);
                         throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
@@ -820,7 +820,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 }else {
                     //仓库接受失败插入一条日志
                     logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
-                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, "");
+                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, outboundOrder.getIsStoreOrder(),"");
                     scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
@@ -1021,13 +1021,18 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
 
-    private void updateOutboundDetailState(String outboundOrderCode,String state,Long id, String deliveryOrderCode){
+    private void updateOutboundDetailState(String outboundOrderCode,String state,Long id, Integer isStoreOrder, String deliveryOrderCode){
         logger.info("开始更新发货通知单详情表状态");
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("outboundOrderCode",outboundOrderCode);
         OutboundDetail outboundDetail = new OutboundDetail();
-        outboundDetail.setStatus(state);
+        if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == isStoreOrder.intValue()){
+            outboundDetail.setStatus(state);
+        }else if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == isStoreOrder.intValue()){
+            outboundDetail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+        }
+
         int count = outboundDetailService.updateByExampleSelective(outboundDetail,example);
         if (count == 0){
             String msg = String.format("创建发货单%s后，更新发货通知单详情表状态失败",outboundOrderCode);
@@ -1040,8 +1045,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         outboundOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
         //找出发货通知单编号下所有记录，更新出库通知单状态
         List<OutboundDetail> list = outboundDetailService.selectByExample(example);
-        String outboundOrderStatus = this.getOutboundOrderStatusByDetail(list);
-        outboundOrder.setStatus(outboundOrderStatus);
+        if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == isStoreOrder.intValue()){
+            outboundOrder.setStatus(this.getOutboundOrderStatusByDetail(list));
+        }else if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == isStoreOrder.intValue()){
+            outboundOrder.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+        }
+
         outboundOrder.setWmsOrderCode(deliveryOrderCode);
         count = outBoundOrderService.updateByPrimaryKeySelective(outboundOrder);
         if (count == 0){
@@ -1584,7 +1593,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 //        AssertUtil.notBlank(warehouse.getSenderPhoneNumber(),"运单发件人手机号不能为空");
         AssertUtil.notBlank(warehouse.getProvince(),"发货仓库省份不能为空");
         AssertUtil.notBlank(warehouse.getCity(),"发货仓库城市不能为空");
-        if(Integer.parseInt(ZeroToNineEnum.ONE.getCode()) == isStoreOrder){
+        if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == isStoreOrder.intValue()){
             AssertUtil.notBlank(warehouse.getAddress(),"发货仓库的详细地址不能为空");
             AssertUtil.notBlank(outboundOrder.getReceiverName(),"收件人姓名不能为空");
             AssertUtil.notBlank(outboundOrder.getReceiverPhone(),"收件人联系方式不能为空");

@@ -7,7 +7,9 @@ import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.AppResult;
+import org.trc.util.DateUtils;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 
@@ -17,6 +19,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Calendar;
 
 /**
  * Created by hzwdx on 2017/7/14.
@@ -32,6 +35,8 @@ public class ScmApiResource {
     private IAclResourceBiz jurisdictionBiz;
     @Autowired
     private IAclUserAccreditInfoBiz aclUserAccreditInfoBiz;
+    @Autowired
+    private ISerialUtilService serialUtilService;
 
     @POST
     @Path(SupplyConstants.Api.EXTERNAL_ITEM_UPDATE)
@@ -84,6 +89,12 @@ public class ScmApiResource {
     @Produces("application/json;charset=utf-8")
     public ResponseAck<String> orderSubmitResultNotice(String orderInfo) {
         return scmOrderBiz.orderSubmitResultNotice(orderInfo);
+    }
+
+    @GET
+    @Path("generateCode")
+    public Response generateCode(@Context ContainerRequestContext requestContext,@Context HttpServletRequest request){
+        return ResultUtil.createSuccessResult("生成序列号成功!",serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime())));
     }
 
 }

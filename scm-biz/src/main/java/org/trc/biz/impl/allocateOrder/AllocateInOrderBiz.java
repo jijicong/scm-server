@@ -438,8 +438,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                         skuDetail.setNornalInNum(detailRequest.getNornalInNum());
                         Long realInNum = detailRequest.getNornalInNum() + detailRequest.getDefectInNum();
                         skuDetail.setRealInNum(realInNum);
-                        if(skuDetail.getRealOutNum().longValue() == skuDetail.getNornalInNum().longValue() &&
-                                skuDetail.getDefectInNum().longValue() == 0){
+                        if(checkIsException(skuDetail)){
                             skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode());
                             skuDetail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()));
                             logMessage += skuDetail.getSkuCode() + ":" + "入库完成<br>";
@@ -491,6 +490,21 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         return ResultUtil.createSuccessResult("反填调拨入库信息成功！", "");
     }
 
+    private boolean checkIsException(AllocateSkuDetail skuDetail){
+        if(StringUtils.equals(skuDetail.getInventoryType(), ZeroToNineEnum.ONE.getCode())){
+            if(skuDetail.getRealOutNum().longValue() == skuDetail.getNornalInNum().longValue() &&
+                    skuDetail.getDefectInNum().longValue() == 0 ){
+                return true;
+            }
+        }else{
+            if(skuDetail.getRealOutNum().longValue() == skuDetail.getDefectInNum().longValue() &&
+                    skuDetail.getNornalInNum().longValue() == 0 ){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Map<String,Long> delStock(List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList, AllocateSkuDetail detail, String warehouseCode) {
         //用Map存库存信息
         Map<String,Long> stockMap = new HashMap<>();
@@ -516,7 +530,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                 if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(), EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
                     normalQuantity = (detail.getNornalInNum() == null ? 0 : detail.getNornalInNum()) + (entryOrderDetailOrder.getActualQty()) + (normalQuantity);
                 }else if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
-                    defectiveQuantity =detail.getDefectInNum()==null?0:detail.getDefectInNum()+entryOrderDetailOrder.getActualQty()+defectiveQuantity;
+                    defectiveQuantity = (detail.getDefectInNum()==null ? 0 : detail.getDefectInNum()) + entryOrderDetailOrder.getActualQty() + defectiveQuantity;
                 }
             }
         }
@@ -623,6 +637,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                     List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
                     //修改状态
                     allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+                    allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
 
                     for (AllocateSkuDetail detail: allocateSkuDetailList) {
                         detail.setInStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
@@ -661,26 +676,26 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         }
     }
 
-    private void judgeWarehouseNoticeDetailState(Map<String,Long> stockMap, AllocateSkuDetail detail, String logMessage,
+    private void judgeWarehouseNoticeDetailState(Map<String,Long> stockMap, AllocateSkuDetail detail, StringBuilder logMessage,
                                                  List<String> exceptionDetail) {
         //正品入库
         Long normalQuantity = stockMap.get("normalQ");
         //残次品入库
         Long defectiveQuantity = stockMap.get("defectiveQ");
         //判断收货状态
-        detail.setDefectInNum(normalQuantity);
-        detail.setNornalInNum(defectiveQuantity);
+        detail.setDefectInNum(defectiveQuantity);
+        detail.setNornalInNum(normalQuantity);
         Long realInNum = normalQuantity + defectiveQuantity;
         detail.setRealInNum(realInNum);
         if(detail.getRealOutNum().longValue() == detail.getNornalInNum().longValue() &&
                 detail.getDefectInNum().longValue() == 0){
             detail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode());
             detail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()));
-            logMessage += detail.getSkuCode() + ":" + "入库完成<br>";
+            logMessage.append(detail.getSkuCode() + ":" + "入库完成<br>");
         }else{
             detail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_EXCEPTION.getCode());
             detail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode()));
-            logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
+            logMessage.append(detail.getSkuCode() + ":" + "入库异常<br>");
             exceptionDetail.add(detail.getSkuCode());
         }
         //设置入库时间
@@ -739,7 +754,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                         List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
                         List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList = entryOrderDetail.getScmEntryOrderDetailResponseItemList();
                         if (!AssertUtil.collectionIsEmpty(allocateSkuDetailList) && !AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseItemList)) {
-                            String logMessage = "";
+                            //String logMessage = "";
+                            StringBuilder logMessage = new StringBuilder();
                             List<String> exceptionDetail = new ArrayList<>();
 
                             for (AllocateSkuDetail detail : allocateSkuDetailList) {
@@ -779,10 +795,10 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                             warehouseInfo.setCode(allocateInOrder.getInWarehouseCode());
                             warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
                             logInfoService.recordLog(allocateInOrder, allocateInOrder.getId().toString(), warehouseInfo.getWarehouseName(),
-                                    LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
+                                    LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage.toString(), null);
 
                             logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
-                                    LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
+                                    LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage.toString(), null);
                         } else {
                             logger.error("本地未查询到通知单编号为" + entryOrderDetail.getEntryOrderCode() + "的调拨入库通知单详情,反馈的通知单详情为空");
                         }

@@ -1,24 +1,18 @@
 package org.trc.service.impl.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.domain.util.Serial;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.DistributeLockEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
-import org.trc.exception.RedisLockException;
 import org.trc.mapper.util.ISerialMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
 import org.trc.util.SerialUtil;
-import org.trc.util.lock.RedisLock;
 
 import javax.annotation.Resource;
 
@@ -32,32 +26,12 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
 
     @Resource
     private ISerialMapper iserialMapper;
-    @Autowired
-    private RedisLock redisLock;
 
     //获得流水号
     public int selectNumber(String name) {
           return  iserialMapper.selectNumber(name);
     }
 
-    private String getRedisKey(String lockKey, int count){
-        if(count == 30){
-            return null;
-        }
-        log.info("获取锁"+lockKey+"操作当前重试第"+(count+1)+"次");
-        String identifier = redisLock.Lock(lockKey, 6000, 8000);
-        if (StringUtils.isBlank(identifier)){
-            count++;
-            try {
-                Thread.sleep(100L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return getRedisKey(lockKey, count);
-        }else{
-            return identifier;
-        }
-    }
 
     private String generate(String name, int length, int count, String ... names){
         int number = this.selectNumber(name);//获得将要使用的流水号
@@ -83,33 +57,8 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
     //获得前缀不固定的流水号
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public String generateRandomCode(int length,String flag,String ...names){ //需要其它的前缀，直接在后面添加
-        String code = null;
-        String lockKey = DistributeLockEnum.SERIAL_GENERATE.getCode();
-        int count = 0;
-        String identifier = getRedisKey(lockKey, count);
-        if (StringUtils.isBlank(identifier)){
-            throw new RedisLockException(CommonExceptionEnum.REDIS_LOCK_ERROR, String.format("序列号%s生成失败", names));
-        }
-        try{
-            int count2 = 0;
-            code = generate(flag, length, count2, names);
-        }catch (Exception e){
-            //释放锁
-            if (redisLock.releaseLock(lockKey, identifier)) {
-                log.info("锁" +lockKey + "已释放！");
-            } else {
-                log.error("锁" +lockKey + "解锁失败！");
-            }
-            log.error(String.format("序列号%s生成异常", names), e);
-            throw e;
-        }
-        //释放锁
-        if (redisLock.releaseLock(lockKey, identifier)) {
-            log.info("锁" +lockKey + "已释放！");
-        } else {
-            log.error("锁" +lockKey + "解锁失败！");
-        }
-        return code;
+        int count2 = 0;
+        return generate(flag, length, count2, names);
     }
 
 
@@ -117,33 +66,8 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public String generateCode(int length,String ...names){ //需要其它的前缀，直接在后面添加
-        String code = null;
-        String lockKey = DistributeLockEnum.SERIAL_GENERATE.getCode();
-        int count = 0;
-        String identifier = getRedisKey(lockKey, count);
-        if (StringUtils.isBlank(identifier)){
-            throw new RedisLockException(CommonExceptionEnum.REDIS_LOCK_ERROR, String.format("序列号%s生成失败", names));
-        }
-        try{
-            int count2 = 0;
-            code = generate(names[0], length, count2, names);
-        }catch (Exception e){
-            //释放锁
-            if (redisLock.releaseLock(lockKey, identifier)) {
-                log.info("锁" +lockKey + "已释放！");
-            } else {
-                log.error("锁" +lockKey + "解锁失败！");
-            }
-            log.error(String.format("序列号%s生成异常", names), e);
-            throw e;
-        }
-        //释放锁
-        if (redisLock.releaseLock(lockKey, identifier)) {
-            log.info("锁" +lockKey + "已释放！");
-        } else {
-            log.error("锁" +lockKey + "解锁失败！");
-        }
-        return code;
+        int count2 = 0;
+        return generate(names[0], length, count2, names);
     }
 
 

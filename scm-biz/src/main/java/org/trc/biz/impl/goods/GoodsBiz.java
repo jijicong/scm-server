@@ -1580,7 +1580,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     private Long getLongValue(String val){
         if(StringUtils.isNotBlank(val)){
-            BigDecimal d = new BigDecimal(val);
+            BigDecimal d = new BigDecimal(val.trim());
             return CommonUtil.getMoneyLong(d);
         }
         return null;
