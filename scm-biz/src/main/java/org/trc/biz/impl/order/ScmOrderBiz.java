@@ -7202,7 +7202,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
 
 
     @Override
-//    @SupplierOrderCacheEvict
+    @SupplierOrderCacheEvict
     public Response importOrder(String sellCode,String isAppointStock,String warehouseCode,InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(sellCode, "销售渠道编码不能为空");
         AssertUtil.notBlank(isAppointStock,"是否指定仓库不能为空");
