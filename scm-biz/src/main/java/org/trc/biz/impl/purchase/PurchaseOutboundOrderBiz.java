@@ -265,22 +265,23 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             validationParam(form);
         }
         //更新总金额
-        BigDecimal totalAmount = new BigDecimal(0);
+        BigDecimal totalAmount = null;
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             List<PurchaseOutboundDetail> purchaseOutboundDetailList = form.getPurchaseOutboundDetailList();
             for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetailList) {
                 if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
+                    totalAmount = new BigDecimal(0);
                     //单价*数量
                     totalAmount = totalAmount.add(purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity())));
                 }
             }
-
-            //删除退货单商品，重新添加
-            Example example = new Example(PurchaseOutboundDetail.class);
-            example.createCriteria().andEqualTo("purchaseOutboundOrderCode", order.getPurchaseOutboundOrderCode());
-            purchaseOutboundDetailService.deleteByExample(example);
         }
-        purchaseOutboundOrder.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
+        //删除退货单商品，重新添加
+        Example example = new Example(PurchaseOutboundDetail.class);
+        example.createCriteria().andEqualTo("purchaseOutboundOrderCode", order.getPurchaseOutboundOrderCode());
+        purchaseOutboundDetailService.deleteByExample(example);
+
+        purchaseOutboundOrder.setTotalFee(totalAmount == null ? null : totalAmount.setScale(3, RoundingMode.HALF_UP));
 
         int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(purchaseOutboundOrder);
         if (i < 1) {
@@ -1560,7 +1561,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
      * @param seq                 采购退货通知单编号
      */
     private void insertPurchaseOutboundOrderAndDetail(PurchaseOutboundOrder form, AclUserAccreditInfo aclUserAccreditInfo, String seq) {
-        BigDecimal totalAmount = new BigDecimal(0);
+        BigDecimal totalAmount = null;
         form.setChannelCode(aclUserAccreditInfo.getChannelCode());
         form.setPurchaseOutboundOrderCode(seq);
         form.setIsValid(ValidEnum.VALID.getCode());
@@ -1568,13 +1569,14 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
                 if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
+                    totalAmount = new BigDecimal(0);
                     //单价*数量
                     totalAmount = totalAmount.add(purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity())));
                 }
             }
         }
 
-        form.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
+        form.setTotalFee(totalAmount == null ? null : totalAmount.setScale(3, RoundingMode.HALF_UP));
         int count = purchaseOutboundOrderService.insert(form);
         if (count < 1) {
             throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "保存采购退货单失败");
@@ -1762,7 +1764,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             criteria.andLessThan("updateTime", form.getEndDate());
         }
         criteria.andEqualTo("isDeleted", "0");
-        example.setOrderByClause("instr('0,2,1,3,4,5',`status`) ASC");
+        example.setOrderByClause("if(status = 0,0,2), updateTime desc");
+        example.setOrderByClause("instr('1,3,4,5',`status`) ASC");
         example.orderBy("updateTime").desc();
         return example;
     }
