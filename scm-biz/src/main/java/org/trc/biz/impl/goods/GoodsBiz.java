@@ -931,62 +931,68 @@ public class GoodsBiz implements IGoodsBiz {
 
         String logMsg2 = "";
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
-        String propertyId="";
-        String propertyValueId="";
-        String propertyValue="";
-        for (Object obj : categoryArray) {
-            JSONObject jbo = (JSONObject) obj;
-            propertyId=jbo.getString("propertyId");
-            propertyValueId=jbo.getString("propertyValueId");
-            propertyValue = jbo.getString("propertyValue");
-        }
-        if (!StringUtils.equals(propertyId,"")){//商品没自然属性
-            ItemNaturePropery temp=new ItemNaturePropery();
-            temp.setSpuCode(items.getSpuCode());
-            temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            temp = itemNatureProperyService.selectOne(temp);
-            if (!StringUtils.equals(temp.getPropertyValueId().toString(),propertyValueId)){
-                Property property = propertyService.selectOneById(Long.parseLong(propertyId));
-                PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(temp.getPropertyValueId());
-                logMsg2=logMsg2+property.getName()+"由\""+propertyValueTemp.getValue()+"\"改为\""+propertyValue+"\";";
+        if (categoryArray!=null&&categoryArray.size()>0){
+            String propertyId="";
+            String propertyValueId="";
+            String propertyValue="";
+            for (Object obj : categoryArray) {
+                JSONObject jbo = (JSONObject) obj;
+                propertyId=jbo.getString("propertyId");
+                propertyValueId=jbo.getString("propertyValueId");
+                propertyValue = jbo.getString("propertyValue");
+            }
+            if (!StringUtils.equals(propertyId,"")){//商品没自然属性
+                ItemNaturePropery temp=new ItemNaturePropery();
+                temp.setSpuCode(items.getSpuCode());
+                temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                temp = itemNatureProperyService.selectOne(temp);
+                if (!StringUtils.equals(temp.getPropertyValueId().toString(),propertyValueId)){
+                    Property property = propertyService.selectOneById(Long.parseLong(propertyId));
+                    PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(temp.getPropertyValueId());
+                    logMsg2=logMsg2+property.getName()+"由\""+propertyValueTemp.getValue()+"\"改为\""+propertyValue+"\";";
+                }
             }
         }
+
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
-        for (Object obj: skuArray) {
-            JSONObject jbo = (JSONObject) obj;
-            Skus temp = new Skus();
-            String skuCode = jbo.getString("skuCode");
-            if(StringUtils.equals(skuCode,"")){
-                logMsg2=logMsg2+"新增了名称为\""+jbo.getString("skuName")+"\"的sku;";
-            }else {
-                temp.setSkuCode(skuCode);
-                Skus orginSkus = skusService.selectOne(temp);
-                if (StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))&&StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))
-                        && StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
-                    logMsg2 = logMsg2+"";
+        if (skuArray!=null && skuArray.size()>0){
+            for (Object obj: skuArray) {
+                JSONObject jbo = (JSONObject) obj;
+                Skus temp = new Skus();
+                String skuCode = jbo.getString("skuCode");
+                if(StringUtils.equals(skuCode,"")){
+                    logMsg2=logMsg2+"新增了名称为\""+jbo.getString("skuName")+"\"的sku;";
                 }else {
-                    logMsg2 = logMsg2+skuCode+":";
-                    if (!StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))){
-                        logMsg2=logMsg2+"SKU名称由\""+orginSkus.getSkuName()+"\"改为\""+jbo.getString("skuName")+"\";";
-                    }
-                    if (!StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))){
-                        logMsg2=logMsg2+"条形码由\""+orginSkus.getBarCode()+"\"改为\""+jbo.getString("barCode")+"\";";
-                    }
-                    if (!StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
-                        logMsg2=logMsg2+"sku状态由\""+ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
-                                +"\";";
-                    }
+                    temp.setSkuCode(skuCode);
+                    Skus orginSkus = skusService.selectOne(temp);
+                    if (StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))&&StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))
+                            && StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
+                        logMsg2 = logMsg2+"";
+                    }else {
+                        logMsg2 = logMsg2+skuCode+":";
+                        if (!StringUtils.equals(orginSkus.getSkuName(),jbo.getString("skuName"))){
+                            logMsg2=logMsg2+"SKU名称由\""+orginSkus.getSkuName()+"\"改为\""+jbo.getString("skuName")+"\";";
+                        }
+                        if (!StringUtils.equals(orginSkus.getBarCode(),jbo.getString("barCode"))){
+                            logMsg2=logMsg2+"条形码由\""+orginSkus.getBarCode()+"\"改为\""+jbo.getString("barCode")+"\";";
+                        }
+                        if (!StringUtils.equals(orginSkus.getIsValid(),jbo.getString("isValid"))){
+                            logMsg2=logMsg2+"sku状态由\""+ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName()+"\"改为\""+ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
+                                    +"\";";
+                        }
                /* if (!StringUtils.equals(orginSkus.getMarketPrice2().toString(),jbo.getString("marketPrice2"))){
                     logMsg2=logMsg2+"参考市场价由\""+orginSkus.getMarketPrice2()+"\"改为\""+jbo.getString("marketPrice2")+";";
                 }
                 if (!StringUtils.equals(orginSkus.getWeight2().toString(),jbo.getString("weight2"))){
                     logMsg2=logMsg2+"重量由\""+orginSkus.getWeight2()+"\"改为\""+jbo.getString("weight2")+";";
                 }*/
-                    logMsg2 = logMsg2+"\r\n";
+                        logMsg2 = logMsg2+"\r\n";
+                    }
                 }
-            }
 
+            }
         }
+
         if (!StringUtils.isEmpty(logMsg2)){
             logMsg2="商品信息："+logMsg2.substring(0,logMsg2.lastIndexOf(";"))+"。\r\n";
         }
