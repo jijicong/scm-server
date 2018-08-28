@@ -17,7 +17,8 @@ public enum DistributeLockEnum {
     ALLOCATE_ORDER_AUDIT("allocateOrderAudit", "调拨单审核"),
     SERIAL_GENERATE("serialGenerate", "序列号生成"),
     ITEM_GROUP_SAVE("item_group_save","商品组新增"),
-    ITEM_GROUP_EDIT("item_group_edit","商品组编辑");
+    ITEM_GROUP_EDIT("item_group_edit","商品组编辑"),
+    BAND_SAVE("bandSave","品牌保存");
 
     private String code;
     private String name;

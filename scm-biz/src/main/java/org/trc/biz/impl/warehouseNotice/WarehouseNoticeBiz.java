@@ -514,9 +514,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
           */
     	
         AssertUtil.notNull(warehouseNotice, "入库通知的信息为空");
-        PurchaseOrder purchaseOrder = new PurchaseOrder();
-        purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
-        purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
+  
         Example example = new Example(PurchaseOrder.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
@@ -524,6 +522,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         List<PurchaseOrder> purchaseOrders = purchaseOrderService.selectByExample(example);
         // 采购单的状态未置过
         if (!CollectionUtils.isEmpty(purchaseOrders)) {
+        	
+            PurchaseOrder purchaseOrder = new PurchaseOrder();
+            purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+            purchaseOrder.setUpdateTime(purchaseOrders.get(0).getUpdateTime());
+        	
         	purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
         }
 
