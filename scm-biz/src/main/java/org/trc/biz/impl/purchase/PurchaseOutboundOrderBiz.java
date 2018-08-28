@@ -386,6 +386,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         if (CollectionUtils.isEmpty(warehouseNotices)) {
             return new Pagenation<>();
         }
+
+        Map<String, String> purchaseOrderCodeMap = warehouseNotices.stream().collect(Collectors.toMap(WarehouseNotice::getWarehouseNoticeCode, WarehouseNotice::getPurchaseOrderCode));
+
         List<WarehouseNoticeDetails> details = new ArrayList<>();
         for (WarehouseNotice warehouseNotice : warehouseNotices) {
             Example detailExample = new Example(WarehouseNoticeDetails.class);
@@ -445,16 +448,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<WarehouseNoticeDetails> result = pagination.getResult();
         //setPurchaseOrderCode
         for (WarehouseNoticeDetails warehouseNoticeDetails : result) {
-            for (WarehouseNotice warehouseNotice : warehouseNotices) {
-                if (StringUtils.equals(warehouseNoticeDetails.getWarehouseNoticeCode(), warehouseNotice.getWarehouseNoticeCode())) {
-                    warehouseNoticeDetails.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
-                    //采购单ID
-                    PurchaseOrder purchaseOrder = findPurchaseOrderByCode(warehouseNotice.getPurchaseOrderCode());
-                    if (purchaseOrder != null) {
-                        warehouseNoticeDetails.setPurchaseOrderId(purchaseOrder.getId());
-                    }
-                    break;
-                }
+            String purchaseOrderCode = purchaseOrderCodeMap.get(warehouseNoticeDetails.getWarehouseNoticeCode());
+            warehouseNoticeDetails.setPurchaseOrderCode(purchaseOrderCode);
+            //采购单ID
+            PurchaseOrder purchaseOrder = findPurchaseOrderByCode(purchaseOrderCode);
+            if (purchaseOrder != null) {
+                warehouseNoticeDetails.setPurchaseOrderId(purchaseOrder.getId());
             }
         }
         return pagination;
