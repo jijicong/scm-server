@@ -92,9 +92,8 @@ public class BrandResource {
     			}
     			
     		} catch (Exception e) {
-    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:", 
-    					noticeCode, identifier, e);
-    			e.printStackTrace();
+    			logger.error("bandName:{} 新增品牌，解锁失败，identifier:{}, err:", 
+    					brand.getName(), identifier, e);
     		}
     	}
         
