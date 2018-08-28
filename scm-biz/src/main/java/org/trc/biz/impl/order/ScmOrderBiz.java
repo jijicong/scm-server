@@ -4267,6 +4267,16 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             }
         }
         if(_outboundOrderList.size() == 0){
+            for(OutboundOrder outboundOrder: outboundOrderList){
+                if(StringUtils.equals(shopOrder.getScmShopOrderCode(), outboundOrder.getScmShopOrderCode()) &&
+                        StringUtils.equals(OutboundOrderStatusEnum.WAITING.getCode(), outboundOrder.getStatus())){
+                    for(ExportOrderDO exportOrderDO: exportOrderList){
+                        if(StringUtils.equals(outboundOrder.getWarehouseOrderCode(), exportOrderDO.getWarehouseOrderCode())){
+                            exportOrderDO.setWaybill(outboundOrder.getWaybillNumber());
+                        }
+                    }
+                }
+            }
             return;
         }
 
@@ -4308,6 +4318,8 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                                     exportOrderDO.setSendNum(outboundLogisticsList.get(0).getItemNum() != null? outboundLogisticsList.get(0).getItemNum().intValue(): null);
                                     exportOrderDO.setLogisticsCompany(outboundLogisticsList.get(0).getLogisticsCorporation());
                                     exportOrderDO.setWaybill(outboundLogisticsList.get(0).getWaybillNumber());
+                                }else{
+                                    exportOrderDO.setWaybill(outboundOrder.getWaybillNumber());
                                 }
                             }
                         }
