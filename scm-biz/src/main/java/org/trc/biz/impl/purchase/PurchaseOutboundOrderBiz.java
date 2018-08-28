@@ -283,7 +283,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         purchaseOutboundDetailService.deleteByExample(example);
 
         purchaseOutboundOrder.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
-        purchaseOutboundOrder.setUpdateTime(Calendar.getInstance().getTime());
+        Date updateTime = Calendar.getInstance().getTime();
+        purchaseOutboundOrder.setUpdateTime(updateTime);
         int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(purchaseOutboundOrder);
         if (i < 1) {
             log.error("采购退货单更新异常, 采购退货单号:{}", form.getPurchaseOutboundOrderCode());
@@ -1611,7 +1612,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 }
 
                 BigDecimal totalAmount = null;
-                if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
+                if (purchaseOutboundDetail.getPrice() != null
+                        && purchaseOutboundDetail.getOutboundQuantity() != null
+                        && purchaseOutboundDetail.getOutboundQuantity() > 0) {
                     //单价*数量
                     totalAmount = purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity()));
                 }
