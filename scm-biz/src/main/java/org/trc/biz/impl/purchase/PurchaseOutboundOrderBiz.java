@@ -1259,8 +1259,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
          */
         List<WarehouseNoticeDetails> warehouseNoticeDetails = getSkuCodesBySupplier(form);
         if (CollectionUtils.isEmpty(warehouseNoticeDetails)) {
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                    String.format("无数据，%s供应商对应入库单详情为空", form.getSupplierCode()));
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "无数据，供应商对应入库单详情为空");
         }
         //skuCode去重
         Set<String> skuCodes = warehouseNoticeDetails.stream().map(WarehouseNoticeDetails::getSkuCode).collect(Collectors.toSet());
@@ -1283,8 +1282,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         }
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
         if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                    "无数据，请确认选退货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
+            return new ArrayList<>();
         }
         List<String> skuCodeList = warehouseItemInfoList.stream().map(WarehouseItemInfo::getSkuCode).collect(Collectors.toList());
 
