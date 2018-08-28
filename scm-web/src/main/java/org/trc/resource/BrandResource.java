@@ -14,7 +14,6 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
-import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.category.BrandForm;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;

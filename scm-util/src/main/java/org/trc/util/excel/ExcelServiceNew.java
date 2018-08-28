@@ -30,6 +30,7 @@ public class ExcelServiceNew<T> {
 
     private final static String COUNT = "count";
     private final static String SHEET_NAME = "sheet1";
+    private final static int MAX_NUM_PER_SHEET = 65535;
 
     /**
      * 获取当前泛型的class
@@ -66,6 +67,9 @@ public class ExcelServiceNew<T> {
      * @param list
      */
     public Response exportData(Map<String, ExcelFieldInfo> fieldMap, List<?> list, String fileName) {
+        if(list.size() >= MAX_NUM_PER_SHEET){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "每页导出数据最多不能超过65535条，当前导出数据"+list.size()+"条");
+        }
         try {
             AssertUtil.notEmpty(fieldMap, "导出数据字段映射参数map不能为空");
             List<CellDefinitionNew> cellDefinitionList = new ArrayList<>();
