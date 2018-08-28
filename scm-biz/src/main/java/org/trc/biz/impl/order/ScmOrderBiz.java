@@ -7443,7 +7443,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             List<ImportOrderInfo> importOrderInfoList = getImportOrderSkuDetail(aclUserAccreditInfo.getChannelCode(), sellCode, titleResult, contentResult, sellChannel);
             //校验是否包含了代发商品
             for(ImportOrderInfo importOrderInfo: importOrderInfoList){
-                if(importOrderInfo.getSkuCode().startsWith(SP1)){
+                if(StringUtils.isNotBlank(importOrderInfo.getSkuCode()) && importOrderInfo.getSkuCode().startsWith(SP1)){
                     throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "暂不支持导入代发商品！");
                 }
             }
