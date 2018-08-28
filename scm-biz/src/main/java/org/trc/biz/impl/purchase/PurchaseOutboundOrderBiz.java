@@ -265,12 +265,11 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             validationParam(form);
         }
         //更新总金额
-        BigDecimal totalAmount = null;
+        BigDecimal totalAmount = new BigDecimal(0);;
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             List<PurchaseOutboundDetail> purchaseOutboundDetailList = form.getPurchaseOutboundDetailList();
             for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetailList) {
                 if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
-                    totalAmount = new BigDecimal(0);
                     //单价*数量
                     totalAmount = totalAmount.add(purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity())));
                 }
@@ -281,8 +280,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         example.createCriteria().andEqualTo("purchaseOutboundOrderCode", order.getPurchaseOutboundOrderCode());
         purchaseOutboundDetailService.deleteByExample(example);
 
-        purchaseOutboundOrder.setTotalFee(totalAmount == null ? null : totalAmount.setScale(3, RoundingMode.HALF_UP));
-
+        purchaseOutboundOrder.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
         int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(purchaseOutboundOrder);
         if (i < 1) {
             log.error("采购退货单更新异常, 采购退货单号:{}", form.getPurchaseOutboundOrderCode());
@@ -386,6 +384,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         if (CollectionUtils.isEmpty(warehouseNotices)) {
             return new Pagenation<>();
         }
+
+        Map<String, String> purchaseOrderCodeMap = warehouseNotices.stream().collect(Collectors.toMap(WarehouseNotice::getWarehouseNoticeCode, WarehouseNotice::getPurchaseOrderCode));
+
         List<WarehouseNoticeDetails> details = new ArrayList<>();
         for (WarehouseNotice warehouseNotice : warehouseNotices) {
             Example detailExample = new Example(WarehouseNoticeDetails.class);
@@ -445,16 +446,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<WarehouseNoticeDetails> result = pagination.getResult();
         //setPurchaseOrderCode
         for (WarehouseNoticeDetails warehouseNoticeDetails : result) {
-            for (WarehouseNotice warehouseNotice : warehouseNotices) {
-                if (StringUtils.equals(warehouseNoticeDetails.getWarehouseNoticeCode(), warehouseNotice.getWarehouseNoticeCode())) {
-                    warehouseNoticeDetails.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
-                    //采购单ID
-                    PurchaseOrder purchaseOrder = findPurchaseOrderByCode(warehouseNotice.getPurchaseOrderCode());
-                    if (purchaseOrder != null) {
-                        warehouseNoticeDetails.setPurchaseOrderId(purchaseOrder.getId());
-                    }
-                    break;
-                }
+            String purchaseOrderCode = purchaseOrderCodeMap.get(warehouseNoticeDetails.getWarehouseNoticeCode());
+            warehouseNoticeDetails.setPurchaseOrderCode(purchaseOrderCode);
+            //采购单ID
+            PurchaseOrder purchaseOrder = findPurchaseOrderByCode(purchaseOrderCode);
+            if (purchaseOrder != null) {
+                warehouseNoticeDetails.setPurchaseOrderId(purchaseOrder.getId());
             }
         }
         return pagination;
@@ -1426,8 +1423,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<WarehouseNotice> notices = warehouseNoticeService.selectByExample(example);
         List<String> warehouseNoticeCodes = notices.stream().map(WarehouseNotice::getWarehouseNoticeCode).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(warehouseNoticeCodes)) {
-            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION,
-                    String.format("无数据，%s供应商对应入库单为空", form.getSupplierCode()));
+            log.error(String.format("无数据，%s供应商对应入库单为空", form.getSupplierCode()));
+            throw new PurchaseOutboundOrderException(ExceptionEnum.PURCHASE_OUTBOUND_ORDER_EXCEPTION, "无数据，供应商对应入库单为空");
         }
 
         Example details = new Example(WarehouseNoticeDetails.class);
