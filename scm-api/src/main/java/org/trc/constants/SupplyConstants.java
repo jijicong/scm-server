@@ -884,6 +884,11 @@ public class SupplyConstants {
         public static final String SYSTEM_ORDER_CODE = "ZY";
         //导入订单长度
         public static final Integer SYSTEM_ORDER_LENGTH = 8;
+        
+        //售后单编码长度
+        public static final Integer AFTER_SALE_LENGTH=5;
+        //售后单编码前缀
+        public static final String AFTER_SALE_CODE="ASL";
 
         //序列号查询路径
         public static final String SERIAL = "serial";
