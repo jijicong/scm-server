@@ -134,9 +134,9 @@ public class OrderResource {
     @Path(SupplyConstants.Order.ORDER_IMPORT)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/octet-stream")
-    public Response orderImport(@FormDataParam("sellCode") String sellCode, @FormDataParam("file") InputStream uploadedInputStream,
+    public Response orderImport(@FormDataParam("sellCode") String sellCode, @FormDataParam("isAppointStock") String isAppointStock,@FormDataParam("warehouseCode") String warehouseCode,@FormDataParam("file") InputStream uploadedInputStream,
                                 @FormDataParam("file") FormDataContentDisposition fileDetail,@Context ContainerRequestContext requestContext) {
-        return scmOrderBiz.importOrder(sellCode, uploadedInputStream, fileDetail, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return scmOrderBiz.importOrder(sellCode, isAppointStock, warehouseCode, uploadedInputStream, fileDetail, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @GET
@@ -146,6 +146,15 @@ public class OrderResource {
     public Response downloadErrorOrder(@PathParam("orderCode") String orderCode) throws Exception {
         return scmOrderBiz.downloadErrorOrder(orderCode);
     }
+
+    @GET
+    @Path(SupplyConstants.Order.WAREHOUSE_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryWarehouseList() throws Exception {
+        return ResultUtil.createSuccessResult("查询仓库列表成功!", scmOrderBiz.queryWarehouseList());
+    }
+
+
 }
 
 

@@ -1223,6 +1223,9 @@ public class SupplyConstants {
         public static final String ORDER_IMPORT = "orderImport";
         //下载错误订单路径
         public static final String DOWNLOAD_ERROR_ORDER = "downloadErrorOrder";
+
+        //导入订单下拉仓库列表
+        public static final String WAREHOUSE_LIST= "warehouseList";
     }
 
     /**

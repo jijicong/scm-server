@@ -252,6 +252,12 @@ public class OrderItem implements Serializable {
      */
     private Integer isStoreOrder;
 
+    /**
+     * 是否指定仓库:0-是,1-否'
+     */
+    @Transient
+    private String isAppointStock;
+
     public OrderItem(){
 
     }
@@ -1402,5 +1408,13 @@ public class OrderItem implements Serializable {
 
     public void setIsStoreOrder(Integer isStoreOrder) {
         this.isStoreOrder = isStoreOrder;
+    }
+
+    public String getIsAppointStock() {
+        return isAppointStock;
+    }
+
+    public void setIsAppointStock(String isAppointStock) {
+        this.isAppointStock = isAppointStock;
     }
 }
