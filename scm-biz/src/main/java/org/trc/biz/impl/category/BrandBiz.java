@@ -258,8 +258,8 @@ public class BrandBiz implements IBrandBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @BrandCacheEvict
     public void saveBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
-        AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
-        AssertUtil.notBlank(brand.getName(),"保存品牌信息,品牌名称不能为空");
+//        AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
+//        AssertUtil.notBlank(brand.getName(),"保存品牌信息,品牌名称不能为空");
         checkBrandName(null,brand.getName());
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
@@ -275,11 +275,14 @@ public class BrandBiz implements IBrandBiz {
             //记录到日志表中不能影响到主体业务
             logInfoService.recordLog(brand,brand.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
             //通知渠道方
-            try{
-                trcBiz.sendBrand(TrcActionTypeEnum.ADD_BRAND, null,brand,System.currentTimeMillis());
-            }catch (Exception e){
-                log.error("品牌新增通知调用出现异常:"+e.getMessage());
-            }
+            new Thread(() -> {
+                try{
+                    trcBiz.sendBrand(TrcActionTypeEnum.ADD_BRAND, null,brand,System.currentTimeMillis());
+                }catch (Exception e){
+                    log.error("品牌新增通知调用出现异常:", e);
+                }
+            }).start();
+
         } catch (Exception e) {
             log.error(e.getMessage());
             String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
