@@ -269,7 +269,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             List<PurchaseOutboundDetail> purchaseOutboundDetailList = form.getPurchaseOutboundDetailList();
             for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetailList) {
-                if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
+                if (purchaseOutboundDetail.getPrice() != null
+                        && purchaseOutboundDetail.getOutboundQuantity() != null
+                        && purchaseOutboundDetail.getOutboundQuantity() > 0) {
                     //单价*数量
                     totalAmount = totalAmount.add(purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity())));
                 }
@@ -281,6 +283,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         purchaseOutboundDetailService.deleteByExample(example);
 
         purchaseOutboundOrder.setTotalFee(totalAmount.setScale(3, RoundingMode.HALF_UP));
+        purchaseOutboundOrder.setUpdateTime(Calendar.getInstance().getTime());
         int i = purchaseOutboundOrderService.updateByPrimaryKeySelective(purchaseOutboundOrder);
         if (i < 1) {
             log.error("采购退货单更新异常, 采购退货单号:{}", form.getPurchaseOutboundOrderCode());
@@ -1563,7 +1566,9 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         form.setCreateOperator(aclUserAccreditInfo.getUserId());
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             for (PurchaseOutboundDetail purchaseOutboundDetail : form.getPurchaseOutboundDetailList()) {
-                if (purchaseOutboundDetail.getPrice() != null && purchaseOutboundDetail.getOutboundQuantity() > 0) {
+                if (purchaseOutboundDetail.getPrice() != null
+                        && purchaseOutboundDetail.getOutboundQuantity() != null
+                        && purchaseOutboundDetail.getOutboundQuantity() > 0) {
                     totalAmount = new BigDecimal(0);
                     //单价*数量
                     totalAmount = totalAmount.add(purchaseOutboundDetail.getPrice().multiply(new BigDecimal(purchaseOutboundDetail.getOutboundQuantity())));
