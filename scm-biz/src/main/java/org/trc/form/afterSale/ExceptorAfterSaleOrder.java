@@ -3,6 +3,8 @@ package org.trc.form.afterSale;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 /**
  * @Auther: hzluoxingcheng
  * @Date: 2018/8/29 18:05
@@ -19,7 +21,7 @@ public class ExceptorAfterSaleOrder {
     /**
      *售后单状态
      */
-    private String status;
+    private Integer status;
     /**
      *系统订单号
      */
@@ -51,11 +53,11 @@ public class ExceptorAfterSaleOrder {
     /**
      * 拟退货数量
      */
-    private String returnNum;
+    private Integer returnNum;
     /**
      * 退款金额
      */
-    private String refundAmont;
+    private BigDecimal refundAmont;
     /**
      * 物流公司
      */

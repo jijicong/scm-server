@@ -363,8 +363,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) throws Exception{
 			page.setPageSize(3000);
 			Pagenation<AfterSaleOrderVO> pvo =  afterSaleOrderPage(form,page);
-			List<AfterSaleOrderVO> newResult = pvo.getResult();
-
+			List<AfterSaleOrderVO> result = pvo.getResult();
+		    List<ExceptorAfterSaleOrder> newResult = Lists.newArrayList();
+		    List<ExceptorAfterSaleOrder> newlist =  TransfExportAfterSaleOrder.getExceptorAfterSaleOrder(result);
 			//开始导出商品信息
 			CellDefinition createTime = new CellDefinition("createTime", "创建时间", CellDefinition.TEXT, null, 4000);
 			CellDefinition status = new CellDefinition("status", "售后单状态", CellDefinition.TEXT, null, 4000);
@@ -409,7 +410,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			} catch (UnsupportedEncodingException e1) {
 				e1.printStackTrace();
 			}
-			HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(newResult, cellDefinitionList, sheetName);
+			HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(newlist, cellDefinitionList, sheetName);
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			hssfWorkbook.write(stream);
 			return Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
