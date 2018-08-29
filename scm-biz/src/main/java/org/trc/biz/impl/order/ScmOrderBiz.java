@@ -2723,6 +2723,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     orderItem.setSpuCode(skus.getSpuCode());
                     orderItem.setItemName(skus.getSkuName());
                     orderItem.setSpecNatureInfo(skus.getSpecInfo());
+                    if(StringUtils.isBlank(orderItem.getBarCode())){
+                        orderItem.setBarCode(skus.getBarCode());
+                    }
                     break;
                 }
             }
@@ -2745,6 +2748,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         _orderItem.setItemName(skus.getSkuName());
                         _orderItem.setSpuCode(skus.getSpuCode());
                         _orderItem.setSpecNatureInfo(skus.getSpecInfo());
+                        if(StringUtils.isBlank(_orderItem.getBarCode())){
+                            _orderItem.setBarCode(skus.getBarCode());
+                        }
                         break;
                     }
                 }
