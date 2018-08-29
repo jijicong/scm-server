@@ -151,6 +151,13 @@ public class AfterSaleOrderDetail implements Serializable {
     @Column(name="deliver_warehouse_code")
 	private String deliverWarehouseCode;
     /**
+     * 发货仓库名称
+     */
+    @ApiModelProperty(value="发货仓库名称")
+	@FormParam("deliverWarehouseName")
+    @Column(name="deliver_warehouse_name")
+	private String deliverWarehouseName;
+    /**
      * 创建时间
      */
     @ApiModelProperty(value="创建时间")
