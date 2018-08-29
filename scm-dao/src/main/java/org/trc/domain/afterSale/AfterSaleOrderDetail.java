@@ -52,21 +52,51 @@ public class AfterSaleOrderDetail implements Serializable {
      */
 	@Column(name="sku_code")
 	private String skuCode;
+	/**
+     * 条形码
+     */
+	@Column(name="bar_code")
+	private String barCode;
+	/**
+     * 商品规格描述
+     */
+	@Column(name="spec_nature_info")
+	private String specNatureInfo;
+	/**
+     * 商品数量
+     */
+	private int num;
     /**
+     * 最大可退数量
+     */
+	@Column(name="max_return_num")
+	private int maxReturnNum;
+	/**
      * 拟退货数量
      */
-	@Column(name="sku_num")
-	private Integer skuNum;
-    /**
-     * 拟退款金额
+	@Column(name="return_num")
+	private int returnNum;
+	/**
+     * 正品入库数量
      */
-	@Column(name="sku_money")
-	private BigDecimal skuMoney;
-    /**
-     * 商品类型（0表示自采商品，1表示代发商品）
+	@Column(name="in_num")
+	private int inNum;
+	/**
+     * 残品入库数量
      */
-	@Column(name="sku_type")
-	private Integer skuType;
+	@Column(name="defective_in_num")
+	private int defectiveInNum;
+	/**
+     * 退款金额
+     */
+	@Column(name="refund_amont")
+	private int refundAmont;
+    
+    /**
+     * 商品图片,多张图片逗号分隔
+     */
+	@Column(name="picture")
+	private String picture;
     /**
      * 创建时间
      */
