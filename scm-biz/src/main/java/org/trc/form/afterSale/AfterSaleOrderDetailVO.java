@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
+import java.math.BigDecimal;
 
 /**
  * @Auther: hzluoxingcheng
@@ -46,7 +47,7 @@ public class AfterSaleOrderDetailVO {
      * 退款金额
      */
     @ApiModelProperty("退款金额")
-    private Integer refundAmont;
+    private BigDecimal refundAmont;
 
     /**
      * 发货仓库编码

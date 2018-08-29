@@ -1,21 +1,30 @@
 package org.trc.resource;
 
 import javax.annotation.Resource;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.alibaba.fastjson.JSON;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.warehouseNotice.PurchaseOutboundNotice;
+import org.trc.form.JDModel.BalanceDetailDO;
+import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
+import org.trc.form.afterSale.AfterSaleOrderForm;
+import org.trc.form.afterSale.AfterSaleOrderVO;
+import org.trc.form.purchase.PurchaseOrderForm;
+import org.trc.util.AssertUtil;
+import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 @Component
@@ -65,5 +74,34 @@ public class AfterSaleOrderResource {
 	public Response selectWarehouse() throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectWarehouse());
 	}
-	
+
+	/**
+	 * @Description: 售后单分页查询
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/29
+	 */ 
+	@GET
+	@Path("/queryAfterSaleOrderPage")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "售后单分页查询", response = AfterSaleOrder.class)
+	public Response purchaseOrderPagenation(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
+		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page));
+	}
+
+
+	/**
+	 * @Description: 售后单导出
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/29
+	 */ 
+	@GET
+	@Path("/exportAfterSaleOrder")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "售后单导出", response = AfterSaleOrder.class)
+	public Response exportAfterSaleOrderVO(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext) throws Exception{
+		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.exportAfterSaleOrderVO(form , page));
+	}
+
+
+
 }
