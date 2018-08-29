@@ -29,7 +29,7 @@ public class AfterSaleOrderDetailForm  extends QueryModel{
     private String skuName;
 
     @ApiModelProperty("售后单编号列表")
-    private List<String> AfterSaleCodeList;
+    private List<String> AfterShopOrderCodeList;
 
 
 

@@ -321,14 +321,14 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<AfterSaleOrder> result = page.getResult();
 		List<String> shopOrderCodeList = Lists.newArrayList();
 		for(AfterSaleOrder afterOrder : result){
-			shopOrderCodeList.add(afterOrder.getAfterSaleCode());
+			shopOrderCodeList.add(afterOrder.getShopOrderCode());
 		}
 
         //说明查询没有先查询售后子表
 		if(!cildSearchFlag && Objects.equals(null,detailList)){
 			AfterSaleOrderDetailForm cldAfterSaleOrderDetailForm = new AfterSaleOrderDetailForm();
 			//赋值售后单的编号的列表
-			cldAfterSaleOrderDetailForm.setAfterSaleCodeList(shopOrderCodeList);
+			cldAfterSaleOrderDetailForm.setAfterShopOrderCodeList(shopOrderCodeList);
 			detailList = afterSaleOrderDetailBiz.queryListByCondition(cldAfterSaleOrderDetailForm);
 		}
 		//将售后单子表数据进行转换
