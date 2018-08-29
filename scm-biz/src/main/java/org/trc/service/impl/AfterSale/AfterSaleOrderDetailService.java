@@ -15,5 +15,5 @@ import org.trc.service.impl.BaseService;
  */
 @Service("afterSaleOrderDetailService")
 public class AfterSaleOrderDetailService extends BaseService<AfterSaleOrderDetail, Long> implements IAfterSaleOrderDetailService {
-	
+
 }

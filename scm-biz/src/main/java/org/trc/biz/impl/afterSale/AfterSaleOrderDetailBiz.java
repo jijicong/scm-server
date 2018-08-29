@@ -12,6 +12,7 @@ import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service("afterSaleOrderDetailBiz")
 public class AfterSaleOrderDetailBiz implements IAfterSaleOrderDetailBiz{
@@ -32,6 +33,8 @@ public class AfterSaleOrderDetailBiz implements IAfterSaleOrderDetailBiz{
         String skuCode = afterSaleOrderDetailForm.getSkuCode();
         //sku名称
         String skuName = afterSaleOrderDetailForm.getSkuName();
+        //售后单列表
+        List<String> shopOrderCodeList = afterSaleOrderDetailForm.getAfterSaleCodeList();
 
         Example example = new Example(AfterSaleOrderDetail.class);
         Example.Criteria criteria = example.createCriteria();
@@ -39,7 +42,10 @@ public class AfterSaleOrderDetailBiz implements IAfterSaleOrderDetailBiz{
             criteria.andEqualTo("skuCode",skuCode);
         }
         if(StringUtils.isNotBlank(skuName)){
-            criteria.andEqualTo("skuName",skuName);
+            criteria.andLike("skuName","%"+skuName+"%");
+        }
+        if(!Objects.equals(null,shopOrderCodeList) && !shopOrderCodeList.isEmpty()){
+            criteria.andIn("shopOrderCode",shopOrderCodeList);
         }
         return  afterSaleOrderDetailService.selectByExample(example);
     }

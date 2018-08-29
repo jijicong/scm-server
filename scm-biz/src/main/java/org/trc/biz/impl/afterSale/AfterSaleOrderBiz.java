@@ -1,28 +1,25 @@
 package org.trc.biz.impl.afterSale;
 
+import com.google.common.collect.Lists;
 import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
+import org.trc.biz.afterSale.IAfterSaleOrderDetailBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
-import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.ShopOrder;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.ValidEnum;
-import org.trc.form.afterSale.AfterSaleDetailVO;
-import org.trc.form.afterSale.AfterSaleOrderAddDO;
-import org.trc.form.afterSale.AfterSaleOrderForm;
-import org.trc.form.afterSale.AfterSaleOrderItemVO;
-import org.trc.form.afterSale.AfterSaleOrderVO;
+import org.trc.form.afterSale.*;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
@@ -30,16 +27,12 @@ import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IShopOrderService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.GuidUtil;
-import org.trc.util.Pagenation;
+import org.trc.util.*;
+import tk.mybatis.mapper.entity.Example;
+
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 @Service("afterSaleOrderBiz")
@@ -62,6 +55,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 	@Autowired
 	private IGoodsBiz goodsBiz;
+
+	@Autowired
+	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
 
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
 	private static final String AFTER_SALE_ORDER_ID="AFTER-";
@@ -192,7 +188,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
      * @Date: 2018/8/29
      */
 	@Override
-	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) {
+	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page){
 		//创建时间(开始)
 		String startTime = form.getStartDate();
 		//创建时间（截止）
@@ -220,32 +216,94 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		String skuName = form.getSkuName();
 		//skuCode
 		String skuCode = form.getSkuCode();
+		AfterSaleOrderDetailForm afterSaleOrderDetailForm = new AfterSaleOrderDetailForm();
+		List<AfterSaleOrderDetail>  detailList = null;
+		//存放售后单字表查询到的售后单号
+		Set<String> afterSaleCodeSet = new HashSet<>();
+		boolean  cildSearchFlag = false;
+		if(StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(skuCode)){
+			afterSaleOrderDetailForm.setSkuCode(skuCode);
+			afterSaleOrderDetailForm.setSkuCode(skuCode);
+			detailList = afterSaleOrderDetailBiz.queryListByCondition(afterSaleOrderDetailForm);
+			if(Objects.equals(null,detailList) || detailList.isEmpty()){
+				//查询条件查询售后单字表未查询到则直接返回
+         		return new Pagenation<AfterSaleOrderVO>();
+			}
+			for(AfterSaleOrderDetail dt: detailList){
+				afterSaleCodeSet.add(dt.getAfterSaleCode());
+			}
+			cildSearchFlag = true;
+		}
 
-        //先查询售后单字表数据
+		Example example = new Example(AfterSaleOrder.class);
+		Example.Criteria criteria = example.createCriteria();
+		//大于等于售后单的创建时间
+		if (StringUtils.isNotBlank(startTime)){
+			criteria.andGreaterThanOrEqualTo("createTime", startTime + " 00:00:00");
+		}
+		//小于等于售后单的创建时间
+		if (StringUtils.isNotBlank(endTime)){
+			criteria.andLessThanOrEqualTo("createTime", endTime+ " 23:59:59");
+		}
+		//系统订单号
+		if(StringUtils.isNotBlank(scmShopOrderCode)){
+			criteria.andEqualTo("scmShopOrderCode",scmShopOrderCode);
+		}
+		//售后单编号（渠道订单编号）
+		if(StringUtils.isNotBlank(afterSaleCode)){
+			criteria.andEqualTo("afterSaleCode",afterSaleCode);
+		}
+		//仓库编号
+		if(StringUtils.isNotBlank(wmsCode)){
+			criteria.andEqualTo("returnWarehouseCode",wmsCode);
+		}
+		//物流单号(运单号)
+		if(StringUtils.isNotBlank(expressNumber)){
+			criteria.andEqualTo("waybillNumber",expressNumber);
+		}
+		//店铺订单编号
+		if(StringUtils.isNotBlank(shopOrderCode)){
+			criteria.andEqualTo("shopOrderCode",shopOrderCode);
+		}
+		//售后字表是否经过查询的标记
+		if(cildSearchFlag){
+			criteria.andIn("shopOrderCode",afterSaleCodeSet);
+		}
+		//售后单状态
+		if(!Objects.equals(null,status)){
+			criteria.andEqualTo("status",status);
+		}
+		//按创建时间倒叙排序
+		example.orderBy("createTime").desc();
+		afterSaleOrderService.pagination(example, page, form);
+		//售后单主表查询结果
+		List<AfterSaleOrder> result = page.getResult();
+		List<String> shopOrderCodeList = Lists.newArrayList();
+		for(AfterSaleOrder afterOrder : result){
+			shopOrderCodeList.add(afterOrder.getAfterSaleCode());
+		}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      return  null;
-
+        //说明查询没有先查询售后子表
+		if(!cildSearchFlag && Objects.equals(null,detailList)){
+			AfterSaleOrderDetailForm cldAfterSaleOrderDetailForm = new AfterSaleOrderDetailForm();
+			//赋值售后单的编号的列表
+			cldAfterSaleOrderDetailForm.setAfterSaleCodeList(shopOrderCodeList);
+			detailList = afterSaleOrderDetailBiz.queryListByCondition(cldAfterSaleOrderDetailForm);
+		}
+		List<AfterSaleOrderVO> newResult = Lists.newArrayList();
+		//循环主售后单数据，进行数据组装
+		for(AfterSaleOrder asd: result){
+//			AfterSaleOrderVO sordvo = new AfterSaleOrderVO();
+//			BeanUtils.copyProperties(asd,sordvo);
+//			//赋值仓库名称
+//			sordvo.setWmsName(wmsMap.get(asd.getWmsCode()));
+//			sordvo.setAfterSaleOrderDetailVOList(detVoMap.get(asd.getAfterSaleCode()));
+//			newResult.add(sordvo);
+		}
+		Pagenation<AfterSaleOrderVO> pvo = new Pagenation<AfterSaleOrderVO>();
+		//BeanUtils.copyProperties(page,pvo);
+		pvo.setResult(newResult);
+		return pvo;
 	}
 
 
