@@ -1,14 +1,14 @@
 package org.trc.domain.afterSale;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
-
-import lombok.Getter;
-import lombok.Setter;
 
 
 /**
@@ -142,11 +142,6 @@ public class AfterSaleOrder  implements Serializable{
      */
     @Column(name="pay_time")
 	private Date payTime;
-    /**
-     * 发货仓库编码
-     */
-    @Column(name="deliver_warehouse_code")
-	private String deliverWarehouseCode;
     /**
      * 退货收货仓库编码
      */

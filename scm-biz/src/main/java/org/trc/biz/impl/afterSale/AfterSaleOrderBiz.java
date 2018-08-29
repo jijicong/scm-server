@@ -2,7 +2,6 @@ package org.trc.biz.impl.afterSale;
 
 import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
@@ -11,18 +10,13 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
-import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.ShopOrder;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.ValidEnum;
-import org.trc.form.afterSale.AfterSaleDetailVO;
-import org.trc.form.afterSale.AfterSaleOrderAddDO;
-import org.trc.form.afterSale.AfterSaleOrderForm;
-import org.trc.form.afterSale.AfterSaleOrderItemVO;
-import org.trc.form.afterSale.AfterSaleOrderVO;
+import org.trc.form.afterSale.*;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
@@ -34,6 +28,7 @@ import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.GuidUtil;
 import org.trc.util.Pagenation;
+
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -252,6 +247,17 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	@Override
 	public AfterSaleDetailVO queryAfterSaleOrderDetail(Long id) {
 		AssertUtil.notNull(id, "查询售后单详情参数id不能为空");
+		AfterSaleOrder afterSaleOrder = afterSaleOrderService.selectByPrimaryKey(id);
+		AssertUtil.notNull(afterSaleOrder, String.format("根据主键%s查询售后单信息为空", id));
+		AfterSaleOrderDetail detail = new AfterSaleOrderDetail();
+		detail.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+		List<AfterSaleOrderDetail> detailList = afterSaleOrderDetailService.select(detail);
+		AssertUtil.notEmpty(detailList, String.format("根据售后单编码%s查询售后单明细为空", afterSaleOrder.getAfterSaleCode()));
+
+
+
+
+
 
 
 		return null;

@@ -1,16 +1,13 @@
 package org.trc.domain.afterSale;
 
-import java.io.Serializable;
-
-import java.math.BigDecimal;
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.Setter;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
@@ -68,6 +65,11 @@ public class AfterSaleOrderDetail implements Serializable {
      */
 	@Column(name="spec_nature_info")
 	private String specNatureInfo;
+	/**
+	 * 发货仓库编码
+	 */
+	@Column(name="deliver_warehouse_code")
+	private String deliverWarehouseCode;
 	/**
      * 商品数量
      */
