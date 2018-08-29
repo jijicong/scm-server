@@ -138,7 +138,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH,
         		SupplyConstants.Serial.AFTER_SALE_CODE,
         			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
-
+		//售后单
 		AfterSaleOrder afterSaleOrder=new AfterSaleOrder();
 		String afterSaleOrderId=GuidUtil.getNextUid(AFTER_SALE_ORDER_ID);
 		afterSaleOrder.setId(afterSaleOrderId);
@@ -173,6 +173,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单为空!");
+		//售后单详情
 		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
 
@@ -203,6 +204,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 		afterSaleOrderService.insert(afterSaleOrder);
 		afterSaleOrderDetailService.insertList(detailList);
+		
+		//增加入库单
 	}
 
 	@Override

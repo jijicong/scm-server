@@ -20,10 +20,10 @@ import lombok.Setter;
  * @author wangjie
  * @since 2018-08-29
  */
-@Table(name="after_sale_warehouse_item_info")
+@Table(name="after_sale_warehouse_notice_detail")
 @Setter
 @Getter
-public class AfterSaleWarehouseItemInfo implements Serializable {
+public class AfterSaleWarehouseNoticeDetail implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

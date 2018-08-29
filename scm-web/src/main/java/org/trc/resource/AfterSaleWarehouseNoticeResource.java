@@ -6,6 +6,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Path("afterSaleWarehouseInfo")
-public class AfterSaleWarehouseInfoResource {
+public class AfterSaleWarehouseNoticeResource {
 
 }
