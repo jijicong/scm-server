@@ -11,6 +11,7 @@ import org.trc.biz.afterSale.IAfterSaleOrderDetailBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -18,22 +19,23 @@ import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.ShopOrder;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ValidEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.afterSale.*;
 import org.trc.service.System.ILogisticsCompanyService;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IShopOrderService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
-import org.trc.util.*;
-import tk.mybatis.mapper.entity.Example;
-
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.GuidUtil;
 import org.trc.util.Pagenation;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -63,6 +65,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 	@Autowired
 	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
+	@Autowired
+    private ISellChannelService sellChannelService;
 
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
 	private static final String AFTER_SALE_ORDER_ID="AFTER-";
@@ -322,13 +326,58 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<AfterSaleOrderDetail> detailList = afterSaleOrderDetailService.select(detail);
 		AssertUtil.notEmpty(detailList, String.format("根据售后单编码%s查询售后单明细为空", afterSaleOrder.getAfterSaleCode()));
 
+        SellChannel sellChannel = new SellChannel();
+        sellChannel.setSellCode(afterSaleOrder.getSellCode());
+        sellChannel = sellChannelService.selectOne(sellChannel);
+        AssertUtil.notNull(sellChannel, String.format("根据销售渠道编码%s查询销售渠道信息为空", afterSaleOrder.getChannelCode()));
+        afterSaleOrder.setSellName(sellChannel.getSellName());
 
+        Set<String> warehouseCodes = new HashSet<>();
+        warehouseCodes.add(afterSaleOrder.getReturnWarehouseCode());
+        for(AfterSaleOrderDetail detail1: detailList){
+            warehouseCodes.add(detail1.getDeliverWarehouseCode());
+        }
+        Example example = new Example(org.trc.domain.warehouseInfo.WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("code", warehouseCodes);
+        List<org.trc.domain.warehouseInfo.WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
+        StringBuilder sb = new StringBuilder();
+        for(String warehouseCode: warehouseCodes){
+            boolean flag = false;
+            for(org.trc.domain.warehouseInfo.WarehouseInfo warehouseInfo: warehouseInfoList){
+                if(StringUtils.equals(warehouseCode, warehouseInfo.getCode())){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                sb.append(warehouseCode).append(SupplyConstants.Symbol.COMMA);
+            }
+        }
+        if(sb.length() > 0){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("根据仓库编码%s查询仓库信息为空", sb.substring(0, sb.length()-1)));
+        }
 
+        for(org.trc.domain.warehouseInfo.WarehouseInfo warehouseInfo: warehouseInfoList){
+            if(StringUtils.equals(warehouseInfo.getCode(), afterSaleOrder.getReturnWarehouseCode())){
+                afterSaleOrder.setReturnWarehouseName(warehouseInfo.getWarehouseName());
+                break;
+            }
+        }
 
+        for(AfterSaleOrderDetail detail1: detailList){
+            for(org.trc.domain.warehouseInfo.WarehouseInfo warehouseInfo: warehouseInfoList){
+                if(StringUtils.equals(warehouseInfo.getCode(), detail1.getDeliverWarehouseCode())){
+                    detail1.setDeliverWarehouseName(warehouseInfo.getWarehouseName());
+                    break;
+                }
+            }
+        }
 
-
-
-		return null;
+        AfterSaleDetailVO afterSaleDetailVO = new AfterSaleDetailVO();
+        afterSaleDetailVO.setAfterSaleOrder(afterSaleOrder);
+        afterSaleDetailVO.setAfterSaleOrderDetailList(detailList);
+		return afterSaleDetailVO;
 	}
 
 }
