@@ -20,22 +20,15 @@ import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.afterSale.*;
-import org.trc.form.warehouseInfo.WarehouseItemInfoForm;
-import org.trc.form.warehouseInfo.WarehouseItemsResult;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
-import org.trc.service.impl.order.OrderItemService;
-import org.trc.service.impl.order.PlatformOrderService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
@@ -44,14 +37,11 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
-import com.sun.jna.Platform;
-
 import javax.annotation.Resource;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.*;
 
