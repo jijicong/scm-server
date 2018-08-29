@@ -265,7 +265,8 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             validationParam(form);
         }
         //更新总金额
-        BigDecimal totalAmount = new BigDecimal(0);;
+        BigDecimal totalAmount = new BigDecimal(0);
+        ;
         if (!CollectionUtils.isEmpty(form.getPurchaseOutboundDetailList())) {
             List<PurchaseOutboundDetail> purchaseOutboundDetailList = form.getPurchaseOutboundDetailList();
             for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetailList) {
@@ -696,7 +697,6 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         List<PurchaseOutboundDetail> purchaseOutboundDetails = purchaseOutboundDetailService.selectByExample(example);
         List<String> skus = purchaseOutboundDetails.stream().map(PurchaseOutboundDetail::getSkuCode).collect(Collectors.toList());
 
-
         //实时查询商品可退数量
         Map<String, Long> canBackQuantity = selectCanBackQuantity(purchaseOutboundOrder, skus);
 
@@ -706,15 +706,23 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             if (brand != null) {
                 purchaseOutboundDetail.setBrandName(brand.getName());
             }
+
+            PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
+            detail.setId(purchaseOutboundDetail.getId());
+            detail.setCanBackQuantity(0L);
+            detail.setAuditQuantity(0L);
+            purchaseOutboundDetail.setCanBackQuantity(0L);
+            purchaseOutboundDetail.setAuditQuantity(0L);
             if (!CollectionUtils.isEmpty(canBackQuantity) && canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
-                purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
-                PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
-                detail.setId(purchaseOutboundDetail.getId());
+                detail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
                 detail.setAuditQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
-                int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(detail);
-                if (i < 1) {
-                    log.error("同步审核时可退数量失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
-                }
+                purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                purchaseOutboundDetail.setAuditQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+            }
+
+            int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(detail);
+            if (i < 1) {
+                log.error("同步审核时可退数量失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
             }
         }
         //审核页面，审核意见不显示
