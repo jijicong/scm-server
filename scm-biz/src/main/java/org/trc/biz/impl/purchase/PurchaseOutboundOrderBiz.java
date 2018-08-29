@@ -333,31 +333,35 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
                 List<String> skus = purchaseOutboundDetails.stream().map(PurchaseOutboundDetail::getSkuCode).collect(Collectors.toList());
                 //实时查询商品可退数量
                 canBackQuantity = selectCanBackQuantity(purchaseOutboundOrder, skus);
-            }
-            //设置品牌名称
-            for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetails) {
-                Brand brand = brandService.selectByPrimaryKey(Long.valueOf(purchaseOutboundDetail.getBrandId()));
-                if (brand != null) {
-                    purchaseOutboundDetail.setBrandName(brand.getName());
+                //设置品牌名称
+                for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetails) {
+                    Brand brand = brandService.selectByPrimaryKey(Long.valueOf(purchaseOutboundDetail.getBrandId()));
+                    if (brand != null) {
+                        purchaseOutboundDetail.setBrandName(brand.getName());
+                    }
+                    PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
+                    detail.setCanBackQuantity(0L);
+                    purchaseOutboundDetail.setCanBackQuantity(0L);
+                    if (!CollectionUtils.isEmpty(canBackQuantity) && canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
+                        purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                        detail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                    }
+                    //更新库存
+                    detail.setId(purchaseOutboundDetail.getId());
+                    int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(detail);
+                    if (i < 1) {
+                        log.error("同步审核时可退数量失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
+                    }
                 }
+            } else {
+                for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetails) {
+                    Brand brand = brandService.selectByPrimaryKey(Long.valueOf(purchaseOutboundDetail.getBrandId()));
+                    if (brand != null) {
+                        purchaseOutboundDetail.setBrandName(brand.getName());
+                    }
+                }
+            }
 
-                PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
-                detail.setCanBackQuantity(0L);
-                purchaseOutboundDetail.setCanBackQuantity(0L);
-                if (!CollectionUtils.isEmpty(canBackQuantity) && canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
-                    purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
-                    detail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
-                }
-                //更新库存
-                detail.setId(purchaseOutboundDetail.getId());
-                int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(detail);
-                if (i < 1) {
-                    log.error("同步审核时可退数量失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
-                }
-                if (i < 1) {
-                    log.error("实时查询可退数量更新失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
-                }
-            }
             purchaseOutboundOrder.setPurchaseOutboundDetailList(purchaseOutboundDetails);
         }
         return purchaseOutboundOrder;
