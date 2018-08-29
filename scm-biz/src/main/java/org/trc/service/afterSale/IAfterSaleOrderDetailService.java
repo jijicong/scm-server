@@ -1,10 +1,7 @@
 package org.trc.service.afterSale;
 
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
-import org.trc.form.afterSale.AfterSaleOrderDetailForm;
 import org.trc.service.IBaseService;
-
-import java.util.List;
 
 /**
  * <p>
@@ -14,6 +11,6 @@ import java.util.List;
  * @author wangjie
  * @since 2018-08-27
  */
-public interface IAfterSaleOrderDetailService extends IBaseService<AfterSaleOrderDetail, Long> {
+public interface IAfterSaleOrderDetailService extends IBaseService<AfterSaleOrderDetail, String> {
 
 }

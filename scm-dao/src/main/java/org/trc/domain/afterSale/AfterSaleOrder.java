@@ -153,11 +153,6 @@ public class AfterSaleOrder  implements Serializable{
     @Transient
     private String returnWarehouseName;
     /**
-     * 发货仓库编码
-     */
-    @Column(name="deliver_warehouse_code")
-    private String deliverWarehouseCode;
-    /**
      * 退货详细地址
      */
     @Column(name="return_address")

@@ -4,11 +4,7 @@ import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.form.afterSale.AfterSaleDetailVO;
-import org.trc.form.afterSale.AfterSaleOrderAddDO;
-import org.trc.form.afterSale.AfterSaleOrderForm;
-import org.trc.form.afterSale.AfterSaleOrderItemVO;
-import org.trc.form.afterSale.AfterSaleOrderVO;
+import org.trc.form.afterSale.*;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
@@ -36,7 +32,7 @@ public interface IAfterSaleOrderBiz {
 	 * @param id
 	 * @return
 	 */
-	AfterSaleDetailVO queryAfterSaleOrderDetail(Long id);
+	AfterSaleDetailVO queryAfterSaleOrderDetail(String id);
     
 	/**
 	 * @Description: 售后单导出

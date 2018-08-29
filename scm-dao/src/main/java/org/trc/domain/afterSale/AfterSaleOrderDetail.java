@@ -74,27 +74,27 @@ public class AfterSaleOrderDetail implements Serializable {
 	/**
      * 商品数量
      */
-	private int num;
+	private Integer num;
     /**
      * 最大可退数量
      */
 	@Column(name="max_return_num")
-	private int maxReturnNum;
+	private Integer maxReturnNum;
 	/**
      * 拟退货数量
      */
 	@Column(name="return_num")
-	private int returnNum;
+	private Integer returnNum;
 	/**
      * 正品入库数量
      */
 	@Column(name="in_num")
-	private int inNum;
+	private Integer inNum;
 	/**
      * 残品入库数量
      */
 	@Column(name="defective_in_num")
-	private int defectiveInNum;
+	private Integer defectiveInNum;
 	/**
      * 退款金额
      */
