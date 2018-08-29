@@ -226,6 +226,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	public List<WarehouseInfo> selectWarehouse() {
 		WarehouseInfo warehouseInfo=new WarehouseInfo();
 		warehouseInfo.setIsSupportReturn(Integer.parseInt(ValidEnum.VALID.getCode()));
+		warehouseInfo.setIsValid(ValidEnum.VALID.getCode());
 		return warehouseInfoService.select(warehouseInfo);
 	}
 

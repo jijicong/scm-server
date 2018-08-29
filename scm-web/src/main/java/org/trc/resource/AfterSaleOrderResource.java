@@ -5,18 +5,22 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.util.ResultUtil;
+
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 
 @Component
 @Path(SupplyConstants.AfterSaleOrder.AFTER_SALE_ORDER)
@@ -31,9 +35,14 @@ public class AfterSaleOrderResource {
 	 * @return
 	 * @throws Exception
 	 */
-	@GetMapping(SupplyConstants.AfterSaleOrder.SELECT_ORDER_ITEM)
+	@GET
+	@Path(SupplyConstants.AfterSaleOrder.SELECT_ORDER_ITEM)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response selectAfterSaleInfo(@BeanParam String shopOrderCode) throws Exception{
+	@ApiOperation(value = "根据订单号 查询售后单信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "shopOrderCode", value = "订单号", paramType = "path", dataType = "String", required = true),
+    })
+	public Response selectAfterSaleInfo(@QueryParam("shopOrderCode") String shopOrderCode) throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectAfterSaleInfo(shopOrderCode));
 	}
 	
@@ -41,9 +50,22 @@ public class AfterSaleOrderResource {
 	 * 增加售后单
 	 * @return
 	 */
-	@GetMapping(SupplyConstants.AfterSaleOrder.ADD)
+	@GET
+	@Path(SupplyConstants.AfterSaleOrder.ADD)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response add(@BeanParam AfterSaleOrderAddDO afterSaleOrderAddDO,@Context ContainerRequestContext requestContext) throws Exception{
+	@ApiOperation(value = "增加售后单")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "shopOrderCode", value = "订单号", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "picture", value = "商铺图片路径（多个图片用逗号分隔开）", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "memo", value = "备注", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "returnWarehouseCode", value = "退货收货仓库编码", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "returnAddress", value = "退货详细地址", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "logisticsCorporationCode", value = "快递公司编码", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "logisticsCorporation", value = "快递公司名称", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "waybillNumber", value = "运单号", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "afterSaleOrderDetailList", value = "售后单详情 ", paramType = "path", dataType = "List", required = true)
+    })
+	public Response add(AfterSaleOrderAddDO afterSaleOrderAddDO,@Context ContainerRequestContext requestContext) throws Exception{
 		iAfterSaleOrderBiz.addAfterSaleOrder(afterSaleOrderAddDO,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
 		return ResultUtil.createSuccessPageResult("操作成功");
 	}
@@ -51,8 +73,10 @@ public class AfterSaleOrderResource {
 	/**
 	 * 查询快递公司列表
 	 */
-	@GetMapping("/selectLogisticsCompany")
+	@GET
+	@Path("selectLogisticsCompany")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "查询快递公司列表")
 	public Response selectLogisticsCompany() throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectLogisticsCompany());
 	}
@@ -60,8 +84,10 @@ public class AfterSaleOrderResource {
 	/**
 	 * 查询入库仓库
 	 */
-	@GetMapping("/selectWarehouse")
+	@GET
+	@Path("selectWarehouse")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "查询入库仓库")
 	public Response selectWarehouse() throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectWarehouse());
 	}

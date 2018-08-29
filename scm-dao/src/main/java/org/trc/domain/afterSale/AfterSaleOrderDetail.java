@@ -7,6 +7,10 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.ws.rs.FormParam;
+
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -29,96 +33,134 @@ public class AfterSaleOrderDetail implements Serializable {
      * 主键
      */
     @Id
+    @ApiModelProperty(value="主键")
+	@FormParam("id")
 	private String id;
     /**
      * 售后单code(对应售后主表)
      */
+    @ApiModelProperty(value="售后单code(对应售后主表)")
+	@FormParam("afterSaleCode")
     @Column(name="after_sale_code")
 	private String afterSaleCode;
+    
     /**
      * 店铺订单编号
      */
+    @ApiModelProperty(value="店铺订单编号")
+	@FormParam("shopOrderCode")
     @Column(name="shop_order_code")
 	private String shopOrderCode;
+    
     /**
      * 渠道商品订单号
      */
+    @ApiModelProperty(value="渠道商品订单号")
+	@FormParam("orderItemCode")
     @Column(name="order_item_code")
 	private String orderItemCode;
+    
     /**
      * skucode
      */
+    @ApiModelProperty(value="skucode")
+	@FormParam("skucode")
 	@Column(name="sku_code")
 	private String skuCode;
+    
 	/**
      * 商品名称
      */
+    @ApiModelProperty(value="商品名称")
+	@FormParam("skuName")
 	@Column(name="sku_name")
 	private String skuName;
+    
 
 	/**
      * 条形码
      */
+    @ApiModelProperty(value="条形码")
+	@FormParam("barCode")
 	@Column(name="bar_code")
 	private String barCode;
+    
 	/**
      * 商品规格描述
      */
+    @ApiModelProperty(value="商品规格描述")
+	@FormParam("specNatureInfo")
 	@Column(name="spec_nature_info")
 	private String specNatureInfo;
-	/**
-	 * 发货仓库名称
-	 */
-	@Transient
-	private String deliverWarehouseName;
+    
 	/**
      * 商品数量
      */
+    @ApiModelProperty(value="商品数量")
+	@FormParam("num")
 	private int num;
     /**
      * 最大可退数量
      */
+    @ApiModelProperty(value="最大可退数量")
+	@FormParam("maxReturnNum")
 	@Column(name="max_return_num")
 	private int maxReturnNum;
 	/**
      * 拟退货数量
      */
+    @ApiModelProperty(value="拟退货数量")
+	@FormParam("returnNum")
 	@Column(name="return_num")
 	private int returnNum;
 	/**
      * 正品入库数量
      */
+    @ApiModelProperty(value="正品入库数量")
+	@FormParam("inNum")
 	@Column(name="in_num")
 	private int inNum;
 	/**
      * 残品入库数量
      */
+    @ApiModelProperty(value="残品入库数量")
+	@FormParam("defectiveInNum")
 	@Column(name="defective_in_num")
 	private int defectiveInNum;
 	/**
      * 退款金额
      */
+    @ApiModelProperty(value="退款金额")
+	@FormParam("refundAmont")
 	@Column(name="refund_amont")
 	private String refundAmont;
     
     /**
      * 商品图片,多张图片逗号分隔
      */
+    @ApiModelProperty(value="商品图片,多张图片逗号分隔")
+	@FormParam("picture")
 	@Column(name="picture")
 	private String picture;
 	/**
      * 发货仓库编码
      */
+    @ApiModelProperty(value="发货仓库编码")
+	@FormParam("deliverWarehouseCode")
     @Column(name="deliver_warehouse_code")
 	private String deliverWarehouseCode;
     /**
      * 创建时间
      */
+    @ApiModelProperty(value="创建时间")
+	@FormParam("createTime")
 	@Column(name="create_time")
 	private Date createTime;
     /**
      * 修改时间
      */
+    @ApiModelProperty(value="修改时间")
+	@FormParam("updateTime")
 	@Column(name="update_time")
 	private Date updateTime;
 

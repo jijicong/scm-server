@@ -1440,7 +1440,7 @@ public class SupplyConstants {
      */
     public static final class AfterSaleOrder {
     	
-    	public final static String AFTER_SALE_ORDER = "AfterSaleOrder";
+    	public final static String AFTER_SALE_ORDER = "afterSaleOrder";
     	
     	public final static String AFTER_SALE_ORDER_DETAIL = "afterSaleOrderDetail";
         public final static String AFTER_SALE_ORDER_DETAIL_QUERY = "orderDetail";
