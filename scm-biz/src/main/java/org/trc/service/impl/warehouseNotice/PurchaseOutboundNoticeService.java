@@ -146,6 +146,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
         
 		example.setOrderByClause("field(status," + PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode() +
 				"," + PurchaseOutboundNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode() + ") desc");
+		example.setOrderByClause("status in('0','2') desc");
         example.orderBy("createTime").desc();
         
         Pagenation<PurchaseOutboundNotice> pageResult = this.pagination(example, page, form);
