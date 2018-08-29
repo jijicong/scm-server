@@ -4,22 +4,13 @@ import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
-<<<<<<< HEAD
-import org.trc.domain.warehouseInfo.WarehouseInfo;
-=======
 import org.trc.form.afterSale.AfterSaleDetailVO;
->>>>>>> 703f4ef820caca73ff44715283e5380446f4beb8
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleOrderForm;
 import org.trc.form.afterSale.AfterSaleOrderItemVO;
-
-<<<<<<< HEAD
-=======
-import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
 import org.trc.form.afterSale.AfterSaleOrderVO;
 import org.trc.util.Pagenation;
 import java.util.List;
->>>>>>> 703f4ef820caca73ff44715283e5380446f4beb8
 
 public interface IAfterSaleOrderBiz {
 
