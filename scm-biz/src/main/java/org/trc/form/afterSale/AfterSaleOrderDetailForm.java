@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.trc.util.QueryModel;
 
+import java.util.List;
+
 /**
  * @Auther: hzluoxingcheng
  * @Date: 2018/8/29 14:28
@@ -25,6 +27,9 @@ public class AfterSaleOrderDetailForm  extends QueryModel{
      */
     @ApiModelProperty("sku名称")
     private String skuName;
+
+    @ApiModelProperty("售后单编号列表")
+    private List<String> AfterSaleCodeList;
 
 
 
