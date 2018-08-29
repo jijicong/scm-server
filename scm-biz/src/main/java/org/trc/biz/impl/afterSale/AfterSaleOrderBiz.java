@@ -296,12 +296,14 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			cldAfterSaleOrderDetailForm.setAfterSaleCodeList(shopOrderCodeList);
 			detailList = afterSaleOrderDetailBiz.queryListByCondition(cldAfterSaleOrderDetailForm);
 		}
+		//将售后单子表数据进行转换
+		List<AfterSaleOrderDetailVO> detailVOList = TransfAfterSaleOrderDetailVO.getAfterSaleOrderDetailVOList(detailList);
 		List<AfterSaleOrderVO> newResult = Lists.newArrayList();
 		//循环主售后单数据，进行数据组装
 		for(AfterSaleOrder asd: result){
 			//根据仓库编号查询仓库名称
 			WarehouseInfo searWarehouseInfo = warehouseInfoService.selectOneByCode(asd.getReturnWarehouseCode());
-			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo);
+			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo,detailVOList);
 			newResult.add(newvo);
 		}
 		Pagenation<AfterSaleOrderVO> pvo = new Pagenation<AfterSaleOrderVO>();
