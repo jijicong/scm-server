@@ -924,7 +924,7 @@ public class GoodsBiz implements IGoodsBiz {
         Items orginItems = itemsService.selectByPrimaryKey(items.getId());
         if (StringUtils.equals(orginItems.getName(), items.getName()) && StringUtils.equals(orginItems.getBrandId().toString(), items.getBrandId().toString())
                 && StringUtils.equals(orginItems.getTradeType(), items.getTradeType()) && StringUtils.equals(orginItems.getItemNo(), items.getItemNo())
-                && StringUtils.equals(orginItems.getProducer(), items.getProducer())   && StringUtils.equals(orginItems.getRemark(), items.getRemark())
+                && StringUtils.equals(orginItems.getProducer(), items.getProducer())   && StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())
                 && StringUtils.equals(orginItems.getIsQuality(), items.getIsQuality()) && StringUtils.equals(orginItems.getQualityDay().toString(), items.getQualityDay().toString())) {
             logMsg = "";
         } else {
@@ -938,16 +938,20 @@ public class GoodsBiz implements IGoodsBiz {
                 logMsg = logMsg + "所属品牌由\"" + orginBrand.getName() + "\"改为\"" + brand.getName() + "\";";
             }
             if (!StringUtils.equals(orginItems.getTradeType(), items.getTradeType())) {
-                //TODO
                 Dict temp = new Dict();
                 temp.setTypeCode(TRADE_TYPE);
                 List<Dict> list = dictService.select(temp);
+                String orginTradeType="";
+                String nowTradeType="";
                 for (Dict dict : list) {
-                    if (StringUtils.equals(dict.getValue(),orginItems.getTradeType())){
-
-                    }
-                   // logMsg = logMsg + "贸易类型由\"" +  + "\"改为\"" + items.getTradeType() + "\";";
+                  if (StringUtils.equals( dict.getValue(),orginItems.getTradeType())){
+                      orginTradeType=dict.getName();
+                  }
+                  if (StringUtils.equals( dict.getValue(),items.getTradeType())){
+                      nowTradeType=dict.getName();
+                  }
                 }
+                logMsg = logMsg + "贸易类型由\"" + orginTradeType+ "\"改为\"" + nowTradeType+ "\";";
             }
             if (!StringUtils.equals(orginItems.getItemNo(), items.getItemNo())) {
                 logMsg = logMsg + "商品货号由\"" + orginItems.getItemNo() + "\"改为\"" + items.getItemNo() + "\";";
@@ -955,18 +959,19 @@ public class GoodsBiz implements IGoodsBiz {
             if (!StringUtils.equals(orginItems.getProducer(), items.getProducer())) {
                 logMsg = logMsg + "生厂商由\"" + orginItems.getProducer() + "\"改为\"" + items.getProducer() + "\";";
             }
-            if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) || StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
-                if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())
-                        && StringUtils.equals(orginItems.getQualityDay().toString(), items.getQualityDay().toString())) {
-                    logMsg = logMsg + "保质期天数由\"" + orginItems.getQualityDay() + "天\"改为\"" + items.getQualityDay() + "天\";";
+            if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) || StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())){//排除都为否的情形
+                if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
+                    if (!StringUtils.equals(orginItems.getQualityDay().toString(), items.getQualityDay().toString())){
+                        logMsg = logMsg + "保质期天数由\"" + orginItems.getQualityDay() + "天\"改为\"" + items.getQualityDay() + "天\";";
+                    }
                 } else if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ZERO.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
-                    logMsg = logMsg + "是否有保质期由\"无" + "\"改为\"" + items.getQualityDay() + "天\";";
-                } else {
-                    logMsg = logMsg + "是否有保质期由\"" + items.getQualityDay() + "天\"" + "改为\"" + "无\";";
+                    logMsg = logMsg + "是否具有保质期由\"无" + "\"改为\"" + items.getQualityDay() + "天\";";
+                } else if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ZERO.getCode())){
+                    logMsg = logMsg + "是否具有保质期由\"" + orginItems.getQualityDay() + "天\"" + "改为\"" + "无\";";
                 }
             }
-            if (!StringUtils.equals(orginItems.getRemark(), items.getRemark())) {
-                logMsg = logMsg + "商品备注由\"" + orginItems.getRemark() + "\"改为\"" + items.getRemark() + "\";";
+            if (!StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())) {
+                logMsg = logMsg + "商品备注由\"" + orginItems.getRemark().trim() + "\"改为\"" + items.getRemark().trim() + "\";";
             }
             logMsg = logMsg.substring(0, logMsg.lastIndexOf(";")) + "。\r\n";
         }
@@ -1007,9 +1012,11 @@ public class GoodsBiz implements IGoodsBiz {
                 } else {
                     temp.setSkuCode(skuCode);
                     Skus orginSkus = skusService.selectOne(temp);
+                    long orginMarketPrice=orginSkus.getMarketPrice()/100L ;
+                    long orginWeight = orginSkus.getWeight() / 1000L;
                     if (StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName")) && StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))
-                            && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(orginSkus.getMarketPrice2().toString(), jbo.getString("marketPrice2"))
-                            && StringUtils.equals(orginSkus.getWeight2().toString(), jbo.getString("weight2"))) {
+                            && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(String.valueOf(orginMarketPrice), jbo.getString("marketPrice2"))
+                            && StringUtils.equals(String.valueOf(orginWeight), jbo.getString("weight2"))) {
                         logMsg2 = logMsg2 + "";
                     } else {
                         logMsg2 = logMsg2 + skuCode + ":";
@@ -1023,11 +1030,11 @@ public class GoodsBiz implements IGoodsBiz {
                             logMsg2 = logMsg2 + "sku状态由\"" + ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName() + "\"改为\"" + ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
                                     + "\";";
                         }
-                        if (!StringUtils.equals(orginSkus.getMarketPrice2().toString(), jbo.getString("marketPrice2"))) {
-                            logMsg2 = logMsg2 + "参考市场价由\"" + orginSkus.getMarketPrice2() + "\"改为\"" + jbo.getString("marketPrice2") + ";";
+                        if (!StringUtils.equals(String.valueOf(orginMarketPrice), jbo.getString("marketPrice2"))) {
+                            logMsg2 = logMsg2 + "参考市场价由\"" + String.valueOf(orginMarketPrice) + "\"改为\"" + jbo.getString("marketPrice2") + ";";
                         }
-                        if (!StringUtils.equals(orginSkus.getWeight2().toString(), jbo.getString("weight2"))) {
-                            logMsg2 = logMsg2 + "重量由\"" + orginSkus.getWeight2() + "\"改为\"" + jbo.getString("weight2") + ";";
+                        if (!StringUtils.equals(String.valueOf(orginWeight), jbo.getString("weight2"))) {
+                            logMsg2 = logMsg2 + "重量由\"" + String.valueOf(orginWeight) + "\"改为\"" + jbo.getString("weight2") + ";";
                         }
                         logMsg2 = logMsg2 + "\r\n";
                     }
