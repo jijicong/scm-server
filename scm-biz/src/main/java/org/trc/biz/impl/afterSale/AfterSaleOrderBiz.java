@@ -18,7 +18,9 @@ import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
+import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.ValidEnum;
@@ -28,7 +30,9 @@ import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.impl.order.OrderItemService;
+import org.trc.service.impl.order.PlatformOrderService;
 import org.trc.service.order.IOrderItemService;
+import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -36,7 +40,8 @@ import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.GuidUtil;
 
-import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
+import com.sun.jna.Platform;
+
 
 
 @Service("afterSaleOrderBiz")
@@ -56,6 +61,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private ILogisticsCompanyService logisticsCompanyService;
 	@Resource
 	private IWarehouseInfoService warehouseInfoService;
+	@Resource
+	private IPlatformOrderService platformOrderService;
 	
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
 	private static final String AFTER_SALE_ORDER_ID="AFTER-";
@@ -95,7 +102,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<AfterSaleOrderDetail> afterSaleOrderDetailsList=afterSaleOrderDetailService.select(afterSaleOrderDetailSelect);
 		if(afterSaleOrderDetailsList!=null) {
 			for(AfterSaleOrderDetail afterSaleOrderDetail:afterSaleOrderDetailsList) {
-				num=num+afterSaleOrderDetail.getSkuNum();
+				num=num+afterSaleOrderDetail.getInNum()+afterSaleOrderDetail.getDefectiveInNum();
 			}
 			
 		}
@@ -108,7 +115,13 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		ShopOrder shopOrderselect=new ShopOrder();
 		shopOrderselect.setShopOrderCode(shopOrderCode);
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
-		AssertUtil.notNull(shopOrder, "根据该订单号查询到的订单为空!");
+		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
+		
+		PlatformOrder platformOrderSelect=new PlatformOrder();
+		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
+		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
+		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
 		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH, 
         		SupplyConstants.Serial.AFTER_SALE_CODE,
@@ -120,29 +133,40 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setAfterSaleCode(afterSaleCode);
 		afterSaleOrder.setShopOrderCode(shopOrderCode);
 		afterSaleOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		afterSaleOrder.setSellCode(shopOrder.getSellCode());
 		afterSaleOrder.setPicture(afterSaleOrderAddDO.getPicture());
 		afterSaleOrder.setMemo(afterSaleOrderAddDO.getMemo());
-		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogistics_corporation_code());
-		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogistics_corporation());
-		afterSaleOrder.setExpressNumber(afterSaleOrderAddDO.getExpress_number());
-		afterSaleOrder.setWmsCode(afterSaleOrderAddDO.getWms_code());
+		afterSaleOrder.setShopId(shopOrder.getShopId());
+		afterSaleOrder.setShopName(shopOrder.getShopName());
+		afterSaleOrder.setReceiverProvince(platformOrder.getReceiverProvince());
+		afterSaleOrder.setReceiverCity(platformOrder.getReceiverCity());
+		afterSaleOrder.setReceiverDistrict(platformOrder.getReceiverDistrict());
+		afterSaleOrder.setReceiverAddress(platformOrder.getReceiverAddress());
+		afterSaleOrder.setReceiverName(platformOrder.getReceiverName());
+		afterSaleOrder.setReceiverIdCard(platformOrder.getReceiverIdCard());
+		afterSaleOrder.setReceiverPhone(platformOrder.getReceiverPhone());
+		afterSaleOrder.setReceiverEmail(platformOrder.getReceiverEmail());
+		afterSaleOrder.setPayTime(shopOrder.getPayTime());
+		afterSaleOrder.setReturnWarehouseCode(afterSaleOrderAddDO.getReturnWarehouseCode());
+		afterSaleOrder.setReturnAddress(afterSaleOrderAddDO.getReturnAddress());
+		afterSaleOrder.setMemo(afterSaleOrderAddDO.getMemo());
+		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
+		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
+		afterSaleOrder.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
 		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
 		afterSaleOrder.setCreateTime(new Date());
-		afterSaleOrder.setCreateOperator(aclUserAccreditInfo.getName());
-		afterSaleOrder.setUpdateOperator(aclUserAccreditInfo.getName());
+		afterSaleOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
+		afterSaleOrder.setUpdateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleOrder.setUpdateTime(new Date());
 		
 		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单为空!");
 		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
-			String skuCode=afterSaleOrderDetailDO.getSkuCode();
-			int skuNum=afterSaleOrderDetailDO.getSkuNum();
-			BigDecimal skuMoney=afterSaleOrderDetailDO.getSkuMoney();
 			
 			OrderItem orderItemSelect=new OrderItem();
 			orderItemSelect.setShopOrderCode(shopOrderCode);
-			orderItemSelect.setSkuCode(skuCode);
+			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
 			
 			AfterSaleOrderDetail afterSaleOrderDetail=new AfterSaleOrderDetail();
@@ -150,13 +174,16 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			afterSaleOrderDetail.setId(afterSaleOrderDetailId);
 			afterSaleOrderDetail.setShopOrderCode(shopOrderCode);
 			afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
-			afterSaleOrderDetail.setSkuCode(skuCode);
-			afterSaleOrderDetail.setSkuMoney(skuMoney);
-			if (orderItem.getSkuCode().startsWith("SP0")) {
-				afterSaleOrderDetail.setSkuType(AfterSaleOrderDetailTypeEnum.STATUS_0.getCode());
-			}else {
-				afterSaleOrderDetail.setSkuType(AfterSaleOrderDetailTypeEnum.STATUS_1.getCode());
-			}
+			afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
+			afterSaleOrderDetail.setSkuName(orderItem.getItemName());
+			afterSaleOrderDetail.setBarCode(orderItem.getBarCode());
+			afterSaleOrderDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
+			afterSaleOrderDetail.setNum(orderItem.getNum());
+			afterSaleOrderDetail.setMaxReturnNum(afterSaleOrderDetailDO.getMaxReturnNum());
+			afterSaleOrderDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+			afterSaleOrderDetail.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
+			afterSaleOrderDetail.setPicture(orderItem.getPicPath());
+			afterSaleOrderDetail.setDeliverWarehouseCode(afterSaleOrderDetailDO.getDeliverWarehouseCode());
 			afterSaleOrderDetail.setCreateTime(new Date());
 			afterSaleOrderDetail.setUpdateTime(new Date());
 			detailList.add(afterSaleOrderDetail);
@@ -176,8 +203,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	@Override
 	public List<WarehouseInfo> selectWarehouse() {
 		WarehouseInfo warehouseInfo=new WarehouseInfo();
-		//warehouseInfo.set
-		return null;
+		warehouseInfo.setIsSupportReturn(Integer.parseInt(ValidEnum.VALID.getCode()));
+		return warehouseInfoService.select(warehouseInfo);
 	}
 
 }

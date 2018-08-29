@@ -29,22 +29,27 @@ public class AfterSaleOrderAddDO {
 	/**
 	 * 快递公司
 	 */
-	public String logistics_corporation;
+	public String logisticsCorporation;
 	
 	/**
 	 * 快递公司编码
 	 */
-	public String logistics_corporation_code;
+	public String logisticsCorporationCode;
 	
 	/**
 	 * 快递单号
 	 */
-	public String express_number;
+	public String waybillNumber;
 	
 	/**
 	 * 入库仓编号
 	 */
-	public String wms_code;
+	public String returnWarehouseCode;
+	
+	/**
+	 * 入库仓库地址
+	 */
+	public String returnAddress;
 	
 	/**
 	 * 售后单详情

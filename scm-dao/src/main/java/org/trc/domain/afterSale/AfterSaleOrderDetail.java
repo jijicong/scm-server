@@ -53,6 +53,11 @@ public class AfterSaleOrderDetail implements Serializable {
 	@Column(name="sku_code")
 	private String skuCode;
 	/**
+     * 商品名称
+     */
+	@Column(name="sku_name")
+	private String skuName;
+	/**
      * 条形码
      */
 	@Column(name="bar_code")
@@ -90,13 +95,18 @@ public class AfterSaleOrderDetail implements Serializable {
      * 退款金额
      */
 	@Column(name="refund_amont")
-	private int refundAmont;
+	private String refundAmont;
     
     /**
      * 商品图片,多张图片逗号分隔
      */
 	@Column(name="picture")
 	private String picture;
+	/**
+     * 发货仓库编码
+     */
+    @Column(name="deliver_warehouse_code")
+	private String deliverWarehouseCode;
     /**
      * 创建时间
      */

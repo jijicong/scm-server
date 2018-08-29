@@ -133,11 +133,6 @@ public class AfterSaleOrder  implements Serializable{
     @Column(name="pay_time")
 	private Date payTime;
     /**
-     * 发货仓库编码
-     */
-    @Column(name="deliver_warehouse_code")
-	private String deliverWarehouseCode;
-    /**
      * 退货收货仓库编码
      */
     @Column(name="return_warehouse_code")

@@ -11,6 +11,6 @@ import org.trc.util.BaseMapper;
  * @author wangjie
  * @since 2018-08-27
  */
-public interface AfterSaleOrderDao extends BaseMapper<AfterSaleOrder> {
+public interface AfterSaleOrderMapper extends BaseMapper<AfterSaleOrder> {
 
 }
