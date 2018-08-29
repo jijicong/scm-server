@@ -1,9 +1,8 @@
 package org.trc.biz.impl.afterSale;
 
 import com.google.common.collect.Lists;
-import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
@@ -16,6 +15,7 @@ import org.trc.domain.afterSale.AfterSaleOrderDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.ShopOrder;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.ValidEnum;
@@ -60,6 +60,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 	@Autowired
 	private IGoodsBiz goodsBiz;
+
 
 	@Autowired
 	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
@@ -298,15 +299,13 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<AfterSaleOrderVO> newResult = Lists.newArrayList();
 		//循环主售后单数据，进行数据组装
 		for(AfterSaleOrder asd: result){
-//			AfterSaleOrderVO sordvo = new AfterSaleOrderVO();
-//			BeanUtils.copyProperties(asd,sordvo);
-//			//赋值仓库名称
-//			sordvo.setWmsName(wmsMap.get(asd.getWmsCode()));
-//			sordvo.setAfterSaleOrderDetailVOList(detVoMap.get(asd.getAfterSaleCode()));
-//			newResult.add(sordvo);
+			//根据仓库编号查询仓库名称
+			WarehouseInfo searWarehouseInfo = warehouseInfoService.selectOneByCode(asd.getReturnWarehouseCode());
+			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo);
+			newResult.add(newvo);
 		}
 		Pagenation<AfterSaleOrderVO> pvo = new Pagenation<AfterSaleOrderVO>();
-		//BeanUtils.copyProperties(page,pvo);
+		BeanUtils.copyProperties(page,pvo);
 		pvo.setResult(newResult);
 		return pvo;
 	}
