@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -70,6 +71,11 @@ public class AfterSaleOrderDetail implements Serializable {
 	 */
 	@Column(name="deliver_warehouse_code")
 	private String deliverWarehouseCode;
+	/**
+	 * 发货仓库名称
+	 */
+	@Transient
+	private String deliverWarehouseName;
 	/**
      * 商品数量
      */
