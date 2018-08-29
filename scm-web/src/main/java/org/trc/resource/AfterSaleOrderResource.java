@@ -104,7 +104,7 @@ public class AfterSaleOrderResource {
 	@Path("/queryAfterSaleOrderPage")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "售后单分页查询", response = AfterSaleOrder.class)
-	public Response purchaseOrderPagenation(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
+	public Response queryAfterSaleOrderPage(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
 		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page));
 	}
 

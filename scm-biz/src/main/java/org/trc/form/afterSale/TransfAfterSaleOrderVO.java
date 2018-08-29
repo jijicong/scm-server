@@ -52,6 +52,8 @@ public class TransfAfterSaleOrderVO {
         afterSaleOrderVO.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
         // 运单号
         afterSaleOrderVO.setWaybillNumber(afterSaleOrder.getWaybillNumber());
+        //售后单状态
+        afterSaleOrderVO.setStatus(afterSaleOrder.getStatus());
         //售后单子表列表
         afterSaleOrderVO.setAfterSaleOrderDetailVOList(detailvoMap.get(afterSaleOrder.getAfterSaleCode()));
         return afterSaleOrderVO;

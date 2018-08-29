@@ -34,7 +34,7 @@ public class AfterSaleOrderDetailBiz implements IAfterSaleOrderDetailBiz{
         //sku名称
         String skuName = afterSaleOrderDetailForm.getSkuName();
         //售后单列表
-        List<String> shopOrderCodeList = afterSaleOrderDetailForm.getAfterSaleCodeList();
+        List<String> shopOrderCodeList = afterSaleOrderDetailForm.getAfterShopOrderCodeList();
 
         Example example = new Example(AfterSaleOrderDetail.class);
         Example.Criteria criteria = example.createCriteria();
