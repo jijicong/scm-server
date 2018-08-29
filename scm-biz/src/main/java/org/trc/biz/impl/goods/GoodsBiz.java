@@ -1013,6 +1013,9 @@ public class GoodsBiz implements IGoodsBiz {
                     Skus orginSkus = skusService.selectOne(temp);
                     String orginMarketPrice = orginSkus.getMarketPrice() == null ? "" : String.valueOf(CommonUtil.fenToYuan(orginSkus.getMarketPrice()));
                     String orginWeight = orginSkus.getWeight() == null ? "" : String.valueOf(CommonUtil.getWeight(orginSkus.getWeight()));
+
+                    String newMarketPrice=jbo.getString("marketPrice2")==null?"":jbo.getString("marketPrice2");
+                    String newWeight=jbo.getString("weight2")==null?"":jbo.getString("weight2");
                     if (StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName")) && StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))
                             && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(String.valueOf(orginMarketPrice), jbo.getString("marketPrice2"))
                             && StringUtils.equals(String.valueOf(orginWeight), jbo.getString("weight2"))) {
@@ -1029,11 +1032,11 @@ public class GoodsBiz implements IGoodsBiz {
                             logMsg2 = logMsg2 + "sku状态由\"" + ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName() + "\"改为\"" + ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
                                     + "\";";
                         }
-                        if (!StringUtils.equals(orginMarketPrice, jbo.getString("marketPrice2"))) {
-                            logMsg2 = logMsg2 + "参考市场价由\"" + String.valueOf(orginMarketPrice) + "\"改为\"" + jbo.getString("marketPrice2") + "\";";
+                        if (!StringUtils.equals(orginMarketPrice,newMarketPrice)) {
+                            logMsg2 = logMsg2 + "参考市场价由\"" + orginMarketPrice + "\"改为\"" + newMarketPrice + "\";";
                         }
-                        if (!StringUtils.equals(orginWeight, jbo.getString("weight2"))) {
-                            logMsg2 = logMsg2 + "重量由\"" + String.valueOf(orginWeight) + "\"改为\"" + jbo.getString("weight2") + "\";";
+                        if (!StringUtils.equals(orginWeight, newWeight)) {
+                            logMsg2 = logMsg2 + "重量由\"" + orginWeight + "\"改为\"" + newWeight + "\";";
                         }
                         logMsg2 = logMsg2 + "\r\n";
                     }
