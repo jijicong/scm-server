@@ -1017,8 +1017,8 @@ public class GoodsBiz implements IGoodsBiz {
                     String newMarketPrice=jbo.getString("marketPrice2")==null?"":jbo.getString("marketPrice2");
                     String newWeight=jbo.getString("weight2")==null?"":jbo.getString("weight2");
                     if (StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName")) && StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))
-                            && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(String.valueOf(orginMarketPrice), jbo.getString("marketPrice2"))
-                            && StringUtils.equals(String.valueOf(orginWeight), jbo.getString("weight2"))) {
+                            && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(orginMarketPrice,newMarketPrice)
+                            && StringUtils.equals(orginWeight, newWeight)) {
                         logMsg2 = logMsg2 + "";
                     } else {
                         logMsg2 = logMsg2 + skuCode + ":";
