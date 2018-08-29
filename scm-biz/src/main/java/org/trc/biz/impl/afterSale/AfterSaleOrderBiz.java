@@ -1,7 +1,9 @@
 package org.trc.biz.impl.afterSale;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,36 +17,36 @@ import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
-import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.afterSale.*;
+import org.trc.form.warehouseInfo.WarehouseItemInfoForm;
+import org.trc.form.warehouseInfo.WarehouseItemsResult;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
-import org.trc.service.impl.order.OrderItemService;
-import org.trc.service.impl.order.PlatformOrderService;
 import org.trc.service.order.IOrderItemService;
-import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.GuidUtil;
-import org.trc.util.Pagenation;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
-import com.sun.jna.Platform;
-
 import javax.annotation.Resource;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.*;
 
 
@@ -65,9 +67,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private ILogisticsCompanyService logisticsCompanyService;
 	@Resource
 	private IWarehouseInfoService warehouseInfoService;
-	@Resource
-	private IPlatformOrderService platformOrderService;
-	
 
 	@Autowired
 	private IGoodsBiz goodsBiz;
@@ -80,7 +79,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
 	private static final String AFTER_SALE_ORDER_ID="AFTER-";
-	
+
 	@Override
 	public List<AfterSaleOrderItemVO> selectAfterSaleInfo(String shopOrderCode) throws Exception{
 		//根据订单号查询子订单信息
@@ -88,7 +87,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		selectOrderItem.setShopOrderCode(shopOrderCode);
 		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
 		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
-		
+
 		List<AfterSaleOrderItemVO> afterSaleOrderItemVOList=new ArrayList<>();
 		for(OrderItem orderItem:orderItemList) {
 			AfterSaleOrderItemVO vo=new AfterSaleOrderItemVO();
@@ -111,14 +110,14 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		AfterSaleOrderDetail afterSaleOrderDetailSelect=new AfterSaleOrderDetail();
 		afterSaleOrderDetailSelect.setShopOrderCode(orderItem.getShopOrderCode());
 		afterSaleOrderDetailSelect.setSkuCode(orderItem.getSkuCode());
-		
+
 		int num=0;
 		List<AfterSaleOrderDetail> afterSaleOrderDetailsList=afterSaleOrderDetailService.select(afterSaleOrderDetailSelect);
 		if(afterSaleOrderDetailsList!=null) {
 			for(AfterSaleOrderDetail afterSaleOrderDetail:afterSaleOrderDetailsList) {
-				num=num+afterSaleOrderDetail.getInNum()+afterSaleOrderDetail.getDefectiveInNum();
+				num=num+afterSaleOrderDetail.getSkuNum();
 			}
-			
+
 		}
 		return num;
 	}
@@ -129,80 +128,60 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		ShopOrder shopOrderselect=new ShopOrder();
 		shopOrderselect.setShopOrderCode(shopOrderCode);
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
-		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
-		
-		PlatformOrder platformOrderSelect=new PlatformOrder();
-		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
-		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
-		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
-		
-		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH, 
+		AssertUtil.notNull(shopOrder, "根据该订单号查询到的订单为空!");
+
+		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH,
         		SupplyConstants.Serial.AFTER_SALE_CODE,
         			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
-		
+
 		AfterSaleOrder afterSaleOrder=new AfterSaleOrder();
 		String afterSaleOrderId=GuidUtil.getNextUid(AFTER_SALE_ORDER_ID);
 		afterSaleOrder.setId(afterSaleOrderId);
 		afterSaleOrder.setAfterSaleCode(afterSaleCode);
 		afterSaleOrder.setShopOrderCode(shopOrderCode);
 		afterSaleOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
-		afterSaleOrder.setSellCode(shopOrder.getSellCode());
 		afterSaleOrder.setPicture(afterSaleOrderAddDO.getPicture());
 		afterSaleOrder.setMemo(afterSaleOrderAddDO.getMemo());
-		afterSaleOrder.setShopId(shopOrder.getShopId());
-		afterSaleOrder.setShopName(shopOrder.getShopName());
-		afterSaleOrder.setReceiverProvince(platformOrder.getReceiverProvince());
-		afterSaleOrder.setReceiverCity(platformOrder.getReceiverCity());
-		afterSaleOrder.setReceiverDistrict(platformOrder.getReceiverDistrict());
-		afterSaleOrder.setReceiverAddress(platformOrder.getReceiverAddress());
-		afterSaleOrder.setReceiverName(platformOrder.getReceiverName());
-		afterSaleOrder.setReceiverIdCard(platformOrder.getReceiverIdCard());
-		afterSaleOrder.setReceiverPhone(platformOrder.getReceiverPhone());
-		afterSaleOrder.setReceiverEmail(platformOrder.getReceiverEmail());
-		afterSaleOrder.setPayTime(shopOrder.getPayTime());
-		afterSaleOrder.setReturnWarehouseCode(afterSaleOrderAddDO.getReturnWarehouseCode());
-		afterSaleOrder.setReturnAddress(afterSaleOrderAddDO.getReturnAddress());
-		afterSaleOrder.setMemo(afterSaleOrderAddDO.getMemo());
-		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
-		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
-		afterSaleOrder.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
+		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogistics_corporation_code());
+		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogistics_corporation());
+		afterSaleOrder.setExpressNumber(afterSaleOrderAddDO.getExpress_number());
+		afterSaleOrder.setWmsCode(afterSaleOrderAddDO.getWms_code());
 		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
 		afterSaleOrder.setCreateTime(new Date());
-		afterSaleOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
-		afterSaleOrder.setUpdateOperator(aclUserAccreditInfo.getUserId());
+		afterSaleOrder.setCreateOperator(aclUserAccreditInfo.getName());
+		afterSaleOrder.setUpdateOperator(aclUserAccreditInfo.getName());
 		afterSaleOrder.setUpdateTime(new Date());
-		
+
 		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单为空!");
 		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
-			
+			String skuCode=afterSaleOrderDetailDO.getSkuCode();
+			int skuNum=afterSaleOrderDetailDO.getSkuNum();
+			BigDecimal skuMoney=afterSaleOrderDetailDO.getSkuMoney();
+
 			OrderItem orderItemSelect=new OrderItem();
 			orderItemSelect.setShopOrderCode(shopOrderCode);
-			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+			orderItemSelect.setSkuCode(skuCode);
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
-			
+
 			AfterSaleOrderDetail afterSaleOrderDetail=new AfterSaleOrderDetail();
 			String afterSaleOrderDetailId=GuidUtil.getNextUid(AFTER_SALE_ORDER_DETAIL_ID);
 			afterSaleOrderDetail.setId(afterSaleOrderDetailId);
 			afterSaleOrderDetail.setShopOrderCode(shopOrderCode);
 			afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
-			afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
-			afterSaleOrderDetail.setSkuName(orderItem.getItemName());
-			afterSaleOrderDetail.setBarCode(orderItem.getBarCode());
-			afterSaleOrderDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
-			afterSaleOrderDetail.setNum(orderItem.getNum());
-			afterSaleOrderDetail.setMaxReturnNum(afterSaleOrderDetailDO.getMaxReturnNum());
-			afterSaleOrderDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
-			afterSaleOrderDetail.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
-			afterSaleOrderDetail.setPicture(orderItem.getPicPath());
-			afterSaleOrderDetail.setDeliverWarehouseCode(afterSaleOrderDetailDO.getDeliverWarehouseCode());
+			afterSaleOrderDetail.setSkuCode(skuCode);
+			afterSaleOrderDetail.setSkuMoney(skuMoney);
+			if (orderItem.getSkuCode().startsWith("SP0")) {
+				afterSaleOrderDetail.setSkuType(AfterSaleOrderDetailTypeEnum.STATUS_0.getCode());
+			}else {
+				afterSaleOrderDetail.setSkuType(AfterSaleOrderDetailTypeEnum.STATUS_1.getCode());
+			}
 			afterSaleOrderDetail.setCreateTime(new Date());
 			afterSaleOrderDetail.setUpdateTime(new Date());
 			detailList.add(afterSaleOrderDetail);
 		}
-		
+
 		afterSaleOrderService.insert(afterSaleOrder);
 		afterSaleOrderDetailService.insertList(detailList);
 	}
@@ -217,8 +196,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	@Override
 	public List<WarehouseInfo> selectWarehouse() {
 		WarehouseInfo warehouseInfo=new WarehouseInfo();
-		warehouseInfo.setIsSupportReturn(Integer.parseInt(ValidEnum.VALID.getCode()));
-		return warehouseInfoService.select(warehouseInfo);
+		//warehouseInfo.set
+		return null;
 	}
 
     /**
@@ -344,6 +323,72 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		pvo.setResult(newResult);
 		return pvo;
 	}
+
+
+	/**
+	 * @Description: 售后单导出
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/29
+	 */ 
+    @Override
+	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) throws Exception{
+			page.setPageSize(3000);
+			Pagenation<AfterSaleOrderVO> pvo =  afterSaleOrderPage(form,page);
+			List<AfterSaleOrderVO> newResult = pvo.getResult();
+
+			//开始导出商品信息
+			CellDefinition createTime = new CellDefinition("createTime", "创建时间", CellDefinition.TEXT, null, 4000);
+			CellDefinition status = new CellDefinition("status", "售后单状态", CellDefinition.TEXT, null, 4000);
+			CellDefinition scmShopOrderCode = new CellDefinition("scmShopOrderCode", "系统订单号", CellDefinition.TEXT, null, 4000);
+			CellDefinition afterSaleCode = new CellDefinition("afterSaleCode", "售后单编号", CellDefinition.TEXT, null, 4000);
+
+			CellDefinition sellCodeName = new CellDefinition("sellCodeName", "销售渠道", CellDefinition.TEXT, null, 4000);
+			CellDefinition shopName = new CellDefinition("shopName", "店铺名称", CellDefinition.TEXT, null, 4000);
+
+			CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 4000);
+			CellDefinition skuCode = new CellDefinition("skuCode", "SKU编号", CellDefinition.TEXT, null, 4000);
+			CellDefinition specNatureInfo = new CellDefinition("specNatureInfo", "规格", CellDefinition.TEXT, null, 4000);
+			CellDefinition returnNum = new CellDefinition("returnNum", "拟退货数量", CellDefinition.TEXT, null, 4000);
+
+			CellDefinition refundAmont = new CellDefinition("refundAmont", "退款金额", CellDefinition.TEXT, null, 4000);
+			CellDefinition logisticsCorporation = new CellDefinition("logisticsCorporation", "物流公司", CellDefinition.TEXT, null, 4000);
+		    CellDefinition waybillNumber = new CellDefinition("waybillNumber", "物流单号", CellDefinition.TEXT, null, 4000);
+		    CellDefinition returnWarehouseName = new CellDefinition("returnWarehouseName", "退货仓/店", CellDefinition.TEXT, null, 4000);
+			CellDefinition deliverWarehouseName = new CellDefinition("deliverWarehouseName", "发货仓/店", CellDefinition.TEXT, null, 4000);
+
+			List<CellDefinition> cellDefinitionList = new LinkedList<>();
+			cellDefinitionList.add(createTime);
+			cellDefinitionList.add(status);
+			cellDefinitionList.add(scmShopOrderCode);
+			cellDefinitionList.add(afterSaleCode);
+			cellDefinitionList.add(sellCodeName);
+			cellDefinitionList.add(shopName);
+			cellDefinitionList.add(skuName);
+		   	cellDefinitionList.add(skuCode);
+			cellDefinitionList.add(specNatureInfo);
+			cellDefinitionList.add(returnNum);
+			cellDefinitionList.add(refundAmont);
+			cellDefinitionList.add(logisticsCorporation);
+			cellDefinitionList.add(waybillNumber);
+			cellDefinitionList.add(returnWarehouseName);
+			cellDefinitionList.add(deliverWarehouseName);
+
+		    String sheetName = "售后单数据";
+			String fileName = "售后单数据" + ".EXCEL";
+			try {
+				fileName = URLEncoder.encode(fileName, "UTF-8");
+			} catch (UnsupportedEncodingException e1) {
+				e1.printStackTrace();
+			}
+			HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(newResult, cellDefinitionList, sheetName);
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			hssfWorkbook.write(stream);
+			return Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+					.header("Cache-Control", "no-cache").build();
+
+	}
+
+
 
 
 	@Override

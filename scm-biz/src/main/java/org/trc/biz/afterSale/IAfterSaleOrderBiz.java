@@ -10,6 +10,8 @@ import org.trc.form.afterSale.AfterSaleOrderForm;
 import org.trc.form.afterSale.AfterSaleOrderItemVO;
 import org.trc.form.afterSale.AfterSaleOrderVO;
 import org.trc.util.Pagenation;
+
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 public interface IAfterSaleOrderBiz {
@@ -35,6 +37,13 @@ public interface IAfterSaleOrderBiz {
 	 * @return
 	 */
 	AfterSaleDetailVO queryAfterSaleOrderDetail(Long id);
+    
+	/**
+	 * @Description: 售后单导出
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/29
+	 */ 
+	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) throws Exception;
 
 
 }

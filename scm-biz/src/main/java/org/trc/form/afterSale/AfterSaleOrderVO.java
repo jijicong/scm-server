@@ -64,6 +64,9 @@ public class AfterSaleOrderVO {
     @ApiModelProperty("运单号")
     private String waybillNumber;
 
+    @ApiModelProperty("售后单状态")
+    private Integer status;
+
     /**
      * 退货收货仓库编码
      */
@@ -76,13 +79,15 @@ public class AfterSaleOrderVO {
     @ApiModelProperty("退货收货仓库名称")
     private String returnWarehouseName;
 
+
+
+
+
     /**
      * 售后单子表列表
      */
     @ApiModelProperty("售后单子表列表")
     private List<AfterSaleOrderDetailVO> afterSaleOrderDetailVOList;
-
-
 
 
 

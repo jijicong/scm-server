@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
+
 /**
  * @Auther: hzluoxingcheng
  * @Date: 2018/8/29 16:25
@@ -39,6 +41,24 @@ public class AfterSaleOrderDetailVO {
      */
     @ApiModelProperty("拟退货数量")
     private Integer returnNum;
+
+    /**
+     * 退款金额
+     */
+    @ApiModelProperty("退款金额")
+    private Integer refundAmont;
+
+    /**
+     * 发货仓库编码
+     */
+    @ApiModelProperty("发货仓库编码")
+    private String deliverWarehouseCode;
+
+    /**
+     * 发货仓库名称
+     */
+    @ApiModelProperty("发货仓库名称")
+    private String deliverWarehouseName;
 
 
 
