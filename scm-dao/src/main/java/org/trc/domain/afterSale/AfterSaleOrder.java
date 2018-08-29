@@ -8,6 +8,9 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 
 /**
  * <p>
@@ -18,6 +21,8 @@ import javax.persistence.Table;
  * @since 2018-08-27
  */
 @Table(name="after_sale_order")
+@Getter
+@Setter
 public class AfterSaleOrder  implements Serializable{
 
     private static final long serialVersionUID = 1L;
@@ -43,9 +48,105 @@ public class AfterSaleOrder  implements Serializable{
     @Column(name="scm_shop_order_code")
 	private String scmShopOrderCode;
     /**
+     * 业务线编码
+     */
+    @Column(name="channel_code")
+	private String channelCode;
+    /**
+     * 销售渠道编码
+     */
+    @Column(name="sell_code")
+	private String sellCode;
+    /**
      * 商铺图片路径（多个图片用逗号分隔开）
      */
 	private String picture;
+	/**
+     * 订单所属的店铺id
+     */
+    @Column(name="shop_id")
+	private long shopId;
+    /**
+     * 店铺名称
+     */
+    @Column(name="shop_name")
+	private String shopName;
+    /**
+     * 用户id
+     */
+    @Column(name="user_id")
+	private String userId;
+    /**
+     * 会员名称
+     */
+    @Column(name="user_name")
+	private String userName;
+    
+    /**
+     * 收货人所在省
+     */
+    @Column(name="receiver_province")
+	private String receiverProvince;
+    /**
+     * 收货人所在城市
+     */
+    @Column(name="receiver_city")
+	private String receiverCity;
+    /**
+     * 收货人所在地区
+     */
+    @Column(name="receiver_district")
+	private String receiverDistrict;
+    /**
+     * 收货人详细地址
+     */
+    @Column(name="receiver_address")
+	private String receiverAddress;
+    /**
+     * 收货人姓名
+     */
+    @Column(name="receiver_name")
+	private String receiverName;
+    /**
+     * 收货人身份证
+     */
+    @Column(name="receiver_id_card")
+	private String receiverIdCard;
+    /**
+     * 收货人电话号码
+     */
+    @Column(name="receiver_phone")
+	private String receiverPhone;
+    /**
+     * 收货人手机号码
+     */
+    @Column(name="receiver_mobile")
+	private String receiverMobile;
+    /**
+     * 收货人电子邮箱
+     */
+    @Column(name="receiver_email")
+	private String receiverEmail;
+    /**
+     * 支付时间
+     */
+    @Column(name="pay_time")
+	private Date payTime;
+    /**
+     * 发货仓库编码
+     */
+    @Column(name="deliver_warehouse_code")
+	private String deliverWarehouseCode;
+    /**
+     * 退货收货仓库编码
+     */
+    @Column(name="return_warehouse_code")
+	private String returnWarehouseCode;
+    /**
+     * 退货详细地址
+     */
+    @Column(name="return_address")
+	private String returnAddress;
     /**
      * 备注
      */
@@ -53,188 +154,44 @@ public class AfterSaleOrder  implements Serializable{
     /**
      * 快递公司编码
      */
-	@Column(name="logistics_corporation_code")
+    @Column(name="logistics_corporation_code")
 	private String logisticsCorporationCode;
     /**
      * 快递公司名称
      */
-	@Column(name="logistics_corporation")
+    @Column(name="logistics_corporation")
 	private String logisticsCorporation;
     /**
-     * 快递单号
+     * 运单号
      */
-	@Column(name="express_number")
-	private String expressNumber;
-    /**
-     * 入库仓库编号
-     */
-	@Column(name="wms_code")
-	private String wmsCode;
+    @Column(name="waybill_number")
+	private String waybillNumber;
     /**
      * 售后单状态（0待客户发货，1客户已经发货，2是待分配仓库,3已经完成，4已经取消）
      */
-	private Integer status;
+	private int status;
     /**
-     * 创建时间（格式yyyy-mm-dd hh:mi:ss'）
+     * 创建时间（格式yyyy-mm-dd hh:mi:ss''）
      */
-	@Column(name="create_time")
+    @Column(name="create_time")
 	private Date createTime;
     /**
      * 创建人员编号
      */
-	@Column(name="create_operator")
+    @Column(name="create_operator")
 	private String createOperator;
     /**
-     * 修改时间（格式yyyy-mm-dd hh:mi:ss'）
+     * 修改时间（格式yyyy-mm-dd hh:mi:ss''）
      */
-	@Column(name="update_time")
+    @Column(name="update_time")
 	private Date updateTime;
     /**
      * 修改人员编号
      */
-	@Column(name="update_operator")
+    @Column(name="update_operator")
 	private String updateOperator;
+    
 
 
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getAfterSaleCode() {
-		return afterSaleCode;
-	}
-
-	public void setAfterSaleCode(String afterSaleCode) {
-		this.afterSaleCode = afterSaleCode;
-	}
-
-	public String getShopOrderCode() {
-		return shopOrderCode;
-	}
-
-	public void setShopOrderCode(String shopOrderCode) {
-		this.shopOrderCode = shopOrderCode;
-	}
-
-	public String getScmShopOrderCode() {
-		return scmShopOrderCode;
-	}
-
-	public void setScmShopOrderCode(String scmShopOrderCode) {
-		this.scmShopOrderCode = scmShopOrderCode;
-	}
-
-	public String getPicture() {
-		return picture;
-	}
-
-	public void setPicture(String picture) {
-		this.picture = picture;
-	}
-
-	public String getMemo() {
-		return memo;
-	}
-
-	public void setMemo(String memo) {
-		this.memo = memo;
-	}
-
-	public String getLogisticsCorporationCode() {
-		return logisticsCorporationCode;
-	}
-
-	public void setLogisticsCorporationCode(String logisticsCorporationCode) {
-		this.logisticsCorporationCode = logisticsCorporationCode;
-	}
-
-	public String getLogisticsCorporation() {
-		return logisticsCorporation;
-	}
-
-	public void setLogisticsCorporation(String logisticsCorporation) {
-		this.logisticsCorporation = logisticsCorporation;
-	}
-
-	public String getExpressNumber() {
-		return expressNumber;
-	}
-
-	public void setExpressNumber(String expressNumber) {
-		this.expressNumber = expressNumber;
-	}
-
-	public String getWmsCode() {
-		return wmsCode;
-	}
-
-	public void setWmsCode(String wmsCode) {
-		this.wmsCode = wmsCode;
-	}
-
-	public Integer getStatus() {
-		return status;
-	}
-
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
-
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
-	public String getCreateOperator() {
-		return createOperator;
-	}
-
-	public void setCreateOperator(String createOperator) {
-		this.createOperator = createOperator;
-	}
-
-	public Date getUpdateTime() {
-		return updateTime;
-	}
-
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
-	}
-
-	public String getUpdateOperator() {
-		return updateOperator;
-	}
-
-	public void setUpdateOperator(String updateOperator) {
-		this.updateOperator = updateOperator;
-	}
-
-
-	@Override
-	public String toString() {
-		return "AfterSaleOrder{" +
-			"id=" + id +
-			", afterSaleCode=" + afterSaleCode +
-			", shopOrderCode=" + shopOrderCode +
-			", scmShopOrderCode=" + scmShopOrderCode +
-			", picture=" + picture +
-			", memo=" + memo +
-			", logisticsCorporationCode=" + logisticsCorporationCode +
-			", logisticsCorporation=" + logisticsCorporation +
-			", expressNumber=" + expressNumber +
-			", wmsCode=" + wmsCode +
-			", status=" + status +
-			", createTime=" + createTime +
-			", createOperator=" + createOperator +
-			", updateTime=" + updateTime +
-			", updateOperator=" + updateOperator +
-			"}";
-	}
+	
 }
