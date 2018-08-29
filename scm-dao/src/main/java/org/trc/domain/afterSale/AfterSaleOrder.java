@@ -68,16 +68,6 @@ public class AfterSaleOrder  implements Serializable{
 	@Transient
 	private String sellName;
     /**
-     * 业务线编码
-     */
-    @Column(name="channel_code")
-	private String channelCode;
-    /**
-     * 销售渠道编码
-     */
-    @Column(name="sell_code")
-	private String sellCode;
-    /**
      * 商铺图片路径（多个图片用逗号分隔开）
      */
 	private String picture;

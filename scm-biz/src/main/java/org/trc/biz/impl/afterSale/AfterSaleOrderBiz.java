@@ -2,13 +2,16 @@ package org.trc.biz.impl.afterSale;
 
 import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
+import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.ShopOrder;
@@ -17,7 +20,9 @@ import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
+import org.trc.form.afterSale.AfterSaleOrderForm;
 import org.trc.form.afterSale.AfterSaleOrderItemVO;
+import org.trc.form.afterSale.AfterSaleOrderVO;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
@@ -28,7 +33,7 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.GuidUtil;
-
+import org.trc.util.Pagenation;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -54,7 +59,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private ILogisticsCompanyService logisticsCompanyService;
 	@Resource
 	private IWarehouseInfoService warehouseInfoService;
-	
+
+	@Autowired
+	private IGoodsBiz goodsBiz;
+
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
 	private static final String AFTER_SALE_ORDER_ID="AFTER-";
 	
@@ -177,6 +185,69 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//warehouseInfo.set
 		return null;
 	}
+
+    /**
+     * @Description: 售后单分页查询
+     * @Author: hzluoxingcheng
+     * @Date: 2018/8/29
+     */
+	@Override
+	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) {
+		//创建时间(开始)
+		String startTime = form.getStartDate();
+		//创建时间（截止）
+		String endTime = form.getEndDate();
+		//系统订单号
+		String scmShopOrderCode = form.getScmShopOrderCode();
+		//店铺订单编号(渠道订单号)
+		String shopOrderCode = form.getShopOrderCode();
+		//售后单编号
+		String afterSaleCode = form.getAfterSaleCode();
+		//退货仓编号
+		String wmsCode = form.getReturnWarehouseCode();
+		//物流单号
+		String expressNumber = form.getWaybillNumber();
+		//客户姓名
+		String receiverName = form.getReceiverName();
+		//会员名
+		String userName = form.getUserName();
+		//客户电话
+        String receiverPhone = form.getReceiverPhone();
+		//售后单状态
+        Integer status = form.getStatus();
+
+		//sku名称
+		String skuName = form.getSkuName();
+		//skuCode
+		String skuCode = form.getSkuCode();
+
+        //先查询售后单字表数据
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      return  null;
+
+	}
+
 
 	@Override
 	public AfterSaleDetailVO queryAfterSaleOrderDetail(Long id) {

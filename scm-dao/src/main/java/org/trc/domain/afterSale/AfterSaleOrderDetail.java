@@ -53,6 +53,12 @@ public class AfterSaleOrderDetail implements Serializable {
 	@Column(name="sku_code")
 	private String skuCode;
 	/**
+	 * sku名称
+	 */
+	@Column(name="skuName")
+	private String skuName;
+
+	/**
      * 条形码
      */
 	@Column(name="bar_code")
@@ -107,6 +113,9 @@ public class AfterSaleOrderDetail implements Serializable {
      */
 	@Column(name="update_time")
 	private Date updateTime;
+
+
+
 
 
 	
