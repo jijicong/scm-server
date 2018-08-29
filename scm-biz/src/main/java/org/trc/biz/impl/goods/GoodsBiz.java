@@ -971,24 +971,23 @@ public class GoodsBiz implements IGoodsBiz {
         String logMsg2 = "";
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
         if (categoryArray != null && categoryArray.size() > 0) {
-            String propertyId = "";
-            String propertyValueId = "";
-            String propertyValue = "";
+            ItemNaturePropery temp = new ItemNaturePropery();
+            temp.setSpuCode(items.getSpuCode());
+            temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            List<ItemNaturePropery> itemNatureProperyList = itemNatureProperyService.select(temp);
             for (Object obj : categoryArray) {
                 JSONObject jbo = (JSONObject) obj;
-                propertyId = jbo.getString("propertyId");
-                propertyValueId = jbo.getString("propertyValueId");
-                propertyValue = jbo.getString("propertyValue");
-            }
-            if (!StringUtils.equals(propertyId, "")) {//商品没自然属性
-                ItemNaturePropery temp = new ItemNaturePropery();
-                temp.setSpuCode(items.getSpuCode());
-                temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                temp = itemNatureProperyService.selectOne(temp);
-                if (!StringUtils.equals(temp.getPropertyValueId().toString(), propertyValueId)) {
-                    Property property = propertyService.selectOneById(Long.parseLong(propertyId));
-                    PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(temp.getPropertyValueId());
-                    logMsg2 = logMsg2 + property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";";
+                String  propertyId = jbo.getString("propertyId");
+                String propertyValueId = jbo.getString("propertyValueId");
+                String propertyValue = jbo.getString("propertyValue");
+                for (ItemNaturePropery naturePropery : itemNatureProperyList) {
+                    if (StringUtils.equals(naturePropery.getPropertyId().toString(),propertyId)){
+                        if (!StringUtils.equals(naturePropery.getPropertyValueId().toString(), propertyValueId)) {
+                            Property property = propertyService.selectOneById(Long.parseLong(propertyId));
+                            PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(naturePropery.getPropertyValueId());
+                            logMsg2 = logMsg2 + property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";";
+                        }
+                    }
                 }
             }
         }
@@ -1004,8 +1003,8 @@ public class GoodsBiz implements IGoodsBiz {
                 } else {
                     temp.setSkuCode(skuCode);
                     Skus orginSkus = skusService.selectOne(temp);
-                    long orginMarketPrice=orginSkus.getMarketPrice()/100L ;
-                    long orginWeight = orginSkus.getWeight() / 1000L;
+                    String orginMarketPrice = orginSkus.getMarketPrice() == null ? "" : String.valueOf(CommonUtil.fenToYuan(orginSkus.getMarketPrice()));
+                    String orginWeight = orginSkus.getWeight() == null ? "" : String.valueOf(CommonUtil.getWeight(orginSkus.getWeight()));
                     if (StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName")) && StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))
                             && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(String.valueOf(orginMarketPrice), jbo.getString("marketPrice2"))
                             && StringUtils.equals(String.valueOf(orginWeight), jbo.getString("weight2"))) {
@@ -1022,11 +1021,11 @@ public class GoodsBiz implements IGoodsBiz {
                             logMsg2 = logMsg2 + "sku状态由\"" + ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName() + "\"改为\"" + ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
                                     + "\";";
                         }
-                        if (!StringUtils.equals(String.valueOf(orginMarketPrice), jbo.getString("marketPrice2"))) {
-                            logMsg2 = logMsg2 + "参考市场价由\"" + String.valueOf(orginMarketPrice) + "\"改为\"" + jbo.getString("marketPrice2") + ";";
+                        if (!StringUtils.equals(orginMarketPrice, jbo.getString("marketPrice2"))) {
+                            logMsg2 = logMsg2 + "参考市场价由\"" + String.valueOf(orginMarketPrice) + "\"改为\"" + jbo.getString("marketPrice2") + "\";";
                         }
-                        if (!StringUtils.equals(String.valueOf(orginWeight), jbo.getString("weight2"))) {
-                            logMsg2 = logMsg2 + "重量由\"" + String.valueOf(orginWeight) + "\"改为\"" + jbo.getString("weight2") + ";";
+                        if (!StringUtils.equals(orginWeight, jbo.getString("weight2"))) {
+                            logMsg2 = logMsg2 + "重量由\"" + String.valueOf(orginWeight) + "\"改为\"" + jbo.getString("weight2") + "\";";
                         }
                         logMsg2 = logMsg2 + "\r\n";
                     }
@@ -2215,8 +2214,8 @@ public class GoodsBiz implements IGoodsBiz {
         tempAcl=aclUserAccreditInfoService.selectOne(tempAcl);
 
 
-        Example example=new Example(ItemGroupUser.class);
-        example.createCriteria().andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode()).andEqualTo("phoneNumber",tempAcl.getPhone());
+        Example example = new Example(ItemGroupUser.class);
+        example.createCriteria().andEqualTo("phoneNumber", tempAcl.getPhone());
         List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
         if (!loginPhone.equals(tempAcl.getPhone())){
             if (list.size()==0){
@@ -2229,8 +2228,8 @@ public class GoodsBiz implements IGoodsBiz {
             }else {//该条数据归属某个或多个商品组
                 for (ItemGroupUser itemGroupUser : list){
                     String itemGroupCode = itemGroupUser.getItemGroupCode();
-                    Example exampleTemp=new Example(ItemGroupUser.class);
-                    exampleTemp.createCriteria().andEqualTo("channelCode", itemGroupUser.getChannelCode()).andEqualTo("itemGroupCode", itemGroupCode);
+                    Example exampleTemp = new Example(ItemGroupUser.class);
+                    exampleTemp.createCriteria().andEqualTo("itemGroupCode", itemGroupCode);
                     List<ItemGroupUser> list1 = itemGroupUserService.selectByExample(exampleTemp);
                     List<String> phoneNumberList=list1.stream().map(e->e.getPhoneNumber()).collect(Collectors.toList());
                     if(!phoneNumberList.contains(loginPhone)){
@@ -2553,7 +2552,7 @@ public class GoodsBiz implements IGoodsBiz {
                         for (ScmInventoryQueryResponse inventoryQueryResponse : inventoryQueryResponseList) {
                             if (StringUtils.equals(warehouse.getWmsWarehouseCode(), inventoryQueryResponse.getWarehouseCode())) {
                                 //判断库存类型,可销售
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.SALE.getCode()) 
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.SALE.getCode())
                                 		&& StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), JingdongInventoryStateEnum.GOOD.getCode())) {
                                     skuStock.setAvailableInventory((inventoryQueryResponse.getQuantity() == null ? 0 : inventoryQueryResponse.getQuantity()) + (skuStock.getAvailableInventory() == null ? 0 : skuStock.getAvailableInventory()));
                                     if (null == inventoryQueryResponse.getQuantity() && null == skuStock.getAvailableInventory()) {
