@@ -130,8 +130,9 @@ public class PurchaseOutboundOrderResource {
     @Path("/getOrder/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "根据采购退货单Id查询采购退货单", response = PurchaseOutboundOrder.class)
-    public Response getPurchaseOutboundOrder(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id) {
-        return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(id));
+    public Response getPurchaseOutboundOrder(@ApiParam(value = "采购退货单Id") @PathParam("id") Long id,
+                                             @ApiParam(value = "查询库存标识, 0不查询，1查询") @QueryParam("tag") String tag) {
+        return ResultUtil.createSuccessResult("根据采购退货单Id查询采购退货单信息成功", purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(id, tag));
     }
 
     /**
