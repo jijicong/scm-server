@@ -1442,7 +1442,8 @@ public class SupplyConstants {
     	
     	public final static String AFTER_SALE_ORDER = "AfterSaleOrder";
     	
-    	public final static String AFTER_SALE_ORDER_DETAIL = "AfterSaleOrderDetail";
+    	public final static String AFTER_SALE_ORDER_DETAIL = "afterSaleOrderDetail";
+        public final static String AFTER_SALE_ORDER_DETAIL_QUERY = "orderDetail";
     	
     	//新增售后单
     	public final static String ADD = "add";

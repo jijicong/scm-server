@@ -1,13 +1,6 @@
 package org.trc.biz.impl.afterSale;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-
+import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,12 +15,12 @@ import org.trc.domain.order.ShopOrder;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderDetailTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.ValidEnum;
+import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleOrderItemVO;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
-import org.trc.service.impl.order.OrderItemService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IShopOrderService;
 import org.trc.service.util.ISerialUtilService;
@@ -36,7 +29,12 @@ import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.GuidUtil;
 
-import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 
 @Service("afterSaleOrderBiz")
@@ -177,6 +175,14 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	public List<WarehouseInfo> selectWarehouse() {
 		WarehouseInfo warehouseInfo=new WarehouseInfo();
 		//warehouseInfo.set
+		return null;
+	}
+
+	@Override
+	public AfterSaleDetailVO queryAfterSaleOrderDetail(Long id) {
+		AssertUtil.notNull(id, "查询售后单详情参数id不能为空");
+
+
 		return null;
 	}
 

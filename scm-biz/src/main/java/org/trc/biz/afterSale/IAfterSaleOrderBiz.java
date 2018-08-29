@@ -1,13 +1,13 @@
 package org.trc.biz.afterSale;
 
-import java.util.List;
-
+import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleOrderItemVO;
 
-import com.qimen.api.response.WarehouseinfoQueryResponse.WarehouseInfo;
+import java.util.List;
 
 public interface IAfterSaleOrderBiz {
 
@@ -19,6 +19,11 @@ public interface IAfterSaleOrderBiz {
 
 	List<WarehouseInfo> selectWarehouse();
 
-	
+	/**
+	 * 查询售后单详情
+	 * @param id
+	 * @return
+	 */
+	AfterSaleDetailVO queryAfterSaleOrderDetail(Long id);
 
 }

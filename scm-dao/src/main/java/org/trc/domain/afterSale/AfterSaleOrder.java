@@ -1,12 +1,11 @@
 package org.trc.domain.afterSale;
 
-import java.io.Serializable;
-
-import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.io.Serializable;
+import java.util.Date;
 
 
 /**
@@ -42,6 +41,27 @@ public class AfterSaleOrder  implements Serializable{
      */
     @Column(name="scm_shop_order_code")
 	private String scmShopOrderCode;
+
+	/**
+	 * 业务线编码
+	 */
+	@Column(name="channel_code")
+    private String channelCode;
+	/**
+	 * 业务线名称
+	 */
+	@Transient
+	private String channelName;
+	/**
+	 * 销售渠道编码
+	 */
+	@Column(name="sell_code")
+    private String sellCode;
+	/**
+	 * 销售渠道名称
+	 */
+	@Transient
+	private String sellName;
     /**
      * 商铺图片路径（多个图片用逗号分隔开）
      */
