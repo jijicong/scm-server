@@ -16,6 +16,6 @@ import org.trc.service.impl.BaseService;
  * @since 2018-08-27
  */
 @Service("afterSaleOrderService")
-public class AfterSaleOrderService extends BaseService<AfterSaleOrder, Long> implements IAfterSaleOrderService {
+public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> implements IAfterSaleOrderService {
 	
 }

@@ -99,34 +99,35 @@ public class AfterSaleOrderDetail implements Serializable {
     @ApiModelProperty(value="商品数量")
 	@FormParam("num")
 	private int num;
+
     /**
      * 最大可退数量
      */
     @ApiModelProperty(value="最大可退数量")
 	@FormParam("maxReturnNum")
 	@Column(name="max_return_num")
-	private int maxReturnNum;
+	private Integer maxReturnNum;
 	/**
      * 拟退货数量
      */
     @ApiModelProperty(value="拟退货数量")
 	@FormParam("returnNum")
 	@Column(name="return_num")
-	private int returnNum;
+	private Integer returnNum;
 	/**
      * 正品入库数量
      */
     @ApiModelProperty(value="正品入库数量")
 	@FormParam("inNum")
 	@Column(name="in_num")
-	private int inNum;
+	private Integer inNum;
 	/**
      * 残品入库数量
      */
     @ApiModelProperty(value="残品入库数量")
 	@FormParam("defectiveInNum")
 	@Column(name="defective_in_num")
-	private int defectiveInNum;
+	private Integer defectiveInNum;
 	/**
      * 退款金额
      */

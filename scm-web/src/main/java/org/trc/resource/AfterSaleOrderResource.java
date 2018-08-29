@@ -11,16 +11,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Component;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
+import org.trc.form.afterSale.AfterSaleOrderForm;
+import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
 
 @Component
 @Path(SupplyConstants.AfterSaleOrder.AFTER_SALE_ORDER)
@@ -91,5 +94,34 @@ public class AfterSaleOrderResource {
 	public Response selectWarehouse() throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectWarehouse());
 	}
-	
+
+	/**
+	 * @Description: 售后单分页查询
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/29
+	 */ 
+	@GET
+	@Path("/queryAfterSaleOrderPage")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "售后单分页查询", response = AfterSaleOrder.class)
+	public Response purchaseOrderPagenation(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
+		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page));
+	}
+
+
+	/**
+	 * @Description: 售后单导出
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/29
+	 */ 
+	@GET
+	@Path("/exportAfterSaleOrder")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "售后单导出", response = AfterSaleOrder.class)
+	public Response exportAfterSaleOrderVO(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext) throws Exception{
+		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.exportAfterSaleOrderVO(form , page));
+	}
+
+
+
 }

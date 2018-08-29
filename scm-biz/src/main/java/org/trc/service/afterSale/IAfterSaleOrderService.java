@@ -13,6 +13,6 @@ import org.trc.service.IBaseService;
  * @author wangjie
  * @since 2018-08-27
  */
-public interface IAfterSaleOrderService extends IBaseService<AfterSaleOrder, Long> {
+public interface IAfterSaleOrderService extends IBaseService<AfterSaleOrder, String> {
 	
 }
