@@ -1,6 +1,7 @@
 package org.trc.form.afterSale;
 
 import com.google.common.collect.Lists;
+import org.trc.util.DateUtils;
 import org.trc.util.StringUtil;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class TransfExportAfterSaleOrder {
             for(AfterSaleOrderDetailVO dvo:deList){
                 ExceptorAfterSaleOrder ord = new ExceptorAfterSaleOrder();
                 ord.setAfterSaleCode(vo.getAfterSaleCode());
-                ord.setCreateTime(String.valueOf( vo.getCreateTime()));
+                ord.setCreateTime(DateUtils.formatDateTime(vo.getCreateTime()));
                 ord.setDeliverWarehouseName(dvo.getDeliverWarehouseName());
                 ord.setLogisticsCorporation(vo.getLogisticsCorporation());
                 ord.setRefundAmont(dvo.getRefundAmont());
