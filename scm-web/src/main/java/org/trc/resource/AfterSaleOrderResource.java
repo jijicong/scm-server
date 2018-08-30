@@ -102,7 +102,7 @@ public class AfterSaleOrderResource {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "startDate", value = "创建时间（开始）", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "endDate", value = "创建时间（结束)", paramType = "query", dataType = "String", required = false),
-			@ApiImplicitParam(name = "scmShopOrderCode", value = "系统订单号", paramType = "path", dataType = "query", required = false),
+			@ApiImplicitParam(name = "scmShopOrderCode", value = "系统订单号", paramType = "query", dataType = "query", required = false),
 			@ApiImplicitParam(name = "afterSaleCode", value = "售后单编号", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "returnWarehouseCode", value = "退货收货仓库编码", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "waybillNumber", value = "运单号", paramType = "query", dataType = "String", required = false),
