@@ -33,51 +33,135 @@ public class AfterSaleWarehouseNotice implements Serializable {
     /**
      * 入库单编号
      */
-	@Column(name="warehouse_info_code")
-	private String warehouseInfoCode;
+	@Column(name="warehouse_notice_code")
+	private String warehouseNoticeCode;
+	/**
+     * 售后单编号
+     */
+	@Column(name="after_sale_code")
+	private String afterSaleCode;
     /**
      * 订单编号
      */
 	@Column(name="shop_order_code")
 	private String shopOrderCode;
+	/**
+     * 系统订单号
+     */
+	@Column(name="scm_shop_order_code")
+	private String scmShopOrderCode;
     /**
-     * 仓库编号
+     * 入库仓库编号
      */
 	@Column(name="warehouse_code")
 	private String warehouseCode;
     /**
-     * 仓库名称
+     * 入库仓库名称
      */
 	@Column(name="warehouse_name")
 	private String warehouseName;
-    /**
-     * 联系人姓名
+	
+	/**
+     * 发件人
      */
-	@Column(name="contacts_name")
-	private String contactsName;
-    /**
+	@Column(name="sender")
+	private String sender;
+	/**
+     * 收货人手机
+     */
+	@Column(name="receiver_number")
+	private String receiverNumber;
+	/**
+     * 收货人
+     */
+	@Column(name="receiver")
+	private String receiver;
+	/**
+     * 发件人所在省
+     */
+	@Column(name="sender_province")
+	private String senderProvince;
+	/**
+     * 发件人所在城市
+     */
+	@Column(name="sender_city")
+	private String senderCity;
+	/**
+     * 发件人手机
+     */
+	@Column(name="sender_number")
+	private String senderNumber;
+	/**
+     * 发件方详细地址
+     */
+	@Column(name="sender_address")
+	private String senderAddress;
+	/**
+     * 收件方省份
+     */
+	@Column(name="receiver_province")
+	private String receiverProvince;
+	/**
+     * 收件方地址
+     */
+	@Column(name="receiver_address")
+	private String receiverAddress;
+	/**
+     * 收件方城市
+     */
+	@Column(name="receiver_city")
+	private String receiverCity;
+	/**
+     * 商品行数(sku数量)
+     */
+	@Column(name="sku_num")
+	private Integer skuNum;
+	
+	/**
+     * 总入库数量
+     */
+	@Column(name="total_in_num")
+	private Integer totalInNum;
+	
+	/**
+     * 正品入库总量
+     */
+	@Column(name="in_num")
+	private Integer inNum;
+	
+	/**
+     * 残品入库总量
+     */
+	@Column(name="defective_in_num")
+	private Integer defectiveInNum;
+	
+	/**
      * 状态 0未到货 1已到货待理货 2入库完成 3已取消
      */
+	@Column(name="status")
 	private Integer status;
-    /**
-     * 联系人电话
+	
+	/**
+     * 仓库接收入库通知失败原因
      */
-	@Column(name="contacts_phone")
-	private String contactsPhone;
+	@Column(name="failure_cause")
+	private String failureCause;
+	
     /**
      * 操作人
      */
 	private String operator;
+    
     /**
-     * 确认到货备注
+     * 备注
      */
-	@Column(name="arrival_remark")
-	private String arrivalRemark;
-    /**
-     * 入库备注
+	private String remark;
+	
+	/**
+     * 创建人
      */
-	@Column(name="warehouse_remark")
-	private String warehouseRemark;
+	@Column(name="create_operator")
+	private String createOperator;
     /**
      * 添加时间
      */

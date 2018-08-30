@@ -39,28 +39,58 @@ public class AfterSaleWarehouseNoticeDetail implements Serializable {
     /**
      * 入库单编号
      */
-	@Column(name="warehouse_info_code")
-	private String warehouseInfoCode;
+	@Column(name="warehouse_notice_code")
+	private String warehouseNoticeCode;
+	/**
+     * 渠道商品订单号
+     */
+	@Column(name="order_item_code")
+	private String orderItemCode;
     /**
      * skuCode
      */
 	@Column(name="sku_code")
 	private String skuCode;
+	/**
+     * 商品名称
+     */
+	@Column(name="sku_name")
+	private String skuName;
+	/**
+     * 条形码
+     */
+	@Column(name="bar_code")
+	private String barCode;
+	/**
+     * 商品规格描述
+     */
+	@Column(name="spec_nature_info")
+	private String specNatureInfo;
     /**
      * 拟退货数量
      */
-	@Column(name="plan_num")
-	private Integer planNum;
-    /**
-     * 正品数量
+	@Column(name="return_num")
+	private Integer returnNum;
+	/**
+     * 总入库数量
      */
-	@Column(name="good_num")
-	private Integer goodNum;
+	@Column(name="total_in_num")
+	private Integer totalInNum;
     /**
-     * 残品数量
+     * 正品入库数量
      */
-	@Column(name="bad_num")
-	private Integer badNum;
+	@Column(name="in_num")
+	private Integer inNum;
+    /**
+     * 残品入库数量
+     */
+	@Column(name="defective_in_num")
+	private Integer defectiveInNum;
+	/**
+     * 商品图片,多张图片逗号分隔
+     */
+	@Column(name="picture")
+	private String picture;
     /**
      * 修改时间
      */
