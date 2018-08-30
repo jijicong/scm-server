@@ -997,6 +997,8 @@ public class SupplyConstants {
 
         public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
 
+        public static final String SELECT_RETURN_WAREHOUSE_NAME = "selectReturnWarehouseName";
+
         public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
 
         public static final String OWNER_INFO = "ownerInfo";
