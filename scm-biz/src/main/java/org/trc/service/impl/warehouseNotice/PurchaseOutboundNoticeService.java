@@ -359,8 +359,12 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 					 skuList.add(detail.getSkuCode()); 
 				 }
 				 remarkList.add(detail.getSkuCode() + ":" + result);
+				 long actualQty = 0l;
 				 // 更新商品详情
-				 detailService.updateByDetailId(detailStatus, nowTime, item.getActualQty(), detail.getId());
+				 if (StringUtils.equals(detail.getReturnOrderType(), item.getGoodsStatus())) {
+					 actualQty = item.getActualQty().longValue();
+				 }
+				 detailService.updateByDetailId(detailStatus, nowTime, actualQty, detail.getId());
 			 }
 			 if (!CollectionUtils.isEmpty(skuList)) {
 				 exceptionCause = "[" + StringUtils.join(skuList, SupplyConstants.Symbol.COMMA) + "]实际出库数量不等于要求退货数量";

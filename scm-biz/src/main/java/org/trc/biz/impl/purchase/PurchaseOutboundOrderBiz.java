@@ -309,11 +309,12 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
     /**
      * 根据采购退货单Id查询采购退货单
      *
-     * @param id 采购退货单Id
+     * @param id  采购退货单Id
+     * @param tag 查询库存标识, 0不查询，1查询
      * @return
      */
     @Override
-    public PurchaseOutboundOrder getPurchaseOutboundOrderById(Long id) {
+    public PurchaseOutboundOrder getPurchaseOutboundOrderById(Long id, String tag) {
         AssertUtil.notNull(id, "根据采购退货单Id查询采购退货单失败，采购退货单Id为空");
         PurchaseOutboundOrder purchaseOutboundOrder = purchaseOutboundOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(purchaseOutboundOrder, "采购单货单根据主键id查询失败，没有对应采购退货单");
@@ -324,14 +325,45 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
         Example example = new Example(PurchaseOutboundDetail.class);
         example.createCriteria().andEqualTo("purchaseOutboundOrderCode", purchaseOutboundOrder.getPurchaseOutboundOrderCode());
         List<PurchaseOutboundDetail> purchaseOutboundDetails = purchaseOutboundDetailService.selectByExample(example);
-        //设置品牌名称
-        purchaseOutboundDetails.forEach(purchaseOutboundDetail -> {
-            Brand brand = brandService.selectByPrimaryKey(Long.valueOf(purchaseOutboundDetail.getBrandId()));
-            if (brand != null) {
-                purchaseOutboundDetail.setBrandName(brand.getName());
+
+        if (!CollectionUtils.isEmpty(purchaseOutboundDetails)) {
+            //查询库存标识, 0不查询，1查询
+            Map<String, Long> canBackQuantity = new HashMap<>();
+            if (StringUtils.equals(tag, ZeroToNineEnum.ONE.getCode())) {
+                List<String> skus = purchaseOutboundDetails.stream().map(PurchaseOutboundDetail::getSkuCode).collect(Collectors.toList());
+                //实时查询商品可退数量
+                canBackQuantity = selectCanBackQuantity(purchaseOutboundOrder, skus);
+                //设置品牌名称
+                for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetails) {
+                    Brand brand = brandService.selectByPrimaryKey(Long.valueOf(purchaseOutboundDetail.getBrandId()));
+                    if (brand != null) {
+                        purchaseOutboundDetail.setBrandName(brand.getName());
+                    }
+                    PurchaseOutboundDetail detail = new PurchaseOutboundDetail();
+                    detail.setCanBackQuantity(0L);
+                    purchaseOutboundDetail.setCanBackQuantity(0L);
+                    if (!CollectionUtils.isEmpty(canBackQuantity) && canBackQuantity.get(purchaseOutboundDetail.getSkuCode()) != null) {
+                        purchaseOutboundDetail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                        detail.setCanBackQuantity(canBackQuantity.get(purchaseOutboundDetail.getSkuCode()));
+                    }
+                    //更新库存
+                    detail.setId(purchaseOutboundDetail.getId());
+                    int i = purchaseOutboundDetailService.updateByPrimaryKeySelective(detail);
+                    if (i < 1) {
+                        log.error("同步审核时可退数量失败，purchaseOutboundDetailId:{}", purchaseOutboundDetail.getId());
+                    }
+                }
+            } else {
+                for (PurchaseOutboundDetail purchaseOutboundDetail : purchaseOutboundDetails) {
+                    Brand brand = brandService.selectByPrimaryKey(Long.valueOf(purchaseOutboundDetail.getBrandId()));
+                    if (brand != null) {
+                        purchaseOutboundDetail.setBrandName(brand.getName());
+                    }
+                }
             }
-        });
-        purchaseOutboundOrder.setPurchaseOutboundDetailList(purchaseOutboundDetails);
+
+            purchaseOutboundOrder.setPurchaseOutboundDetailList(purchaseOutboundDetails);
+        }
         return purchaseOutboundOrder;
     }
 
@@ -1775,9 +1807,7 @@ public class PurchaseOutboundOrderBiz implements IPurchaseOutboundOrderBiz {
             criteria.andLessThan("updateTime", form.getEndDate());
         }
         criteria.andEqualTo("isDeleted", "0");
-        example.setOrderByClause("if(status = 0,0,2), updateTime desc");
-        example.setOrderByClause("instr('1,3,4,5',`status`) ASC");
-        example.orderBy("updateTime").desc();
+        example.setOrderByClause("status in (0,2) desc, update_time desc");
         return example;
     }
 }
