@@ -890,6 +890,11 @@ public class SupplyConstants {
         //售后单编码前缀
         public static final String AFTER_SALE_CODE="ASL";
 
+        //退货入库单编码长度
+        public static final Integer WAREHOUSE_NOTICE_LENGTH=5;
+        //退货入库单编码前缀
+        public static final String WAREHOUSE_NOTICE_CODE="THRKTZ";
+        
         //序列号查询路径
         public static final String SERIAL = "serial";
     }
