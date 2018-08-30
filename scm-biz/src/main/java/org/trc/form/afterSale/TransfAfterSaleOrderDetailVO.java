@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -14,7 +15,7 @@ import java.util.Objects;
 public class TransfAfterSaleOrderDetailVO {
 
 
-      public static  AfterSaleOrderDetailVO getAfterSaleOrderDetailVO(AfterSaleOrderDetail afterSaleOrderDetail){
+      public static  AfterSaleOrderDetailVO getAfterSaleOrderDetailVO(AfterSaleOrderDetail afterSaleOrderDetail,String spuCode){
           if(Objects.equals(null,afterSaleOrderDetail)){
               return null;
           }
@@ -24,18 +25,18 @@ public class TransfAfterSaleOrderDetailVO {
           afterSaleOrderDetailVO.setSkuName(afterSaleOrderDetail.getSkuName());
           afterSaleOrderDetailVO.setSpecNatureInfo(afterSaleOrderDetail.getSpecNatureInfo());
           afterSaleOrderDetailVO.setAfterSaleCode(afterSaleOrderDetail.getAfterSaleCode());
-         // afterSaleOrderDetailVO.setSpuCode();
-
+          afterSaleOrderDetailVO.setSpuCode(spuCode);
           return afterSaleOrderDetailVO;
       }
 
-      public static  List<AfterSaleOrderDetailVO> getAfterSaleOrderDetailVOList(List<AfterSaleOrderDetail> afterSaleOrderDetails){
+      public static  List<AfterSaleOrderDetailVO> getAfterSaleOrderDetailVOList(List<AfterSaleOrderDetail> afterSaleOrderDetails,Map<String,String> skuSpuMap){
             if(Objects.equals(null,afterSaleOrderDetails) || afterSaleOrderDetails.isEmpty()){
                 return Lists.newArrayList();
             }
             List<AfterSaleOrderDetailVO> volist = Lists.newArrayList();
             for(AfterSaleOrderDetail d:afterSaleOrderDetails){
-                volist.add(getAfterSaleOrderDetailVO(d));
+                String spuCode = skuSpuMap.get(d.getSkuCode());
+                volist.add(getAfterSaleOrderDetailVO(d,spuCode));
             }
             return volist;
       }

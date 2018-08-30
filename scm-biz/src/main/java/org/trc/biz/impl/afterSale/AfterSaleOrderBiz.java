@@ -15,6 +15,8 @@ import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
+import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.PlatformOrder;
@@ -29,6 +31,7 @@ import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
@@ -69,6 +72,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	@Autowired
 	private IGoodsBiz goodsBiz;
 
+	@Autowired
+	private ISkusService skusService;
 
 	@Autowired
 	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
@@ -330,8 +335,22 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			cldAfterSaleOrderDetailForm.setAfterShopOrderCodeList(shopOrderCodeList);
 			detailList = afterSaleOrderDetailBiz.queryListByCondition(cldAfterSaleOrderDetailForm);
 		}
+
+		//根据所有skucode查询对应spucode
+		List<String> skuCodeList = Lists.newArrayList();
+		for(AfterSaleOrderDetail od:detailList){
+			skuCodeList.add(od.getSkuCode());
+		}
+		//key是skucode，value是spucode
+		Map<String,String> skuSpuMap = new HashMap<>();
+		//查询spu列表
+		List<Skus> skuModelList = queryItemsBySkuCodes(skuCodeList);
+		for(Skus vsklu: skuModelList){
+			skuSpuMap.put(vsklu.getSkuCode(),vsklu.getSpuCode());
+		}
+
 		//将售后单子表数据进行转换
-		List<AfterSaleOrderDetailVO> detailVOList = TransfAfterSaleOrderDetailVO.getAfterSaleOrderDetailVOList(detailList);
+		List<AfterSaleOrderDetailVO> detailVOList = TransfAfterSaleOrderDetailVO.getAfterSaleOrderDetailVOList(detailList,skuSpuMap);
 		List<AfterSaleOrderVO> newResult = Lists.newArrayList();
 		//循环主售后单数据，进行数据组装
 		for(AfterSaleOrder asd: result){
@@ -344,6 +363,22 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		BeanUtils.copyProperties(page,pvo);
 		pvo.setResult(newResult);
 		return pvo;
+	}
+    
+	/**
+	 * @Description: 根据skucode集合查询shangp列表
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/30
+	 */ 
+	private List<Skus> queryItemsBySkuCodes(List<String> skucodes){
+		Example example = new Example(Skus.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andIn("skuCode",skucodes);
+		List<Skus> list = skusService.selectByExample(example);
+		if(Objects.equals(null,list)){
+			return Lists.newArrayList();
+		}
+		return list;
 	}
 
 
