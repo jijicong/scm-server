@@ -1456,6 +1456,9 @@ public class SupplyConstants {
     	public final static String ADD = "add";
     	//根据订单号查询子订单
     	public final static String SELECT_ORDER_ITEM="selectOrderItem";
+
+        //售后单卡片
+        public final static String AFTER_SALE_TAB="afterSaleOrderTab";
     }
     
 }

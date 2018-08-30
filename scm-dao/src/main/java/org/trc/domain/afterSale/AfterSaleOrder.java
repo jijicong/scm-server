@@ -91,7 +91,7 @@ public class AfterSaleOrder  implements Serializable{
      */
     @Column(name="user_name")
 	private String userName;
-    
+
     /**
      * 收货人所在省
      */
@@ -177,6 +177,17 @@ public class AfterSaleOrder  implements Serializable{
     @Column(name="waybill_number")
 	private String waybillNumber;
     /**
+     * 发起类型（0系统发起，1手动新建）
+     */
+    @Column(name="launch_type")
+    private Integer launchType;
+    /**
+     * 售后类型(0取消发货,1退货)
+     */
+    @Column(name="after_sale_type")
+    private Integer afterSaleType;
+
+    /**
      * 售后单状态（0待客户发货，1客户已经发货,2已经完成，3已经取消）
      */
 	private int status;
@@ -200,8 +211,8 @@ public class AfterSaleOrder  implements Serializable{
      */
     @Column(name="update_operator")
 	private String updateOperator;
-    
 
 
-	
+
+
 }

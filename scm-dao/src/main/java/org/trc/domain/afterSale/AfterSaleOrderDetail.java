@@ -48,7 +48,11 @@ public class AfterSaleOrderDetail implements Serializable {
 	@FormParam("shopOrderCode")
     @Column(name="shop_order_code")
 	private String shopOrderCode;
-    
+	/**
+	 * 系统订单号
+	 */
+	@Column(name="scm_shop_order_code")
+	private String scmShopOrderCode;
     /**
      * 渠道商品订单号
      */
