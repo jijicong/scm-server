@@ -5312,7 +5312,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             orderItem.setScmShopOrderCode(scmShopOrderCode);
             orderItem.setChannelCode(channelCode);
             orderItem.setSellCode(sellCode);
-            orderItem.setOrderItemCode(orderItemObj.getString("id"));
+            //orderItem.setOrderItemCode(orderItemObj.getString("id"));
             String channelSkuCode = orderItem.getSkuCode();//渠道sku编码
             String scmSkuCode = orderItem.getOuterSkuId();//供应链sku编码
             //将skuCode设置成供应链sku编码,outerSkuId设置成渠道sku编码
