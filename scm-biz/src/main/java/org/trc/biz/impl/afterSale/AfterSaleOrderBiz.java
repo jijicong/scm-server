@@ -233,7 +233,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
      * @Date: 2018/8/29
      */
 	@Override
-	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page){
+	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page,AclUserAccreditInfo aclUserAccreditInfo){
 		//创建时间(开始)
 		String startTime = form.getStartDate();
 		//创建时间（截止）
@@ -282,6 +282,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 		Example example = new Example(AfterSaleOrder.class);
 		Example.Criteria criteria = example.createCriteria();
+		//业务线
+		criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+
 		//大于等于售后单的创建时间
 		if (StringUtils.isNotBlank(startTime)){
 			criteria.andGreaterThanOrEqualTo("createTime", startTime + " 00:00:00");
@@ -391,9 +394,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	 * @Date: 2018/8/29
 	 */ 
     @Override
-	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) throws Exception{
+	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
 			page.setPageSize(3000);
-			Pagenation<AfterSaleOrderVO> pvo =  afterSaleOrderPage(form,page);
+			Pagenation<AfterSaleOrderVO> pvo =  afterSaleOrderPage(form,page,aclUserAccreditInfo);
 			List<AfterSaleOrderVO> result = pvo.getResult();
 		    List<ExceptorAfterSaleOrder> newResult = Lists.newArrayList();
 		    List<ExceptorAfterSaleOrder> newlist =  TransfExportAfterSaleOrder.getExceptorAfterSaleOrder(result);

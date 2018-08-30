@@ -114,7 +114,7 @@ public class AfterSaleOrderResource {
 			@ApiImplicitParam(name = "pageSize", value = "每页记录条数 ", paramType = "query", dataType = "Integer", required = true)
 	})
 	public Response queryAfterSaleOrderPage(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
-		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page));
+		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
 
 
@@ -128,7 +128,7 @@ public class AfterSaleOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "售后单导出", response = AfterSaleOrder.class)
 	public Response exportAfterSaleOrderVO(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext) throws Exception{
-		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.exportAfterSaleOrderVO(form , page));
+		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.exportAfterSaleOrderVO(form , page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
 
     /**
