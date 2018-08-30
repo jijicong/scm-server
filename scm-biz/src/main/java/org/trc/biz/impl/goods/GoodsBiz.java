@@ -2252,7 +2252,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
         Example example = new Example(ItemGroupUser.class);
-        example.createCriteria().andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode()).andEqualTo("phoneNumber", tempAcl.getPhone());
+        example.createCriteria().andEqualTo("phoneNumber", tempAcl.getPhone());
         List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
         if (!loginPhone.equals(tempAcl.getPhone())) {
             if (list.size() == 0) {
@@ -2266,7 +2266,7 @@ public class GoodsBiz implements IGoodsBiz {
                 for (ItemGroupUser itemGroupUser : list) {
                     String itemGroupCode = itemGroupUser.getItemGroupCode();
                     Example exampleTemp = new Example(ItemGroupUser.class);
-                    exampleTemp.createCriteria().andEqualTo("channelCode", itemGroupUser.getChannelCode()).andEqualTo("itemGroupCode", itemGroupCode);
+                    exampleTemp.createCriteria().andEqualTo("itemGroupCode", itemGroupCode);
                     List<ItemGroupUser> list1 = itemGroupUserService.selectByExample(exampleTemp);
                     List<String> phoneNumberList = list1.stream().map(e -> e.getPhoneNumber()).collect(Collectors.toList());
                     if (!phoneNumberList.contains(loginPhone)) {
