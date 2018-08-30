@@ -104,6 +104,18 @@ public class AfterSaleOrderResource {
 	@Path("/queryAfterSaleOrderPage")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "售后单分页查询", response = AfterSaleOrder.class)
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "startDate", value = "创建时间（开始）", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "endDate", value = "创建时间（结束)", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "scmShopOrderCode", value = "系统订单号", paramType = "path", dataType = "query", required = false),
+			@ApiImplicitParam(name = "afterSaleCode", value = "售后单编号", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "returnWarehouseCode", value = "退货收货仓库编码", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "waybillNumber", value = "运单号", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "receiverName", value = "收货人姓名", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "receiverPhone", value = "收货人电话号码", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "skuName", value = "sku名称 ", paramType = "query", dataType = "List", required = false),
+			@ApiImplicitParam(name = "skuCode", value = "skuCode ", paramType = "query", dataType = "List", required = false)
+	})
 	public Response queryAfterSaleOrderPage(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
 		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page));
 	}
