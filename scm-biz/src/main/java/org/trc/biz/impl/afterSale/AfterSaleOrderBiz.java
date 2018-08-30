@@ -15,12 +15,17 @@ import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
+import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
+import org.trc.domain.afterSale.AfterSaleWarehouseNoticeDetail;
+import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
+import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ParamValidException;
@@ -29,6 +34,10 @@ import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
+import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
+import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
+import org.trc.service.impl.AfterSale.AfterSaleWarehouseNoticeService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
@@ -65,19 +74,26 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IWarehouseInfoService warehouseInfoService;
 	@Resource
 	private IPlatformOrderService platformOrderService;
-
+	@Resource
+	private IAfterSaleWarehouseNoticeService  afterSaleWarehouseNoticeService;
+	@Resource
+	private IAfterSaleWarehouseNoticeDetailService  afterSaleWarehouseNoticeDetailService;
 
 	@Autowired
 	private IGoodsBiz goodsBiz;
 
+	@Autowired
+	private ISkusService skusService;
 
 	@Autowired
 	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
 	@Autowired
     private ISellChannelService sellChannelService;
 
-	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
-	private static final String AFTER_SALE_ORDER_ID="AFTER-";
+	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTEROD-";
+	private static final String AFTER_SALE_ORDER_ID="AFTERO-";
+	private static final String AFTER_SALE_WAREHOUSE_NOTICE_ID="AFTERW-";
+	private static final String AFTER_SALE_WAREHOUSE_NOTICE_DETAIL_ID="AFTERWN-";
 
 	@Override
 	public List<AfterSaleOrderItemVO> selectAfterSaleInfo(String shopOrderCode) throws Exception{
@@ -129,25 +145,141 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
 		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
 
+
+		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH,
+        		SupplyConstants.Serial.AFTER_SALE_CODE,
+        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+		String warehouseNoticeCode = serialUtilService.generateCode(SupplyConstants.Serial.WAREHOUSE_NOTICE_LENGTH,
+        		SupplyConstants.Serial.WAREHOUSE_NOTICE_CODE,
+        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+		//售后单
+		AfterSaleOrder afterSaleOrder=getAfterSaleOrder(afterSaleCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo);
+		
+		//退货入库单
+		AfterSaleWarehouseNotice afterSaleWarehouseNotice=getAfterSaleWarehouseNotice(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo);
+		
+
+		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
+		AssertUtil.notEmpty(details, "售后单子订单为空!");
+		//售后单详情
+		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
+		//退货入库单详情
+		List<AfterSaleWarehouseNoticeDetail> noticeDetailList=new ArrayList<>();
+		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
+
+			OrderItem orderItemSelect=new OrderItem();
+			orderItemSelect.setShopOrderCode(shopOrderCode);
+			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+			//售后单子单
+			AfterSaleOrderDetail afterSaleOrderDetail=getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
+			detailList.add(afterSaleOrderDetail);
+			//退货入库单子单
+			AfterSaleWarehouseNoticeDetail afterSaleWarehouseNoticeDetail=getAfterSaleWarehouseNoticeDetail(orderItem,warehouseNoticeCode);
+			noticeDetailList.add(afterSaleWarehouseNoticeDetail);
+		}
+
+		afterSaleOrderService.insert(afterSaleOrder);
+		afterSaleOrderDetailService.insertList(detailList);
+		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
+		afterSaleWarehouseNoticeDetailService.insertList(noticeDetailList);
+		
+		
+	}
+
+	private AfterSaleWarehouseNoticeDetail getAfterSaleWarehouseNoticeDetail(OrderItem orderItem,
+			String warehouseNoticeCode) {
+		
+		AfterSaleWarehouseNoticeDetail afterSaleWarehouseNoticeDetail=new AfterSaleWarehouseNoticeDetail();
+		String afterSaleWarehouseNoticeDetailId=GuidUtil.getNextUid(AFTER_SALE_WAREHOUSE_NOTICE_DETAIL_ID);
+		afterSaleWarehouseNoticeDetail.setId(afterSaleWarehouseNoticeDetailId);
+		afterSaleWarehouseNoticeDetail.setWarehouseNoticeCode(warehouseNoticeCode);
+		afterSaleWarehouseNoticeDetail.setShopOrderCode(orderItem.getShopOrderCode());
+		afterSaleWarehouseNoticeDetail.setOrderItemCode(orderItem.getOrderItemCode());
+		afterSaleWarehouseNoticeDetail.setSkuCode(orderItem.getSkuCode());
+		afterSaleWarehouseNoticeDetail.setSkuName(orderItem.getItemName());
+		afterSaleWarehouseNoticeDetail.setBarCode(orderItem.getBarCode());
+		afterSaleWarehouseNoticeDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
+		afterSaleWarehouseNoticeDetail.setPicture(orderItem.getPicPath());
+		afterSaleWarehouseNoticeDetail.setCreateTime(new Date());
+		afterSaleWarehouseNoticeDetail.setUpdateTime(new Date());
+		return afterSaleWarehouseNoticeDetail;
+	}
+
+	private AfterSaleOrderDetail getAfterSaleOrderDetail(OrderItem orderItem,
+			AfterSaleOrderDetail afterSaleOrderDetailDO,String afterSaleCode) {
+		
+		AfterSaleOrderDetail afterSaleOrderDetail=new AfterSaleOrderDetail();
+		String afterSaleOrderDetailId=GuidUtil.getNextUid(AFTER_SALE_ORDER_DETAIL_ID);
+		afterSaleOrderDetail.setId(afterSaleOrderDetailId);
+		afterSaleOrderDetail.setAfterSaleCode(afterSaleCode);
+		afterSaleOrderDetail.setShopOrderCode(orderItem.getShopOrderCode());
+		afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
+		afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
+		afterSaleOrderDetail.setSkuName(orderItem.getItemName());
+		afterSaleOrderDetail.setBarCode(orderItem.getBarCode());
+		afterSaleOrderDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
+		afterSaleOrderDetail.setNum(orderItem.getNum());
+		afterSaleOrderDetail.setMaxReturnNum(afterSaleOrderDetailDO.getMaxReturnNum());
+		afterSaleOrderDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+		afterSaleOrderDetail.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
+		afterSaleOrderDetail.setPicture(orderItem.getPicPath());
+		afterSaleOrderDetail.setDeliverWarehouseCode(afterSaleOrderDetailDO.getDeliverWarehouseCode());
+		afterSaleOrderDetail.setCreateTime(new Date());
+		afterSaleOrderDetail.setUpdateTime(new Date());
+		return afterSaleOrderDetail;
+	}
+
+	private AfterSaleWarehouseNotice getAfterSaleWarehouseNotice(String afterSaleCode, String warehouseNoticeCode,
+			ShopOrder shopOrder, AfterSaleOrderAddDO afterSaleOrderAddDO, AclUserAccreditInfo aclUserAccreditInfo) {
+		
+		AfterSaleWarehouseNotice afterSaleWarehouseNotice=new AfterSaleWarehouseNotice();
+		String afterSaleWarehouseNoticeId=GuidUtil.getNextUid(AFTER_SALE_WAREHOUSE_NOTICE_ID);
+		afterSaleWarehouseNotice.setId(afterSaleWarehouseNoticeId);
+		afterSaleWarehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
+		afterSaleWarehouseNotice.setAfterSaleCode(afterSaleCode);
+		afterSaleWarehouseNotice.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		afterSaleWarehouseNotice.setShopOrderCode(shopOrder.getShopOrderCode());
+		afterSaleWarehouseNotice.setChannelCode(shopOrder.getChannelCode());
+		afterSaleWarehouseNotice.setSellCode(shopOrder.getSellCode());
+		afterSaleWarehouseNotice.setWarehouseName(afterSaleOrderAddDO.getReturnAddress());
+		afterSaleWarehouseNotice.setWarehouseCode(afterSaleOrderAddDO.getReturnWarehouseCode());
+		WarehouseInfo selectWarehouse=new WarehouseInfo();
+		selectWarehouse.setCode(afterSaleOrderAddDO.getReturnWarehouseCode());
+		WarehouseInfo warehouseInfo=warehouseInfoService.selectOne(selectWarehouse);
+		if(warehouseInfo!=null) {
+			afterSaleWarehouseNotice.setReceiverNumber(warehouseInfo.getWarehouseContactNumber());
+			afterSaleWarehouseNotice.setReceiver(warehouseInfo.getWarehouseContact());
+			afterSaleWarehouseNotice.setReceiverProvince(warehouseInfo.getProvince());
+			afterSaleWarehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
+			afterSaleWarehouseNotice.setReceiverCity(warehouseInfo.getCity());
+		}
+		afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_0.getCode());
+		afterSaleWarehouseNotice.setOperator(aclUserAccreditInfo.getName());
+		afterSaleWarehouseNotice.setRemark(afterSaleOrderAddDO.getMemo());
+		afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
+		afterSaleWarehouseNotice.setCreateTime(new Date());
+		return afterSaleWarehouseNotice;
+	}
+
+	private AfterSaleOrder getAfterSaleOrder(String afterSaleCode, ShopOrder shopOrder,
+			AfterSaleOrderAddDO afterSaleOrderAddDO, AclUserAccreditInfo aclUserAccreditInfo) {
+		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
 		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
-
-		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH,
-        		SupplyConstants.Serial.AFTER_SALE_CODE,
-        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
-		//售后单
+		
 		AfterSaleOrder afterSaleOrder=new AfterSaleOrder();
 		String afterSaleOrderId=GuidUtil.getNextUid(AFTER_SALE_ORDER_ID);
 		afterSaleOrder.setId(afterSaleOrderId);
 		afterSaleOrder.setAfterSaleCode(afterSaleCode);
-		afterSaleOrder.setShopOrderCode(shopOrderCode);
+		afterSaleOrder.setShopOrderCode(shopOrder.getShopOrderCode());
 		afterSaleOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		afterSaleOrder.setChannelCode(shopOrder.getChannelCode());
 		afterSaleOrder.setSellCode(shopOrder.getSellCode());
 		afterSaleOrder.setPicture(afterSaleOrderAddDO.getPicture());
-		afterSaleOrder.setMemo(afterSaleOrderAddDO.getMemo());
 		afterSaleOrder.setShopId(shopOrder.getShopId());
 		afterSaleOrder.setShopName(shopOrder.getShopName());
 		afterSaleOrder.setReceiverProvince(platformOrder.getReceiverProvince());
@@ -170,42 +302,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleOrder.setUpdateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleOrder.setUpdateTime(new Date());
-
-		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
-		AssertUtil.notEmpty(details, "售后单子订单为空!");
-		//售后单详情
-		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
-		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
-
-			OrderItem orderItemSelect=new OrderItem();
-			orderItemSelect.setShopOrderCode(shopOrderCode);
-			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
-			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
-
-			AfterSaleOrderDetail afterSaleOrderDetail=new AfterSaleOrderDetail();
-			String afterSaleOrderDetailId=GuidUtil.getNextUid(AFTER_SALE_ORDER_DETAIL_ID);
-			afterSaleOrderDetail.setId(afterSaleOrderDetailId);
-			afterSaleOrderDetail.setShopOrderCode(shopOrderCode);
-			afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
-			afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
-			afterSaleOrderDetail.setSkuName(orderItem.getItemName());
-			afterSaleOrderDetail.setBarCode(orderItem.getBarCode());
-			afterSaleOrderDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
-			afterSaleOrderDetail.setNum(orderItem.getNum());
-			afterSaleOrderDetail.setMaxReturnNum(afterSaleOrderDetailDO.getMaxReturnNum());
-			afterSaleOrderDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
-			afterSaleOrderDetail.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
-			afterSaleOrderDetail.setPicture(orderItem.getPicPath());
-			afterSaleOrderDetail.setDeliverWarehouseCode(afterSaleOrderDetailDO.getDeliverWarehouseCode());
-			afterSaleOrderDetail.setCreateTime(new Date());
-			afterSaleOrderDetail.setUpdateTime(new Date());
-			detailList.add(afterSaleOrderDetail);
-		}
-
-		afterSaleOrderService.insert(afterSaleOrder);
-		afterSaleOrderDetailService.insertList(detailList);
-		
-		//增加入库单
+		return afterSaleOrder;
 	}
 
 	@Override
@@ -229,7 +326,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
      * @Date: 2018/8/29
      */
 	@Override
-	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page){
+	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page,AclUserAccreditInfo aclUserAccreditInfo){
 		//创建时间(开始)
 		String startTime = form.getStartDate();
 		//创建时间（截止）
@@ -278,6 +375,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 		Example example = new Example(AfterSaleOrder.class);
 		Example.Criteria criteria = example.createCriteria();
+		//业务线
+		criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+
 		//大于等于售后单的创建时间
 		if (StringUtils.isNotBlank(startTime)){
 			criteria.andGreaterThanOrEqualTo("createTime", startTime + " 00:00:00");
@@ -331,20 +431,53 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			cldAfterSaleOrderDetailForm.setAfterShopOrderCodeList(shopOrderCodeList);
 			detailList = afterSaleOrderDetailBiz.queryListByCondition(cldAfterSaleOrderDetailForm);
 		}
+
+		//根据所有skucode查询对应spucode
+		List<String> skuCodeList = Lists.newArrayList();
+		for(AfterSaleOrderDetail od:detailList){
+			skuCodeList.add(od.getSkuCode());
+		}
+		//key是skucode，value是spucode
+		Map<String,String> skuSpuMap = new HashMap<>();
+		//查询spu列表
+		List<Skus> skuModelList = queryItemsBySkuCodes(skuCodeList);
+		for(Skus vsklu: skuModelList){
+			skuSpuMap.put(vsklu.getSkuCode(),vsklu.getSpuCode());
+		}
+
 		//将售后单子表数据进行转换
-		List<AfterSaleOrderDetailVO> detailVOList = TransfAfterSaleOrderDetailVO.getAfterSaleOrderDetailVOList(detailList);
+		List<AfterSaleOrderDetailVO> detailVOList = TransfAfterSaleOrderDetailVO.getAfterSaleOrderDetailVOList(detailList,skuSpuMap);
 		List<AfterSaleOrderVO> newResult = Lists.newArrayList();
 		//循环主售后单数据，进行数据组装
 		for(AfterSaleOrder asd: result){
 			//根据仓库编号查询仓库名称
 			WarehouseInfo searWarehouseInfo = warehouseInfoService.selectOneByCode(asd.getReturnWarehouseCode());
-			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo,detailVOList);
+			SellChannel sellChannel = new SellChannel();
+			sellChannel.setSellCode(asd.getSellCode());
+			sellChannel = sellChannelService.selectOne(sellChannel);
+			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo,detailVOList,sellChannel);
 			newResult.add(newvo);
 		}
 		Pagenation<AfterSaleOrderVO> pvo = new Pagenation<AfterSaleOrderVO>();
 		BeanUtils.copyProperties(page,pvo);
 		pvo.setResult(newResult);
 		return pvo;
+	}
+    
+	/**
+	 * @Description: 根据skucode集合查询shangp列表
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/30
+	 */ 
+	private List<Skus> queryItemsBySkuCodes(List<String> skucodes){
+		Example example = new Example(Skus.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andIn("skuCode",skucodes);
+		List<Skus> list = skusService.selectByExample(example);
+		if(Objects.equals(null,list)){
+			return Lists.newArrayList();
+		}
+		return list;
 	}
 
 
@@ -354,9 +487,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	 * @Date: 2018/8/29
 	 */ 
     @Override
-	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) throws Exception{
+	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
 			page.setPageSize(3000);
-			Pagenation<AfterSaleOrderVO> pvo =  afterSaleOrderPage(form,page);
+			Pagenation<AfterSaleOrderVO> pvo =  afterSaleOrderPage(form,page,aclUserAccreditInfo);
 			List<AfterSaleOrderVO> result = pvo.getResult();
 		    List<ExceptorAfterSaleOrder> newResult = Lists.newArrayList();
 		    List<ExceptorAfterSaleOrder> newlist =  TransfExportAfterSaleOrder.getExceptorAfterSaleOrder(result);
@@ -365,15 +498,12 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			CellDefinition status = new CellDefinition("status", "售后单状态", CellDefinition.TEXT, null, 4000);
 			CellDefinition scmShopOrderCode = new CellDefinition("scmShopOrderCode", "系统订单号", CellDefinition.TEXT, null, 4000);
 			CellDefinition afterSaleCode = new CellDefinition("afterSaleCode", "售后单编号", CellDefinition.TEXT, null, 4000);
-
 			CellDefinition sellCodeName = new CellDefinition("sellCodeName", "销售渠道", CellDefinition.TEXT, null, 4000);
 			CellDefinition shopName = new CellDefinition("shopName", "店铺名称", CellDefinition.TEXT, null, 4000);
-
 			CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 4000);
 			CellDefinition skuCode = new CellDefinition("skuCode", "SKU编号", CellDefinition.TEXT, null, 4000);
 			CellDefinition specNatureInfo = new CellDefinition("specNatureInfo", "规格", CellDefinition.TEXT, null, 4000);
 			CellDefinition returnNum = new CellDefinition("returnNum", "拟退货数量", CellDefinition.TEXT, null, 4000);
-
 			CellDefinition refundAmont = new CellDefinition("refundAmont", "退款金额", CellDefinition.TEXT, null, 4000);
 			CellDefinition logisticsCorporation = new CellDefinition("logisticsCorporation", "物流公司", CellDefinition.TEXT, null, 4000);
 		    CellDefinition waybillNumber = new CellDefinition("waybillNumber", "物流单号", CellDefinition.TEXT, null, 4000);
@@ -411,9 +541,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 					.header("Cache-Control", "no-cache").build();
 
 	}
-
-
-
 
 	@Override
 	public AfterSaleDetailVO queryAfterSaleOrderDetail(String id) {
@@ -477,6 +604,31 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
         afterSaleDetailVO.setAfterSaleOrder(afterSaleOrder);
         afterSaleDetailVO.setAfterSaleOrderDetailList(detailList);
 		return afterSaleDetailVO;
+	}
+
+    /**
+     * @Description: 检查订单是否可以符合创建售后单
+     * @Author: hzluoxingcheng
+     * @Date: 2018/8/30
+     */ 
+	@Override
+	public boolean checkOrder(String shopOrderCode) {
+		Example example = new Example(ShopOrder.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("shopOrderCode", shopOrderCode);
+		List<String> statusList = Lists.newArrayList();
+		//待发货
+		statusList.add("1");
+		//部分发货
+		statusList.add("2");
+		//全部发货
+		statusList.add("3");
+		criteria.andIn("supplierOrderStatus",statusList);
+		List<ShopOrder>  orderList = shopOrderService.selectByExample(example);
+		if(!Objects.equals(null,orderList) && !orderList.isEmpty()){
+			return true;
+		}
+        return false;
 	}
 
 }

@@ -25,7 +25,7 @@ public interface IAfterSaleOrderBiz {
      * @Author: hzluoxingcheng
      * @Date: 2018/8/29
      */
-	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page);
+	public Pagenation<AfterSaleOrderVO> afterSaleOrderPage(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page,AclUserAccreditInfo aclUserAccreditInfo);
 
 	/**
 	 * 查询售后单详情
@@ -39,7 +39,14 @@ public interface IAfterSaleOrderBiz {
 	 * @Author: hzluoxingcheng
 	 * @Date: 2018/8/29
 	 */ 
-	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) throws Exception;
+	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
+	
+	/**
+	 * @Description: 检查订单是否可以收件售后单
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/30
+	 */ 
+	public boolean checkOrder(String shopOrderCode);
 
 
 }

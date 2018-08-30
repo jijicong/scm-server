@@ -1,6 +1,7 @@
 package org.trc.form.afterSale;
 
 import com.google.common.collect.Lists;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 
@@ -16,7 +17,7 @@ import java.util.Objects;
  */
 public class TransfAfterSaleOrderVO {
 
-    public static  AfterSaleOrderVO getAfterSaleOrderVO(AfterSaleOrder afterSaleOrder,WarehouseInfo searWarehouseInfo,List<AfterSaleOrderDetailVO> detailVOList ){
+    public static  AfterSaleOrderVO getAfterSaleOrderVO(AfterSaleOrder afterSaleOrder,WarehouseInfo searWarehouseInfo,List<AfterSaleOrderDetailVO> detailVOList ,SellChannel sellChannel){
         if(Objects.equals(null,afterSaleOrder)){
             return null;
         }
@@ -56,6 +57,10 @@ public class TransfAfterSaleOrderVO {
         afterSaleOrderVO.setStatus(afterSaleOrder.getStatus());
         //售后单子表列表
         afterSaleOrderVO.setAfterSaleOrderDetailVOList(detailvoMap.get(afterSaleOrder.getAfterSaleCode()));
+        if(!Objects.equals(null,sellChannel)){
+            //渠道名称
+            afterSaleOrderVO.setSellCodeName(sellChannel.getSellName());
+        }
         return afterSaleOrderVO;
     }
 

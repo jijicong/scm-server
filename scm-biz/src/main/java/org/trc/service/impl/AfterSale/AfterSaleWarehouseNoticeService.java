@@ -5,7 +5,7 @@ import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
 import org.trc.service.impl.BaseService;
 
-@Service("afterSaleWarehouseInfoService")
+@Service("afterSaleWarehouseNoticeService")
 public class AfterSaleWarehouseNoticeService extends BaseService<AfterSaleWarehouseNotice, Long> implements IAfterSaleWarehouseNoticeService{
 
 }

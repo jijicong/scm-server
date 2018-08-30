@@ -1,16 +1,13 @@
 package org.trc.domain.afterSale;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import java.io.Serializable;
 import java.util.Date;
 
@@ -102,7 +99,7 @@ public class AfterSaleOrderDetail implements Serializable {
      */
     @ApiModelProperty(value="商品数量")
 	@FormParam("num")
-	private int num;
+	private Integer num;
 
     /**
      * 最大可退数量
