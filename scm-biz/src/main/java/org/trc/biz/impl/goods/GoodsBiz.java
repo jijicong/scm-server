@@ -77,9 +77,11 @@ import tk.mybatis.mapper.util.StringUtil;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -973,10 +975,10 @@ public class GoodsBiz implements IGoodsBiz {
             if (!StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())) {
                 logMsg = logMsg + "商品备注由\"" + orginItems.getRemark().trim() + "\"改为\"" + items.getRemark().trim() + "\";";
             }
-            logMsg = logMsg.substring(0, logMsg.lastIndexOf(";")) + "。\r\n";
+            logMsg = logMsg.substring(0, logMsg.lastIndexOf(";")) + "。<br/>";
         }
 
-        String logMsg2 = "";
+        StringBuilder logMsg2 = new StringBuilder("");
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
         if (categoryArray != null && categoryArray.size() > 0) {
             ItemNaturePropery temp = new ItemNaturePropery();
@@ -993,7 +995,8 @@ public class GoodsBiz implements IGoodsBiz {
                         if (!StringUtils.equals(naturePropery.getPropertyValueId().toString(), propertyValueId)) {
                             Property property = propertyService.selectOneById(Long.parseLong(propertyId));
                             PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(naturePropery.getPropertyValueId());
-                            logMsg2 = logMsg2 + property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";";
+                            //logMsg2 = logMsg2 + property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";";
+                            logMsg2.append(property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";");
                         }
                     }
                 }
@@ -1007,38 +1010,50 @@ public class GoodsBiz implements IGoodsBiz {
                 Skus temp = new Skus();
                 String skuCode = jbo.getString("skuCode");
                 if (StringUtils.equals(skuCode, "")) {
-                    logMsg2 = logMsg2 + "新增了名称为\"" + jbo.getString("skuName") + "\"的sku;";
+                    //logMsg2 = logMsg2 + "新增了名称为\"" + jbo.getString("skuName") + "\"的sku;";
+                    logMsg2.append("新增了名称为\"" + jbo.getString("skuName") + "\"的sku;");
                 } else {
                     temp.setSkuCode(skuCode);
                     Skus orginSkus = skusService.selectOne(temp);
-                    String orginMarketPrice = orginSkus.getMarketPrice() == null ? "" : String.valueOf(CommonUtil.fenToYuan(orginSkus.getMarketPrice()));
-                    String orginWeight = orginSkus.getWeight() == null ? "" : String.valueOf(CommonUtil.getWeight(orginSkus.getWeight()));
 
-                    String newMarketPrice=jbo.getString("marketPrice2")==null?"":jbo.getString("marketPrice2");
-                    String newWeight=jbo.getString("weight2")==null?"":jbo.getString("weight2");
+                    String orginMarketPrice= orginSkus.getMarketPrice() == null ? "" :String.valueOf(orginSkus.getMarketPrice());
+                    String orginWeight = orginSkus.getWeight() == null ? "" : String.valueOf(orginSkus.getWeight());
+                  /*  String s = String.valueOf(orginSkus.getMarketPrice()/100L);
+                    String s2=String.valueOf(orginSkus.getMarketPrice()%100L/10L*0.1d);
+                    String s3=String.valueOf(orginSkus.getMarketPrice()%100L/10L/10L*0.01d);
+                    String s4 = String.valueOf(Double.parseDouble(jbo.getString("marketPrice2"))*100/100L);
+                    String s5 = String.valueOf(Double.parseDouble(jbo.getString("marketPrice2")) *100%100L/10L*0.1d);
+                    String s6 = String.valueOf(Double.parseDouble(jbo.getString("marketPrice2"))*100%100L/10L/10L*0.01d);
+                    String s7 = String.valueOf(Double.parseDouble(jbo.getString("weight2"))*100/100L);
+                    String s8 = String.valueOf(Double.parseDouble(jbo.getString("weight2")) *100%100L/10L*0.1d);
+                    String s9 = String.valueOf(Double.parseDouble(jbo.getString("weight2"))*100%100L/10L/10L*0.01d);*/
+
+                    String newMarketPrice=jbo.getString("marketPrice2")==null?"":(getLongValue(jbo.getString("marketPrice2")).toString());
+                    String newWeight=jbo.getString("weight2")==null?"":(CommonUtil.getWeightLong(jbo.getString("weight2")).toString());
+
                     if (StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName")) && StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))
                             && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(orginMarketPrice,newMarketPrice)
                             && StringUtils.equals(orginWeight, newWeight)) {
-                        logMsg2 = logMsg2 + "";
+                       logMsg2.append("");
                     } else {
-                        logMsg2 = logMsg2 + skuCode + ":";
+                       logMsg2.append(skuCode + ":") ;
                         if (!StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName"))) {
-                            logMsg2 = logMsg2 + "SKU名称由\"" + orginSkus.getSkuName() + "\"改为\"" + jbo.getString("skuName") + "\";";
+                            logMsg2.append("SKU名称由\"" + orginSkus.getSkuName() + "\"改为\"" + jbo.getString("skuName") + "\";") ;
                         }
                         if (!StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))) {
-                            logMsg2 = logMsg2 + "条形码由\"" + orginSkus.getBarCode() + "\"改为\"" + jbo.getString("barCode") + "\";";
+                           logMsg2.append("条形码由\"" + orginSkus.getBarCode() + "\"改为\"" + jbo.getString("barCode") + "\";");
                         }
                         if (!StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid"))) {
-                            logMsg2 = logMsg2 + "sku状态由\"" + ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName() + "\"改为\"" + ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
-                                    + "\";";
+                            logMsg2.append("sku状态由\"" + ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName() + "\"改为\"" + ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
+                                    + "\";") ;
                         }
                         if (!StringUtils.equals(orginMarketPrice,newMarketPrice)) {
-                            logMsg2 = logMsg2 + "参考市场价由\"" + orginMarketPrice + "\"改为\"" + newMarketPrice + "\";";
+                            logMsg2.append("参考市场价由\"" +orginMarketPrice==""?"":Double.parseDouble(CommonUtil.fenToYuan(Long.parseLong(orginMarketPrice)).toString()) + "\"改为\"" + jbo.getString("marketPrice2") + "\";");
                         }
                         if (!StringUtils.equals(orginWeight, newWeight)) {
-                            logMsg2 = logMsg2 + "重量由\"" + orginWeight + "\"改为\"" + newWeight + "\";";
+                            logMsg2.append("重量由\"" + orginSkus.getMarketPrice()==""?"":Double.parseDouble(CommonUtil.getWeight(Long.parseLong(orginWeight)).toString()) + "\"改为\"" + jbo.getString("weight2") + "\";");
                         }
-                        logMsg2 = logMsg2 + "\r\n";
+                        logMsg2.append("<br/>") ;
                     }
                 }
 
@@ -1046,7 +1061,7 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
         if (!StringUtils.isEmpty(logMsg2)) {
-            logMsg2 = "商品信息：" + logMsg2.substring(0, logMsg2.lastIndexOf(";")) + "。\r\n";
+            logMsg2 = new StringBuilder("商品信息：" ).append(logMsg2.substring(0, logMsg2.lastIndexOf(";")) + "。<br/>");
         }
 
 
@@ -1084,9 +1099,9 @@ public class GoodsBiz implements IGoodsBiz {
 
         //记录日志
         if (StringUtils.equals(logMsg2, "商品信息：")) {
-            logMsg2 = "";
+            logMsg2 = new StringBuilder("");
         }
-        logMsg = logMsg2 + logMsg;
+        logMsg = logMsg2.toString() + logMsg;
         if (!StringUtils.equals(logMsg, "")) {
 
             try {
