@@ -172,7 +172,7 @@
     
 
     <!-- 异步日志配置 -->
-    <appender name="info_async" class="ch.qos.logback.classic.AsyncAppender">
+    <!--<appender name="info_async" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>20</discardingThreshold>
         <queueSize>512</queueSize>
         <appender-ref ref="info"/>
@@ -182,7 +182,7 @@
         <discardingThreshold>20</discardingThreshold>
         <queueSize>512</queueSize>
         <appender-ref ref="error"/>
-    </appender>
+    </appender>-->
 
     <!--mybatis log configure-->
     <logger name="com.apache.ibatis" level="DEBUG"/>
@@ -200,7 +200,7 @@
     </logger>
 
     <root level="DEBUG">
-        <appender-ref ref="STDOUT"/>
+        <!--<appender-ref ref="STDOUT"/>-->
         <appender-ref ref="debug"/>
         <appender-ref ref="info"/>
         <appender-ref ref="warn"/>
