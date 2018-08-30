@@ -66,7 +66,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	@Resource
 	private IPlatformOrderService platformOrderService;
 
-
 	@Autowired
 	private IGoodsBiz goodsBiz;
 
@@ -412,9 +411,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 	}
 
-
-
-
 	@Override
 	public AfterSaleDetailVO queryAfterSaleOrderDetail(String id) {
 		AssertUtil.notNull(id, "查询售后单详情参数id不能为空");
@@ -477,6 +473,31 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
         afterSaleDetailVO.setAfterSaleOrder(afterSaleOrder);
         afterSaleDetailVO.setAfterSaleOrderDetailList(detailList);
 		return afterSaleDetailVO;
+	}
+
+    /**
+     * @Description: 检查订单是否可以符合创建售后单
+     * @Author: hzluoxingcheng
+     * @Date: 2018/8/30
+     */ 
+	@Override
+	public boolean checkOrder(String shopOrderCode) {
+		Example example = new Example(ShopOrder.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("shopOrderCode", shopOrderCode);
+		List<String> statusList = Lists.newArrayList();
+		//待发货
+		statusList.add("1");
+		//部分发货
+		statusList.add("2");
+		//全部发货
+		statusList.add("3");
+		criteria.andIn("supplierOrderStatus",statusList);
+		List<ShopOrder>  orderList = shopOrderService.selectByExample(example);
+		if(!Objects.equals(null,orderList) && !orderList.isEmpty()){
+			return true;
+		}
+        return false;
 	}
 
 }

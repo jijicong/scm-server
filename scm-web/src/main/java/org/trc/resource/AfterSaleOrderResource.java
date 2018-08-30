@@ -1,30 +1,23 @@
 package org.trc.resource;
 
 import javax.annotation.Resource;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.stereotype.Component;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleOrderForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
-
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 
 @Api(value = "售后单管理")
 @Component
@@ -135,6 +128,22 @@ public class AfterSaleOrderResource {
 	public Response exportAfterSaleOrderVO(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext) throws Exception{
 		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.exportAfterSaleOrderVO(form , page));
 	}
+
+    /**
+     * @Description: 检查店铺订单是否可以常见售后单
+     * @Author: hzluoxingcheng
+     * @Date: 2018/8/30
+     */ 
+	@GET
+	@Path("checkOrder/{shopOrderCode}")
+	@ApiOperation(value = "检查订单是否可以创建售后单", response = AfterSaleDetailVO.class)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response orderDetail(@ApiParam(value = "店铺订单编号") @PathParam("shopOrderCode") String shopOrderCode){
+		return ResultUtil.createSuccessResult("售后单详情查询成功", iAfterSaleOrderBiz.checkOrder(shopOrderCode));
+	}
+
+
+
 
 
 

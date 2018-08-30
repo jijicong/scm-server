@@ -40,6 +40,13 @@ public interface IAfterSaleOrderBiz {
 	 * @Date: 2018/8/29
 	 */ 
 	public Response exportAfterSaleOrderVO(AfterSaleOrderForm form, Pagenation<AfterSaleOrder> page) throws Exception;
+	
+	/**
+	 * @Description: 检查订单是否可以收件售后单
+	 * @Author: hzluoxingcheng
+	 * @Date: 2018/8/30
+	 */ 
+	public boolean checkOrder(String shopOrderCode);
 
 
 }
