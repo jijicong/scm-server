@@ -13,10 +13,8 @@ import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleOrderForm;
-import org.trc.form.afterSale.AfterSaleOrderVO;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -42,7 +40,7 @@ public class AfterSaleOrderResource {
             @ApiImplicitParam(name = "shopOrderCode", value = "订单号", paramType = "path", dataType = "String", required = true),
     })
 	public Response selectAfterSaleInfo(@QueryParam("shopOrderCode") String shopOrderCode) throws Exception{
-		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectAfterSaleInfo(shopOrderCode));
+		return ResultUtil.createSuccessResult("查询成功",iAfterSaleOrderBiz.selectAfterSaleInfo(shopOrderCode));
 	}
 	
 	/**
@@ -65,8 +63,9 @@ public class AfterSaleOrderResource {
             @ApiImplicitParam(name = "afterSaleOrderDetailList", value = "售后单详情 ", paramType = "path", dataType = "List", required = true)
     })
 	public Response add(AfterSaleOrderAddDO afterSaleOrderAddDO,@Context ContainerRequestContext requestContext) throws Exception{
+		
 		iAfterSaleOrderBiz.addAfterSaleOrder(afterSaleOrderAddDO,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-		return ResultUtil.createSuccessPageResult("操作成功");
+		return ResultUtil.createSuccessResult("操作成功","");
 	}
 	
 	/**

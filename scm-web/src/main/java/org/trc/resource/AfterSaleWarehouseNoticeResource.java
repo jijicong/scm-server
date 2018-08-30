@@ -54,6 +54,6 @@ public class AfterSaleWarehouseNoticeResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "查询入库仓库")
 	public Response warehouseNoticeInfo(@ApiParam(value = "入库单编号") @QueryParam("warehouseNoticeCode") String warehouseNoticeCode) throws Exception{
-		return ResultUtil.createSuccessPageResult(iAfterSaleWarehouseNoticeBiz.warehouseNoticeInfo(warehouseNoticeCode));
+		return ResultUtil.createSuccessResult("查询成功",iAfterSaleWarehouseNoticeBiz.warehouseNoticeInfo(warehouseNoticeCode));
 	}
 }
