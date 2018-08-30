@@ -356,7 +356,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		for(AfterSaleOrder asd: result){
 			//根据仓库编号查询仓库名称
 			WarehouseInfo searWarehouseInfo = warehouseInfoService.selectOneByCode(asd.getReturnWarehouseCode());
-			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo,detailVOList);
+			SellChannel sellChannel = new SellChannel();
+			sellChannel.setSellCode(asd.getSellCode());
+			sellChannel = sellChannelService.selectOne(sellChannel);
+			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo,detailVOList,sellChannel);
 			newResult.add(newvo);
 		}
 		Pagenation<AfterSaleOrderVO> pvo = new Pagenation<AfterSaleOrderVO>();
@@ -399,15 +402,12 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			CellDefinition status = new CellDefinition("status", "售后单状态", CellDefinition.TEXT, null, 4000);
 			CellDefinition scmShopOrderCode = new CellDefinition("scmShopOrderCode", "系统订单号", CellDefinition.TEXT, null, 4000);
 			CellDefinition afterSaleCode = new CellDefinition("afterSaleCode", "售后单编号", CellDefinition.TEXT, null, 4000);
-
 			CellDefinition sellCodeName = new CellDefinition("sellCodeName", "销售渠道", CellDefinition.TEXT, null, 4000);
 			CellDefinition shopName = new CellDefinition("shopName", "店铺名称", CellDefinition.TEXT, null, 4000);
-
 			CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 4000);
 			CellDefinition skuCode = new CellDefinition("skuCode", "SKU编号", CellDefinition.TEXT, null, 4000);
 			CellDefinition specNatureInfo = new CellDefinition("specNatureInfo", "规格", CellDefinition.TEXT, null, 4000);
 			CellDefinition returnNum = new CellDefinition("returnNum", "拟退货数量", CellDefinition.TEXT, null, 4000);
-
 			CellDefinition refundAmont = new CellDefinition("refundAmont", "退款金额", CellDefinition.TEXT, null, 4000);
 			CellDefinition logisticsCorporation = new CellDefinition("logisticsCorporation", "物流公司", CellDefinition.TEXT, null, 4000);
 		    CellDefinition waybillNumber = new CellDefinition("waybillNumber", "物流单号", CellDefinition.TEXT, null, 4000);
