@@ -12,13 +12,13 @@
     <bean id="config" class="org.trc.spring.TrPropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
-                <value>classpath:config/local/scm-jdbc.properties</value>
-                <value>classpath:config/local/comsumer-config.properties</value>
-                <value>classpath:config/local/trc.properties</value>
-                <value>classpath:config/local/redis.properties</value>
-                <value>classpath:config/local/config.properties</value>
-                <value>classpath:config/local/cron.properties</value>
-                <value>classpath:config/local/admin.properties</value>
+                <value>classpath:config/dev/scm-jdbc.properties</value>
+                <value>classpath:config/dev/comsumer-config.properties</value>
+                <value>classpath:config/dev/trc.properties</value>
+                <value>classpath:config/dev/redis.properties</value>
+                <value>classpath:config/dev/config.properties</value>
+                <value>classpath:config/dev/cron.properties</value>
+                <value>classpath:config/dev/admin.properties</value>
             </list>
         </property>
         <property name="fileEncoding">
