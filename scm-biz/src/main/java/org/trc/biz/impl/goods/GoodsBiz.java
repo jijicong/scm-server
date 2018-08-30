@@ -927,7 +927,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.equals(orginItems.getName(), items.getName()) && StringUtils.equals(orginItems.getBrandId().toString(), items.getBrandId().toString())
                 && StringUtils.equals(orginItems.getTradeType(), items.getTradeType()) && StringUtils.equals(orginItems.getItemNo(), items.getItemNo())
                 && StringUtils.equals(orginItems.getProducer(), items.getProducer())   && StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())
-                && StringUtils.equals(orginItems.getIsQuality(), items.getIsQuality()) && StringUtils.equals(orginItems.getQualityDay().toString(), items.getQualityDay().toString())) {
+                && StringUtils.equals(orginItems.getIsQuality(), items.getIsQuality()) && StringUtils.equals(orginItems.getQualityDay().toString(),items.getQualityDay()==null?"0":items.getQualityDay().toString())) {
             logMsg = "";
         } else {
             logMsg = logMsg + "SPU信息：";
