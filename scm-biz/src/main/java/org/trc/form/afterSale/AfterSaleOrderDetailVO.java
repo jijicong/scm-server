@@ -1,5 +1,6 @@
 package org.trc.form.afterSale;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
  */
 @Setter
 @Getter
+@Api(value = "售后单字表展示对象")
 public class AfterSaleOrderDetailVO {
 
     /**
