@@ -1,14 +1,12 @@
 package org.trc.domain.afterSale;
 
-import java.io.Serializable;
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
-
-
-import lombok.Getter;
-import lombok.Setter;
+import java.io.Serializable;
+import java.util.Date;
 
 
 /**
@@ -45,6 +43,16 @@ public class AfterSaleWarehouseNotice implements Serializable {
      */
 	@Column(name="shop_order_code")
 	private String shopOrderCode;
+	/**
+	 * 业务线编码
+	 */
+	@Column(name="channel_code")
+	private String channelCode;
+	/**
+	 * 销售渠道编码
+	 */
+	@Column(name="sell_code")
+	private String sellCode;
 	/**
      * 系统订单号
      */
