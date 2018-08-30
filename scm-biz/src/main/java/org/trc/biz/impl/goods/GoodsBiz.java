@@ -77,11 +77,9 @@ import tk.mybatis.mapper.util.StringUtil;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -350,6 +348,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     /**
+     *
      * @param page
      * @param channelCode 渠道编码
      * @throws Exception
@@ -1399,6 +1398,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     /**
+     *
      * @param skus
      */
     private void checkSkuInfo(Skus skus) {
