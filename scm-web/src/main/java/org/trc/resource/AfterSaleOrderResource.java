@@ -108,8 +108,10 @@ public class AfterSaleOrderResource {
 			@ApiImplicitParam(name = "waybillNumber", value = "运单号", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "receiverName", value = "收货人姓名", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "receiverPhone", value = "收货人电话号码", paramType = "query", dataType = "String", required = false),
-			@ApiImplicitParam(name = "skuName", value = "sku名称 ", paramType = "query", dataType = "List", required = false),
-			@ApiImplicitParam(name = "skuCode", value = "skuCode ", paramType = "query", dataType = "List", required = false)
+			@ApiImplicitParam(name = "skuName", value = "sku名称 ", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "skuCode", value = "skuCode ", paramType = "query", dataType = "String", required = false),
+			@ApiImplicitParam(name = "pageNo", value = "页码 ", paramType = "query", dataType = "Integer", required = true),
+			@ApiImplicitParam(name = "pageSize", value = "每页记录条数 ", paramType = "query", dataType = "Integer", required = true)
 	})
 	public Response queryAfterSaleOrderPage(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
 		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page));
