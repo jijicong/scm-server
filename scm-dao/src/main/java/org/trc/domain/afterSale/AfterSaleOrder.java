@@ -177,6 +177,11 @@ public class AfterSaleOrder  implements Serializable{
     @Column(name="waybill_number")
 	private String waybillNumber;
     /**
+     * 发起类型（0系统发起，1手动新建）
+     */
+    @Column(name="launch_type")
+    private Integer launchType;
+    /**
      * 售后单状态（0待客户发货，1客户已经发货,2已经完成，3已经取消）
      */
 	private int status;
