@@ -1,5 +1,7 @@
 package org.trc.form.afterSale;
 
+import javax.ws.rs.FormParam;
+
 import org.trc.domain.order.OrderItem;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -18,6 +20,7 @@ public class AfterSaleOrderItemVO extends OrderItem{
 	 * 可退款数量
 	 */
 	@ApiModelProperty(value="可退数量")
+	@FormParam("shopOrderCode")
 	public int canRefundNum;
 	
 }
