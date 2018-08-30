@@ -919,104 +919,104 @@ public class GoodsBiz implements IGoodsBiz {
     public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
 
         selectDataAcl(items.getId(), aclUserAccreditInfo, false);
-
         //记录操作日志
         String logMsg = "";
-        Items orginItems = itemsService.selectByPrimaryKey(items.getId());
-        if (StringUtils.equals(orginItems.getName(), items.getName()) && StringUtils.equals(orginItems.getBrandId().toString(), items.getBrandId().toString())
-                && StringUtils.equals(orginItems.getTradeType(), items.getTradeType()) && StringUtils.equals(orginItems.getItemNo(), items.getItemNo())
-                && StringUtils.equals(orginItems.getProducer(), items.getProducer())   && StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())
-                && StringUtils.equals(orginItems.getIsQuality(), items.getIsQuality()) && StringUtils.equals(orginItems.getQualityDay().toString(),items.getQualityDay()==null?"0":items.getQualityDay().toString())) {
-            logMsg = "";
-        } else {
-            logMsg = logMsg + "SPU信息：";
-            if (!StringUtils.equals(orginItems.getName(), items.getName())) {
-                logMsg = logMsg + "商品名称由\"" + orginItems.getName() + "\"改为\"" + items.getName() + "\";";
-            }
-            if (!StringUtils.equals(orginItems.getBrandId().toString(), items.getBrandId().toString())) {
-                Brand orginBrand = brandService.selectOneById(orginItems.getBrandId());
-                Brand brand = brandService.selectOneById(items.getBrandId());
-                logMsg = logMsg + "所属品牌由\"" + orginBrand.getName() + "\"改为\"" + brand.getName() + "\";";
-            }
-            if (!StringUtils.equals(orginItems.getTradeType(), items.getTradeType())) {
-                Dict temp = new Dict();
-                temp.setTypeCode(TRADE_TYPE);
-                List<Dict> list = dictService.select(temp);
-                String orginTradeType="";
-                String nowTradeType="";
-                for (Dict dict : list) {
-                  if (StringUtils.equals( dict.getValue(),orginItems.getTradeType())){
-                      orginTradeType=dict.getName();
-                  }
-                  if (StringUtils.equals( dict.getValue(),items.getTradeType())){
-                      nowTradeType=dict.getName();
-                  }
-                }
-                logMsg = logMsg + "贸易类型由\"" + orginTradeType+ "\"改为\"" + nowTradeType+ "\";";
-            }
-            if (!StringUtils.equals(orginItems.getItemNo(), items.getItemNo())) {
-                logMsg = logMsg + "商品货号由\"" + orginItems.getItemNo() + "\"改为\"" + items.getItemNo() + "\";";
-            }
-            if (!StringUtils.equals(orginItems.getProducer(), items.getProducer())) {
-                logMsg = logMsg + "生厂商由\"" + orginItems.getProducer() + "\"改为\"" + items.getProducer() + "\";";
-            }
-            if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) || StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())){//排除都为否的情形
-                if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
-                    if (!StringUtils.equals(orginItems.getQualityDay().toString(), items.getQualityDay().toString())){
-                        logMsg = logMsg + "保质期天数由\"" + orginItems.getQualityDay() + "天\"改为\"" + items.getQualityDay() + "天\";";
-                    }
-                } else if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ZERO.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
-                    logMsg = logMsg + "是否具有保质期由\"无" + "\"改为\"" + items.getQualityDay() + "天\";";
-                } else if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ZERO.getCode())){
-                    logMsg = logMsg + "是否具有保质期由\"" + orginItems.getQualityDay() + "天\"" + "改为\"" + "无\";";
-                }
-            }
-            if (!StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())) {
-                logMsg = logMsg + "商品备注由\"" + orginItems.getRemark().trim() + "\"改为\"" + items.getRemark().trim() + "\";";
-            }
-            logMsg = logMsg.substring(0, logMsg.lastIndexOf(";")) + "。<br/>";
-        }
+       try {
+           Items orginItems = itemsService.selectByPrimaryKey(items.getId());
+           if (StringUtils.equals(orginItems.getName(), items.getName()) && StringUtils.equals(orginItems.getBrandId().toString(), items.getBrandId().toString())
+                   && StringUtils.equals(orginItems.getTradeType(), items.getTradeType()) && StringUtils.equals(orginItems.getItemNo(), items.getItemNo())
+                   && StringUtils.equals(orginItems.getProducer(), items.getProducer())   && StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())
+                   && StringUtils.equals(orginItems.getIsQuality(), items.getIsQuality()) && StringUtils.equals(orginItems.getQualityDay().toString(),items.getQualityDay()==null?"0":items.getQualityDay().toString())) {
+               logMsg = "";
+           } else {
+               logMsg = logMsg + "SPU信息：";
+               if (!StringUtils.equals(orginItems.getName(), items.getName())) {
+                   logMsg = logMsg + "商品名称由\"" + orginItems.getName() + "\"改为\"" + items.getName() + "\";";
+               }
+               if (!StringUtils.equals(orginItems.getBrandId().toString(), items.getBrandId().toString())) {
+                   Brand orginBrand = brandService.selectOneById(orginItems.getBrandId());
+                   Brand brand = brandService.selectOneById(items.getBrandId());
+                   logMsg = logMsg + "所属品牌由\"" + orginBrand.getName() + "\"改为\"" + brand.getName() + "\";";
+               }
+               if (!StringUtils.equals(orginItems.getTradeType(), items.getTradeType())) {
+                   Dict temp = new Dict();
+                   temp.setTypeCode(TRADE_TYPE);
+                   List<Dict> list = dictService.select(temp);
+                   String orginTradeType="";
+                   String nowTradeType="";
+                   for (Dict dict : list) {
+                       if (StringUtils.equals( dict.getValue(),orginItems.getTradeType())){
+                           orginTradeType=dict.getName();
+                       }
+                       if (StringUtils.equals( dict.getValue(),items.getTradeType())){
+                           nowTradeType=dict.getName();
+                       }
+                   }
+                   logMsg = logMsg + "贸易类型由\"" + orginTradeType+ "\"改为\"" + nowTradeType+ "\";";
+               }
+               if (!StringUtils.equals(orginItems.getItemNo(), items.getItemNo())) {
+                   logMsg = logMsg + "商品货号由\"" + orginItems.getItemNo() + "\"改为\"" + items.getItemNo() + "\";";
+               }
+               if (!StringUtils.equals(orginItems.getProducer(), items.getProducer())) {
+                   logMsg = logMsg + "生厂商由\"" + orginItems.getProducer() + "\"改为\"" + items.getProducer() + "\";";
+               }
+               if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) || StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())){//排除都为否的情形
+                   if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
+                       if (!StringUtils.equals(orginItems.getQualityDay().toString(), items.getQualityDay().toString())){
+                           logMsg = logMsg + "保质期天数由\"" + orginItems.getQualityDay() + "天\"改为\"" + items.getQualityDay() + "天\";";
+                       }
+                   } else if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ZERO.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
+                       logMsg = logMsg + "是否具有保质期由\"无" + "\"改为\"" + items.getQualityDay() + "天\";";
+                   } else if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ZERO.getCode())){
+                       logMsg = logMsg + "是否具有保质期由\"" + orginItems.getQualityDay() + "天\"" + "改为\"" + "无\";";
+                   }
+               }
+               if (!StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())) {
+                   logMsg = logMsg + "商品备注由\"" + orginItems.getRemark().trim() + "\"改为\"" + items.getRemark().trim() + "\";";
+               }
+               logMsg = logMsg.substring(0, logMsg.lastIndexOf(";")) + "。<br/>";
+           }
 
-        StringBuilder logMsg2 = new StringBuilder("");
-        JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
-        if (categoryArray != null && categoryArray.size() > 0) {
-            ItemNaturePropery temp = new ItemNaturePropery();
-            temp.setSpuCode(items.getSpuCode());
-            temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            List<ItemNaturePropery> itemNatureProperyList = itemNatureProperyService.select(temp);
-            for (Object obj : categoryArray) {
-                JSONObject jbo = (JSONObject) obj;
-                String  propertyId = jbo.getString("propertyId");
-                String propertyValueId = jbo.getString("propertyValueId");
-                String propertyValue = jbo.getString("propertyValue");
-                for (ItemNaturePropery naturePropery : itemNatureProperyList) {
-                    if (StringUtils.equals(naturePropery.getPropertyId().toString(),propertyId)){
-                        if (!StringUtils.equals(naturePropery.getPropertyValueId().toString(), propertyValueId)) {
-                            Property property = propertyService.selectOneById(Long.parseLong(propertyId));
-                            PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(naturePropery.getPropertyValueId());
-                            //logMsg2 = logMsg2 + property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";";
-                            logMsg2.append(property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";");
-                        }
-                    }
-                }
-            }
-        }
+           StringBuilder logMsg2 = new StringBuilder("");
+           JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
+           if (categoryArray != null && categoryArray.size() > 0) {
+               ItemNaturePropery temp = new ItemNaturePropery();
+               temp.setSpuCode(items.getSpuCode());
+               temp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+               List<ItemNaturePropery> itemNatureProperyList = itemNatureProperyService.select(temp);
+               for (Object obj : categoryArray) {
+                   JSONObject jbo = (JSONObject) obj;
+                   String  propertyId = jbo.getString("propertyId");
+                   String propertyValueId = jbo.getString("propertyValueId");
+                   String propertyValue = jbo.getString("propertyValue");
+                   for (ItemNaturePropery naturePropery : itemNatureProperyList) {
+                       if (StringUtils.equals(naturePropery.getPropertyId().toString(),propertyId)){
+                           if (!StringUtils.equals(naturePropery.getPropertyValueId().toString(), propertyValueId)) {
+                               Property property = propertyService.selectOneById(Long.parseLong(propertyId));
+                               PropertyValue propertyValueTemp = propertyValueService.selectByPrimaryKey(naturePropery.getPropertyValueId());
+                               //logMsg2 = logMsg2 + property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";";
+                               logMsg2.append(property.getName() + "由\"" + propertyValueTemp.getValue() + "\"改为\"" + propertyValue + "\";");
+                           }
+                       }
+                   }
+               }
+           }
 
-        JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
-        if (skuArray != null && skuArray.size() > 0) {
-            for (Object obj : skuArray) {
-                JSONObject jbo = (JSONObject) obj;
-                Skus temp = new Skus();
-                String skuCode = jbo.getString("skuCode");
-                if (StringUtils.equals(skuCode, "")) {
-                    //logMsg2 = logMsg2 + "新增了名称为\"" + jbo.getString("skuName") + "\"的sku;";
-                    logMsg2.append("新增了名称为\"" + jbo.getString("skuName") + "\"的sku;");
-                } else {
-                    temp.setSkuCode(skuCode);
-                    Skus orginSkus = skusService.selectOne(temp);
+           JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
+           if (skuArray != null && skuArray.size() > 0) {
+               for (Object obj : skuArray) {
+                   JSONObject jbo = (JSONObject) obj;
+                   Skus temp = new Skus();
+                   String skuCode = jbo.getString("skuCode");
+                   if (StringUtils.equals(skuCode, "")) {
+                       //logMsg2 = logMsg2 + "新增了名称为\"" + jbo.getString("skuName") + "\"的sku;";
+                       logMsg2.append("新增了名称为\"" + jbo.getString("skuName") + "\"的sku;");
+                   } else {
+                       temp.setSkuCode(skuCode);
+                       Skus orginSkus = skusService.selectOne(temp);
 
-                    String orginMarketPrice= orginSkus.getMarketPrice() == null ? "" :String.valueOf(orginSkus.getMarketPrice());
-                    String orginWeight = orginSkus.getWeight() == null ? "" : String.valueOf(orginSkus.getWeight());
+                       String orginMarketPrice= orginSkus.getMarketPrice() == null ? "" :String.valueOf(orginSkus.getMarketPrice());
+                       String orginWeight = orginSkus.getWeight() == null ? "" : String.valueOf(orginSkus.getWeight());
                   /*  String s = String.valueOf(orginSkus.getMarketPrice()/100L);
                     String s2=String.valueOf(orginSkus.getMarketPrice()%100L/10L*0.1d);
                     String s3=String.valueOf(orginSkus.getMarketPrice()%100L/10L/10L*0.01d);
@@ -1027,93 +1027,88 @@ public class GoodsBiz implements IGoodsBiz {
                     String s8 = String.valueOf(Double.parseDouble(jbo.getString("weight2")) *100%100L/10L*0.1d);
                     String s9 = String.valueOf(Double.parseDouble(jbo.getString("weight2"))*100%100L/10L/10L*0.01d);*/
 
-                    String newMarketPrice=jbo.getString("marketPrice2")==null?"":(getLongValue(jbo.getString("marketPrice2")).toString());
-                    String newWeight=jbo.getString("weight2")==null?"":(CommonUtil.getWeightLong(jbo.getString("weight2")).toString());
+                       String newMarketPrice=jbo.getString("marketPrice2")==null?"":(getLongValue(jbo.getString("marketPrice2")).toString());
+                       String newWeight=jbo.getString("weight2")==null?"":(CommonUtil.getWeightLong(jbo.getString("weight2")).toString());
 
-                    if (StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName")) && StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))
-                            && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(orginMarketPrice,newMarketPrice)
-                            && StringUtils.equals(orginWeight, newWeight)) {
-                       logMsg2.append("");
-                    } else {
-                       logMsg2.append(skuCode + ":") ;
-                        if (!StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName"))) {
-                            logMsg2.append("SKU名称由\"" + orginSkus.getSkuName() + "\"改为\"" + jbo.getString("skuName") + "\";") ;
-                        }
-                        if (!StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))) {
-                           logMsg2.append("条形码由\"" + orginSkus.getBarCode() + "\"改为\"" + jbo.getString("barCode") + "\";");
-                        }
-                        if (!StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid"))) {
-                            logMsg2.append("sku状态由\"" + ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName() + "\"改为\"" + ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
-                                    + "\";") ;
-                        }
-                        if (!StringUtils.equals(orginMarketPrice,newMarketPrice)) {
-                            logMsg2.append("参考市场价由\"" +orginMarketPrice==""?"":Double.parseDouble(CommonUtil.fenToYuan(Long.parseLong(orginMarketPrice)).toString()) + "\"改为\"" + jbo.getString("marketPrice2") + "\";");
-                        }
-                        if (!StringUtils.equals(orginWeight, newWeight)) {
-                            logMsg2.append("重量由\"" + orginSkus.getMarketPrice()==""?"":Double.parseDouble(CommonUtil.getWeight(Long.parseLong(orginWeight)).toString()) + "\"改为\"" + jbo.getString("weight2") + "\";");
-                        }
-                        logMsg2.append("<br/>") ;
-                    }
-                }
+                       if (StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName")) && StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))
+                               && StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid")) &&StringUtils.equals(orginMarketPrice,newMarketPrice)
+                               && StringUtils.equals(orginWeight, newWeight)) {
+                           logMsg2.append("");
+                       } else {
+                           logMsg2.append(skuCode + ":") ;
+                           if (!StringUtils.equals(orginSkus.getSkuName(), jbo.getString("skuName"))) {
+                               logMsg2.append("SKU名称由\"" + orginSkus.getSkuName() + "\"改为\"" + jbo.getString("skuName") + "\";") ;
+                           }
+                           if (!StringUtils.equals(orginSkus.getBarCode(), jbo.getString("barCode"))) {
+                               logMsg2.append("条形码由\"" + orginSkus.getBarCode() + "\"改为\"" + jbo.getString("barCode") + "\";");
+                           }
+                           if (!StringUtils.equals(orginSkus.getIsValid(), jbo.getString("isValid"))) {
+                               logMsg2.append("sku状态由\"" + ValidEnum.getValidEnumByCode(orginSkus.getIsValid()).getName() + "\"改为\"" + ValidEnum.getValidEnumByCode(jbo.getString("isValid")).getName()
+                                       + "\";") ;
+                           }
+                           if (!StringUtils.equals(orginMarketPrice,newMarketPrice)) {
+                               logMsg2.append("参考市场价由\"" +orginMarketPrice==""?"":Double.parseDouble(CommonUtil.fenToYuan(Long.parseLong(orginMarketPrice)).toString()) + "\"改为\"" + jbo.getString("marketPrice2") + "\";");
+                           }
+                           if (!StringUtils.equals(orginWeight, newWeight)) {
+                               logMsg2.append("重量由\"" + orginSkus.getMarketPrice()==""?"":Double.parseDouble(CommonUtil.getWeight(Long.parseLong(orginWeight)).toString()) + "\"改为\"" + jbo.getString("weight2") + "\";");
+                           }
+                           logMsg2.append("<br/>") ;
+                       }
+                   }
+               }
+           }
 
-            }
-        }
+           if (!StringUtils.isEmpty(logMsg2)) {
+               logMsg2 = new StringBuilder("商品信息：" ).append(logMsg2.substring(0, logMsg2.lastIndexOf(";")) + "。<br/>");
+           }
 
-        if (!StringUtils.isEmpty(logMsg2)) {
-            logMsg2 = new StringBuilder("商品信息：" ).append(logMsg2.substring(0, logMsg2.lastIndexOf(";")) + "。<br/>");
-        }
+           //记录日志
+           if (StringUtils.equals(logMsg2, "商品信息：")) {
+               logMsg2 = new StringBuilder("");
+           }
+           logMsg = logMsg2.toString() + logMsg;
+           if (!StringUtils.equals(logMsg, "")) {
+               logInfoService.recordLog(items, items.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), logMsg, null);
+           }
+       }catch (Exception e){
+           log.error("日志异常",e);
+           e.printStackTrace();
+       }finally {
+           AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
+           AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
+           AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
+           //用于更新仓库商品信息
+           Map<String, Object> warehouseItemInfoMap = new HashMap<>();
 
+           String userId = aclUserAccreditInfo.getUserId();
+           checkSkuInfo(skus);//检查sku参数
+           //保存sku信息
+           skus.setItemId(items.getId());
+           skus.setSpuCode(items.getSpuCode());
+           List<Skus> updateSkus = updateSkus(skus, userId, warehouseItemInfoMap);
+           //根据sku启停用状态设置商品启停用状态
+           //boolean isValidUpdate = setItemsIsValidBySkuStatus(items);
+           //保存商品基础信息
+           updateItemsBase(items, warehouseItemInfoMap);
+           //保存自然属性信息
+           itemNaturePropery.setItemId(items.getId());
+           itemNaturePropery.setSpuCode(items.getSpuCode());
+           updateItemNatureProperty(itemNaturePropery, items.getCategoryId());
+           //保存采购属性信息
+           updateItemSalesPropery(itemSalesPropery, items.getCategoryId());
+           //商品编辑通知渠道
+           itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.EDIT_ITEMS);
+           //更新仓库商品信息和同步仓库
+           this.updateWarehouseItemInfo(warehouseItemInfoMap, items.getSpuCode());
+           //更新仓库商品启停用状态
+           for (Skus s : updateSkus) {
+               itemsUpdateNoticeWarehouseItemInfo(s, s.getIsValid());
+           }
 
-        AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
-        AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
-        AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
-        //用于更新仓库商品信息
-        Map<String, Object> warehouseItemInfoMap = new HashMap<>();
+           //更新商品同步到企业购
+           updateItemsNotifyToBusinessPurchase(items, updateSkus);
+       }
 
-        String userId = aclUserAccreditInfo.getUserId();
-        checkSkuInfo(skus);//检查sku参数
-        //保存sku信息
-        skus.setItemId(items.getId());
-        skus.setSpuCode(items.getSpuCode());
-        List<Skus> updateSkus = updateSkus(skus, userId, warehouseItemInfoMap);
-        //根据sku启停用状态设置商品启停用状态
-        //boolean isValidUpdate = setItemsIsValidBySkuStatus(items);
-        //保存商品基础信息
-        updateItemsBase(items, warehouseItemInfoMap);
-        //保存自然属性信息
-        itemNaturePropery.setItemId(items.getId());
-        itemNaturePropery.setSpuCode(items.getSpuCode());
-        updateItemNatureProperty(itemNaturePropery, items.getCategoryId());
-        //保存采购属性信息
-        updateItemSalesPropery(itemSalesPropery, items.getCategoryId());
-        //商品编辑通知渠道
-        itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.EDIT_ITEMS);
-        //更新仓库商品信息和同步仓库
-        this.updateWarehouseItemInfo(warehouseItemInfoMap, items.getSpuCode());
-        //更新仓库商品启停用状态
-        for (Skus s : updateSkus) {
-            itemsUpdateNoticeWarehouseItemInfo(s, s.getIsValid());
-        }
-
-
-        //记录日志
-        if (StringUtils.equals(logMsg2, "商品信息：")) {
-            logMsg2 = new StringBuilder("");
-        }
-        logMsg = logMsg2.toString() + logMsg;
-        if (!StringUtils.equals(logMsg, "")) {
-
-            try {
-                logInfoService.recordLog(items, items.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), logMsg, null);
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.error("自采商品：更新商品日志传参异常：{}", e);
-            }
-
-        }
-
-        //更新商品同步到企业购
-        updateItemsNotifyToBusinessPurchase(items, updateSkus);
     }
 
 
@@ -2257,7 +2252,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
         Example example = new Example(ItemGroupUser.class);
-        example.createCriteria().andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode()).andEqualTo("phoneNumber", tempAcl.getPhone());
+        example.createCriteria().andEqualTo("phoneNumber", tempAcl.getPhone());
         List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
         if (!loginPhone.equals(tempAcl.getPhone())) {
             if (list.size() == 0) {
@@ -2271,7 +2266,7 @@ public class GoodsBiz implements IGoodsBiz {
                 for (ItemGroupUser itemGroupUser : list) {
                     String itemGroupCode = itemGroupUser.getItemGroupCode();
                     Example exampleTemp = new Example(ItemGroupUser.class);
-                    exampleTemp.createCriteria().andEqualTo("channelCode", itemGroupUser.getChannelCode()).andEqualTo("itemGroupCode", itemGroupCode);
+                    exampleTemp.createCriteria().andEqualTo("itemGroupCode", itemGroupCode);
                     List<ItemGroupUser> list1 = itemGroupUserService.selectByExample(exampleTemp);
                     List<String> phoneNumberList = list1.stream().map(e -> e.getPhoneNumber()).collect(Collectors.toList());
                     if (!phoneNumberList.contains(loginPhone)) {
