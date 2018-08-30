@@ -99,7 +99,7 @@ public class AfterSaleOrderResource {
 	@GET
 	@Path("/queryAfterSaleOrderPage")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "售后单分页查询", response = AfterSaleOrderVO.class)
+	@ApiOperation(value = "售后单分页查询")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "startDate", value = "创建时间（开始）", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "endDate", value = "创建时间（结束)", paramType = "query", dataType = "String", required = false),
