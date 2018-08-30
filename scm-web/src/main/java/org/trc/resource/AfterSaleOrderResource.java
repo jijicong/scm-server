@@ -11,6 +11,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Component;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
@@ -25,6 +26,7 @@ import org.trc.util.ResultUtil;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 
+@Api(value = "售后单管理")
 @Component
 @Path(SupplyConstants.AfterSaleOrder.AFTER_SALE_ORDER)
 public class AfterSaleOrderResource {
