@@ -16,6 +16,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleOrderForm;
+import org.trc.form.afterSale.AfterSaleOrderVO;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -98,7 +99,7 @@ public class AfterSaleOrderResource {
 	@GET
 	@Path("/queryAfterSaleOrderPage")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "售后单分页查询", response = AfterSaleOrder.class)
+	@ApiOperation(value = "售后单分页查询", response = AfterSaleOrderVO.class)
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "startDate", value = "创建时间（开始）", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "endDate", value = "创建时间（结束)", paramType = "query", dataType = "String", required = false),
@@ -111,7 +112,8 @@ public class AfterSaleOrderResource {
 			@ApiImplicitParam(name = "skuName", value = "sku名称 ", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "skuCode", value = "skuCode ", paramType = "query", dataType = "String", required = false),
 			@ApiImplicitParam(name = "pageNo", value = "页码 ", paramType = "query", dataType = "Integer", required = true),
-			@ApiImplicitParam(name = "pageSize", value = "每页记录条数 ", paramType = "query", dataType = "Integer", required = true)
+			@ApiImplicitParam(name = "pageSize", value = "每页记录条数 ", paramType = "query", dataType = "Integer", required = true),
+			@ApiImplicitParam(name = "start", value = "开始记录行数", paramType = "query", dataType = "Integer", required = true)
 	})
 	public Response queryAfterSaleOrderPage(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext){
 		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.afterSaleOrderPage(form , page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
@@ -126,7 +128,7 @@ public class AfterSaleOrderResource {
 	@GET
 	@Path("/exportAfterSaleOrder")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "售后单导出", response = AfterSaleOrder.class)
+	@ApiOperation(value = "售后单导出")
 	public Response exportAfterSaleOrderVO(@BeanParam AfterSaleOrderForm form, @BeanParam Pagenation<AfterSaleOrder> page, @Context ContainerRequestContext requestContext) throws Exception{
 		return  ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.exportAfterSaleOrderVO(form , page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
@@ -138,7 +140,7 @@ public class AfterSaleOrderResource {
      */ 
 	@GET
 	@Path("checkOrder/{shopOrderCode}")
-	@ApiOperation(value = "检查订单是否可以创建售后单", response = AfterSaleDetailVO.class)
+	@ApiOperation(value = "检查订单是否可以创建售后单")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response orderDetail(@ApiParam(value = "店铺订单编号") @PathParam("shopOrderCode") String shopOrderCode){
 		return ResultUtil.createSuccessResult("售后单详情查询成功", iAfterSaleOrderBiz.checkOrder(shopOrderCode));
