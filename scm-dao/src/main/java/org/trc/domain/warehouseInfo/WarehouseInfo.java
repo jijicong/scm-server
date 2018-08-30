@@ -118,12 +118,15 @@ public class WarehouseInfo extends BaseDO {
 
     @FormParam("isNoticeSuccess")
     private Integer isNoticeSuccess;
-
+    /**
+     * 是否支持退货:0-不支持;1支持
+     */
     @FormParam("isSupportReturn")
     private Integer isSupportReturn;
 
     @FormParam("isNoticeWarehouseItems")
     private String isNoticeWarehouseItems;
+
 
     public Long getId() {
         return id;

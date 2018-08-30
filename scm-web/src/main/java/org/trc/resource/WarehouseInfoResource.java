@@ -59,6 +59,19 @@ public class WarehouseInfoResource {
         return warehouseInfoBiz.selectWarehouseNotInLocation((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
+    /**
+     * @Description: 查询退货仓库名称以及code
+     * @Author: hzluoxingcheng
+     * @Date: 2018/8/30
+     */ 
+    @GET
+    @Path(SupplyConstants.WarehouseInfo.SELECT_RETURN_WAREHOUSE_NAME)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryReturnWarehouseName() throws Exception{
+        logger.info("开始查询退货仓库名称=========》");
+        return warehouseInfoBiz.selectReturnWarehouse();
+    }
+
     @GET
     @Path(SupplyConstants.WarehouseInfo.SELECT_WAREHOUSE_NAME)
     @Produces(MediaType.APPLICATION_JSON)
