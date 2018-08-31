@@ -60,7 +60,7 @@ public class AfterSaleOrderResource {
             @ApiImplicitParam(name = "logisticsCorporationCode", value = "快递公司编码", paramType = "path", dataType = "String", required = true),
             @ApiImplicitParam(name = "logisticsCorporation", value = "快递公司名称", paramType = "path", dataType = "String", required = true),
             @ApiImplicitParam(name = "waybillNumber", value = "运单号", paramType = "path", dataType = "String", required = true),
-            @ApiImplicitParam(name = "afterSaleOrderDetailList", value = "售后单详情 ", paramType = "path", dataType = "List", required = true)
+            @ApiImplicitParam(name = "afterSaleOrderDetailList", value = "售后单详情 ", paramType = "path", dataType = "String", required = true)
     })
 	public Response add(AfterSaleOrderAddDO afterSaleOrderAddDO,@Context ContainerRequestContext requestContext) throws Exception{
 		
