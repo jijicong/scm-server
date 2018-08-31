@@ -72,6 +72,12 @@ public class AfterSaleOrderAddDO {
 	@ApiModelProperty(value="入库仓库地址",required=true)
 	@FormParam("returnAddress")
 	public String returnAddress;
+	/**
+	 * 入库仓名称
+	 */
+	@ApiModelProperty(value="入库仓名称",required=true)
+	@FormParam("warehouseName")
+	public String warehouseName;
 	
 	/**
 	 * 售后单详情
