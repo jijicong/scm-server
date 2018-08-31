@@ -47,7 +47,7 @@ public class AfterSaleOrderResource {
 	 * 增加售后单
 	 * @return
 	 */
-	@GET
+	@POST
 	@Path(SupplyConstants.AfterSaleOrder.ADD)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "增加售后单")
