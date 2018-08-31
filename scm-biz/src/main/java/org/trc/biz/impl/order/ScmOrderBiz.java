@@ -417,9 +417,9 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         OutboundOrder outboundOrder = new OutboundOrder();
         outboundOrder.setShopOrderCode(shopOrderList.get(0).getShopOrderCode());
         outboundOrder.setPlatformOrderCode(shopOrderList.get(0).getPlatformOrderCode());
-        OutboundOrder order = outBoundOrderService.selectOne(outboundOrder);
-        if (order != null && shopOrderList.size() > 0) {
-            shopOrderList.get(0).setWaybillNumber(order.getWaybillNumber());
+        List<OutboundOrder> outboundOrders = outBoundOrderService.select(outboundOrder);
+        if (!CollectionUtils.isEmpty(outboundOrders) && shopOrderList.size() > 0) {
+            shopOrderList.get(0).setWaybillNumber(outboundOrders.get(0).getWaybillNumber());
         }
         return shopOrderList;
     }
