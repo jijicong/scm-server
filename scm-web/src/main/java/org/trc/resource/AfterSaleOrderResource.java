@@ -76,7 +76,7 @@ public class AfterSaleOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "查询快递公司列表")
 	public Response selectLogisticsCompany() throws Exception{
-		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectLogisticsCompany());
+		return ResultUtil.createSuccessResult("查询成功",iAfterSaleOrderBiz.selectLogisticsCompany());
 	}
 	
 	/**
@@ -87,7 +87,7 @@ public class AfterSaleOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "查询入库仓库")
 	public Response selectWarehouse() throws Exception{
-		return ResultUtil.createSuccessPageResult(iAfterSaleOrderBiz.selectWarehouse());
+		return ResultUtil.createSuccessResult("查询成功",iAfterSaleOrderBiz.selectWarehouse());
 	}
 
 	/**
