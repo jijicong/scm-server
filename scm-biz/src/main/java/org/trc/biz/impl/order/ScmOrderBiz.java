@@ -5716,7 +5716,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
         for(WarehousePriority priority: warehousePriorityList){
             for(ScmInventoryQueryResponse response: inventoryQueryItemList){
-                if(StringUtils.equals(priority.getWmsWarehouseCode(), response.getWarehouseCode())||StringUtils.equals(priority.getWarehouseCode(), response.getWarehouseCode())){
+                if(StringUtils.equals(priority.getWarehouseCode(), response.getLocalWarehouseCode())){
                     _inventoryQueryItemList.add(response);
                     break;
                 }
