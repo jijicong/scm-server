@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.afterSale.IAfterSaleOrderTabBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleOrder;
+import org.trc.form.afterSale.AfterSaleDetailTabVO;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 import org.trc.util.ResultUtil;
@@ -34,7 +35,7 @@ public class AfterSaleOrderTabResource {
     @GET
     @Path(SupplyConstants.AfterSaleOrder.AFTER_SALE_TAB + "/{scmShopOrderCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "根据店铺订单号,查询售后Tab")
+    @ApiOperation(value = "根据店铺订单号,查询售后Tab",response = AfterSaleDetailTabVO.class)
     public Response selectAfterSaleInfo(@ApiParam(value = "主系统订单号") @PathParam("scmShopOrderCode") String scmShopOrderCode, @BeanParam QueryModel form, @BeanParam Pagenation<AfterSaleOrder> page) throws Exception {
         return ResultUtil.createSuccessPageResult(afterSaleOrderTabBiz.queryAfterSaleOrderTabPage(scmShopOrderCode,form,page));
     }
