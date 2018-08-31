@@ -20,7 +20,7 @@ public class AfterSaleOrderItemVO extends OrderItem{
 	 * 可退款数量
 	 */
 	@ApiModelProperty(value="可退数量")
-	@FormParam("shopOrderCode")
-	public int canRefundNum;
+	@FormParam("maxRefundNum")
+	public int maxRefundNum;
 	
 }

@@ -110,7 +110,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			//下单的数量-退货数量
 			int orderNum=orderItem.getNum();
 			int refundNum=getAlreadyRefundNum(orderItem);
-			vo.setCanRefundNum(orderNum-refundNum);
+			vo.setMaxRefundNum(orderNum-refundNum);
 			afterSaleOrderItemVOList.add(vo);
 		}
 		return afterSaleOrderItemVOList;
@@ -224,7 +224,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
 		afterSaleOrderDetail.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
 		afterSaleOrderDetail.setPicture(orderItem.getPicPath());
-		afterSaleOrderDetail.setDeliverWarehouseCode(afterSaleOrderDetailDO.getDeliverWarehouseCode());
+//		afterSaleOrderDetail.setDeliverWarehouseCode(afterSaleOrderDetailDO.getDeliverWarehouseCode());
+//		afterSaleOrderDetail.setDeliverWarehouseName(deliverWarehouseName);
 		afterSaleOrderDetail.setCreateTime(new Date());
 		afterSaleOrderDetail.setUpdateTime(new Date());
 		return afterSaleOrderDetail;
