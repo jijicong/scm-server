@@ -1,7 +1,7 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -15,7 +15,6 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.form.afterSale.AfterSaleDetailTabVO;
 import org.trc.form.warehouseInfo.*;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -30,6 +29,7 @@ import java.io.InputStream;
 /**
  * Created by wangyz on 2017/11/15.
  */
+@Api(value = "仓库管理")
 @Component
 @Path(SupplyConstants.WarehouseInfo.ROOT)
 public class WarehouseInfoResource {
