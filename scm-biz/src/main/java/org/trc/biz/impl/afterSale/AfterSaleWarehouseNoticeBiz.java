@@ -87,7 +87,6 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
 		//查询退货入库单
 		AfterSaleWarehouseNotice selectNotice=new AfterSaleWarehouseNotice();
 		selectNotice.setWarehouseNoticeCode(warehouseNoticeCode);
-		selectNotice.setShopId(null);
 		AfterSaleWarehouseNotice afterSaleWarehouseNotice=afterSaleWarehouseNoticeService.selectOne(selectNotice);
 		AssertUtil.notNull(afterSaleWarehouseNotice, "根据该退货入库单号"+warehouseNoticeCode+"查询结果为空!");
 		

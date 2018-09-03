@@ -665,11 +665,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		criteria.andEqualTo("shopOrderCode", shopOrderCode);
 		List<String> statusList = Lists.newArrayList();
 		//待发货
-		statusList.add(SupplierOrderStatusEnum.STATUS_1.getCode());
+		statusList.add("1");
 		//部分发货
-		statusList.add(SupplierOrderStatusEnum.STATUS_2.getCode());
+		statusList.add("2");
 		//全部发货
-		statusList.add(SupplierOrderStatusEnum.STATUS_3.getCode());
+		statusList.add("3");
 		criteria.andIn("supplierOrderStatus",statusList);
 		//业务线
 		criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());

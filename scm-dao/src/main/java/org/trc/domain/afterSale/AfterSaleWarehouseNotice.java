@@ -89,7 +89,7 @@ public class AfterSaleWarehouseNotice implements Serializable {
     @ApiModelProperty(value="店铺id")
 	@FormParam("shopId")
 	@Column(name="shop_id")
-	private Long shopId;
+	private long shopId;
     /**
      * 入库仓库编号
      */
