@@ -7,9 +7,8 @@ public class AfterSaleOrderEnum {
 		
 		STATUS_0(0,"待客户发货"),
 		STATUS_1(1,"客户已经发货"),
-		STATUS_2(2,"待分配仓库"),
-		STATUS_3(3,"已经完成"),
-		STATUS_4(4,"已经取消");
+		STATUS_3(2,"已经完成"),
+		STATUS_4(3,"已经取消");
 
 		private int code;
 		private String name;

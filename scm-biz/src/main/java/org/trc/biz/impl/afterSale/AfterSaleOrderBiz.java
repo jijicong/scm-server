@@ -1,6 +1,5 @@
 package org.trc.biz.impl.afterSale;
 
-import com.alibaba.druid.sql.ast.expr.SQLCaseExpr.Item;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +29,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.SupplierOrderStatusEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.afterSale.*;
@@ -40,9 +40,6 @@ import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
 import org.trc.service.category.IBrandService;
-import org.trc.service.impl.AfterSale.AfterSaleWarehouseNoticeService;
-import org.trc.service.impl.goods.ItemsService;
-import org.trc.service.impl.order.WarehouseOrderService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.order.IOrderItemService;
@@ -384,7 +381,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//客户姓名
 		String receiverName = form.getReceiverName();
 		//会员名
-		String userName = form.getUserName();
+		//String userName = form.getUserName();
 		//客户电话
         String receiverPhone = form.getReceiverPhone();
 		//售后单状态
@@ -400,7 +397,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		Set<String> afterSaleCodeSet = new HashSet<>();
 		boolean  cildSearchFlag = false;
 		if(StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(skuCode)){
-			afterSaleOrderDetailForm.setSkuCode(skuCode);
+			afterSaleOrderDetailForm.setSkuCode(skuName);
 			afterSaleOrderDetailForm.setSkuCode(skuCode);
 			detailList = afterSaleOrderDetailBiz.queryListByCondition(afterSaleOrderDetailForm);
 			if(Objects.equals(null,detailList) || detailList.isEmpty()){
@@ -453,6 +450,14 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//售后单状态
 		if(!Objects.equals(null,status) && status!=-1 ){
 			criteria.andEqualTo("status",status);
+		}
+		//客户姓名
+		if(StringUtils.isNotBlank(receiverName)){
+			criteria.andEqualTo("receiverName",receiverName);
+		}
+		//客户电话
+		if(StringUtils.isNotBlank(receiverPhone)){
+			criteria.andEqualTo("receiverPhone",receiverPhone);
 		}
 		//按创建时间倒叙排序
 		example.orderBy("createTime").desc();
@@ -654,18 +659,20 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
      * @Date: 2018/8/30
      */ 
 	@Override
-	public boolean checkOrder(String shopOrderCode) {
+	public boolean checkOrder(String shopOrderCode,AclUserAccreditInfo aclUserAccreditInfo) {
 		Example example = new Example(ShopOrder.class);
 		Example.Criteria criteria = example.createCriteria();
 		criteria.andEqualTo("shopOrderCode", shopOrderCode);
 		List<String> statusList = Lists.newArrayList();
 		//待发货
-		statusList.add("1");
+		statusList.add(SupplierOrderStatusEnum.STATUS_1.getCode());
 		//部分发货
-		statusList.add("2");
+		statusList.add(SupplierOrderStatusEnum.STATUS_2.getCode());
 		//全部发货
-		statusList.add("3");
+		statusList.add(SupplierOrderStatusEnum.STATUS_3.getCode());
 		criteria.andIn("supplierOrderStatus",statusList);
+		//业务线
+		criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
 		List<ShopOrder>  orderList = shopOrderService.selectByExample(example);
 		if(!Objects.equals(null,orderList) && !orderList.isEmpty()){
 			return true;

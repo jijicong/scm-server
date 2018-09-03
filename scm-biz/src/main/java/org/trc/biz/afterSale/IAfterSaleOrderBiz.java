@@ -46,7 +46,7 @@ public interface IAfterSaleOrderBiz {
 	 * @Author: hzluoxingcheng
 	 * @Date: 2018/8/30
 	 */ 
-	public boolean checkOrder(String shopOrderCode);
+	public boolean checkOrder(String shopOrderCode,AclUserAccreditInfo aclUserAccreditInfo );
 
 
 }

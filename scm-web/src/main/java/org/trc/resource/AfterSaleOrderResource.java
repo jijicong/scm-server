@@ -142,8 +142,8 @@ public class AfterSaleOrderResource {
 	@Path("checkOrder/{shopOrderCode}")
 	@ApiOperation(value = "检查订单是否可以创建售后单")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response orderDetail(@ApiParam(value = "店铺订单编号") @PathParam("shopOrderCode") String shopOrderCode){
-		return ResultUtil.createSuccessResult("售后单详情查询成功", iAfterSaleOrderBiz.checkOrder(shopOrderCode));
+	public Response orderDetail(@ApiParam(value = "店铺订单编号") @PathParam("shopOrderCode") String shopOrderCode,@Context ContainerRequestContext requestContext) throws Exception{
+		return ResultUtil.createSuccessResult("售后单详情查询成功", iAfterSaleOrderBiz.checkOrder(shopOrderCode,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
 
 
