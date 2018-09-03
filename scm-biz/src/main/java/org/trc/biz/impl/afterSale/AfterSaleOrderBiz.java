@@ -115,7 +115,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	public List<AfterSaleOrderItemVO> selectAfterSaleInfo(String scmShopOrderCode) throws Exception{
 		//根据订单号查询子订单信息
 		OrderItem selectOrderItem = new OrderItem();
-		selectOrderItem.setShopOrderCode(scmShopOrderCode);
+		selectOrderItem.setScmShopOrderCode(scmShopOrderCode);
 		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
 		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
 
