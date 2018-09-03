@@ -35,6 +35,7 @@ public class TransfAfterSaleOrderVO {
             detailvoMap.put(afterSaleCode,list);
         }
         AfterSaleOrderVO afterSaleOrderVO = new AfterSaleOrderVO();
+        //主键
         afterSaleOrderVO.setId(afterSaleOrder.getId());
         //创建时间
         afterSaleOrderVO.setCreateTime(afterSaleOrder.getCreateTime());
