@@ -79,6 +79,8 @@ public class SupplyConstants {
         public static final String JD_LOGISTICS = "jdLogistics";//获取京东物流信息
 
         public static final String SUPPLIER_LIST = "supplierList";//供应商分页查询
+
+        public static final String RETURN_WAREHOUSE= "returnWarehouseQuery";//供应商分页查询
     }
 
     /**

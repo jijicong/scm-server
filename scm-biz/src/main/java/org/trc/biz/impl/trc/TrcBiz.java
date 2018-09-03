@@ -133,6 +133,7 @@ public class TrcBiz implements ITrcBiz {
     private IWarehouseExtService warehouseExtService;
 
 
+
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public void addRequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime, String remark) throws Exception {
@@ -2182,12 +2183,17 @@ public class TrcBiz implements ITrcBiz {
         return externalItemSkuList;
     }
 
-
-
-
-
-
-
+    @Override
+    public List<WarehouseInfo> returnWarehouseQuery() {
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isSupportReturn", ZeroToNineEnum.ONE.getCode());
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
+        if (!AssertUtil.collectionIsEmpty(warehouseInfoList)){
+            return warehouseInfoList;
+        }
+        return new ArrayList<>();
+    }
 
 
 }
