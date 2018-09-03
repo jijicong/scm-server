@@ -213,6 +213,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNoticeDetail.setPicture(orderItem.getPicPath());
 		afterSaleWarehouseNoticeDetail.setCreateTime(new Date());
 		afterSaleWarehouseNoticeDetail.setUpdateTime(new Date());
+		afterSaleWarehouseNoticeDetail.setBrandName(getBrandName(orderItem.getSpuCode()));
 		afterSaleWarehouseNoticeDetailService.insert(afterSaleWarehouseNoticeDetail);
 	}
 
