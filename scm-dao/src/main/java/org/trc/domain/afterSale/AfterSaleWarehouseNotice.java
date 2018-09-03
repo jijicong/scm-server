@@ -77,6 +77,20 @@ public class AfterSaleWarehouseNotice implements Serializable {
 	@Column(name="sell_code")
 	private String sellCode;
     /**
+     * 店铺名称
+     */
+    @ApiModelProperty(value="店铺名称")
+	@FormParam("shopName")
+	@Column(name="shop_name")
+	private String shopName;
+    /**
+     * 店铺id
+     */
+    @ApiModelProperty(value="店铺id")
+	@FormParam("shopId")
+	@Column(name="shop_id")
+	private long shopId;
+    /**
      * 入库仓库编号
      */
     @ApiModelProperty(value="入库仓库编号")
@@ -216,6 +230,18 @@ public class AfterSaleWarehouseNotice implements Serializable {
 	@FormParam("operator")
 	private String operator;
     
+    /**
+     * 理货结果录入备注
+     */
+    @ApiModelProperty(value="理货结果录入备注")
+	@FormParam("record_remark")
+	private String recordRemark;
+    /**
+     * 确认到货备注
+     */
+    @ApiModelProperty(value="确认到货备注")
+	@FormParam("confirm_remark")
+	private String confirmRemark;
     /**
      * 备注
      */

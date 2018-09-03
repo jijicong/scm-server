@@ -2188,6 +2188,7 @@ public class TrcBiz implements ITrcBiz {
         Example example = new Example(WarehouseInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isSupportReturn", ZeroToNineEnum.ONE.getCode());
+        criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
         List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(warehouseInfoList)){
             return warehouseInfoList;

@@ -1,5 +1,6 @@
 package org.trc.biz.impl.afterSale;
 
+import com.alibaba.druid.sql.ast.expr.SQLCaseExpr.Item;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -17,12 +18,14 @@ import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.domain.afterSale.AfterSaleWarehouseNoticeDetail;
+import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
+import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
@@ -36,11 +39,16 @@ import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
+import org.trc.service.category.IBrandService;
 import org.trc.service.impl.AfterSale.AfterSaleWarehouseNoticeService;
+import org.trc.service.impl.goods.ItemsService;
+import org.trc.service.impl.order.WarehouseOrderService;
+import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
+import org.trc.service.order.IWarehouseOrderService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
@@ -80,6 +88,12 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IAfterSaleWarehouseNoticeService  afterSaleWarehouseNoticeService;
 	@Resource
 	private IAfterSaleWarehouseNoticeDetailService  afterSaleWarehouseNoticeDetailService;
+	@Resource
+	private IItemsService itemsService;
+	@Resource
+	private IBrandService brandService;
+	@Resource
+	private IWarehouseOrderService warehouseOrderService;
 
 	@Autowired
 	private IGoodsBiz goodsBiz;
@@ -98,10 +112,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private static final String AFTER_SALE_WAREHOUSE_NOTICE_DETAIL_ID="AFTERWN-";
 
 	@Override
-	public List<AfterSaleOrderItemVO> selectAfterSaleInfo(String shopOrderCode) throws Exception{
+	public List<AfterSaleOrderItemVO> selectAfterSaleInfo(String scmShopOrderCode) throws Exception{
 		//根据订单号查询子订单信息
 		OrderItem selectOrderItem = new OrderItem();
-		selectOrderItem.setShopOrderCode(shopOrderCode);
+		selectOrderItem.setScmShopOrderCode(scmShopOrderCode);
 		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
 		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
 
@@ -143,11 +157,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 	@Override
 	public void addAfterSaleOrder(AfterSaleOrderAddDO afterSaleOrderAddDO,AclUserAccreditInfo aclUserAccreditInfo) {
-		String shopOrderCode=afterSaleOrderAddDO.getShopOrderCode();
+		String scmShopOrderCode=afterSaleOrderAddDO.getScmShopOrderCode();
 		ShopOrder shopOrderselect=new ShopOrder();
-		shopOrderselect.setShopOrderCode(shopOrderCode);
+		shopOrderselect.setScmShopOrderCode(scmShopOrderCode);
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
-		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
+		AssertUtil.notNull(shopOrder, "根据该订单号"+scmShopOrderCode+"查询到的订单为空!");
 
 
 		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH,
@@ -168,7 +182,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
 
 			OrderItem orderItemSelect=new OrderItem();
-			orderItemSelect.setShopOrderCode(shopOrderCode);
+			orderItemSelect.setScmShopOrderCode(scmShopOrderCode);
 			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
 			//售后单子单
@@ -199,6 +213,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNoticeDetail.setPicture(orderItem.getPicPath());
 		afterSaleWarehouseNoticeDetail.setCreateTime(new Date());
 		afterSaleWarehouseNoticeDetail.setUpdateTime(new Date());
+		afterSaleWarehouseNoticeDetail.setBrandName(getBrandName(orderItem.getSpuCode()));
 		afterSaleWarehouseNoticeDetailService.insert(afterSaleWarehouseNoticeDetail);
 	}
 
@@ -211,9 +226,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderDetail.setAfterSaleCode(afterSaleCode);
 		afterSaleOrderDetail.setShopOrderCode(orderItem.getShopOrderCode());
 		afterSaleOrderDetail.setScmShopOrderCode(orderItem.getScmShopOrderCode());
-		
-		//afterSaleOrderDetail.setBrandName(getBrandName(orderItem));
-		//brandName
+		afterSaleOrderDetail.setBrandName(getBrandName(orderItem.getSpuCode()));
 		afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
 		afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
 		afterSaleOrderDetail.setSkuName(orderItem.getItemName());
@@ -224,11 +237,31 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
 		afterSaleOrderDetail.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
 		afterSaleOrderDetail.setPicture(orderItem.getPicPath());
-//		afterSaleOrderDetail.setDeliverWarehouseCode(afterSaleOrderDetailDO.getDeliverWarehouseCode());
-//		afterSaleOrderDetail.setDeliverWarehouseName(deliverWarehouseName);
+		WarehouseOrder warehouseOrder=getWarehouseOrder(orderItem.getWarehouseOrderCode());
+		afterSaleOrderDetail.setDeliverWarehouseCode(warehouseOrder.getWarehouseCode());
+		afterSaleOrderDetail.setDeliverWarehouseName(warehouseOrder.getWarehouseName());
 		afterSaleOrderDetail.setCreateTime(new Date());
 		afterSaleOrderDetail.setUpdateTime(new Date());
 		afterSaleOrderDetailService.insert(afterSaleOrderDetail);
+	}
+
+	private WarehouseOrder getWarehouseOrder(String warehouseOrderCode) {
+		WarehouseOrder select=new WarehouseOrder();
+		select.setWarehouseOrderCode(warehouseOrderCode);
+		return warehouseOrderService.selectOne(select);
+	}
+
+	/**
+	 * 根据spuCode获取brandName
+	 */
+	private String getBrandName(String spuCode) {
+		Items selectItems=new Items();
+		selectItems.setSpuCode(spuCode);
+		Items items=itemsService.selectOne(selectItems);
+		
+		Brand selectBrand=new Brand();
+		selectBrand.setId(items.getBrandId());
+		return brandService.selectOne(selectBrand).getName();
 	}
 
 	private AfterSaleWarehouseNotice getAfterSaleWarehouseNotice(String afterSaleCode, String warehouseNoticeCode,
@@ -243,6 +276,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNotice.setShopOrderCode(shopOrder.getShopOrderCode());
 		afterSaleWarehouseNotice.setChannelCode(shopOrder.getChannelCode());
 		afterSaleWarehouseNotice.setSellCode(shopOrder.getSellCode());
+		afterSaleWarehouseNotice.setShopName(shopOrder.getShopName());
+		afterSaleWarehouseNotice.setShopId(shopOrder.getShopId());
 		afterSaleWarehouseNotice.setWarehouseName(afterSaleOrderAddDO.getWarehouseName());
 		afterSaleWarehouseNotice.setWarehouseCode(afterSaleOrderAddDO.getReturnWarehouseCode());
 		WarehouseInfo selectWarehouse=new WarehouseInfo();
@@ -412,7 +447,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			criteria.andIn("shopOrderCode",afterSaleCodeSet);
 		}
 		//售后单状态
-		if(!Objects.equals(null,status)){
+		if(!Objects.equals(null,status) && status!=-1 ){
 			criteria.andEqualTo("status",status);
 		}
 		//按创建时间倒叙排序

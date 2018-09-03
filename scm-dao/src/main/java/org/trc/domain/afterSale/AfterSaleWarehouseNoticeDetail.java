@@ -70,6 +70,13 @@ public class AfterSaleWarehouseNoticeDetail implements Serializable {
     @FormParam("skuName")
 	private String skuName;
 	/**
+     * 商品品牌
+     */
+    @ApiModelProperty(value="商品品牌")
+	@Column(name="brand_name")
+    @FormParam("brandName")
+	private String brandName;
+    /**
      * 条形码
      */
     @ApiModelProperty(value="条形码")
