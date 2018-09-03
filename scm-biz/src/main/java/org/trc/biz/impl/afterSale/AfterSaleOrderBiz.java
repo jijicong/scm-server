@@ -275,6 +275,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNotice.setShopOrderCode(shopOrder.getShopOrderCode());
 		afterSaleWarehouseNotice.setChannelCode(shopOrder.getChannelCode());
 		afterSaleWarehouseNotice.setSellCode(shopOrder.getSellCode());
+		afterSaleWarehouseNotice.setShopName(shopOrder.getShopName());
+		afterSaleWarehouseNotice.setShopId(shopOrder.getShopId());
 		afterSaleWarehouseNotice.setWarehouseName(afterSaleOrderAddDO.getWarehouseName());
 		afterSaleWarehouseNotice.setWarehouseCode(afterSaleOrderAddDO.getReturnWarehouseCode());
 		WarehouseInfo selectWarehouse=new WarehouseInfo();
