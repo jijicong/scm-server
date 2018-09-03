@@ -161,10 +161,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单为空!");
-//		//售后单详情
-//		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
-//		//退货入库单详情
-//		List<AfterSaleWarehouseNoticeDetail> noticeDetailList=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
 
 			OrderItem orderItemSelect=new OrderItem();
@@ -173,16 +169,12 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
 			//售后单子单
 			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
-			//detailList.add(afterSaleOrderDetail);
 			//退货入库单子单
 			getAfterSaleWarehouseNoticeDetail(orderItem,warehouseNoticeCode);
-			//noticeDetailList.add(afterSaleWarehouseNoticeDetail);
 		}
 
 		afterSaleOrderService.insert(afterSaleOrder);
-	//	afterSaleOrderDetailService.insertList(detailList);
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
-		//afterSaleWarehouseNoticeDetailService.insertList(noticeDetailList);
 		
 		
 	}

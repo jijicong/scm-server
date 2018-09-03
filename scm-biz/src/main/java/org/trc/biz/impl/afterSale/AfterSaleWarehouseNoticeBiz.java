@@ -43,37 +43,39 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
         if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
             criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
         }
-        //创建时间开始
-        if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getCreateTimeStart())) {
-        	Date startDate=DateUtils.stringToDate(afterSaleWarehouseNoticeDO.getCreateTimeStart()+" 00:00:00", "yyyy-MM-dd HH:mm:ss") ;
-        	criteria.andGreaterThan("createTime", startDate);
-        }
-        //创建时间结束
-        if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getCreateTimeEnd())) {
-        	Date endDate=DateUtils.stringToDate(afterSaleWarehouseNoticeDO.getCreateTimeEnd()+" 23:59:59", "yyyy-MM-dd HH:mm:ss") ;
-        	criteria.andLessThan("createTime", endDate);
-         }
+        if(afterSaleWarehouseNoticeDO!=null) {
+        	//创建时间开始
+            if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getCreateTimeStart())) {
+            	Date startDate=DateUtils.stringToDate(afterSaleWarehouseNoticeDO.getCreateTimeStart()+" 00:00:00", "yyyy-MM-dd HH:mm:ss") ;
+            	criteria.andGreaterThan("createTime", startDate);
+            }
+            //创建时间结束
+            if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getCreateTimeEnd())) {
+            	Date endDate=DateUtils.stringToDate(afterSaleWarehouseNoticeDO.getCreateTimeEnd()+" 23:59:59", "yyyy-MM-dd HH:mm:ss") ;
+            	criteria.andLessThan("createTime", endDate);
+             }
 
-        //入库单编号   
-        if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getWarehouseNoticeCode())) {
-        	criteria.andLike("warehouseNoticeCode", "%" + afterSaleWarehouseNoticeDO.getWarehouseNoticeCode() + "%");
-        }
-        //售后单编号
-        if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getAfterSaleCode())) {
-            criteria.andLike("afterSaleCode", "%" + afterSaleWarehouseNoticeDO.getAfterSaleCode() + "%");
-        }
-        //订单编号 
-        if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getShopOrderCode())) {
-        	criteria.andLike("shopOrderCode", "%" + afterSaleWarehouseNoticeDO.getShopOrderCode() + "%");
-        }
-        //入库仓库编码 warehouseCode
-        if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getWarehouseCode())) {
-        	criteria.andEqualTo("warehouseCode", afterSaleWarehouseNoticeDO.getWarehouseCode());
-        }
-        
-        //操作人
-        if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getOperator())) {
-        	criteria.andLike("operator", "%" + afterSaleWarehouseNoticeDO.getOperator() + "%");
+            //入库单编号   
+            if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getWarehouseNoticeCode())) {
+            	criteria.andLike("warehouseNoticeCode", "%" + afterSaleWarehouseNoticeDO.getWarehouseNoticeCode() + "%");
+            }
+            //售后单编号
+            if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getAfterSaleCode())) {
+                criteria.andLike("afterSaleCode", "%" + afterSaleWarehouseNoticeDO.getAfterSaleCode() + "%");
+            }
+            //订单编号 
+            if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getShopOrderCode())) {
+            	criteria.andLike("shopOrderCode", "%" + afterSaleWarehouseNoticeDO.getShopOrderCode() + "%");
+            }
+            //入库仓库编码 warehouseCode
+            if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getWarehouseCode())) {
+            	criteria.andEqualTo("warehouseCode", afterSaleWarehouseNoticeDO.getWarehouseCode());
+            }
+            
+            //操作人
+            if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getOperator())) {
+            	criteria.andLike("operator", "%" + afterSaleWarehouseNoticeDO.getOperator() + "%");
+            }
         }
         example.orderBy("createTime").desc();
         return afterSaleWarehouseNoticeService.pagination(example, page, new QueryModel());
