@@ -447,7 +447,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			criteria.andIn("shopOrderCode",afterSaleCodeSet);
 		}
 		//售后单状态
-		if(!Objects.equals(null,status)){
+		if(!Objects.equals(null,status) && status!=-1 ){
 			criteria.andEqualTo("status",status);
 		}
 		//按创建时间倒叙排序
