@@ -54,6 +54,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 
+import static org.trc.biz.impl.jingdong.JingDongBizImpl.EXCEL;
+
 
 @Service("afterSaleOrderBiz")
 public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
@@ -524,7 +526,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			cellDefinitionList.add(deliverWarehouseName);
 
 		    String sheetName = "售后单数据";
-			String fileName = "售后单数据" + ".EXCEL";
+			String fileName = "售后单数据"+ EXCEL;
 			try {
 				fileName = URLEncoder.encode(fileName, "UTF-8");
 			} catch (UnsupportedEncodingException e1) {
