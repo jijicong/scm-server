@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface IAfterSaleOrderBiz {
 
-	List<AfterSaleOrderItemVO> selectAfterSaleInfo(String shopOrderCode) throws Exception;
+	List<AfterSaleOrderItemVO> selectAfterSaleInfo(String scmShopOrderCode) throws Exception;
 
 	void addAfterSaleOrder(AfterSaleOrderAddDO afterSaleOrderAddDO,AclUserAccreditInfo aclUserAccreditInfo);
 

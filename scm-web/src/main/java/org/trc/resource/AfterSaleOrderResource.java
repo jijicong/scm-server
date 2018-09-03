@@ -38,10 +38,10 @@ public class AfterSaleOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "根据订单号 查询售后单信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "shopOrderCode", value = "订单号", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "scmShopOrderCode", value = "订单号", paramType = "path", dataType = "String", required = true),
     })
-	public Response selectAfterSaleInfo(@QueryParam("shopOrderCode") String shopOrderCode) throws Exception{
-		return ResultUtil.createSuccessResult("查询成功",iAfterSaleOrderBiz.selectAfterSaleInfo(shopOrderCode));
+	public Response selectAfterSaleInfo(@QueryParam("scmShopOrderCode") String scmShopOrderCode) throws Exception{
+		return ResultUtil.createSuccessResult("查询成功",iAfterSaleOrderBiz.selectAfterSaleInfo(scmShopOrderCode));
 	}
 	
 	/**
@@ -53,7 +53,7 @@ public class AfterSaleOrderResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "增加售后单")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "shopOrderCode", value = "订单号", paramType = "path", dataType = "String", required = true),
+            @ApiImplicitParam(name = "scmShopOrderCode", value = "订单号", paramType = "path", dataType = "String", required = true),
             @ApiImplicitParam(name = "picture", value = "商铺图片路径（多个图片用逗号分隔开）", paramType = "path", dataType = "String", required = true),
             @ApiImplicitParam(name = "memo", value = "备注", paramType = "path", dataType = "String", required = true),
             @ApiImplicitParam(name = "returnWarehouseCode", value = "退货收货仓库编码", paramType = "path", dataType = "String", required = true),

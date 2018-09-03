@@ -18,11 +18,11 @@ public class AfterSaleOrderAddDO {
 
 
 	/**
-	 * 订单号
+	 * 系统订单号
 	 */
-	@ApiModelProperty(value="采购退货单编号",required=true)
-	@FormParam("shopOrderCode")
-	public String shopOrderCode;
+	@ApiModelProperty(value="系统订单号",required=true)
+	@FormParam("scmShopOrderCode")
+	public String scmShopOrderCode;
 	
 	/**
 	 * 图片路劲
