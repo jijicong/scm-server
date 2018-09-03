@@ -35,6 +35,7 @@ public class TransfAfterSaleOrderVO {
             detailvoMap.put(afterSaleCode,list);
         }
         AfterSaleOrderVO afterSaleOrderVO = new AfterSaleOrderVO();
+        //主键
         afterSaleOrderVO.setId(afterSaleOrder.getId());
         //创建时间
         afterSaleOrderVO.setCreateTime(afterSaleOrder.getCreateTime());
@@ -57,7 +58,12 @@ public class TransfAfterSaleOrderVO {
         //售后单状态
         afterSaleOrderVO.setStatus(afterSaleOrder.getStatus());
         //售后单子表列表
-        afterSaleOrderVO.setAfterSaleOrderDetailVOList(detailvoMap.get(afterSaleOrder.getAfterSaleCode()));
+        List<AfterSaleOrderDetailVO> list = detailvoMap.get(afterSaleOrder.getAfterSaleCode());
+        if(!Objects.equals(null,list) && !list.isEmpty()){
+            afterSaleOrderVO.setAfterSaleOrderDetailVOList(list);
+        }else{
+            return null;
+        }
         if(!Objects.equals(null,sellChannel)){
             //渠道名称
             afterSaleOrderVO.setSellCodeName(sellChannel.getSellName());
