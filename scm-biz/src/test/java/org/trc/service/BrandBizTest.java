@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.domain.category.Brand;
+import org.trc.enums.SupplierOrderStatusEnum;
 import org.trc.form.category.BrandForm;
 import org.trc.util.Pagenation;
 import org.trc.util.TransportClientUtil;
