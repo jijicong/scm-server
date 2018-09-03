@@ -6,6 +6,7 @@ import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
@@ -195,4 +196,9 @@ public interface ITrcBiz {
      */
     List<ExternalItemSku> getExternalSkuInformation(String skuCode, String channelCode);
 
+    /**
+     * 退货仓库查询
+     * @return
+     */
+    List<WarehouseInfo> returnWarehouseQuery();
 }

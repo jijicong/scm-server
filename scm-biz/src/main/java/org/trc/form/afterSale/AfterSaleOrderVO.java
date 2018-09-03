@@ -84,10 +84,6 @@ public class AfterSaleOrderVO {
     @ApiModelProperty("退货收货仓库名称")
     private String returnWarehouseName;
 
-
-
-
-
     /**
      * 售后单子表列表
      */

@@ -63,6 +63,9 @@ public class AfterSaleOrderDetailVO {
     @ApiModelProperty("发货仓库名称")
     private String deliverWarehouseName;
 
+    @ApiModelProperty("sku图片地址")
+    private String picture;
+
 
 
 }

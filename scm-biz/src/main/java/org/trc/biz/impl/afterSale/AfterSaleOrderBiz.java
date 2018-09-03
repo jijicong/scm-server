@@ -489,7 +489,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			sellChannel.setSellCode(asd.getSellCode());
 			sellChannel = sellChannelService.selectOne(sellChannel);
 			AfterSaleOrderVO newvo = TransfAfterSaleOrderVO.getAfterSaleOrderVO(asd,searWarehouseInfo,detailVOList,sellChannel);
-			newResult.add(newvo);
+			if(!Objects.equals(null,newvo)){
+                newResult.add(newvo);
+            }
 		}
 		Pagenation<AfterSaleOrderVO> pvo = new Pagenation<AfterSaleOrderVO>();
 		BeanUtils.copyProperties(page,pvo);

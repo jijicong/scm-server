@@ -344,6 +344,17 @@ public class TaiRanResource {
         return scmOrderBiz.getJDLogistics(channelCode, shopOrderCode);
     }
 
+    /**
+     * 查询退货仓库列表
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.TaiRan.RETURN_WAREHOUSE)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<List<SupplyConstants.WarehouseInfo>> returnWarehouseQuery() throws Exception {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "查询退货仓库成功", trcBiz.returnWarehouseQuery());
+    }
 
 }
 
