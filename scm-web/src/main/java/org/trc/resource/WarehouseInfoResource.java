@@ -1,7 +1,8 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -14,13 +15,7 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.form.UploadResponse;
 import org.trc.form.warehouseInfo.*;
-import org.trc.util.AssertUtil;
-import org.trc.util.ImportExcel;
-import org.trc.form.warehouseInfo.WarehouseInfoForm;
-import org.trc.form.warehouseInfo.WarehouseInfoResult;
-import org.trc.form.warehouseInfo.WarehouseItemInfoForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -30,12 +25,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by wangyz on 2017/11/15.
  */
+@Api(value = "仓库管理")
 @Component
 @Path(SupplyConstants.WarehouseInfo.ROOT)
 public class WarehouseInfoResource {
@@ -67,6 +61,7 @@ public class WarehouseInfoResource {
     @GET
     @Path(SupplyConstants.WarehouseInfo.SELECT_RETURN_WAREHOUSE_NAME)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "查询退货仓库名称以及code")
     public Response queryReturnWarehouseName() throws Exception{
         logger.info("开始查询退货仓库名称=========》");
         return warehouseInfoBiz.selectReturnWarehouse();
