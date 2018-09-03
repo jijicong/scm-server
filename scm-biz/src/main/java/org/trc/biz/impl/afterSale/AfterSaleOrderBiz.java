@@ -132,7 +132,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<AfterSaleOrderDetail> afterSaleOrderDetailsList=afterSaleOrderDetailService.select(afterSaleOrderDetailSelect);
 		if(afterSaleOrderDetailsList!=null) {
 			for(AfterSaleOrderDetail afterSaleOrderDetail:afterSaleOrderDetailsList) {
-				num=num+afterSaleOrderDetail.getInNum()+afterSaleOrderDetail.getDefectiveInNum();
+				int inNum=afterSaleOrderDetail.getInNum()==null?0:afterSaleOrderDetail.getInNum();
+				int defectiveInNum=afterSaleOrderDetail.getDefectiveInNum()==null?0:afterSaleOrderDetail.getDefectiveInNum();;
+				num=num+inNum+defectiveInNum;
 			}
 
 		}
@@ -198,7 +200,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNoticeDetail.setCreateTime(new Date());
 		afterSaleWarehouseNoticeDetail.setUpdateTime(new Date());
 		afterSaleWarehouseNoticeDetailService.insert(afterSaleWarehouseNoticeDetail);
-		//return afterSaleWarehouseNoticeDetail;
 	}
 
 	private void getAfterSaleOrderDetail(OrderItem orderItem,
@@ -209,7 +210,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderDetail.setId(afterSaleOrderDetailId);
 		afterSaleOrderDetail.setAfterSaleCode(afterSaleCode);
 		afterSaleOrderDetail.setShopOrderCode(orderItem.getShopOrderCode());
-		//scmShopOrderCode系统订单
+		afterSaleOrderDetail.setScmShopOrderCode(orderItem.getScmShopOrderCode());
+		
+		//afterSaleOrderDetail.setBrandName(getBrandName(orderItem));
+		//brandName
 		afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
 		afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
 		afterSaleOrderDetail.setSkuName(orderItem.getItemName());
@@ -225,7 +229,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderDetail.setCreateTime(new Date());
 		afterSaleOrderDetail.setUpdateTime(new Date());
 		afterSaleOrderDetailService.insert(afterSaleOrderDetail);
-		//return afterSaleOrderDetail;
 	}
 
 	private AfterSaleWarehouseNotice getAfterSaleWarehouseNotice(String afterSaleCode, String warehouseNoticeCode,

@@ -86,6 +86,14 @@ public class AfterSaleOrderDetail implements Serializable {
 	@Column(name="bar_code")
 	private String barCode;
     
+    /**
+     * 商品品牌
+     */
+    @ApiModelProperty(value="商品品牌")
+	@FormParam("brandName")
+	@Column(name="brand_name")
+	private String brandName;
+    
 	/**
      * 商品规格描述
      */
