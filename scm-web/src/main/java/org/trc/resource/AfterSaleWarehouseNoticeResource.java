@@ -17,7 +17,9 @@ import org.trc.biz.afterSale.IAfterSaleWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeDO;
+import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -44,7 +46,7 @@ public class AfterSaleWarehouseNoticeResource {
 	@GET
 	@Path("warehouseNoticeList")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "退货入库单列表")
+	@ApiOperation(value = "退货入库单列表",response = AfterSaleWarehouseNotice.class)
 	public Response warehouseNoticeList(@RequestBody AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,@BeanParam Pagenation<AfterSaleWarehouseNotice> page,@Context ContainerRequestContext requestContext) throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleWarehouseNoticeBiz.warehouseNoticeList(afterSaleWarehouseNoticeDO,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
@@ -55,8 +57,9 @@ public class AfterSaleWarehouseNoticeResource {
 	@GET
 	@Path("warehouseNoticeInfo")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "查询入库单信息")
+	@ApiOperation(value = "查询入库单信息", response = AfterSaleWarehouseNoticeVO.class)
 	public Response warehouseNoticeInfo(@ApiParam(value = "入库单编号") @QueryParam("warehouseNoticeCode") String warehouseNoticeCode) throws Exception{
 		return ResultUtil.createSuccessResult("查询成功",iAfterSaleWarehouseNoticeBiz.warehouseNoticeInfo(warehouseNoticeCode));
+		
 	}
 }
