@@ -333,7 +333,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
 		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
 		afterSaleOrder.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
-		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
+		if(StringUtils.isNotBlank(afterSaleOrderAddDO.getLogisticsCorporationCode()) && StringUtils.isNotBlank(afterSaleOrderAddDO.getWaybillNumber())) {
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
+		}else {
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
+		}
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleOrder.setUpdateOperator(aclUserAccreditInfo.getUserId());
