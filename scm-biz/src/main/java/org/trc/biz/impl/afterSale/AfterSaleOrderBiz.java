@@ -110,7 +110,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			//下单的数量-退货数量
 			int orderNum=orderItem.getNum();
 			int refundNum=getAlreadyRefundNum(orderItem);
-			vo.setMaxRefundNum(orderNum-refundNum);
+			vo.setMaxReturnNum(orderNum-refundNum);
 			afterSaleOrderItemVOList.add(vo);
 		}
 		return afterSaleOrderItemVOList;
@@ -161,10 +161,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单为空!");
-		//售后单详情
-		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
-		//退货入库单详情
-		List<AfterSaleWarehouseNoticeDetail> noticeDetailList=new ArrayList<>();
+//		//售后单详情
+//		List<AfterSaleOrderDetail> detailList=new ArrayList<>();
+//		//退货入库单详情
+//		List<AfterSaleWarehouseNoticeDetail> noticeDetailList=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
 
 			OrderItem orderItemSelect=new OrderItem();
@@ -172,22 +172,22 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
 			//售后单子单
-			AfterSaleOrderDetail afterSaleOrderDetail=getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
-			detailList.add(afterSaleOrderDetail);
+			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
+			//detailList.add(afterSaleOrderDetail);
 			//退货入库单子单
-			AfterSaleWarehouseNoticeDetail afterSaleWarehouseNoticeDetail=getAfterSaleWarehouseNoticeDetail(orderItem,warehouseNoticeCode);
-			noticeDetailList.add(afterSaleWarehouseNoticeDetail);
+			getAfterSaleWarehouseNoticeDetail(orderItem,warehouseNoticeCode);
+			//noticeDetailList.add(afterSaleWarehouseNoticeDetail);
 		}
 
 		afterSaleOrderService.insert(afterSaleOrder);
-		afterSaleOrderDetailService.insertList(detailList);
+	//	afterSaleOrderDetailService.insertList(detailList);
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
-		afterSaleWarehouseNoticeDetailService.insertList(noticeDetailList);
+		//afterSaleWarehouseNoticeDetailService.insertList(noticeDetailList);
 		
 		
 	}
 
-	private AfterSaleWarehouseNoticeDetail getAfterSaleWarehouseNoticeDetail(OrderItem orderItem,
+	private void getAfterSaleWarehouseNoticeDetail(OrderItem orderItem,
 			String warehouseNoticeCode) {
 		
 		AfterSaleWarehouseNoticeDetail afterSaleWarehouseNoticeDetail=new AfterSaleWarehouseNoticeDetail();
@@ -203,10 +203,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNoticeDetail.setPicture(orderItem.getPicPath());
 		afterSaleWarehouseNoticeDetail.setCreateTime(new Date());
 		afterSaleWarehouseNoticeDetail.setUpdateTime(new Date());
-		return afterSaleWarehouseNoticeDetail;
+		afterSaleWarehouseNoticeDetailService.insert(afterSaleWarehouseNoticeDetail);
+		//return afterSaleWarehouseNoticeDetail;
 	}
 
-	private AfterSaleOrderDetail getAfterSaleOrderDetail(OrderItem orderItem,
+	private void getAfterSaleOrderDetail(OrderItem orderItem,
 			AfterSaleOrderDetail afterSaleOrderDetailDO,String afterSaleCode) {
 		
 		AfterSaleOrderDetail afterSaleOrderDetail=new AfterSaleOrderDetail();
@@ -214,6 +215,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderDetail.setId(afterSaleOrderDetailId);
 		afterSaleOrderDetail.setAfterSaleCode(afterSaleCode);
 		afterSaleOrderDetail.setShopOrderCode(orderItem.getShopOrderCode());
+		//scmShopOrderCode系统订单
 		afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
 		afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
 		afterSaleOrderDetail.setSkuName(orderItem.getItemName());
@@ -228,7 +230,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 //		afterSaleOrderDetail.setDeliverWarehouseName(deliverWarehouseName);
 		afterSaleOrderDetail.setCreateTime(new Date());
 		afterSaleOrderDetail.setUpdateTime(new Date());
-		return afterSaleOrderDetail;
+		afterSaleOrderDetailService.insert(afterSaleOrderDetail);
+		//return afterSaleOrderDetail;
 	}
 
 	private AfterSaleWarehouseNotice getAfterSaleWarehouseNotice(String afterSaleCode, String warehouseNoticeCode,

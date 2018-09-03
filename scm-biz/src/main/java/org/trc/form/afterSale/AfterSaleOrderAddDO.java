@@ -83,7 +83,6 @@ public class AfterSaleOrderAddDO {
 	 * 售后单详情
 	 */
 	@ApiModelProperty(value="售后单详情")
-    @Transient
     @FormParam("afterSaleOrderDetailList")
 	public List<AfterSaleOrderDetail> afterSaleOrderDetailList;
 }

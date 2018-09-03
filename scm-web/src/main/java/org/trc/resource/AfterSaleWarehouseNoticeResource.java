@@ -20,6 +20,7 @@ import org.trc.form.afterSale.AfterSaleWarehouseNoticeDO;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
@@ -28,6 +29,7 @@ import io.swagger.annotations.ApiParam;
  * @author hzwjie
  *
  */
+@Api(value = "退货入库单")
 @Component
 @Path("afterSaleWarehouseNotice")
 public class AfterSaleWarehouseNoticeResource {
@@ -41,7 +43,7 @@ public class AfterSaleWarehouseNoticeResource {
 	@GET
 	@Path("warehouseNoticeList")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "查询入库仓库")
+	@ApiOperation(value = "退货入库单列表")
 	public Response warehouseNoticeList(AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,@BeanParam Pagenation<AfterSaleWarehouseNotice> page,@Context ContainerRequestContext requestContext) throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleWarehouseNoticeBiz.warehouseNoticeList(afterSaleWarehouseNoticeDO,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
@@ -52,7 +54,7 @@ public class AfterSaleWarehouseNoticeResource {
 	@GET
 	@Path("warehouseNoticeInfo")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "查询入库仓库")
+	@ApiOperation(value = "查询入库单信息")
 	public Response warehouseNoticeInfo(@ApiParam(value = "入库单编号") @QueryParam("warehouseNoticeCode") String warehouseNoticeCode) throws Exception{
 		return ResultUtil.createSuccessResult("查询成功",iAfterSaleWarehouseNoticeBiz.warehouseNoticeInfo(warehouseNoticeCode));
 	}
