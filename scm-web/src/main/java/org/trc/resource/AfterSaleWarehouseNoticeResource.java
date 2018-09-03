@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.trc.biz.afterSale.IAfterSaleWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
@@ -44,7 +45,7 @@ public class AfterSaleWarehouseNoticeResource {
 	@Path("warehouseNoticeList")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "退货入库单列表")
-	public Response warehouseNoticeList(AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,@BeanParam Pagenation<AfterSaleWarehouseNotice> page,@Context ContainerRequestContext requestContext) throws Exception{
+	public Response warehouseNoticeList(@RequestBody AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,@BeanParam Pagenation<AfterSaleWarehouseNotice> page,@Context ContainerRequestContext requestContext) throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleWarehouseNoticeBiz.warehouseNoticeList(afterSaleWarehouseNoticeDO,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
 	
