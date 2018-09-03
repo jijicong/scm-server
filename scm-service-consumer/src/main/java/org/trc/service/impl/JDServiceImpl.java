@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.ExceptionEnum;
-import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
@@ -22,9 +21,7 @@ import org.trc.service.IJDService;
 import org.trc.util.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -591,6 +588,43 @@ public class JDServiceImpl implements IJDService {
             }
         }catch (Exception e){
             String msg = String.format("调用外部京东对账数据补偿接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+
+    @Override
+    public ReturnTypeDO getSkuStockQuery(JdSkuStockForm jdSkuStockForm) {
+        AssertUtil.notNull(jdSkuStockForm, "调用外部供应商库存查询参数不能为空");
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("date", JSONArray.toJSON(jdSkuStockForm));
+            String url = externalSupplierConfig.getScmExternalUrl() + externalSupplierConfig.getSkuStockQuery();
+            log.info(String.format(">>>>>开始调用京东代发商品库存查询接口%s,参数: %s。开始时间%s", url, JSON.toJSON(map).toString(),
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT)));
+            response = HttpClientUtil.httpPostRequest(url, map, 10000);
+            log.info(String.format("<<<<<结束调用京东代发商品库存查询接口%s,返回结果: %s。结束时间%s", url, response,
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT)));
+            if (StringUtils.isNotBlank(response)) {
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+                    returnTypeDO.setSuccess(true);
+                }else {
+                    returnTypeDO.setSuccess(false);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+                returnTypeDO.setResult(appResult.getResult());
+            } else {
+                returnTypeDO.setResultMessage("调用外部供应商品库存查询接口返回结果为空");
+            }
+        } catch (Exception e) {
+            String msg = String.format("调用外部供应商商品库存查询接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);
         }

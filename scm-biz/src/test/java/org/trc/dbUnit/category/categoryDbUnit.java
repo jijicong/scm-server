@@ -25,10 +25,7 @@ import org.trc.util.HttpClientUtil;
 import org.trc.util.ResponseAck;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hzqph on 2017/6/21.
@@ -563,6 +560,59 @@ public class categoryDbUnit extends BaseTest {
         long endL = System.nanoTime();
         log.debug("结束生成序列号, 返回结果：" + response + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT) + ", 耗时" + DateUtils.getMilliSecondBetween(startL, endL) + "毫秒");
+    }
+
+    @Test
+    public void testJdSkuStockQuery() throws InterruptedException {
+        long startL = System.nanoTime();
+        /*ExecutorService executor = Executors.newFixedThreadPool(100);
+        for (int i = 0; i < 1000; i++) {
+            executor.execute(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        invokeJdSkuStockQuery();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }));
+        }
+        executor.shutdown();
+        while (!executor.isTerminated()) {
+        }*/
+
+        for(int i=0; i<500; i++){
+            Thread thread = new Thread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                invokeJdSkuStockQuery();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+            );
+            thread.join();
+            thread.start();
+        }
+        long endL = System.nanoTime();
+        System.out.println("耗时" + DateUtils.getMilliSecondBetween(startL, endL) + "毫秒");
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void invokeJdSkuStockQuery() throws Exception{
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("skuArray", "[{\"skuCode\":\"SP1201805100002850\",\"num\":3},{\"skuCode\":\"SP1201711230001434\", \"num\":2}]");
+        map.put("area", "2_2830_51805");
+        String response = HttpClientUtil.httpPostRequest("http://127.0.0.1/scm-web/tairan/jdSkuStockQuery", map, 10000);
+        System.out.println("返回结果："+response);
     }
 
 

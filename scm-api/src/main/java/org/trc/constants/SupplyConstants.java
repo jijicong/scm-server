@@ -78,6 +78,8 @@ public class SupplyConstants {
 
         public static final String JD_LOGISTICS = "jdLogistics";//获取京东物流信息
 
+        public static final String JD_SKUSTOCK = "jdSkuStockQuery";//获取京东sku库存
+
         public static final String SUPPLIER_LIST = "supplierList";//供应商分页查询
     }
 
@@ -1221,6 +1223,9 @@ public class SupplyConstants {
         public static final String ORDER_IMPORT = "orderImport";
         //下载错误订单路径
         public static final String DOWNLOAD_ERROR_ORDER = "downloadErrorOrder";
+
+        //导入订单下拉仓库列表
+        public static final String WAREHOUSE_LIST= "warehouseList";
     }
 
     /**

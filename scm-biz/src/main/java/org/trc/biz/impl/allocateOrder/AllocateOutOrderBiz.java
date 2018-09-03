@@ -529,7 +529,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     @Override
     public void updateAllocateOutDetail() {
-//        if (!iRealIpService.isRealTimerService()) return;
+        if (!iRealIpService.isRealTimerService()) return;
 
         WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
         warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());

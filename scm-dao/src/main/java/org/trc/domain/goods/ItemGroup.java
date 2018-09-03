@@ -33,32 +33,31 @@ public class ItemGroup implements Serializable{
     private Long id;
 
     @FormParam("itemGroupCode")
-    @Length(max=32,message = "商品组编码字母和数字不能超过32个,汉字不能超过16个")
     @ApiModelProperty("商品组编号")
     private String itemGroupCode;
 
     @FormParam("itemGroupName")
-    @Length(max=20,message = "商品名称字母和数字不能超过20个,汉字不能超过10个")
+    @Length(max=20,message = "商品组名称不能超过20个")
     @ApiModelProperty("商品组名称")
     private String itemGroupName;
 
     @FormParam("channelCode")
-    @Length(max = 32, message = "业务线渠道编码字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max = 32, message = "业务线渠道编码不能超过32个")
     @ApiModelProperty("业务线编码,前端不需要传值")
     private String channelCode;
 
     @FormParam("leaderName")
-    @Length(max=10,message = "组长名称字母和数字不能超过10个,汉字不能超过5个")
+    @Length(max=10,message = "组长名称不能超过10个")
     @ApiModelProperty("组长名字")
     private String leaderName;
 
     @FormParam("memberName")
-    @Length(max=2048,message = "组员名称字母和数字不能超过2048个,汉字不能超过1024个")
+    @Length(max=2048,message = "组员名称不能超过2048个")
     @ApiModelProperty("所有组员名字，以逗号分隔")
     private String memberName;
 
     @FormParam("remark")
-    @Length(max =200, message = "商品组的备注字母和数字不能超过200个,汉字不能超过个100")
+    @Length(max =200, message = "商品组的备注不能超过200个")
     @ApiModelProperty("备注")
     private  String remark;
 
@@ -69,12 +68,12 @@ public class ItemGroup implements Serializable{
     private String isDeleted; //是否删除:0-否,1-是
 
     @FormParam("createOperator")
-    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max = 32, message = "字典类型编码不能超过32个")
     @ApiModelProperty("创建人,前端不需要传值")
     private String createOperator; //创建人
 
     @FormParam("isValid")
-    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
+    @Length(max = 2, message = "是否有编码不能超过2个")
     @ApiModelProperty("启停用状态0-停用,1-启用")
     private String isValid; //是否有效:0-否,1-是
 

@@ -144,8 +144,9 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
             }
         }
         
-		example.setOrderByClause("field(status," + PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode() +
-				"," + PurchaseOutboundNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode() + ") desc");
+//		example.setOrderByClause("field(status," + PurchaseOutboundNoticeStatusEnum.TO_BE_NOTIFIED.getCode() +
+//				"," + PurchaseOutboundNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode() + ") desc");
+		example.setOrderByClause("status in('0','2') desc");
         example.orderBy("createTime").desc();
         
         Pagenation<PurchaseOutboundNotice> pageResult = this.pagination(example, page, form);
@@ -286,7 +287,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
     		 * 更新操作
     		 */
     		this.updateById(status, notice.getId(), null, null);
-    		detailService.updateByOrderCode(status, null, null, notice.getOutboundNoticeCode());
+    		detailService.updateByOrderCode(status, notice.getOutboundNoticeCode());
     		// 日志 admin??
             logInfoService.recordLog(notice, notice.getId().toString(), "admin",
             		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), logRemark, null);
@@ -305,6 +306,7 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		 if (CANCELLED.equals(resp.getStatus())) { // 已取消
 			 
 			 this.updateByCode(PurchaseOutboundNoticeStatusEnum.CANCEL, null, noticeCode);
+			 detailService.updateByOrderCode(PurchaseOutboundNoticeStatusEnum.CANCEL, noticeCode);
 			 // 日志处理
 			 try {
 				 PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(wmsCode);
@@ -358,13 +360,17 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 					 skuList.add(detail.getSkuCode()); 
 				 }
 				 remarkList.add(detail.getSkuCode() + ":" + result);
+				 long actualQty = 0l;
 				 // 更新商品详情
-				 detailService.updateByOrderCode(detailStatus, nowTime, item.getActualQty(), detail.getOutboundNoticeCode());
+				 if (StringUtils.equals(detail.getReturnOrderType(), item.getGoodsStatus())) {
+					 actualQty = item.getActualQty().longValue();
+				 }
+				 detailService.updateByDetailId(detailStatus, nowTime, actualQty, detail.getId());
 			 }
 			 if (!CollectionUtils.isEmpty(skuList)) {
 				 exceptionCause = "[" + StringUtils.join(skuList, SupplyConstants.Symbol.COMMA) + "]实际出库数量不等于要求退货数量";
 			 }
-			 String remark = StringUtils.join(remarkList,"\n");
+			 String remark = StringUtils.join(remarkList,"<br>");
 			 
 			 // 存在"出库异常"的商品 或者 商品总数不相等时
 			 if (exceptionFlg) {
@@ -430,5 +436,5 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		updateRecord.setExceptionCause(exceptionCause);
 		noticeMapper.updateByExampleSelective(updateRecord, example);		
 	}
-	
+
 }

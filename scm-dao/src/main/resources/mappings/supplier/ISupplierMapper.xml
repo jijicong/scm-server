@@ -73,6 +73,7 @@
         supplier
         WHERE
         supplier_kind_code = 'purchase'
+        AND supplier_type_code = 'internalSupplier'
         AND supplier_code IN (
         SELECT
         supplier_code

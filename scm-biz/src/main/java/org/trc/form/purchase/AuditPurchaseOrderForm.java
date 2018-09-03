@@ -27,7 +27,7 @@ public class AuditPurchaseOrderForm {
     private String auditStatus;
 
     @FormParam("auditOpinion")
-    @Length(max = 1500)
+    @Length(max = 1500, message = "审核意见长度需在0~1500之间")
     @ApiModelProperty("审核意见")
     private String auditOpinion;
 

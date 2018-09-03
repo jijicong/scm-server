@@ -69,7 +69,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         if (StringUtil.isNotEmpty(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
-        criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+        // criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
         example.orderBy("updateTime").desc();
         Pagenation<ItemGroup> pagenation = itemGroupService.pagination(example, page, form);
         handleUserName(pagenation.getResult());
@@ -215,7 +215,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
                 updateEntity.setUpdateTime(Calendar.getInstance().getTime());
                 Integer countUpd = itemGroupUserService.updateByPrimaryKeySelective(updateEntity);
                 if (countUpd==null){
-                        String msg=String.format("商品组名称[itemGroupName=%s]的手机号码为[phoneNumber=%s]的用户修改失败，数据库操作失败",itemGroup.getItemGroupName(),itemGroupUser.getPhoneNumber());
+                        String msg=String.format("商品组员手机号码为[%s]的用户信息修改失败，数据库操作失败",itemGroupUser.getPhoneNumber());
                         logger.error(msg);
                         throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
                 }
@@ -259,11 +259,12 @@ public class ItemGroupBiz implements IitemGroupBiz {
 
         ItemGroup temp =findItemGroupByName(itemGroup.getItemGroupName());
         if (temp!=null){
-            String msg=String.format("商品组名称[itemGroupName=%s]的数据已存在,请使用其他名称",itemGroup.getItemGroupName());
+            String msg="当前商品组名称已存在,请使用其他名称！";
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_QUERY_EXCEPTION,msg);
         }
-        itemGroup.setChannelCode(aclUserAccreditInfo.getChannelCode());
+        String channelCode = aclUserAccreditInfo.getChannelCode();
+        itemGroup.setChannelCode(channelCode);
         //公共字段更新
         itemGroup.setCreateTime(Calendar.getInstance().getTime());
         itemGroup.setUpdateTime(Calendar.getInstance().getTime());
@@ -282,7 +283,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         //商品组启用，则组长为启用，否则视同组员
         String isValid = itemGroup.getIsValid();
         //保存商品组员列表数据（对手机号校验）
-        saveItemGroupUserList(groupUserList,isValid,code,aclUserAccreditInfo.getChannelCode(),aclUserAccreditInfo.getName());
+        saveItemGroupUserList(groupUserList,isValid,code,channelCode,aclUserAccreditInfo.getName());
 
 
         //记录日志
@@ -319,7 +320,7 @@ public class ItemGroupBiz implements IitemGroupBiz {
         itemGroup.setUpdateTime(Calendar.getInstance().getTime());
         Integer count = itemGroupService.updateByPrimaryKeySelective(itemGroup);
         if (count==null){
-            String msg=String.format("更新商品组[itemGroupName=%s]的数据失败,数据库操作失败",itemGroup.getItemGroupName());
+            String msg="更新商品组信息失败,数据库操作失败！";
             logger.error(msg);
             throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
         }
@@ -328,14 +329,14 @@ public class ItemGroupBiz implements IitemGroupBiz {
         Example example = new Example(ItemGroupUser.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("itemGroupCode",itemGroupCode);
-        criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+        //criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
         List<ItemGroupUser> list = itemGroupUserService.selectByExample(example);
         for (ItemGroupUser itemGroupUser : list) {
             itemGroupUser.setIsValid(isValid);
             itemGroupUser.setUpdateTime(Calendar.getInstance().getTime());
             Integer countUser = itemGroupUserService.updateByPrimaryKey(itemGroupUser);
             if (countUser==null){
-                String msg="更新商品组成员信息失败，数据库操作失败";
+                String msg="更新商品组成员信息失败，数据库操作失败！";
                 logger.error(msg);
                 throw new ItemGroupException(ExceptionEnum.ITEM_GROUP_UPDATE_EXCEPTION,msg);
             }

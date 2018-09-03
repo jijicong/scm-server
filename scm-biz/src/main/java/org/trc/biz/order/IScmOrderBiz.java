@@ -3,6 +3,13 @@ package org.trc.biz.order;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.order.ExceptionOrder;
+import org.trc.domain.order.PlatformOrder;
+import org.trc.domain.order.ShopOrder;
+import org.trc.domain.order.SupplierOrderInfo;
+import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.JDModel.StockNewResultDo;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.*;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
@@ -105,6 +112,15 @@ public interface IScmOrderBiz {
      * @throws Exception
      */
     ResponseAck<LogisticNoticeForm2> getJDLogistics(String channelCode, String shopOrderCode) throws  Exception;
+
+    /**
+     * 查询京东
+     * @param skuArray
+     * @param area
+     * @return
+     * @throws Exception
+     */
+    ResponseAck<List<StockNewResultDo>> getSkuStockQuery(String jsonObject) throws  Exception;
 
     /**
      * 获取物流信息
@@ -224,7 +240,7 @@ public interface IScmOrderBiz {
      * @param uploadedInputStream
      * @param fileDetail
      */
-    Response importOrder(String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo);
+    Response importOrder(String sellCode,String isAppointStock,String warehouseCode,InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 下载错误订单
@@ -233,5 +249,10 @@ public interface IScmOrderBiz {
      */
     Response downloadErrorOrder(String orderCode);
 
+    /**
+     * 查询仓库列表
+     * @return
+     */
+    List<WarehouseInfo> queryWarehouseList();
 
 }

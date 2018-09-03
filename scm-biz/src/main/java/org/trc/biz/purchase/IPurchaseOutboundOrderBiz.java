@@ -45,10 +45,11 @@ public interface IPurchaseOutboundOrderBiz {
     /**
      * 根据采购退货单Id查询采购退货单
      *
-     * @param id 采购退货单Id
+     * @param id  采购退货单Id
+     * @param tag 查询库存标识, 0不查询，1查询
      * @return
      */
-    PurchaseOutboundOrder getPurchaseOutboundOrderById(Long id);
+    PurchaseOutboundOrder getPurchaseOutboundOrderById(Long id, String tag);
 
     /**
      * 获取采购退货单商品详情

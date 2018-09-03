@@ -18,12 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -42,8 +40,8 @@ public class HttpClientUtil {
     private static void init() {
         if (cm == null) {
             cm = new PoolingHttpClientConnectionManager();
-            cm.setMaxTotal(50);// 整个连接池最大连接数
-            cm.setDefaultMaxPerRoute(5);// 每路由最大连接数，默认值是2
+            cm.setMaxTotal(500);// 整个连接池最大连接数
+            cm.setDefaultMaxPerRoute(100);// 每路由最大连接数，默认值是2
         }
     }
 

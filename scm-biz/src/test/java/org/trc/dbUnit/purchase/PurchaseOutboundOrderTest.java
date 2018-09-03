@@ -203,7 +203,7 @@ public class PurchaseOutboundOrderTest {
      */
     @Test
     public void getPurchaseOutboundOrderTest(){
-        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(37L);
+        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundOrderById(37L,"");
         System.out.println(JSON.toJSONString(order));
     }
 
@@ -212,7 +212,7 @@ public class PurchaseOutboundOrderTest {
      */
     @Test
     public void getPurchaseOutboundAuditOrderTest() {
-        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundAuditOrder(37L);
+        PurchaseOutboundOrder order = purchaseOutboundOrderBiz.getPurchaseOutboundAuditOrder(81L);
         System.out.println(JSON.toJSONString(order));
     }
 

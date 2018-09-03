@@ -8,7 +8,6 @@ import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -127,4 +126,12 @@ public interface IJDService {
     //京东报表补偿
     ReturnTypeDO reportCompensate(String date);
 
+
+    /**
+     * 库存查询接口
+     * @param jdSkuStockForm
+     * @return
+     */
+
+    ReturnTypeDO getSkuStockQuery(JdSkuStockForm jdSkuStockForm);
 }
