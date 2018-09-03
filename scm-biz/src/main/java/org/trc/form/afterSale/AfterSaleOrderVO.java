@@ -18,6 +18,9 @@ import java.util.List;
 @Api(value = "售后单展示对象")
 public class AfterSaleOrderVO {
 
+    @ApiModelProperty("售后单主键")
+    private String id;
+
     /**
      * 创建时间（格式yyyy-mm-dd hh:mi:ss'）
      */
