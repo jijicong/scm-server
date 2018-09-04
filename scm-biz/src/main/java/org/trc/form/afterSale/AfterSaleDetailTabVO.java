@@ -8,6 +8,12 @@ import lombok.Setter;
 @Getter
 public class AfterSaleDetailTabVO {
 
+    /**
+     * 售后单id
+     */
+    @ApiModelProperty("id")
+    private String id;
+
 
     /**
      * 售后单编号
@@ -26,6 +32,12 @@ public class AfterSaleDetailTabVO {
      */
     @ApiModelProperty("skuCode")
     private String skuCode;
+
+    /**
+     * spuCode
+     */
+    @ApiModelProperty("spuCode")
+    private String spuCode;
 
     /**
      * 发起类型
