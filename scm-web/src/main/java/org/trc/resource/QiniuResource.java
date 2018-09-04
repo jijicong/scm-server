@@ -127,15 +127,14 @@ public class QiniuResource {
     }
 
     @POST
-    @Path("/uploadFile/{code}")
+    @Path("/uploadFile")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public UploadResponse uploadFile(@FormDataParam("file") InputStream uploadedInputStream,
-                                                     @FormDataParam("file")FormDataContentDisposition fileDetail,
-                                                     @PathParam("code") String code)throws Exception  {
+                                                     @FormDataParam("file")FormDataContentDisposition fileDetail)throws Exception  {
         UploadResponse uploadResponse = new UploadResponse(true);
         try{
-            QiNiuResponse qiNiuResponse = qinniuBiz.uploadFile(uploadedInputStream, fileDetail, code);
+            QiNiuResponse qiNiuResponse = qinniuBiz.uploadFile(uploadedInputStream, fileDetail);
             uploadResponse.setKey(qiNiuResponse.getKey());
             uploadResponse.setFileName(qiNiuResponse.getFileName());
             String url = qiNiuResponse.getUrl();
@@ -164,5 +163,13 @@ public class QiniuResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFileInfo(@QueryParam("code") String code){
         return ResultUtil.createSuccessResult("获取文件信息成功",qinniuBiz.getFileInfo(code));
+    }
+
+    @GET
+    @Path("/fileDownload")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult fileDownload(@QueryParam("fileName") String fileName) throws Exception {
+        return ResultUtil.createSucssAppResult("下载成功", qinniuBiz.fileDownload(fileName));
     }
 }

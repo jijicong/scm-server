@@ -145,13 +145,12 @@ public class QinniuBiz implements IQinniuBiz{
     }
 
     @Override
-    public QiNiuResponse uploadFile(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String code) throws Exception {
+    public QiNiuResponse uploadFile(InputStream uploadedInputStream, FormDataContentDisposition fileDetail) throws Exception {
         AssertUtil.notBlank(fileDetail.getFileName(), "上传文件名称不能为空");
-        AssertUtil.notBlank(code, "关联编码不能为空");
         String _fileName = fileDetail.getFileName();
         _fileName = new String(_fileName.getBytes("ISO-8859-1"), "utf-8");
         String suffix = _fileName.substring(_fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
-        String newFileName = String.format("%s%s%s%s", code, String.valueOf(System.nanoTime()),
+        String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()),
                 SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
         //文件名称检查
         fileTypeEnumCheck(newFileName);
@@ -200,6 +199,21 @@ public class QinniuBiz implements IQinniuBiz{
         criteria.andEqualTo("code", code);
         criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         return qiNiuUrlInfoService.selectByExample(example);
+    }
+
+    @Override
+    public String fileDownload(String fileName) throws Exception {
+        //文件名称检查
+        fileTypeEnumCheck(fileName);
+        String url = "";
+        try{
+            url = qinniuService.download(fileName);
+        }catch (Exception e){
+            String msg = CommonUtil.joinStr("下载文件",fileName,"异常").toString();
+            log.error(msg,e);
+            throw new FileException(ExceptionEnum.FILE_DOWNLOAD_EXCEPTION, msg);
+        }
+        return url;
     }
 
     /**
