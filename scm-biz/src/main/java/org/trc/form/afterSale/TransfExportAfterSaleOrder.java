@@ -1,6 +1,7 @@
 package org.trc.form.afterSale;
 
 import com.google.common.collect.Lists;
+import org.trc.enums.AfterSaleOrderEnum;
 import org.trc.util.DateUtils;
 import org.trc.util.StringUtil;
 
@@ -39,7 +40,7 @@ public class TransfExportAfterSaleOrder {
                 ord.setSkuCode(dvo.getSkuCode());
                 ord.setSkuName(dvo.getSkuName());
                 ord.setSpecNatureInfo(dvo.getSpecNatureInfo());
-                ord.setStatus(vo.getStatus());
+                ord.setStatusName(AfterSaleOrderEnum.AfterSaleOrderStatusEnum.getAfterSaleOrderStatusEnumByCode(vo.getStatus()).getName());
                 ord.setWaybillNumber(vo.getWaybillNumber());
                 list.add(ord);
             }

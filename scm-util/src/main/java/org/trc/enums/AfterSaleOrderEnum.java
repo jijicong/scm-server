@@ -1,5 +1,7 @@
 package org.trc.enums;
 
+import java.util.Objects;
+
 public class AfterSaleOrderEnum {
 
 	//售后单状态
@@ -10,12 +12,21 @@ public class AfterSaleOrderEnum {
 		STATUS_3(2,"已经完成"),
 		STATUS_4(3,"已经取消");
 
-		private int code;
+		private Integer code;
 		private String name;
 
 		AfterSaleOrderStatusEnum(int code, String name) {
 			this.code = code;
 			this.name = name;
+		}
+
+		public static AfterSaleOrderStatusEnum getAfterSaleOrderStatusEnumByCode(Integer code) {
+			for (AfterSaleOrderStatusEnum validEnum : AfterSaleOrderStatusEnum.values()) {
+				if (Objects.equals(validEnum.getCode(),code)) {
+					return validEnum;
+				}
+			}
+			return null;
 		}
 		
 		public String getName() {

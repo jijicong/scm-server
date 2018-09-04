@@ -21,7 +21,7 @@ public class ExceptorAfterSaleOrder {
     /**
      *售后单状态
      */
-    private Integer status;
+    private String statusName;
     /**
      *系统订单号
      */

@@ -543,7 +543,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		    List<ExceptorAfterSaleOrder> newlist =  TransfExportAfterSaleOrder.getExceptorAfterSaleOrder(result);
 			//开始导出商品信息
 			CellDefinition createTime = new CellDefinition("createTime", "创建时间", CellDefinition.TEXT, null, 4000);
-			CellDefinition status = new CellDefinition("status", "售后单状态", CellDefinition.TEXT, null, 4000);
+			CellDefinition statusName = new CellDefinition("statusName", "售后单状态", CellDefinition.TEXT, null, 4000);
 			CellDefinition scmShopOrderCode = new CellDefinition("scmShopOrderCode", "系统订单号", CellDefinition.TEXT, null, 4000);
 			CellDefinition afterSaleCode = new CellDefinition("afterSaleCode", "售后单编号", CellDefinition.TEXT, null, 4000);
 			CellDefinition sellCodeName = new CellDefinition("sellCodeName", "销售渠道", CellDefinition.TEXT, null, 4000);
@@ -560,7 +560,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 			List<CellDefinition> cellDefinitionList = new LinkedList<>();
 			cellDefinitionList.add(createTime);
-			cellDefinitionList.add(status);
+			cellDefinitionList.add(statusName);
 			cellDefinitionList.add(scmShopOrderCode);
 			cellDefinitionList.add(afterSaleCode);
 			cellDefinitionList.add(sellCodeName);
