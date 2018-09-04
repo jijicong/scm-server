@@ -657,10 +657,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
      * @Date: 2018/8/30
      */
 	@Override
-	public boolean checkOrder(String shopOrderCode,AclUserAccreditInfo aclUserAccreditInfo) {
+	public boolean checkOrder(String scmShopOrderCode,AclUserAccreditInfo aclUserAccreditInfo) {
 		Example example = new Example(ShopOrder.class);
 		Example.Criteria criteria = example.createCriteria();
-		criteria.andEqualTo("shopOrderCode", shopOrderCode);
+		criteria.andEqualTo("scmShopOrderCode", scmShopOrderCode);
 		List<String> statusList = Lists.newArrayList();
 		//待发货
 		statusList.add(ShopOrderStatusEnum.IS_NOT_SEND.getCode());
