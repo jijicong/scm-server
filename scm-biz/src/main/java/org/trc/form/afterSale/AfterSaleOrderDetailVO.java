@@ -49,7 +49,7 @@ public class AfterSaleOrderDetailVO {
      * 退款金额
      */
     @ApiModelProperty("退款金额")
-    private BigDecimal refundAmont;
+    private String refundAmont;
 
     /**
      * 发货仓库编码

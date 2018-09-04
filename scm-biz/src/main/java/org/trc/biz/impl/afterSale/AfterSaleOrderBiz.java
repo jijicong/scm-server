@@ -93,9 +93,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IWarehouseOrderService warehouseOrderService;
 
 	@Autowired
-	private IGoodsBiz goodsBiz;
-
-	@Autowired
 	private ISkusService skusService;
 
 	@Autowired
