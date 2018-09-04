@@ -23,7 +23,7 @@ public class AfterSaleOrderDetailBiz implements IAfterSaleOrderDetailBiz{
     private IAfterSaleOrderDetailService afterSaleOrderDetailService;
 
     /**
-     * @Description: 售后单字表查询
+     * @Description: 售后单子表查询
      * @Author: hzluoxingcheng
      * @Date: 2018/8/29
      */ 

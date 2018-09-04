@@ -669,6 +669,16 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//全部发货
 		statusList.add(ShopOrderStatusEnum.IS_ALL_SEND.getCode());
 		criteria.andIn("supplierOrderStatus",statusList);
+		List<String> statusLists = Lists.newArrayList();
+		//已付款等待发货
+		statusLists.add("WAIT_SELLER_SEND");
+        //已发货等待确认收货
+		statusLists.add("WAIT_BUYER_CONFIRM");
+		//已发货等待确认收货
+		statusLists.add("WAIT_BUYER_SIGNED");
+		//已完成
+		statusLists.add("TRADE_FINISHED");
+		criteria.andIn("status",statusLists);
 		//业务线
 		criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
 		List<ShopOrder>  orderList = shopOrderService.selectByExample(example);

@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.afterSale.IAfterSaleOrderTabBiz;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.afterSale.AfterSaleDetailTabVO;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
@@ -31,6 +33,8 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
     IAfterSaleOrderDetailService afterSaleOrderDetailService;
     @Autowired
     IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    ISkusService skuService;
 
     @Override
     public Pagenation<AfterSaleDetailTabVO> queryAfterSaleOrderTabPage(String scmShopOrderCode,QueryModel form, Pagenation<AfterSaleOrder> page) {
@@ -64,6 +68,7 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
                         saleDetailTabVO.setReturnWarehouseCode(afterSaleOrder.getReturnWarehouseCode());
                         saleDetailTabVO.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
                         saleDetailTabVO.setWaybillNumber(afterSaleOrder.getWaybillNumber());
+                        saleDetailTabVO.setId(afterSaleOrder.getId());
                         break;
                     }
                 }
@@ -71,7 +76,7 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
             }
             if (!AssertUtil.collectionIsEmpty(afterSaleDetailTabVOList)) {
                 //设置仓库名称
-                handWarehouseName(afterSaleDetailTabVOList);
+                handWarehouseNameAndSpu(afterSaleDetailTabVOList);
                 pagenation.setResult(afterSaleDetailTabVOList);
                 return pagenation;
             }
@@ -79,22 +84,43 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
         return pagenation;
 
     }
-
-    private void handWarehouseName(List<AfterSaleDetailTabVO> afterSaleDetailTabVOList) {
+    private void handWarehouseNameAndSpu(List<AfterSaleDetailTabVO> afterSaleDetailTabVOList) {
         Set<String> warehouseCodeSet = new HashSet<>();
+        Set<String> skuCodeSet = new HashSet<>();
         for (AfterSaleDetailTabVO detailTab : afterSaleDetailTabVOList) {
             warehouseCodeSet.add(detailTab.getReturnWarehouseCode());
+            skuCodeSet.add(detailTab.getSkuCode());
         }
-        Example example = new Example(WarehouseInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("code", warehouseCodeSet);
-        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
-        if (!AssertUtil.collectionIsEmpty(warehouseInfoList)) {
-            for (AfterSaleDetailTabVO detailTab : afterSaleDetailTabVOList) {
-                for (WarehouseInfo warehouseInfo : warehouseInfoList) {
-                    if (StringUtils.equals(detailTab.getReturnWarehouseCode(), warehouseInfo.getCode())) {
-                        detailTab.setReturnWarehouseName(warehouseInfo.getWarehouseName());
-                        break;
+        //设置仓库
+        if (!AssertUtil.collectionIsEmpty(warehouseCodeSet)) {
+            Example example = new Example(WarehouseInfo.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("code", warehouseCodeSet);
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
+            if (!AssertUtil.collectionIsEmpty(warehouseInfoList)) {
+                for (AfterSaleDetailTabVO detailTab : afterSaleDetailTabVOList) {
+                    for (WarehouseInfo warehouseInfo : warehouseInfoList) {
+                        if (StringUtils.equals(detailTab.getReturnWarehouseCode(), warehouseInfo.getCode())) {
+                            detailTab.setReturnWarehouseName(warehouseInfo.getWarehouseName());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        //spu设置
+        if (!AssertUtil.collectionIsEmpty(skuCodeSet)) {
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("skuCode", skuCodeSet);
+            List<Skus> skuList = skuService.selectByExample(example);
+            if (!AssertUtil.collectionIsEmpty(skuList)) {
+                for (AfterSaleDetailTabVO detailTab : afterSaleDetailTabVOList) {
+                    for (Skus sku : skuList) {
+                        if (StringUtils.equals(detailTab.getSkuCode(), sku.getSkuCode())) {
+                            detailTab.setSpuCode(sku.getSpuCode());
+                            break;
+                        }
                     }
                 }
             }
