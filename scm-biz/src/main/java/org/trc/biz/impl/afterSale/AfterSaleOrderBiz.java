@@ -93,9 +93,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IWarehouseOrderService warehouseOrderService;
 
 	@Autowired
-	private IGoodsBiz goodsBiz;
-
-	@Autowired
 	private ISkusService skusService;
 
 	@Autowired
@@ -398,7 +395,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		Set<String> afterSaleCodeSet = new HashSet<>();
 		boolean  cildSearchFlag = false;
 		if(StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(skuCode)){
-			afterSaleOrderDetailForm.setSkuCode(skuName);
+			afterSaleOrderDetailForm.setSkuName(skuName);
 			afterSaleOrderDetailForm.setSkuCode(skuCode);
 			detailList = afterSaleOrderDetailBiz.queryListByCondition(afterSaleOrderDetailForm);
 			if(Objects.equals(null,detailList) || detailList.isEmpty()){
@@ -438,7 +435,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		}
 		//物流单号(运单号)
 		if(StringUtils.isNotBlank(expressNumber)){
-			criteria.andEqualTo("waybillNumber",expressNumber);
+			criteria.andLike("waybillNumber","%"+expressNumber+"%");
 		}
 		//店铺订单编号
 		if(StringUtils.isNotBlank(shopOrderCode)){
@@ -454,11 +451,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		}
 		//客户姓名
 		if(StringUtils.isNotBlank(receiverName)){
-			criteria.andEqualTo("receiverName",receiverName);
+			criteria.andLike("receiverName","%"+receiverName+"%");
 		}
 		//客户电话
 		if(StringUtils.isNotBlank(receiverPhone)){
-			criteria.andEqualTo("receiverPhone",receiverPhone);
+			criteria.andLike("receiverPhone","%"+receiverPhone+"%");
 		}
 		//按创建时间倒叙排序
 		example.orderBy("createTime").desc();
@@ -543,7 +540,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		    List<ExceptorAfterSaleOrder> newlist =  TransfExportAfterSaleOrder.getExceptorAfterSaleOrder(result);
 			//开始导出商品信息
 			CellDefinition createTime = new CellDefinition("createTime", "创建时间", CellDefinition.TEXT, null, 4000);
-			CellDefinition status = new CellDefinition("status", "售后单状态", CellDefinition.TEXT, null, 4000);
+			CellDefinition statusName = new CellDefinition("statusName", "售后单状态", CellDefinition.TEXT, null, 4000);
 			CellDefinition scmShopOrderCode = new CellDefinition("scmShopOrderCode", "系统订单号", CellDefinition.TEXT, null, 4000);
 			CellDefinition afterSaleCode = new CellDefinition("afterSaleCode", "售后单编号", CellDefinition.TEXT, null, 4000);
 			CellDefinition sellCodeName = new CellDefinition("sellCodeName", "销售渠道", CellDefinition.TEXT, null, 4000);
@@ -560,7 +557,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 			List<CellDefinition> cellDefinitionList = new LinkedList<>();
 			cellDefinitionList.add(createTime);
-			cellDefinitionList.add(status);
+			cellDefinitionList.add(statusName);
 			cellDefinitionList.add(scmShopOrderCode);
 			cellDefinitionList.add(afterSaleCode);
 			cellDefinitionList.add(sellCodeName);

@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -143,7 +144,7 @@ public class AfterSaleOrderDetail implements Serializable {
     @ApiModelProperty(value="退款金额")
 	@FormParam("refundAmont")
 	@Column(name="refund_amont")
-	private String refundAmont;
+	private BigDecimal refundAmont;
     
     /**
      * 商品图片,多张图片逗号分隔
