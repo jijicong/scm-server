@@ -29,7 +29,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.SupplierOrderStatusEnum;
+import org.trc.enums.ShopOrderStatusEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.afterSale.*;
@@ -102,6 +102,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
 	@Autowired
     private ISellChannelService sellChannelService;
+
 
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTEROD-";
 	private static final String AFTER_SALE_ORDER_ID="AFTERO-";
@@ -654,10 +655,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	}
 
     /**
-     * @Description: 检查订单是否可以符合创建售后单
+     * @Description: 检查订单是否可以创建售后单
      * @Author: hzluoxingcheng
      * @Date: 2018/8/30
-     */ 
+     */
 	@Override
 	public boolean checkOrder(String shopOrderCode,AclUserAccreditInfo aclUserAccreditInfo) {
 		Example example = new Example(ShopOrder.class);
@@ -665,19 +666,60 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		criteria.andEqualTo("shopOrderCode", shopOrderCode);
 		List<String> statusList = Lists.newArrayList();
 		//待发货
-		statusList.add("1");
+		statusList.add(ShopOrderStatusEnum.IS_NOT_SEND.getCode());
 		//部分发货
-		statusList.add("2");
+		statusList.add(ShopOrderStatusEnum.IS_PART_SEND.getCode());
 		//全部发货
-		statusList.add("3");
+		statusList.add(ShopOrderStatusEnum.IS_ALL_SEND.getCode());
 		criteria.andIn("supplierOrderStatus",statusList);
 		//业务线
 		criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
 		List<ShopOrder>  orderList = shopOrderService.selectByExample(example);
-		if(!Objects.equals(null,orderList) && !orderList.isEmpty()){
-			return true;
+
+		if(Objects.equals(null,orderList) || orderList.isEmpty()){
+			return false;
 		}
-        return false;
+//		//根据订单编号查询售后单是否存在
+//		AfterSaleOrder safterSaleOrder = new AfterSaleOrder();
+//		safterSaleOrder.setShopOrderCode(shopOrderCode);
+//		List<AfterSaleOrder> searAfterSaleOrderList = afterSaleOrderService.select(safterSaleOrder);
+//        if(Objects.equals(null,searAfterSaleOrder) || ){
+//			return true;
+//		}
+//		//根据订单号查询子订单信息，获取所有skucode
+//		OrderItem selectOrderItem = new OrderItem();
+//		selectOrderItem.setShopOrderCode(shopOrderCode);
+//		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
+//		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
+//
+//		//循环获取skucode
+//		List<String> skuCodeLidt = Lists.newArrayList();
+//		//key是skucode，value是购买数量
+//		Map<String,Integer> numMap = new HashMap<>();
+//		for(OrderItem it:orderItemList){
+//			skuCodeLidt.add(it.getSkuCode());
+//			numMap.put(it.getSkuCode(),it.getNum());
+//		}
+//		//根据skucode集合以及订单编号查询已经创建未取消的售后信息记录
+//		Example detailExample = new Example(AfterSaleOrderDetail.class);
+//		Example.Criteria detailCriteria = example.createCriteria();
+//		detailCriteria.andEqualTo("shopOrderCode",shopOrderCode);
+//		detailCriteria.andIn("skuCode",skuCodeLidt);
+//		List<AfterSaleOrderDetail> dlist = afterSaleOrderDetailService.selectByExample(detailCriteria);
+//		if(Objects.equals(null,dlist) || dlist.isEmpty()){
+//			return true;
+//		}
+//		Map<String,List<AfterSaleOrderDetail>> newMap = new HashMap<>();
+//		for(AfterSaleOrderDetail d:dlist){
+//			String skuCode = d.getSkuCode();
+//			List<AfterSaleOrderDetail> vdlist = newMap.get(skuCode);
+//			if(Objects.equals(null,vdlist)){
+//				vdlist = Lists.newArrayList();
+//			}
+//			vdlist.add(d);
+//			newMap.put(skuCode,);
+//		}
+        return true;
 	}
 
 }
