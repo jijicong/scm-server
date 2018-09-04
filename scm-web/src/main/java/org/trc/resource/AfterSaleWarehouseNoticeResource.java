@@ -12,12 +12,10 @@ import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.trc.biz.afterSale.IAfterSaleWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeDO;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
 import org.trc.util.Pagenation;
@@ -47,7 +45,7 @@ public class AfterSaleWarehouseNoticeResource {
 	@Path("warehouseNoticeList")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "退货入库单列表",response = AfterSaleWarehouseNotice.class)
-	public Response warehouseNoticeList(@RequestBody AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,@BeanParam Pagenation<AfterSaleWarehouseNotice> page,@Context ContainerRequestContext requestContext) throws Exception{
+	public Response warehouseNoticeList(@BeanParam AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,@BeanParam Pagenation<AfterSaleWarehouseNotice> page,@Context ContainerRequestContext requestContext) throws Exception{
 		return ResultUtil.createSuccessPageResult(iAfterSaleWarehouseNoticeBiz.warehouseNoticeList(afterSaleWarehouseNoticeDO,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 	}
 	

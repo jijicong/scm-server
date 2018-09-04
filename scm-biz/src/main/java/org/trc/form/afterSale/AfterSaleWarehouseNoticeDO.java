@@ -2,7 +2,8 @@ package org.trc.form.afterSale;
 
 
 
-import javax.ws.rs.FormParam;
+
+import javax.ws.rs.QueryParam;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -12,31 +13,31 @@ import lombok.Setter;
 @Setter
 public class AfterSaleWarehouseNoticeDO {
 
+	@QueryParam("createTimeStart")
 	@ApiModelProperty(value="创建时间开始  yyyy-mm-dd")
-	@FormParam("createTimeStart")
 	public String createTimeStart;
 	
+	@QueryParam("createTimeEnd")
 	@ApiModelProperty(value="创建时间结束  yyyy-mm-dd")
-	@FormParam("createTimeEnd")
 	public String createTimeEnd;
 	
+	@QueryParam("warehouseNoticeCode")
 	@ApiModelProperty(value="入库单编号")
-	@FormParam("warehouseNoticeCode")
 	public String warehouseNoticeCode;
 	
+	@QueryParam("afterSaleCode")
 	@ApiModelProperty(value="售后单编号")
-	@FormParam("afterSaleCode")
 	public String afterSaleCode;
 	
+	@QueryParam("shopOrderCode")
 	@ApiModelProperty(value="订单编号")
-	@FormParam("shopOrderCode")
 	public String shopOrderCode;
 	
+	@QueryParam("warehouseCode")
 	@ApiModelProperty(value="入库仓库编码")
-	@FormParam("warehouseCode")
 	public String warehouseCode;
 	
+	@QueryParam("operator")
 	@ApiModelProperty(value="操作人")
-	@FormParam("operator")
 	public String operator;
 }

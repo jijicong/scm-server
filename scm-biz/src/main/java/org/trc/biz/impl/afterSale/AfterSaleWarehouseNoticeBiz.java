@@ -11,8 +11,6 @@ import org.trc.biz.afterSale.IAfterSaleWarehouseNoticeBiz;
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.domain.afterSale.AfterSaleWarehouseNoticeDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.order.ShopOrder;
-import org.trc.domain.purchase.PurchaseOutboundOrder;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeDO;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
@@ -87,6 +85,7 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
 		//查询退货入库单
 		AfterSaleWarehouseNotice selectNotice=new AfterSaleWarehouseNotice();
 		selectNotice.setWarehouseNoticeCode(warehouseNoticeCode);
+		selectNotice.setShopId(null);
 		AfterSaleWarehouseNotice afterSaleWarehouseNotice=afterSaleWarehouseNoticeService.selectOne(selectNotice);
 		AssertUtil.notNull(afterSaleWarehouseNotice, "根据该退货入库单号"+warehouseNoticeCode+"查询结果为空!");
 		
