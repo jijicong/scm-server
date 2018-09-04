@@ -1389,15 +1389,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
         }
 
-        if(isUpdateOrder || countNew > 0){
-            purchaseOrder.setBoxInfoStatus(PurchaseBoxInfoStatusEnum.UNFINISH.getCode());
-            int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
-            if (count == 0) {
-                String msg = String.format("修改采购单%s数据库操作失败",JSON.toJSONString(purchaseOrder));
-                LOGGER.error(msg);
-                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
-            }
-        }
+//        if(isUpdateOrder || countNew > 0){
+//            purchaseOrder.setBoxInfoStatus(PurchaseBoxInfoStatusEnum.UNFINISH.getCode());
+//            int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
+//            if (count == 0) {
+//                String msg = String.format("修改采购单%s数据库操作失败",JSON.toJSONString(purchaseOrder));
+//                LOGGER.error(msg);
+//                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+//            }
+//        }
     }
 
     /**
@@ -1528,12 +1528,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //判断是否维护装箱信息完成
-        String boxInfoStatus = order.getBoxInfoStatus();
-        if(boxInfoStatus == null || !StringUtils.equals(boxInfoStatus, PurchaseBoxInfoStatusEnum.FINISH.getCode())){
-            String msg = "请先完成“装箱信息”维护!";
-            LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
-        }
+//        String boxInfoStatus = order.getBoxInfoStatus();
+//        if(boxInfoStatus == null || !StringUtils.equals(boxInfoStatus, PurchaseBoxInfoStatusEnum.FINISH.getCode())){
+//            String msg = "请先完成“装箱信息”维护!";
+//            LOGGER.error(msg);
+//            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+//        }
 
         WarehouseNotice warehouseNotice = new WarehouseNotice();
         //这里没有继承commDao类，因此创建人要自己的代码处理

@@ -1,12 +1,13 @@
 package org.trc.biz.purchase;
 
-import org.trc.constants.SupplyConstants;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseBoxInfo;
 import org.trc.domain.purchase.PurchaseBoxInfoResultVO;
 import org.trc.domain.purchase.PurchaseBoxInfoVO;
+import org.trc.domain.purchase.QiNiuResponse;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -33,4 +34,5 @@ public interface IPurchaseBoxInfoBiz {
      * @return
      */
     PurchaseBoxInfoResultVO findPackingBoxInfo(String code);
+
 }

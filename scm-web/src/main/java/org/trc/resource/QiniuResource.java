@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.purchase.QiNiuResponse;
 import org.trc.form.UploadResponse;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
@@ -16,6 +17,7 @@ import org.trc.util.URLAvailability;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
 
 /**
@@ -48,8 +50,8 @@ public class QiniuResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public UploadResponse upload(@FormDataParam("Filedata") InputStream fileInputStream,
-                            @FormDataParam("Filedata") FormDataContentDisposition disposition,
-                            @PathParam("module") String module, @FormDataParam("fileName") String fileName) throws Exception {
+                                 @FormDataParam("Filedata") FormDataContentDisposition disposition,
+                                 @PathParam("module") String module, @FormDataParam("fileName") String fileName) throws Exception {
         UploadResponse uploadResponse = new UploadResponse(true);
         String _fileName = null;
         try{
@@ -124,4 +126,43 @@ public class QiniuResource {
         return ResultUtil.createSucssAppResult("删除成功",qinniuBiz.batchDelete(fileNames2, module));
     }
 
+    @POST
+    @Path("/uploadFile/{code}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public UploadResponse uploadFile(@FormDataParam("file") InputStream uploadedInputStream,
+                                                     @FormDataParam("file")FormDataContentDisposition fileDetail,
+                                                     @PathParam("code") String code)throws Exception  {
+        UploadResponse uploadResponse = new UploadResponse(true);
+        try{
+            QiNiuResponse qiNiuResponse = qinniuBiz.uploadFile(uploadedInputStream, fileDetail, code);
+            uploadResponse.setKey(qiNiuResponse.getKey());
+            uploadResponse.setFileName(qiNiuResponse.getFileName());
+            String url = qiNiuResponse.getUrl();
+            URLAvailability.isConnect(url);
+            uploadResponse.setUrl(url);
+        }catch (Exception e){
+            String msg = String.format("%s%s", "上传文件异常,异常信息：",e.getMessage());
+            log.error(msg, e);
+            uploadResponse.setSuccess(false);
+            uploadResponse.setErrorMsg(msg);
+        }
+        return uploadResponse;
+    }
+
+    @DELETE
+    @Path("/uploadFile/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteFile(@PathParam("id") Long id) {
+        log.info("开始删除文件信息，请求参数分别为：id=" + id);
+        qinniuBiz.deleteFile(id);
+        return ResultUtil.createSuccessResult("删除文件信息成功", "");
+    }
+
+    @GET
+    @Path("/uploadFile/{code}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFileInfo(@PathParam("code") String code){
+        return ResultUtil.createSuccessResult("获取文件信息成功",qinniuBiz.getFileInfo());
+    }
 }

@@ -1,28 +1,39 @@
 package org.trc.biz.impl.purchase;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.qiniu.storage.model.DefaultPutRet;
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseBoxInfoBiz;
+import org.trc.config.BaseThumbnailSize;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.enums.*;
 import org.trc.enums.purchase.PurchaseBoxInfoStatusEnum;
+import org.trc.exception.FileException;
 import org.trc.exception.PurchaseBoxInfoException;
+import org.trc.service.IQinniuService;
 import org.trc.service.config.IDictService;
+import org.trc.service.impl.QinniuService;
 import org.trc.service.impl.config.LogInfoService;
 import org.trc.service.purchase.IPurchaseBoxInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonUtil;
 import org.trc.util.ParamsUtil;
 import org.trc.util.cache.PurchaseOrderCacheEvict;
 
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -45,6 +56,8 @@ public class PurchaseBoxInfoBiz implements IPurchaseBoxInfoBiz{
     private IPurchaseDetailService purchaseDetailService;
     @Autowired
     private IDictService dictService;
+    @Autowired
+    private IQinniuService qinniuService;
 
     /**
      * 保存装箱信息
