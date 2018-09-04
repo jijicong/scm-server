@@ -398,7 +398,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		Set<String> afterSaleCodeSet = new HashSet<>();
 		boolean  cildSearchFlag = false;
 		if(StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(skuCode)){
-			afterSaleOrderDetailForm.setSkuCode(skuName);
+			afterSaleOrderDetailForm.setSkuName(skuName);
 			afterSaleOrderDetailForm.setSkuCode(skuCode);
 			detailList = afterSaleOrderDetailBiz.queryListByCondition(afterSaleOrderDetailForm);
 			if(Objects.equals(null,detailList) || detailList.isEmpty()){
@@ -438,7 +438,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		}
 		//物流单号(运单号)
 		if(StringUtils.isNotBlank(expressNumber)){
-			criteria.andEqualTo("waybillNumber",expressNumber);
+			criteria.andLike("waybillNumber","%"+expressNumber+"%");
 		}
 		//店铺订单编号
 		if(StringUtils.isNotBlank(shopOrderCode)){
@@ -454,11 +454,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		}
 		//客户姓名
 		if(StringUtils.isNotBlank(receiverName)){
-			criteria.andEqualTo("receiverName",receiverName);
+			criteria.andLike("receiverName","%"+receiverName+"%");
 		}
 		//客户电话
 		if(StringUtils.isNotBlank(receiverPhone)){
-			criteria.andEqualTo("receiverPhone",receiverPhone);
+			criteria.andLike("receiverPhone","%"+receiverPhone+"%");
 		}
 		//按创建时间倒叙排序
 		example.orderBy("createTime").desc();
