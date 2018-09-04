@@ -446,7 +446,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		}
 		//售后字表是否经过查询的标记
 		if(cildSearchFlag){
-			criteria.andIn("shopOrderCode",afterSaleCodeSet);
+			criteria.andIn("afterSaleCode",afterSaleCodeSet);
 		}
 		//售后单状态
 		if(!Objects.equals(null,status) && status!=-1 ){
