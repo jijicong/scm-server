@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
+import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.dict.Dict;
@@ -30,6 +31,7 @@ import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.taxrate.TaxRate;
 import org.trc.domain.util.Area;
+import org.trc.domain.util.QiNiuUrlInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
@@ -42,6 +44,7 @@ import org.trc.exception.PurchaseOrderException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
+import org.trc.service.IQinniuService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkuStockService;
@@ -53,6 +56,7 @@ import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.taxrate.TaxRateService;
 import org.trc.service.util.ILocationUtilService;
+import org.trc.service.util.IQiNiuUrlInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
@@ -128,6 +132,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Autowired
     private TaxRateService taxRateService;
+    @Autowired
+    private IQiNiuUrlInfoService qiNiuUrlInfoService;
 
 
     @Autowired
@@ -666,6 +672,24 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 }
             }
         }
+
+
+        String qiNiuValue = purchaseOrder.getQiNiuValue();
+        if(StringUtils.isNotBlank(qiNiuValue) && !"[]".equals(qiNiuValue)){
+            List<QiNiuUrlInfo> qiNiuUrlInfoList = null;
+            try {
+                qiNiuUrlInfoList = JSONArray.parseArray(qiNiuValue, QiNiuUrlInfo.class);
+                for(QiNiuUrlInfo qiNiuUrlInfo : qiNiuUrlInfoList){
+                    saveQiNiuInfo(qiNiuUrlInfo.getId(), qiNiuUrlInfo.getUploadFileName(),
+                            qiNiuUrlInfo.getFileName(), code);
+                }
+            }catch (JSONException e){
+                String msg = "采购商品保存,数据解析失败";
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            }
+        }
+
         //保存操作日志
         String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
@@ -678,6 +702,30 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
 
+    private void saveQiNiuInfo(Long fileId, String key, String fileName, String code){
+        if(fileId != null && fileId.longValue() > 0){
+            if(StringUtils.isNotBlank(key) && StringUtils.isNotBlank(fileName)){
+                QiNiuUrlInfo qiNiuUrlInfo = new QiNiuUrlInfo();
+                qiNiuUrlInfo.setCode(code);
+                qiNiuUrlInfo.setCreateTime(Calendar.getInstance().getTime());
+                qiNiuUrlInfo.setUpdateTime(Calendar.getInstance().getTime());
+                qiNiuUrlInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                qiNiuUrlInfo.setFileName(fileName);
+                qiNiuUrlInfo.setUploadFileName(key);
+                qiNiuUrlInfoService.insert(qiNiuUrlInfo);
+            }
+        }else{
+            if(StringUtils.isNotBlank(key) && StringUtils.isNotBlank(fileName)){
+                QiNiuUrlInfo qiNiuUrlInfo = new QiNiuUrlInfo();
+                qiNiuUrlInfo.setId(fileId);
+                qiNiuUrlInfo.setUpdateTime(Calendar.getInstance().getTime());
+                qiNiuUrlInfo.setUploadFileName(key);
+                qiNiuUrlInfo.setFileName(fileName);
+                qiNiuUrlInfo.setCode(code);
+                qiNiuUrlInfoService.updateByPrimaryKeySelective(qiNiuUrlInfo);
+            }
+        }
+    }
 
     private void checkWarehouse(Long warehouseId){
         if(warehouseId != null){
@@ -1322,6 +1370,23 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 }
             }
         }
+
+        String qiNiuValue = purchaseOrderAddData.getQiNiuValue();
+        if(StringUtils.isNotBlank(qiNiuValue) && !"[]".equals(qiNiuValue)){
+            List<QiNiuUrlInfo> qiNiuUrlInfoList = null;
+            try {
+                qiNiuUrlInfoList = JSONArray.parseArray(qiNiuValue, QiNiuUrlInfo.class);
+                for(QiNiuUrlInfo qiNiuUrlInfo : qiNiuUrlInfoList){
+                    saveQiNiuInfo(qiNiuUrlInfo.getId(), qiNiuUrlInfo.getUploadFileName(),
+                            qiNiuUrlInfo.getFileName(), purchaseOrderAddData.getPurchaseOrderCode());
+                }
+            }catch (JSONException e){
+                String msg = "采购商品保存,数据解析失败";
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            }
+        }
+
         //后台检验提交审核：商品不能为空
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){
             if(StringUtils.isBlank(purchaseOrderAddData.getGridValue()) && "[]".equals(purchaseOrderAddData.getGridValue())){

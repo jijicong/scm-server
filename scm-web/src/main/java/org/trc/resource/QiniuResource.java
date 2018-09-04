@@ -160,9 +160,9 @@ public class QiniuResource {
     }
 
     @GET
-    @Path("/uploadFile/{code}")
+    @Path("/uploadFile")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFileInfo(@PathParam("code") String code){
-        return ResultUtil.createSuccessResult("获取文件信息成功",qinniuBiz.getFileInfo());
+    public Response getFileInfo(@QueryParam("code") String code){
+        return ResultUtil.createSuccessResult("获取文件信息成功",qinniuBiz.getFileInfo(code));
     }
 }

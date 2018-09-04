@@ -145,10 +145,11 @@ public class QinniuBiz implements IQinniuBiz{
     }
 
     @Override
-    public QiNiuResponse uploadFile(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String code) {
+    public QiNiuResponse uploadFile(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String code) throws Exception {
         AssertUtil.notBlank(fileDetail.getFileName(), "上传文件名称不能为空");
         AssertUtil.notBlank(code, "关联编码不能为空");
         String _fileName = fileDetail.getFileName();
+        _fileName = new String(_fileName.getBytes("ISO-8859-1"), "utf-8");
         String suffix = _fileName.substring(_fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
         String newFileName = String.format("%s%s%s%s", code, String.valueOf(System.nanoTime()),
                 SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
@@ -171,14 +172,6 @@ public class QinniuBiz implements IQinniuBiz{
             log.error(msg,e);
             throw new FileException(ExceptionEnum.FILE_UPLOAD_EXCEPTION, msg);
         }
-        //保存上传信息
-        QiNiuUrlInfo qiNiuUrlInfo = new QiNiuUrlInfo();
-        qiNiuUrlInfo.setCode(code);
-        qiNiuUrlInfo.setCreateTime(Calendar.getInstance().getTime());
-        qiNiuUrlInfo.setUpdateTime(Calendar.getInstance().getTime());
-        qiNiuUrlInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        qiNiuUrlInfo.setUrl(url);
-        qiNiuUrlInfoService.insert(qiNiuUrlInfo);
 
         //返回上传信息
         QiNiuResponse qiNiuResponse = new QiNiuResponse();

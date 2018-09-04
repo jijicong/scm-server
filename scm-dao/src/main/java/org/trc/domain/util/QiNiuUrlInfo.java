@@ -18,7 +18,8 @@ public class QiNiuUrlInfo implements Serializable {
     @Id
     private Long id;
     private String code;
-    private String url;
+    private String fileName;
+    private String uploadFileName;
     private String isDeleted;
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;

@@ -75,7 +75,7 @@ public interface IQinniuBiz {
      * @param code
      */
     QiNiuResponse uploadFile(InputStream uploadedInputStream, FormDataContentDisposition fileDetail,
-                                             String code);
+                                             String code)throws Exception ;
 
     /**
      * 删除文件信息
@@ -89,4 +89,5 @@ public interface IQinniuBiz {
      * @return
      */
     List<QiNiuUrlInfo> getFileInfo(String code);
+
 }
