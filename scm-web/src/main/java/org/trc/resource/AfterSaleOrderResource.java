@@ -29,7 +29,7 @@ public class AfterSaleOrderResource {
 	
 	/**
 	 * 根据订单号 查询售后单信息
-	 * @param shopOrderCode
+	 * @param
 	 * @return
 	 * @throws Exception
 	 */
