@@ -1,5 +1,6 @@
 package org.trc.biz.impl.afterSale;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("scmShopOrderCode", scmShopOrderCode);
         Pagenation<AfterSaleOrder> pageResult = afterSaleOrderService.pagination(example, page, form);
-        Pagenation<AfterSaleDetailTabVO> pagenation = new Pagenation<>();
+        Pagenation<AfterSaleDetailTabVO> pagenation = JSON.parseObject(JSON.toJSONString(pageResult),Pagenation.class);
         List<AfterSaleOrder> afterSaleOrderList = pageResult.getResult();
         if (!AssertUtil.collectionIsEmpty(afterSaleOrderList)) {
             //退货单不为空,则查询sku级别退货单
@@ -75,7 +76,7 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
                 return pagenation;
             }
         }
-        return new Pagenation<>();
+        return pagenation;
 
     }
 
