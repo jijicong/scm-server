@@ -186,6 +186,7 @@ public class QinniuBiz implements IQinniuBiz{
         QiNiuUrlInfo qiNiuUrlInfo = new QiNiuUrlInfo();
         qiNiuUrlInfo.setId(id);
         qiNiuUrlInfo.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+        qiNiuUrlInfo.setUpdateTime(Calendar.getInstance().getTime());
         qiNiuUrlInfoService.updateByPrimaryKeySelective(qiNiuUrlInfo);
     }
 

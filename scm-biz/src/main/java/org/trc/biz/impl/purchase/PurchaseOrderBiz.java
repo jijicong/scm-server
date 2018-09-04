@@ -703,7 +703,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     private void saveQiNiuInfo(Long fileId, String key, String fileName, String code){
-        if(fileId != null && fileId.longValue() > 0){
+        if(fileId == null || fileId.longValue() == 0L){
             if(StringUtils.isNotBlank(key) && StringUtils.isNotBlank(fileName)){
                 QiNiuUrlInfo qiNiuUrlInfo = new QiNiuUrlInfo();
                 qiNiuUrlInfo.setCode(code);
