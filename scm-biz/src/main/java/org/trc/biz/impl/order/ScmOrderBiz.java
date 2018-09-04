@@ -1690,6 +1690,15 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                         storeItemCount++;
                     }
                 }
+            } else {
+            	/**
+            	 * 商品所在的发货单里面存在运单号的话，则说明是京东的商品 
+            	 **/
+            	for (OrderItem item : orderItemList) {
+                    if (StringUtils.equals(outboundOrder.getShopOrderCode(), item.getShopOrderCode())) {
+                    	item.setWaybillNumber(outboundOrder.getWaybillNumber());
+                    }
+            	}
             }
         }
         if(storeItemCount == orderItemList.size()){//全部商品都是门店的
