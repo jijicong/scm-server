@@ -95,7 +95,7 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
 		List<AfterSaleWarehouseNoticeDetail> afterSaleWarehouseNoticeDetailList=afterSaleWarehouseNoticeDetailService.select(selectDetail);
 		AssertUtil.notNull(afterSaleWarehouseNoticeDetailList, "根据该退货入库单号"+warehouseNoticeCode+"查询详情结果为空!");
 		
-		BeanUtils.copyProperties(afterSaleWarehouseNotice, VO);
+		BeanUtils.copyProperties(VO, afterSaleWarehouseNotice);
 		VO.setWarehouseNoticeDetailList(afterSaleWarehouseNoticeDetailList);
 		return VO;
 	}
