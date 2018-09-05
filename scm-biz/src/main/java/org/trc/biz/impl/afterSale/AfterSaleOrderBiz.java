@@ -281,7 +281,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		}
 		
 		returnOrderCreateRequest.setReturnInOrderDetailList(list);
-		return null;
+		return returnOrderCreateRequest;
 	}
 
 	private void getAfterSaleWarehouseNoticeDetail(OrderItem orderItem,
