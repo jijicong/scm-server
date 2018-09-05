@@ -69,7 +69,7 @@ public class AfterSaleOrderDetail implements Serializable {
      */
     @ApiModelProperty(value="spuCode")
 	@FormParam("spuCode")
-	@Column(name="sku_code")
+	@Column(name="spu_code")
 	private String spuCode;
     
     /**
