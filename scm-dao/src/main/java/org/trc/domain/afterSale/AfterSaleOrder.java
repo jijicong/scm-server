@@ -7,6 +7,10 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.ws.rs.FormParam;
+
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -91,6 +95,36 @@ public class AfterSaleOrder  implements Serializable{
      */
     @Column(name="user_name")
 	private String userName;
+    /**
+     * 发件人
+     */
+    @ApiModelProperty(value="发件人")
+	@Column(name="sender")
+	private String sender;
+	/**
+     * 发件人所在省
+     */
+    @ApiModelProperty(value="发件人所在省")
+	@Column(name="sender_province")
+	private String senderProvince;
+	/**
+     * 发件人所在城市
+     */
+    @ApiModelProperty(value="发件人所在城市")
+	@Column(name="sender_city")
+	private String senderCity;
+	/**
+     * 发件人手机
+     */
+    @ApiModelProperty(value="发件人手机")
+	@Column(name="sender_number")
+	private String senderNumber;
+	/**
+     * 发件方详细地址
+     */
+    @ApiModelProperty(value="发件方详细地址")
+	@Column(name="sender_address")
+	private String senderAddress;
 
     /**
      * 收货人所在省
