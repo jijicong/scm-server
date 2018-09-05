@@ -1,6 +1,5 @@
 package org.trc.biz.impl.afterSale;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.biz.afterSale.IAfterSaleOrderDetailBiz;
-import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.SellChannel;
@@ -39,7 +37,6 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.afterSale.*;
 import org.trc.form.warehouse.ScmReturnInOrderDetail;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
-import org.trc.service.IWmsService;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
