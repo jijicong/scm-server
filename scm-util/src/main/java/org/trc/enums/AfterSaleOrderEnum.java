@@ -112,4 +112,69 @@ public class AfterSaleOrderEnum {
 			}
 			
 		}
+		
+		//售后类型(0取消发货,1退货,手动新建只对应一种，即“退货)
+				public enum AfterSaleTypeEnum {
+					
+					STATUS_0(0,"取消发货"),
+					STATUS_1(1,"退货 ")
+					;
+
+					private int code;
+					private String name;  
+
+					AfterSaleTypeEnum(int code, String name) {
+						this.code = code;
+						this.name = name;
+					}
+					
+					public String getName() {
+						return name;
+					}
+
+					public void setName(String name) {
+						this.name = name;
+					}
+
+					public int getCode() {
+						return code;
+					}
+
+					public void setCode(int code) {
+						this.code = code;
+					}
+					
+				}
+				
+				//发起类型(0系统发起,1手动新建)
+				public enum launchTypeEnum {
+					
+					STATUS_0(0,"系统发起"),
+					STATUS_1(1,"手动新建");
+
+					private int code;
+					private String name;  
+
+					launchTypeEnum(int code, String name) {
+						this.code = code;
+						this.name = name;
+					}
+					
+					public String getName() {
+						return name;
+					}
+
+					public void setName(String name) {
+						this.name = name;
+					}
+
+					public int getCode() {
+						return code;
+					}
+
+					public void setCode(int code) {
+						this.code = code;
+					}
+					
+				}
 }
