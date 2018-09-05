@@ -1,7 +1,6 @@
 package org.trc.resource;
 
 import io.swagger.annotations.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
@@ -28,9 +27,7 @@ public class AfterSaleOrderResource {
 
 	@Resource
 	IAfterSaleOrderBiz iAfterSaleOrderBiz;
-	@Autowired
-	private IAfterSaleOrderBiz afterSaleOrderBiz;
-	
+
 	/**
 	 * 根据订单号 查询售后单信息
 	 * @param
@@ -159,8 +156,8 @@ public class AfterSaleOrderResource {
 	@Path(SupplyConstants.AfterSaleOrder.AFTER_SALE_ORDER_DETAIL_QUERY+"/{id}")
 	@ApiOperation(value = "获取售后单详情", response = AfterSaleDetailVO.class)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response orderDetail(@ApiParam(value = "售后单主键ID") @PathParam("id") String id){
-		return ResultUtil.createSuccessResult("售后单详情查询成功", afterSaleOrderBiz.queryAfterSaleOrderDetail(id));
+	public Response afterSaleOrderDetail(@ApiParam(value = "售后单主键ID") @PathParam("id") String id){
+		return ResultUtil.createSuccessResult("售后单详情查询成功", iAfterSaleOrderBiz.queryAfterSaleOrderDetail(id));
 	}
 
 

@@ -49,4 +49,6 @@ public interface IAfterSaleOrderBiz {
 	public boolean checkOrder(String shopOrderCode,AclUserAccreditInfo aclUserAccreditInfo );
 
 
+
+
 }
