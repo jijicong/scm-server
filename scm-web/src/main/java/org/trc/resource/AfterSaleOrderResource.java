@@ -1,12 +1,14 @@
 package org.trc.resource;
 
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.form.afterSale.AfterSaleDetailVO;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleOrderForm;
 import org.trc.util.Pagenation;
@@ -26,6 +28,8 @@ public class AfterSaleOrderResource {
 
 	@Resource
 	IAfterSaleOrderBiz iAfterSaleOrderBiz;
+	@Autowired
+	private IAfterSaleOrderBiz afterSaleOrderBiz;
 	
 	/**
 	 * 根据订单号 查询售后单信息
@@ -151,7 +155,13 @@ public class AfterSaleOrderResource {
 	}
 
 
-
+	@GET
+	@Path(SupplyConstants.AfterSaleOrder.AFTER_SALE_ORDER_DETAIL_QUERY+"/{id}")
+	@ApiOperation(value = "获取售后单详情", response = AfterSaleDetailVO.class)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response orderDetail(@ApiParam(value = "售后单主键ID") @PathParam("id") String id){
+		return ResultUtil.createSuccessResult("售后单详情查询成功", afterSaleOrderBiz.queryAfterSaleOrderDetail(id));
+	}
 
 
 
