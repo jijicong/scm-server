@@ -55,6 +55,15 @@ public class AfterSaleWarehouseNoticeDetail implements Serializable {
 	@Column(name="order_item_code")
     @FormParam("orderItemCode")
 	private String orderItemCode;
+    
+    /**
+     * spuCode
+     */
+    @ApiModelProperty(value="spuCode")
+	@FormParam("spuCode")
+	@Column(name="sku_code")
+	private String spuCode;
+    
     /**
      * skuCode
      */
