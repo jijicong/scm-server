@@ -28,7 +28,9 @@ import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
+import org.trc.enums.AfterSaleOrderEnum.AfterSaleTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
+import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ShopOrderStatusEnum;
 import org.trc.enums.ValidEnum;
@@ -46,6 +48,7 @@ import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
 import org.trc.service.category.IBrandService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.order.IOrderItemService;
@@ -102,6 +105,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IWarehouseApiService warehouseApiService;
 	@Autowired
 	private ISkusService skusService;
+	@Autowired
+	private ILogInfoService logInfoService;
 
 	@Autowired
 	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
@@ -210,9 +215,12 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderService.insert(afterSaleOrder);
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
 		//通知wms，新增退货入库单
-//		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo,platformOrder,warehouseInfo);
-//		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo,platformOrder,warehouseInfo);
+		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
 		
+		//日志
+		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 
+				aclUserAccreditInfo.getUserId(), "创建", "", null);
 	}
 
 	
@@ -404,6 +412,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
 		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
 		afterSaleOrder.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
+		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.STATUS_1.getCode());
+		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_1.getCode());
 		if(StringUtils.isNotBlank(afterSaleOrderAddDO.getLogisticsCorporationCode()) && StringUtils.isNotBlank(afterSaleOrderAddDO.getWaybillNumber())) {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
 		}else {
