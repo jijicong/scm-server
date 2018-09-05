@@ -759,11 +759,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		criteria.andEqualTo("scmShopOrderCode", scmShopOrderCode);
 		List<String> statusList = Lists.newArrayList();
 		//待发货
-		statusList.add(ShopOrderStatusEnum.IS_NOT_SEND.getCode());
+		statusList.add(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());
 		//部分发货
-		statusList.add(ShopOrderStatusEnum.IS_PART_SEND.getCode());
+		statusList.add(OrderDeliverStatusEnum.PARTS_DELIVER.getCode());
 		//全部发货
-		statusList.add(ShopOrderStatusEnum.IS_ALL_SEND.getCode());
+		statusList.add(OrderDeliverStatusEnum.ALL_DELIVER.getCode());
 		criteria.andIn("supplierOrderStatus",statusList);
 		//业务线
 		criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
