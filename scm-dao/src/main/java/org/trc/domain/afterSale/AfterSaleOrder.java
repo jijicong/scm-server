@@ -2,6 +2,8 @@ package org.trc.domain.afterSale;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -194,6 +196,7 @@ public class AfterSaleOrder  implements Serializable{
     /**
      * 创建时间（格式yyyy-mm-dd hh:mi:ss''）
      */
+    @JsonSerialize(using = CustomDateSerializer.class)
     @Column(name="create_time")
 	private Date createTime;
     /**
@@ -204,6 +207,7 @@ public class AfterSaleOrder  implements Serializable{
     /**
      * 修改时间（格式yyyy-mm-dd hh:mi:ss''）
      */
+    @JsonSerialize(using = CustomDateSerializer.class)
     @Column(name="update_time")
 	private Date updateTime;
     /**

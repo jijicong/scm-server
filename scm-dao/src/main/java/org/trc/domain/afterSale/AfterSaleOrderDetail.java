@@ -3,6 +3,8 @@ package org.trc.domain.afterSale;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -171,6 +173,7 @@ public class AfterSaleOrderDetail implements Serializable {
      * 创建时间
      */
     @ApiModelProperty(value="创建时间")
+	@JsonSerialize(using = CustomDateSerializer.class)
 	@FormParam("createTime")
 	@Column(name="create_time")
 	private Date createTime;
@@ -178,6 +181,7 @@ public class AfterSaleOrderDetail implements Serializable {
      * 修改时间
      */
     @ApiModelProperty(value="修改时间")
+	@JsonSerialize(using = CustomDateSerializer.class)
 	@FormParam("updateTime")
 	@Column(name="update_time")
 	private Date updateTime;
