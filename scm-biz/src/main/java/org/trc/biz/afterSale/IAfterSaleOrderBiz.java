@@ -5,6 +5,7 @@ import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.afterSale.*;
+import org.trc.form.returnIn.ReturnInWmsResponseForm;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
@@ -47,6 +48,12 @@ public interface IAfterSaleOrderBiz {
 	 * @Date: 2018/8/30
 	 */ 
 	public boolean checkOrder(String shopOrderCode,AclUserAccreditInfo aclUserAccreditInfo );
+
+	/**
+	 * 退货入库单收货结果通知
+	 * @param req
+	 */
+	void returnInOrderResultNotice(ReturnInWmsResponseForm req);
 
 
 }

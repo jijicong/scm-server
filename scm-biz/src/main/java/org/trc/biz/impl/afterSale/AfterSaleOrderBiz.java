@@ -37,6 +37,8 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.afterSale.*;
 import org.trc.form.warehouse.ScmReturnInOrderDetail;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
+import org.trc.form.returnIn.ReturnInDetailWmsResponseForm;
+import org.trc.form.returnIn.ReturnInWmsResponseForm;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
@@ -790,5 +792,63 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 //		}
         return true;
 	}
+
+	@Override
+	public void returnInOrderResultNotice(ReturnInWmsResponseForm req) {
+		AssertUtil.notBlank(req.getAfterSaleCode(), "售后单编码不能为空");
+		AssertUtil.notBlank(req.getWarehouseNoticeCode(), "退货入库单编码不能为空");
+		AssertUtil.notEmpty(req.getReturnInDetailWmsResponseFormList(), "退货入库单明细不能为空");
+		AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
+		afterSaleOrder.setAfterSaleCode(req.getAfterSaleCode());
+		afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
+		AssertUtil.notNull(afterSaleOrder, String.format("根据售后单号%s查询售后单信息为空", req.getAfterSaleCode()));
+		AfterSaleOrderDetail afterSaleOrderDetail = new AfterSaleOrderDetail();
+		afterSaleOrderDetail.setAfterSaleCode(req.getAfterSaleCode());
+		List<AfterSaleOrderDetail> afterSaleOrderDetailList = afterSaleOrderDetailService.select(afterSaleOrderDetail);
+		AssertUtil.notEmpty(afterSaleOrderDetailList, String.format("根据售后单号%s查询售后单商品明细信息为空", req.getAfterSaleCode()));
+		for(ReturnInDetailWmsResponseForm responseForm: req.getReturnInDetailWmsResponseFormList()){
+			AssertUtil.notBlank(responseForm.getWarehouseNoticeCode(), "退货入库单编码不能为空");
+			AssertUtil.notBlank(responseForm.getSkuCode(), "skuCode不能为空");
+			for(AfterSaleOrderDetail detail: afterSaleOrderDetailList){
+				if(StringUtils.equals(responseForm.getSkuCode(), detail.getSkuCode())){
+					int totalInNum = getReturnNum(responseForm.getInNum(), responseForm.getDefectiveInNum());
+					AssertUtil.isTrue(detail.getMaxReturnNum().intValue() >= totalInNum, String.format("商品%s的退货入库总量%s大于最大可退数量%s", responseForm.getSkuCode(), totalInNum, detail.getMaxReturnNum()));
+				}
+			}
+		}
+		AfterSaleWarehouseNotice warehouseNotice = new AfterSaleWarehouseNotice();
+		warehouseNotice.setWarehouseNoticeCode(req.getWarehouseNoticeCode());
+		warehouseNotice = afterSaleWarehouseNoticeService.selectOne(warehouseNotice);
+		AssertUtil.notNull(warehouseNotice, String.format("根据退货入库单编码%s查询退货入库单信息为空", req.getWarehouseNoticeCode()));
+		AfterSaleWarehouseNoticeDetail warehouseNoticeDetail = new AfterSaleWarehouseNoticeDetail();
+		warehouseNotice.setWarehouseNoticeCode(req.getWarehouseNoticeCode());
+		List<AfterSaleWarehouseNoticeDetail> warehouseNoticeDetailList = afterSaleWarehouseNoticeDetailService.select(warehouseNoticeDetail);
+		AssertUtil.notEmpty(warehouseNoticeDetailList, String.format("根据退货入库单编码%s查询退货入库单明细信息为空", req.getWarehouseNoticeCode()));
+
+
+
+
+
+	}
+
+	/**
+	 * 获取退货总量
+	 * @param inNum
+	 * @param defectiveInNum
+	 * @return
+	 */
+	private int getReturnNum(Integer inNum, Integer defectiveInNum){
+		int _inNum = 0;
+		if(null != inNum){
+			_inNum = inNum.intValue();
+		}
+		int _defectiveInNum = 0;
+		if(null != defectiveInNum){
+			_defectiveInNum = defectiveInNum.intValue();
+		}
+		return _inNum + _defectiveInNum;
+	}
+
+
 
 }
