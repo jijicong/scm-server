@@ -1035,7 +1035,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         if(org.apache.commons.lang3.StringUtils.equals(appResult.getAppcode(), SUCCESS)){
             List<ScmItemSyncResponse> res = (List<ScmItemSyncResponse>)appResult.getResult();
             if(res != null && res.size() > 0){
-                this.updateWarehouseItemInfo(this.getSuccessItemId(warehouseInfo.getCode(), res), userId);
+                this.updateWarehouseItemInfo(this.getSuccessItemId(warehouseInfo.getCode(), res,
+                        warehouseInfo.getWarehouseName()), userId);
             }
             return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
         }
@@ -1046,7 +1047,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), appResult.getDatabuffer(), "");
     }
 
-    private Map<String, String> getSuccessItemId(String warehouseCode, List<ScmItemSyncResponse> batchItemSynItems){
+    private Map<String, String> getSuccessItemId(String warehouseCode, List<ScmItemSyncResponse> batchItemSynItems, String warehouseName){
         Map<String, String> itemMap = new HashMap<>();
         for(ScmItemSyncResponse synItem : batchItemSynItems){
             WarehouseItemInfo info = new WarehouseItemInfo();
@@ -1060,6 +1061,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 info.setExceptionReason(synItem.getMessage());
                 info.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
                 warehouseItemInfoService.updateByPrimaryKeySelective(info);
+                logInfoService.recordLog(info, info.getId().toString(), warehouseName,
+                        LogOperationEnum.NOTICE_FAIL.getMessage(), "失败原因:" + synItem.getMessage(), null);
             }
         }
         return itemMap;
