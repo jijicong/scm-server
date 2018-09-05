@@ -33,19 +33,15 @@ import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ShopOrderStatusEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.WarehouseTypeEnum;
+import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
 import org.trc.form.ReturnInResultNoticeForm;
 import org.trc.form.ReturnInSkuInfo;
 import org.trc.form.afterSale.*;
-import org.trc.form.warehouse.ScmReturnInOrderDetail;
-import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.form.returnIn.ReturnInDetailWmsResponseForm;
 import org.trc.form.returnIn.ReturnInWmsResponseForm;
+import org.trc.form.warehouse.ScmReturnInOrderDetail;
+import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.service.ITrcService;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
@@ -122,8 +118,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
     private ISellChannelService sellChannelService;
 	@Autowired
 	private ITrcService trcService;
-	@Autowired
-	private ILogInfoService logInfoService;
 
 
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTEROD-";

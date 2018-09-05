@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
@@ -45,6 +46,8 @@ public class WmsApiResource {
     private IWarehouseNoticeBiz warehouseNoticeBiz;
     @Autowired
     private IOutBoundOrderBiz outBoundOrderBiz;
+    @Autowired
+    private IAfterSaleOrderBiz afterSaleOrderBiz;
 
     @POST
     @Path("allocateOutOrder")
@@ -98,6 +101,8 @@ public class WmsApiResource {
                     "    \"recordRemark\":\"理货结果录入备注\",\n" +
                     "    \"recordPicture\":\"理货结果上传图片, 多个图片路径用逗号分隔\",\n" +
                     "    \"confirmRemark\":\"确认到货备注\",\n" +
+                    "    \"operator\":\"操作人\",\n" +
+                    "    \"warehouseTime\":\"入库时间\",\n" +
                     "    \"returnInDetailWmsResponseFormList\":[\n" +
                     "        \"warehouseNoticeCode\":\"入库单编号\",\n" +
                     "        \"skuCode\":\"skuCode\",\n" +
@@ -112,7 +117,7 @@ public class WmsApiResource {
     public Response returnInOrderResultNotice(@FormParam("request") String request) throws Exception {
         ReturnInWmsResponseForm req = JSON.parseObject(request, ReturnInWmsResponseForm.class);
         try{
-            
+            afterSaleOrderBiz.returnInOrderResultNotice(req);
         }catch (Exception e){
             return ResultUtil.createfailureResult(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
         }
