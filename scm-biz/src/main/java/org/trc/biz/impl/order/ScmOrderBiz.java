@@ -1695,7 +1695,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             	 * 商品所在的发货单里面存在运单号的话，则说明是京东的商品 
             	 **/
             	for (OrderItem item : orderItemList) {
-                    if (StringUtils.equals(outboundOrder.getShopOrderCode(), item.getShopOrderCode())) {
+                    if (StringUtils.equals(outboundOrder.getWarehouseOrderCode(), item.getWarehouseOrderCode())) {
                     	item.setWaybillNumber(outboundOrder.getWaybillNumber());
                     }
             	}
