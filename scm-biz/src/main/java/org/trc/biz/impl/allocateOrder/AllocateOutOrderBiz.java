@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
 import org.trc.domain.allocateOrder.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -84,6 +85,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IRealIpService iRealIpService;
     @Autowired
     private IWarehouseMockService warehouseMockService;
+    @Autowired
+    private IAllocateInOrderBiz allocateInOrderBiz;
 
     public final static String SUCCESS = "200";
 
@@ -192,6 +195,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response outFinishCallBack(WmsAllocateOutInRequest req) {
         AssertUtil.notNull(req, "调拨出库回调信息不能为空");
         String allocateOrderCode = req.getAllocateOrderCode();
@@ -271,7 +275,23 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
 
+        if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+            this.noticeReceive(allocateOrderCode);
+        }
+
         return ResultUtil.createSuccessResult("反填调拨出库信息成功！", "");
+    }
+
+    private void noticeReceive(String allocateOrderCode){
+        try{
+            new Thread(() -> {
+                AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
+                aclUserAccreditInfo.setUserId("admin");
+                allocateInOrderBiz.noticeReciveGoods(allocateOrderCode, aclUserAccreditInfo);
+            }).start();
+        }catch(Exception e){
+            logger.error("通知收货失败", e);
+        }
     }
 
     //获取状态

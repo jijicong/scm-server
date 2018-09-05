@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
@@ -38,10 +39,7 @@ import org.trc.form.AllocateOrder.QuerySkuInventory;
 import org.trc.form.warehouse.ScmInventoryQueryItem;
 import org.trc.form.warehouse.ScmInventoryQueryRequest;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
-import org.trc.service.allocateOrder.IAllocateOrderExtService;
-import org.trc.service.allocateOrder.IAllocateOrderService;
-import org.trc.service.allocateOrder.IAllocateOutOrderService;
-import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.service.allocateOrder.*;
 import org.trc.service.category.IBrandService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
@@ -95,6 +93,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	private ICommonService commonService;
 	@Autowired
 	private IWarehouseApiService warehouseApiService;
+	@Autowired
+	private IAllocateInOrderService allocateInOrderService;
 	
     /**
      * 调拨单分页查询
@@ -663,6 +663,25 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		
 		allocateOrderExtService.discardedAllocateInOrder(orderId);
 		allocateOrderExtService.discardedAllocateOutOrder(orderId);
+		//修改作废逻辑
+		AllocateInOrder allocateInOrder = new AllocateInOrder();
+		allocateInOrder.setAllocateOrderCode(orderId);
+		allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
+		if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), allocateInOrder.getIsClose())){
+			allocateInOrder.setOldStatus("");
+			allocateInOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
+			allocateInOrder.setUpdateTime(Calendar.getInstance().getTime());
+			allocateInOrderService.updateByPrimaryKey(allocateInOrder);
+		}
+		AllocateOutOrder allocateOutOrder = new AllocateOutOrder();
+		allocateOutOrder.setAllocateOrderCode(orderId);
+		allocateOutOrder = allocateOutOrderService.selectOne(allocateOutOrder);
+		if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), allocateOutOrder.getIsClose())){
+			allocateOutOrder.setOldStatus("");
+			allocateOutOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
+			allocateOutOrder.setUpdateTime(Calendar.getInstance().getTime());
+			allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+		}
 		
 		logInfoService.recordLog(new AllocateOrder(), orderId, 
 				userInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
