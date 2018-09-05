@@ -72,6 +72,7 @@
         <property name="externalItemSkuUpdateUrl" value="${trc.externalItemSku.update.information.url}"/>
         <property name="logisticsNotifyUrl" value="${trc.send.logistic.url}"/>
         <property name="orderSubmitNotifyUrl" value="${trc.orderSubmit.notify.url}"/>
+        <property name="returnInResultNotifyUrl" value="${trc.returnInResult.notify.url}"/>
         <property name="noticeChannal" value="${notice.channal}"/>
     </bean>
 

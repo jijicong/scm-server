@@ -4,9 +4,13 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.biz.afterSale.IAfterSaleOrderDetailBiz;
 import org.trc.constants.SupplyConstants;
@@ -28,12 +32,16 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ShopOrderStatusEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ParamValidException;
+import org.trc.form.ReturnInResultNoticeForm;
+import org.trc.form.ReturnInSkuInfo;
 import org.trc.form.afterSale.*;
 import org.trc.form.returnIn.ReturnInDetailWmsResponseForm;
 import org.trc.form.returnIn.ReturnInWmsResponseForm;
+import org.trc.service.ITrcService;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
@@ -41,6 +49,7 @@ import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
 import org.trc.service.category.IBrandService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.order.IOrderItemService;
@@ -65,6 +74,8 @@ import static org.trc.biz.impl.jingdong.JingDongBizImpl.EXCEL;
 
 @Service("afterSaleOrderBiz")
 public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
+
+	private Logger logger = LoggerFactory.getLogger(AfterSaleOrderBiz.class);
 
 	@Resource
 	private IOrderItemService orderItemService;
@@ -100,6 +111,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IAfterSaleOrderDetailBiz afterSaleOrderDetailBiz;
 	@Autowired
     private ISellChannelService sellChannelService;
+	@Autowired
+	private ITrcService trcService;
+	@Autowired
+	private ILogInfoService logInfoService;
 
 
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTEROD-";
@@ -721,13 +736,23 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public void returnInOrderResultNotice(ReturnInWmsResponseForm req) {
 		AssertUtil.notBlank(req.getAfterSaleCode(), "售后单编码不能为空");
 		AssertUtil.notBlank(req.getWarehouseNoticeCode(), "退货入库单编码不能为空");
+		AssertUtil.notBlank(req.getOperator(), "操作人不能为空");
 		AssertUtil.notEmpty(req.getReturnInDetailWmsResponseFormList(), "退货入库单明细不能为空");
 		AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
 		afterSaleOrder.setAfterSaleCode(req.getAfterSaleCode());
 		afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
+		if(AfterSaleOrderStatusEnum.STATUS_3.getCode() == afterSaleOrder.getStatus()){
+			if(logger.isInfoEnabled()){
+				logger.info(String.format("根据售后单%s状态已经是已经完成", req.getAfterSaleCode()));
+			}
+			return;
+		}else if(AfterSaleOrderStatusEnum.STATUS_4.getCode() == afterSaleOrder.getStatus()){
+			throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("根据售后单%s状态已经是已经取消", req.getAfterSaleCode()));
+		}
 		AssertUtil.notNull(afterSaleOrder, String.format("根据售后单号%s查询售后单信息为空", req.getAfterSaleCode()));
 		AfterSaleOrderDetail afterSaleOrderDetail = new AfterSaleOrderDetail();
 		afterSaleOrderDetail.setAfterSaleCode(req.getAfterSaleCode());
@@ -752,11 +777,142 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<AfterSaleWarehouseNoticeDetail> warehouseNoticeDetailList = afterSaleWarehouseNoticeDetailService.select(warehouseNoticeDetail);
 		AssertUtil.notEmpty(warehouseNoticeDetailList, String.format("根据退货入库单编码%s查询退货入库单明细信息为空", req.getWarehouseNoticeCode()));
 
-
-
-
+		Date currentTime = new Date();
+		/**
+		 * 更新退货入库单状态及明细
+		 */
+		warehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_2.getCode());
+		warehouseNotice.setRecordRemark(req.getRecordRemark());
+		warehouseNotice.setRecordPic(req.getRecordPicture());
+		warehouseNotice.setConfirmRemark(req.getConfirmRemark());
+		warehouseNotice.setWarehouseTime(req.getWarehouseTime());
+		afterSaleWarehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
+		for(AfterSaleWarehouseNoticeDetail detail: warehouseNoticeDetailList){
+			for(ReturnInDetailWmsResponseForm responseForm: req.getReturnInDetailWmsResponseFormList()){
+				if(StringUtils.equals(responseForm.getSkuCode(), detail.getSkuCode())){
+					detail.setInNum(responseForm.getInNum());
+					detail.setDefectiveInNum(responseForm.getDefectiveInNum());
+					int totalInNum = getReturnNum(responseForm.getInNum(), responseForm.getDefectiveInNum());
+					detail.setTotalInNum(totalInNum);
+					detail.setUpdateTime(currentTime);
+					afterSaleWarehouseNoticeDetailService.updateByPrimaryKeySelective(detail);
+				}
+			}
+		}
+		/**
+		 * 更新售后单状态及明细
+		 */
+		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+		afterSaleOrder.setUpdateTime(currentTime);
+		afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
+		for(AfterSaleOrderDetail detail: afterSaleOrderDetailList){
+			for(ReturnInDetailWmsResponseForm responseForm: req.getReturnInDetailWmsResponseFormList()){
+				if(StringUtils.equals(responseForm.getSkuCode(), detail.getSkuCode())){
+					detail.setInNum(responseForm.getInNum());
+					detail.setDefectiveInNum(responseForm.getDefectiveInNum());
+					detail.setUpdateTime(currentTime);
+					afterSaleOrderDetailService.updateByPrimaryKeySelective(detail);
+				}
+			}
+		}
+		/**
+		 * 记录操作日志
+		 */
+		StringBuilder sb = new StringBuilder();
+		for(ReturnInDetailWmsResponseForm responseForm: req.getReturnInDetailWmsResponseFormList()){
+			if(sb.length() > 0){
+				sb.append("/ ");
+			}
+			if(null != responseForm.getInNum() && responseForm.getInNum() > 0){
+				sb.append(responseForm.getSkuCode()).append(": 正品入库:").append(responseForm.getInNum());
+			}
+			if(null != responseForm.getDefectiveInNum() && responseForm.getDefectiveInNum() > 0){
+				sb.append(responseForm.getSkuCode()).append(": 残品入库:").append(responseForm.getDefectiveInNum());
+			}
+		}
+		logInfoService.recordLog(afterSaleOrder,afterSaleOrder.getId().toString(), req.getOperator(), LogOperationEnum.AFTER_SALE_ORDER_IN.getMessage(), sb.toString(),null);
+		/**
+		 * 通知泰然城退货入库单收货结果
+		 */
+		try{
+			returnInResultNoticeChannel(warehouseNotice, warehouseNoticeDetailList);
+		}catch (Exception e){
+			logger.error("通知泰然城退货入库单收货结果异常", e);
+		}
 
 	}
+
+	/**
+	 * 通知泰然城退货入库单收货结果
+	 * @param afterSaleWarehouseNotice
+	 * @param afterSaleWarehouseNoticeDetailList
+	 */
+	private void returnInResultNoticeChannel(AfterSaleWarehouseNotice afterSaleWarehouseNotice, List<AfterSaleWarehouseNoticeDetail> afterSaleWarehouseNoticeDetailList){
+		ReturnInResultNoticeForm noticeForm = new ReturnInResultNoticeForm();
+		noticeForm.setAfterSaleCode(afterSaleWarehouseNotice.getAfterSaleCode());
+		noticeForm.setShopOrderCode(afterSaleWarehouseNotice.getShopOrderCode());
+		noticeForm.setMemo(afterSaleWarehouseNotice.getRecordRemark());
+		noticeForm.setRecordPic(afterSaleWarehouseNotice.getRecordPic());
+		OrderItem orderItem = new OrderItem();
+		orderItem.setScmShopOrderCode(afterSaleWarehouseNotice.getScmShopOrderCode());
+		List<OrderItem> orderItemList = orderItemService.select(orderItem);
+		AssertUtil.notEmpty(orderItemList, String.format("根据系统订单号%s查询订单商品明细为空", afterSaleWarehouseNotice.getScmShopOrderCode()));
+		Map<String, List<OrderItem>> skuMap = new HashMap<>();
+		List<ReturnInSkuInfo> skuInfoList = new ArrayList<>();
+		for(AfterSaleWarehouseNoticeDetail detail: afterSaleWarehouseNoticeDetailList){
+			ReturnInSkuInfo skuInfo = new ReturnInSkuInfo();
+			skuInfo.setSkuCode(detail.getSkuCode());
+			skuInfo.setSkuName(detail.getSkuName());
+			skuInfo.setInNum(detail.getInNum());
+			skuInfo.setDefectiveInNum(detail.getDefectiveInNum());
+			if(skuMap.containsKey(skuInfo.getSkuCode())){
+				continue;
+			}
+			skuInfoList.add(skuInfo);
+			List<OrderItem> tmpList = new ArrayList<>();
+			for(OrderItem _orderItem: orderItemList){
+				if(StringUtils.equals(skuInfo.getSkuCode(), _orderItem.getSkuCode())){
+					tmpList.add(_orderItem);
+				}
+			}
+			skuMap.put(skuInfo.getSkuCode(), tmpList);
+		}
+		for(ReturnInSkuInfo skuInfo: skuInfoList){
+			List<OrderItem> tmpList = skuMap.get(skuInfo.getSkuCode());
+			if(tmpList.size() == 0){
+				break;
+			}
+			if(tmpList.size() == 1){
+				skuInfo.setOrderItemCode(tmpList.get(0).getOrderItemCode());
+			}else if(tmpList.size() > 1){
+				/***
+				 * 此段逻辑是处理商品和对应的赠品sku一样的商品订单
+				 */
+				OrderItem tmpOrderItem = null;
+				for(OrderItem orderItem2: tmpList){
+					boolean flag = false;
+					for(ReturnInSkuInfo _skuInfo: skuInfoList){
+						if(StringUtils.equals(orderItem2.getSkuCode(), _skuInfo.getSkuCode()) &&
+								StringUtils.equals(orderItem2.getOrderItemCode(), _skuInfo.getOrderItemCode())){
+							flag = true;
+							break;
+						}
+					}
+					if(!flag){
+						tmpOrderItem = orderItem2;
+					}
+				}
+				if(null != tmpOrderItem){
+					skuInfo.setOrderItemCode(tmpOrderItem.getOrderItemCode());
+				}
+			}
+		}
+		noticeForm.setSkus(skuInfoList);
+		trcService.sendReturnInResult(noticeForm);
+	}
+
+
+
 
 	/**
 	 * 获取退货总量

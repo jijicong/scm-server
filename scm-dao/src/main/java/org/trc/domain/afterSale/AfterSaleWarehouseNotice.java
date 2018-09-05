@@ -1,13 +1,12 @@
 package org.trc.domain.afterSale;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
-
-import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -236,6 +235,12 @@ public class AfterSaleWarehouseNotice implements Serializable {
     @ApiModelProperty(value="理货结果录入备注")
 	@FormParam("record_remark")
 	private String recordRemark;
+	/**
+	 * 理货图片附件图片七牛存储路径,多个用逗号分隔
+	 */
+	@ApiModelProperty(value="理货图片附件图片七牛存储路径,多个用逗号分隔")
+	@FormParam("record_pic")
+	private String recordPic;
     /**
      * 确认到货备注
      */

@@ -3,8 +3,11 @@ package org.trc.form.returnIn;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,6 +46,19 @@ public class ReturnInWmsResponseForm implements Serializable {
      */
     @ApiModelProperty(value="确认到货备注")
     private String confirmRemark;
+
+    /**
+     * 操作人
+     */
+    @ApiModelProperty(value="操作人")
+    private String operator;
+
+    /**
+     * 入库时间
+     */
+    @ApiModelProperty(value="入库时间")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date warehouseTime;
 
     /**
      * 退货入库明细
