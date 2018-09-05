@@ -275,6 +275,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNoticeDetail.setWarehouseNoticeCode(warehouseNoticeCode);
 		afterSaleWarehouseNoticeDetail.setShopOrderCode(orderItem.getShopOrderCode());
 		afterSaleWarehouseNoticeDetail.setOrderItemCode(orderItem.getOrderItemCode());
+		afterSaleWarehouseNoticeDetail.setSpuCode(orderItem.getSpuCode());
 		afterSaleWarehouseNoticeDetail.setSkuCode(orderItem.getSkuCode());
 		afterSaleWarehouseNoticeDetail.setSkuName(orderItem.getItemName());
 		afterSaleWarehouseNoticeDetail.setBarCode(orderItem.getBarCode());
@@ -299,6 +300,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderDetail.setBrandName(getBrandName(orderItem.getSpuCode()));
 		afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
 		afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
+		afterSaleOrderDetail.setSpuCode(orderItem.getSpuCode());
 		afterSaleOrderDetail.setSkuName(orderItem.getItemName());
 		afterSaleOrderDetail.setBarCode(orderItem.getBarCode());
 		afterSaleOrderDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
