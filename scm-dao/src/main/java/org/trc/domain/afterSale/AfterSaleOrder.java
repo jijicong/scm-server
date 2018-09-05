@@ -81,7 +81,7 @@ public class AfterSaleOrder  implements Serializable{
      * 订单所属的店铺id
      */
     @Column(name="shop_id")
-	private long shopId;
+	private Long shopId;
     /**
      * 店铺名称
      */
