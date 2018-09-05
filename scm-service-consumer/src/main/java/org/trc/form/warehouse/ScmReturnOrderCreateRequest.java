@@ -88,6 +88,22 @@ public class ScmReturnOrderCreateRequest  extends ScmWarehouseRequestBase{
 	 */
 	private String remark;
 	/**
+	 * 业务线编码
+	 */
+	private String channelCode;
+	/**
+	 * 销售渠道编码
+	 */
+	private String sellCode;
+	/**
+	 * 订单所属的店铺id
+	 */
+	private Long shopId;
+	/**
+	 * 店铺名称
+	 */
+	private String shopName;
+	/**
 	 * 子退货入库单
 	 */
 	private List<ScmReturnInOrderDetail> returnInOrderDetailList;

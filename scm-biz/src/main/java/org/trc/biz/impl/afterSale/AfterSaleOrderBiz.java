@@ -254,6 +254,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		returnOrderCreateRequest.setSkuNum(afterSaleOrderAddDO.getAfterSaleOrderDetailList().size());
 		returnOrderCreateRequest.setOperator(aclUserAccreditInfo.getName());
 		returnOrderCreateRequest.setRemark(afterSaleOrderAddDO.getMemo());
+		returnOrderCreateRequest.setChannelCode(shopOrder.getChannelCode());
+		returnOrderCreateRequest.setSellCode(shopOrder.getSellCode());
+		returnOrderCreateRequest.setShopId(shopOrder.getShopId());
+		returnOrderCreateRequest.setShopName(shopOrder.getShopName());
 		
 		List<ScmReturnInOrderDetail> list=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:afterSaleOrderAddDO.getAfterSaleOrderDetailList()) {
