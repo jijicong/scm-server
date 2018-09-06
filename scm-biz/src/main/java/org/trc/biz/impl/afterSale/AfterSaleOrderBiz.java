@@ -140,7 +140,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			//下单的数量-退货数量
 			int orderNum=orderItem.getNum();
 			//已取消
-			if(orderItem.getStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
+			if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
 				vo.setMaxReturnNum(0);
 			}else {
 				int refundNum=getAlreadyRefundNum(orderItem);
@@ -768,8 +768,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		Example.Criteria criteria = example.createCriteria();
 		criteria.andEqualTo("scmShopOrderCode", scmShopOrderCode);
 		List<String> statusList = Lists.newArrayList();
-		//待发货
-		statusList.add(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());
 		//部分发货
 		statusList.add(OrderDeliverStatusEnum.PARTS_DELIVER.getCode());
 		//全部发货
@@ -782,46 +780,6 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		if(Objects.equals(null,orderList) || orderList.isEmpty()){
 			return false;
 		}
-//		//根据订单编号查询售后单是否存在
-//		AfterSaleOrder safterSaleOrder = new AfterSaleOrder();
-//		safterSaleOrder.setShopOrderCode(shopOrderCode);
-//		List<AfterSaleOrder> searAfterSaleOrderList = afterSaleOrderService.select(safterSaleOrder);
-//        if(Objects.equals(null,searAfterSaleOrder) || ){
-//			return true;
-//		}
-//		//根据订单号查询子订单信息，获取所有skucode
-//		OrderItem selectOrderItem = new OrderItem();
-//		selectOrderItem.setShopOrderCode(shopOrderCode);
-//		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
-//		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
-//
-//		//循环获取skucode
-//		List<String> skuCodeLidt = Lists.newArrayList();
-//		//key是skucode，value是购买数量
-//		Map<String,Integer> numMap = new HashMap<>();
-//		for(OrderItem it:orderItemList){
-//			skuCodeLidt.add(it.getSkuCode());
-//			numMap.put(it.getSkuCode(),it.getNum());
-//		}
-//		//根据skucode集合以及订单编号查询已经创建未取消的售后信息记录
-//		Example detailExample = new Example(AfterSaleOrderDetail.class);
-//		Example.Criteria detailCriteria = example.createCriteria();
-//		detailCriteria.andEqualTo("shopOrderCode",shopOrderCode);
-//		detailCriteria.andIn("skuCode",skuCodeLidt);
-//		List<AfterSaleOrderDetail> dlist = afterSaleOrderDetailService.selectByExample(detailCriteria);
-//		if(Objects.equals(null,dlist) || dlist.isEmpty()){
-//			return true;
-//		}
-//		Map<String,List<AfterSaleOrderDetail>> newMap = new HashMap<>();
-//		for(AfterSaleOrderDetail d:dlist){
-//			String skuCode = d.getSkuCode();
-//			List<AfterSaleOrderDetail> vdlist = newMap.get(skuCode);
-//			if(Objects.equals(null,vdlist)){
-//				vdlist = Lists.newArrayList();
-//			}
-//			vdlist.add(d);
-//			newMap.put(skuCode,);
-//		}
         return true;
 	}
 
