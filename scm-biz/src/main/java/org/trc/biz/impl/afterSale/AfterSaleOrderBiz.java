@@ -140,7 +140,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			//下单的数量-退货数量
 			int orderNum=orderItem.getNum();
 			//已取消
-			if(orderItem.getStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
+			if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
 				vo.setMaxReturnNum(0);
 			}else {
 				int refundNum=getAlreadyRefundNum(orderItem);
