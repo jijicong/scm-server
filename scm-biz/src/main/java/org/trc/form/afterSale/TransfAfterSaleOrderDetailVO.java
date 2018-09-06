@@ -28,6 +28,7 @@ public class TransfAfterSaleOrderDetailVO {
           afterSaleOrderDetailVO.setSpuCode(spuCode);
           afterSaleOrderDetailVO.setRefundAmont(afterSaleOrderDetail.getRefundAmont());
           afterSaleOrderDetailVO.setPicture(afterSaleOrderDetail.getPicture());
+          afterSaleOrderDetailVO.setDeliverWarehouseName(afterSaleOrderDetail.getDeliverWarehouseName());
           return afterSaleOrderDetailVO;
       }
 
