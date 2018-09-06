@@ -1,5 +1,6 @@
 package org.trc.domain.afterSale;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -9,10 +10,6 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.ws.rs.FormParam;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import java.io.Serializable;
 import java.util.Date;
 
@@ -226,7 +223,7 @@ public class AfterSaleOrder  implements Serializable{
     /**
      * 售后单状态（0待客户发货，1客户已经发货,2已经完成，3已经取消）
      */
-	private int status;
+	private Integer status;
     /**
      * 创建时间（格式yyyy-mm-dd hh:mi:ss''）
      */
