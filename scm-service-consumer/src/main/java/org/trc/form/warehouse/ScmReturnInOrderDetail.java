@@ -46,9 +46,9 @@ public class ScmReturnInOrderDetail {
 	/**
 	 * 拟退货数量
 	 */
-	private int returnNum;
+	private Integer returnNum;
 	/**
 	 * 最大退货数量货数量
 	 */
-	private int maxReturnNum;
+	private Integer maxReturnNum;
 }
