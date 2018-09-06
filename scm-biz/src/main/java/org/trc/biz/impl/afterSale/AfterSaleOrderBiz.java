@@ -415,9 +415,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setReceiverAddress(warehouseInfo.getAddress());
 		afterSaleOrder.setReceiverName(warehouseInfo.getWarehouseContact());
 		afterSaleOrder.setReceiverPhone(warehouseInfo.getWarehouseContactNumber());
+		afterSaleOrder.setReceiverMobile(warehouseInfo.getWarehouseContactNumber());
 		afterSaleOrder.setPayTime(shopOrder.getPayTime());
 		afterSaleOrder.setReturnWarehouseCode(afterSaleOrderAddDO.getReturnWarehouseCode());
 		afterSaleOrder.setReturnAddress(afterSaleOrderAddDO.getReturnAddress());
+		afterSaleOrder.setReturnWarehouseName(afterSaleOrderAddDO.getWarehouseName());
 		afterSaleOrder.setMemo(afterSaleOrderAddDO.getMemo());
 		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
 		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
