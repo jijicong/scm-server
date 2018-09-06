@@ -128,13 +128,13 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
     }
 
     private List<AfterSaleOrderDetail> getAfterSaleOrderDetail(List<AfterSaleOrder> afterSaleOrderList) {
-        Set<String> scmShopCodeSet = new HashSet<>();
+        Set<String> afterSaleCodeSet = new HashSet<>();
         for (AfterSaleOrder afterSaleOrder : afterSaleOrderList) {
-            scmShopCodeSet.add(afterSaleOrder.getScmShopOrderCode());
+            afterSaleCodeSet.add(afterSaleOrder.getAfterSaleCode());
         }
         Example example = new Example(AfterSaleOrderDetail.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("scmShopOrderCode", scmShopCodeSet);
+        criteria.andIn("afterSaleCode", afterSaleCodeSet);
         List<AfterSaleOrderDetail> afterSaleOrderDetailList = afterSaleOrderDetailService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(afterSaleOrderDetailList)) {
             return afterSaleOrderDetailList;
