@@ -1,16 +1,15 @@
 package org.trc.domain.afterSale;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Table;
-import javax.ws.rs.FormParam;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.ws.rs.FormParam;
+import java.io.Serializable;
+import java.util.Date;
 
 
 /**
@@ -33,6 +32,7 @@ public class AfterSaleWarehouseNoticeDetail implements Serializable {
      */
     @ApiModelProperty(value="主键")
     @FormParam("id")
+    @Id
 	private String id;
     /**
      * 订单编号

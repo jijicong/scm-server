@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
 import java.io.Serializable;
@@ -31,6 +32,7 @@ public class AfterSaleWarehouseNotice implements Serializable {
      */
     @ApiModelProperty(value="主键")
 	@FormParam("id")
+	@Id
 	private String id;
     
     /**

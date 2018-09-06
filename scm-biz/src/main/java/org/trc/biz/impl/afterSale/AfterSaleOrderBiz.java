@@ -834,7 +834,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		warehouseNotice.setRecordPic(req.getRecordPicture());
 		warehouseNotice.setConfirmRemark(req.getConfirmRemark());
 		warehouseNotice.setWarehouseTime(req.getWarehouseTime());
-		afterSaleWarehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
+		afterSaleWarehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 		for(AfterSaleWarehouseNoticeDetail detail: warehouseNoticeDetailList){
 			for(ReturnInDetailWmsResponseForm responseForm: req.getReturnInDetailWmsResponseFormList()){
 				if(StringUtils.equals(responseForm.getSkuCode(), detail.getSkuCode())){
@@ -843,7 +843,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 					int totalInNum = getReturnNum(responseForm.getInNum(), responseForm.getDefectiveInNum());
 					detail.setTotalInNum(totalInNum);
 					detail.setUpdateTime(currentTime);
-					afterSaleWarehouseNoticeDetailService.updateByPrimaryKeySelective(detail);
+					afterSaleWarehouseNoticeDetailService.updateByPrimaryKey(detail);
 				}
 			}
 		}
@@ -852,14 +852,14 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		 */
 		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
 		afterSaleOrder.setUpdateTime(currentTime);
-		afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
+		afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
 		for(AfterSaleOrderDetail detail: afterSaleOrderDetailList){
 			for(ReturnInDetailWmsResponseForm responseForm: req.getReturnInDetailWmsResponseFormList()){
 				if(StringUtils.equals(responseForm.getSkuCode(), detail.getSkuCode())){
 					detail.setInNum(responseForm.getInNum());
 					detail.setDefectiveInNum(responseForm.getDefectiveInNum());
 					detail.setUpdateTime(currentTime);
-					afterSaleOrderDetailService.updateByPrimaryKeySelective(detail);
+					afterSaleOrderDetailService.updateByPrimaryKey(detail);
 				}
 			}
 		}
