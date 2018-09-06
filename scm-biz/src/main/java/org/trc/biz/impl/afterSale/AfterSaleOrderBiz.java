@@ -139,8 +139,13 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			BeanUtils.copyProperties(orderItem, vo);
 			//下单的数量-退货数量
 			int orderNum=orderItem.getNum();
-			int refundNum=getAlreadyRefundNum(orderItem);
-			vo.setMaxReturnNum(orderNum-refundNum);
+			//已取消
+			if(orderItem.getStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
+				vo.setMaxReturnNum(0);
+			}else {
+				int refundNum=getAlreadyRefundNum(orderItem);
+				vo.setMaxReturnNum(orderNum-refundNum);
+			}
 			afterSaleOrderItemVOList.add(vo);
 		}
 		return afterSaleOrderItemVOList;
@@ -277,6 +282,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			detail.setBrandName(getBrandName(orderItem.getSpuCode()));
 			detail.setPicture(orderItem.getPicPath());
 			detail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+			detail.setMaxReturnNum(afterSaleOrderDetailDO.getMaxReturnNum());
 			list.add(detail);
 		}
 		
@@ -409,15 +415,19 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setSenderCity(platformOrder.getReceiverCity());
 		afterSaleOrder.setSenderNumber(platformOrder.getReceiverMobile());
 		afterSaleOrder.setSenderProvince(platformOrder.getReceiverProvince());
+		afterSaleOrder.setUserId(platformOrder.getUserId());
+		afterSaleOrder.setUserName(platformOrder.getUserName());
 		afterSaleOrder.setReceiverProvince(warehouseInfo.getProvince());
 		afterSaleOrder.setReceiverCity(warehouseInfo.getCity());
 		afterSaleOrder.setReceiverDistrict(warehouseInfo.getArea());
 		afterSaleOrder.setReceiverAddress(warehouseInfo.getAddress());
 		afterSaleOrder.setReceiverName(warehouseInfo.getWarehouseContact());
 		afterSaleOrder.setReceiverPhone(warehouseInfo.getWarehouseContactNumber());
+		afterSaleOrder.setReceiverMobile(warehouseInfo.getWarehouseContactNumber());
 		afterSaleOrder.setPayTime(shopOrder.getPayTime());
 		afterSaleOrder.setReturnWarehouseCode(afterSaleOrderAddDO.getReturnWarehouseCode());
 		afterSaleOrder.setReturnAddress(afterSaleOrderAddDO.getReturnAddress());
+		afterSaleOrder.setReturnWarehouseName(afterSaleOrderAddDO.getWarehouseName());
 		afterSaleOrder.setMemo(afterSaleOrderAddDO.getMemo());
 		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
 		afterSaleOrder.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
@@ -759,7 +769,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		criteria.andEqualTo("scmShopOrderCode", scmShopOrderCode);
 		List<String> statusList = Lists.newArrayList();
 		//待发货
-		statusList.add(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());
+		//statusList.add(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());
 		//部分发货
 		statusList.add(OrderDeliverStatusEnum.PARTS_DELIVER.getCode());
 		//全部发货
