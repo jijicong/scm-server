@@ -226,7 +226,7 @@ public class AfterSaleOrder  implements Serializable{
     /**
      * 售后单状态（0待客户发货，1客户已经发货,2已经完成，3已经取消）
      */
-	private int status;
+	private Integer status;
     /**
      * 创建时间（格式yyyy-mm-dd hh:mi:ss''）
      */
