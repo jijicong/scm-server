@@ -821,7 +821,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		warehouseNotice = afterSaleWarehouseNoticeService.selectOne(warehouseNotice);
 		AssertUtil.notNull(warehouseNotice, String.format("根据退货入库单编码%s查询退货入库单信息为空", req.getWarehouseNoticeCode()));
 		AfterSaleWarehouseNoticeDetail warehouseNoticeDetail = new AfterSaleWarehouseNoticeDetail();
-		warehouseNotice.setWarehouseNoticeCode(req.getWarehouseNoticeCode());
+		warehouseNoticeDetail.setWarehouseNoticeCode(req.getWarehouseNoticeCode());
 		List<AfterSaleWarehouseNoticeDetail> warehouseNoticeDetailList = afterSaleWarehouseNoticeDetailService.select(warehouseNoticeDetail);
 		AssertUtil.notEmpty(warehouseNoticeDetailList, String.format("根据退货入库单编码%s查询退货入库单明细信息为空", req.getWarehouseNoticeCode()));
 
