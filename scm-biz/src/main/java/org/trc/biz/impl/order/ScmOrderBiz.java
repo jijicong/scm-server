@@ -2136,7 +2136,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                             }else {
                                 //匹配仓库优先级
                                 for (WarehousePriority warehouse:warehousePriorityList ) {
-                                    if ((StringUtils.equals(warehouseItemInfo.getWarehouseCode(), warehouse.getWarehouseCode())) && StringUtils.equals(skuCode, warehouseItemInfo.getSkuCode())){
+                                    if ((StringUtils.equals(warehouseItemInfo.getWarehouseCode(), warehouse.getWarehouseCode())) && StringUtils.equals(skuCode,warehouseItemInfo.getSkuCode())){
                                         _warehouseItemInfoList.add(warehouseItemInfo);
                                     }
                                 }
