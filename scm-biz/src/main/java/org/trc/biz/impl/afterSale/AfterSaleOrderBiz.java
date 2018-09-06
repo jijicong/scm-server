@@ -282,6 +282,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			detail.setBrandName(getBrandName(orderItem.getSpuCode()));
 			detail.setPicture(orderItem.getPicPath());
 			detail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+			detail.setMaxReturnNum(afterSaleOrderDetailDO.getMaxReturnNum());
 			list.add(detail);
 		}
 		
