@@ -60,7 +60,7 @@ public class AfterSaleOrderTabBiz implements IAfterSaleOrderTabBiz {
                 saleDetailTabVO.setInNum(saleOrderDetail.getInNum());
                 saleDetailTabVO.setDefectiveInNum(saleOrderDetail.getDefectiveInNum());
                 for (AfterSaleOrder afterSaleOrder : afterSaleOrderList) {
-                    if (StringUtils.equals(saleOrderDetail.getScmShopOrderCode(), afterSaleOrder.getScmShopOrderCode())) {
+                    if (StringUtils.equals(saleOrderDetail.getAfterSaleCode(), afterSaleOrder.getAfterSaleCode())) {
                         saleDetailTabVO.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
                         saleDetailTabVO.setLaunchType(afterSaleOrder.getLaunchType());
                         saleDetailTabVO.setAfterSaleType(afterSaleOrder.getAfterSaleType());
