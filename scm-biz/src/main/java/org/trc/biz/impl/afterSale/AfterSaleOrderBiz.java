@@ -139,8 +139,13 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			BeanUtils.copyProperties(orderItem, vo);
 			//下单的数量-退货数量
 			int orderNum=orderItem.getNum();
-			int refundNum=getAlreadyRefundNum(orderItem);
-			vo.setMaxReturnNum(orderNum-refundNum);
+			//已取消
+			if(orderItem.getStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
+				vo.setMaxReturnNum(0);
+			}else {
+				int refundNum=getAlreadyRefundNum(orderItem);
+				vo.setMaxReturnNum(orderNum-refundNum);
+			}
 			afterSaleOrderItemVOList.add(vo);
 		}
 		return afterSaleOrderItemVOList;
@@ -409,6 +414,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setSenderCity(platformOrder.getReceiverCity());
 		afterSaleOrder.setSenderNumber(platformOrder.getReceiverMobile());
 		afterSaleOrder.setSenderProvince(platformOrder.getReceiverProvince());
+		afterSaleOrder.setUserId(platformOrder.getUserId());
+		afterSaleOrder.setUserName(platformOrder.getUserName());
 		afterSaleOrder.setReceiverProvince(warehouseInfo.getProvince());
 		afterSaleOrder.setReceiverCity(warehouseInfo.getCity());
 		afterSaleOrder.setReceiverDistrict(warehouseInfo.getArea());
