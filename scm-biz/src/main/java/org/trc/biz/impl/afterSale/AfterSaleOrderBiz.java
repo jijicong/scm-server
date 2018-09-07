@@ -568,6 +568,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrderService.pagination(example, page, form);
 		//售后单主表查询结果
 		List<AfterSaleOrder> result = page.getResult();
+		if(Objects.equals(null,result) || result.isEmpty()){
+			return new Pagenation<AfterSaleOrderVO>();
+		}
 		List<String> shopOrderCodeList = Lists.newArrayList();
 		for(AfterSaleOrder afterOrder : result){
 			shopOrderCodeList.add(afterOrder.getShopOrderCode());
