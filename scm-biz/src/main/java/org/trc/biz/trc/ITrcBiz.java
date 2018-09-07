@@ -4,14 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
-import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.TrcActionTypeEnum;
-import org.trc.form.category.BrandForm;
-import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.trc.BrandForm2;
@@ -21,7 +17,6 @@ import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.BeanParam;
 import java.util.Date;
 import java.util.List;
 

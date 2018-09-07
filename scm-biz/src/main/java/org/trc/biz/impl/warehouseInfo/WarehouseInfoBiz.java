@@ -17,7 +17,6 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.warehouseInfo.IWarehouseInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
-import org.trc.domain.config.LogInfo;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;

@@ -1,15 +1,12 @@
 package org.trc.form.afterSale;
 
-import java.util.List;
-
-import javax.persistence.Transient;
-import javax.ws.rs.FormParam;
-
-import org.trc.domain.afterSale.AfterSaleOrderDetail;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.trc.domain.afterSale.AfterSaleOrderDetail;
+
+import javax.ws.rs.FormParam;
+import java.util.List;
 
 @Setter
 @Getter

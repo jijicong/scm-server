@@ -1,12 +1,11 @@
 package org.trc.form.afterSale;
 
-import javax.ws.rs.FormParam;
-
-import org.trc.domain.order.OrderItem;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.trc.domain.order.OrderItem;
+
+import javax.ws.rs.FormParam;
 
 @Setter
 @Getter

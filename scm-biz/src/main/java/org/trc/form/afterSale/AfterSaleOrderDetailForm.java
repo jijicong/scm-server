@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.trc.util.QueryModel;
 
-import javax.ws.rs.FormParam;
 import java.util.List;
 
 /**

@@ -3,7 +3,6 @@ package org.trc.form.afterSale;
 import com.google.common.collect.Lists;
 import org.trc.enums.AfterSaleOrderEnum;
 import org.trc.util.DateUtils;
-import org.trc.util.StringUtil;
 
 import java.util.List;
 import java.util.Objects;
