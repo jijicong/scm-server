@@ -3,6 +3,7 @@ package org.trc.service;
 
 import org.trc.form.ChannelOrderResponse;
 import org.trc.form.LogisticNoticeForm;
+import org.trc.form.ReturnInResultNoticeForm;
 import org.trc.model.ToGlyResultDO;
 
 /**
@@ -80,5 +81,12 @@ public interface ITrcService {
      * @return
      */
     ToGlyResultDO sendLogisticInfoNotice(LogisticNoticeForm logisticNoticeForm);
+
+    /**
+     * 退货入库单收货结果通知
+     * @param returnInResultNoticeForm
+     * @return
+     */
+    ToGlyResultDO sendReturnInResult(ReturnInResultNoticeForm returnInResultNoticeForm);
 
 }

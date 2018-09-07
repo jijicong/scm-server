@@ -140,4 +140,11 @@ public interface IWarehouseInfoBiz {
      * @return
      */
     Response exportItemNoticeException(String excelCode);
+    
+    /**
+     * @Description: 查询退货仓库map
+     * @Author: hzluoxingcheng
+     * @Date: 2018/8/30
+     */ 
+    Response selectReturnWarehouse();
 }

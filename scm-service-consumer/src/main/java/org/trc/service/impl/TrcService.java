@@ -13,6 +13,7 @@ import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.ChannelOrderResponse;
 import org.trc.form.LogisticNoticeForm;
+import org.trc.form.ReturnInResultNoticeForm;
 import org.trc.form.TrcConfig;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
@@ -245,6 +246,54 @@ public class TrcService implements ITrcService {
         return toGlyResultDO;
     }
 
+    @Override
+    public ToGlyResultDO sendReturnInResult(ReturnInResultNoticeForm returnInResultNoticeForm) {
+        if(StringUtils.equals(trcConfig.getNoticeChannal(), ZeroToNineEnum.ZERO.getCode())){//不通知
+            return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "通知渠道开关关闭");
+        }
+        String url = trcConfig.getReturnInResultNotifyUrl();
+        ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
+        String response = null;
+        try{
+            String paramObj = JSON.toJSONString(returnInResultNoticeForm);
+            toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+            log.debug("开始调用推送入库结果给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+            Map<String, Object> params = new HashMap();
+            params.put("param", paramObj);
+            response = HttpClientUtil.httpPostRequest(url, params, TIME_OUT);
+            log.debug("结束调用推送入库结果给渠道服务" + url + ", 返回结果：" + response + ". 结束时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                //具体业务重试代码设置状态
+                if (toGlyResultDO.getStatus().equals("1")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                    toGlyResultDO.setMsg("处理成功！");
+                }
+                if (toGlyResultDO.getStatus().equals("2")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+                    toGlyResultDO.setMsg("异常数据！");
+                }
+
+            }else {
+                toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+                toGlyResultDO.setMsg("调用推送入库结果给渠道服务返回结果为空");
+            }
+        }catch (IOException e){
+            toGlyResultDO.setStatus(SuccessFailureEnum.SOCKET_TIME_OUT.getCode());
+            String msg = String.format("调用推送入库结果给渠道服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            toGlyResultDO.setMsg(msg);
+        }catch (Exception e){
+            toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+            String msg = String.format("调用推送入库结果给渠道服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            toGlyResultDO.setMsg(msg);
+        }
+        return toGlyResultDO;
+    }
 
 
 }

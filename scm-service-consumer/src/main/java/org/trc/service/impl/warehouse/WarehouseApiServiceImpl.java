@@ -199,6 +199,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmEntryReturnDetailRequest){
             url = externalSupplierConfig.getEntryReturnDetailUrl();
             method = "采购退货出库单详情";
+        }else if(scmWarehouseRequestBase instanceof ScmReturnOrderCreateRequest){
+            url = externalSupplierConfig.getReturnOrderCreateUrl();
+            method = "退货入库单创建";
         }
             
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
@@ -272,6 +275,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmEntryReturnOrderCreateResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmEntryReturnDetailRequest){
             response = JSON.parseArray(appResult.getResult().toString(), ScmEntryReturnDetailResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmReturnOrderCreateRequest){
+            response = appResult.getResult();
         }
         appResult.setResult(response);
     }

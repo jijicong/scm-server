@@ -130,6 +130,12 @@ public class ExternalSupplierConfig {
      * 采购退货出库单详情URL
      */
     private String entryReturnDetailUrl;
+    
+    /**
+     * 退货入库单创建URL
+     */
+    private String returnOrderCreateUrl;
+
 
     /**
      * 京东库存查询接口
