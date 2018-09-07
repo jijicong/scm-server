@@ -20,34 +20,37 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.config.RequestFlow;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.order.*;
+import org.trc.domain.stock.JdStockOutDetail;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
+import org.trc.enums.report.StockOperationTypeEnum;
+import org.trc.enums.stock.QualityTypeEnum;
 import org.trc.form.*;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkuStockService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impl.TrcService;
 import org.trc.service.impl.config.RequestFlowService;
-import org.trc.service.impl.system.LogisticsCompanyService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
-import org.trc.service.util.IRealIpService;
+import org.trc.service.stock.IJdStockOutDetailService;
 import org.trc.service.warehouse.IWarehouseApiService;
-import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
-import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service("outBoundOrderService")
@@ -90,6 +93,10 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
     private IWarehouseMockService warehouseMockService;
     @Autowired
     private IOrderExtBiz orderExtBiz;
+    @Autowired
+    private IJdStockOutDetailService jdStockOutDetailService;
+    @Autowired
+    private ISkusService SkusService;
 
     //修改发货单详情
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -154,7 +161,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
 
                     //更新发货单信息
                     List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(packsResponse,
-                            outboundOrder.getWarehouseCode(), outboundOrderCode);
+                            outboundOrder.getWarehouseCode(), outboundOrderCode, outboundOrder);
 
                     //更新发货单状态
                     this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
@@ -274,7 +281,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
     //更新发货单
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmOrderPacksResponse response, String warehouseCode,
-                                                                     String outboundOrderCode){
+                                                                     String outboundOrderCode, OutboundOrder outboundOrder){
         OutboundDetail outboundDetail = null;
         OutboundDetailLogistics outboundDetailLogistics = null;
         OutboundPackageInfo outboundPackageInfo = null;
@@ -366,6 +373,12 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                             requsetUpdateStock.setSkuCode(outboundDetail.getSkuCode());
                             requsetUpdateStock.setWarehouseCode(warehouseCode);
                             updateStockList.add(requsetUpdateStock);
+
+                            try {
+                                insertStockDetail(requsetUpdateStock, outboundOrder, outboundDetail);
+                            } catch (Exception e) {
+                                logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{}, e:{}", outboundOrder.getOutboundOrderCode(), e);
+                            }
                         }
                     }
                 }
@@ -405,6 +418,40 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         }
 
         return updateStockList;
+    }
+
+    private void insertStockDetail(RequsetUpdateStock requsetUpdateStock, OutboundOrder outboundOrder, OutboundDetail outboundDetail) {
+        JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
+        jdStockOutDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
+        jdStockOutDetail.setWarehouseCode(outboundOrder.getWarehouseCode());
+        jdStockOutDetail.setStockType(QualityTypeEnum.QUALITY.getCode());
+        jdStockOutDetail.setOperationType(StockOperationTypeEnum.SALES_OF_OUTBOUND.getCode());
+        jdStockOutDetail.setWarehouseOutboundOrderCode(outboundOrder.getWmsOrderCode());
+        jdStockOutDetail.setPlatformOrderCode(outboundOrder.getPlatformOrderCode());
+        jdStockOutDetail.setSellChannelCode(outboundOrder.getScmShopOrderCode());
+        jdStockOutDetail.setSellCode(outboundOrder.getSellCode());
+        jdStockOutDetail.setGoodsOrderCode("");
+        jdStockOutDetail.setChannelCode(outboundOrder.getChannelCode());
+        jdStockOutDetail.setSkuCode(outboundDetail.getSkuCode());
+        jdStockOutDetail.setSpecInfo(outboundDetail.getSpecNatureInfo());
+        jdStockOutDetail.setPayment(new BigDecimal(outboundDetail.getActualAmount()/100).setScale(3));
+        jdStockOutDetail.setPlannedQuantity(outboundDetail.getShouldSentItemNum());
+        jdStockOutDetail.setQuantity(Long.valueOf(requsetUpdateStock.getStockType().get("real_inventory")));
+        jdStockOutDetail.setWaybillNumber(outboundOrder.getWaybillNumber());
+        jdStockOutDetail.setReceiver(outboundOrder.getReceiverName());
+        jdStockOutDetail.setMobile(outboundOrder.getReceiverPhone());
+        jdStockOutDetail.setAddress(outboundOrder.getReceiverProvince() + outboundOrder.getReceiverCity() + outboundOrder.getReceiverDistrict() + outboundOrder.getReceiverAddress());
+
+        Skus skus = new Skus();
+        skus.setSkuCode(outboundDetail.getSkuCode());
+        Skus sku = SkusService.selectOne(skus);
+
+        jdStockOutDetail.setBarCode(sku.getBarCode());
+        jdStockOutDetail.setGoodsType("");
+        int insert = jdStockOutDetailService.insert(jdStockOutDetail);
+        if(insert == 0){
+            logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{}", outboundOrder.getOutboundOrderCode());
+        }
     }
 
     //更新发货单状态
