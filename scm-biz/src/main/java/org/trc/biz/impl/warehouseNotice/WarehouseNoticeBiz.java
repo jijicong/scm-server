@@ -28,11 +28,14 @@ import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUser;
 import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.stock.JdStockInDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
+import org.trc.enums.report.StockOperationTypeEnum;
+import org.trc.enums.stock.QualityTypeEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.WarehouseNoticeDetailException;
@@ -51,6 +54,7 @@ import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.purchase.*;
+import org.trc.service.stock.IJdStockInDetailService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
@@ -128,6 +132,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private ICommonService commonService;
     @Autowired
     private IRealIpService realIpService;
+    @Autowired
+    private IJdStockInDetailService jdStockInDetailService;
 
     @Value("${mock.outer.interface}")
     private String mockOuterInterface;
@@ -1452,7 +1458,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                 Long oldNormalQ = warehouseDetail.getNormalStorageQuantity() == null ? 0 : warehouseDetail.getNormalStorageQuantity();
                                 //判断状态
                                 judgeWarehouseNoticeDetailState(stockMap, warehouseDetail);
-
+                                
+                                //插入库存变动明细
+                                try {
+                                    insertStockDetail(stockMap, warehouseDetail, noticeOrder);
+                                } catch (Exception e) {
+                                    logger.error("JD采购入库，记录库存变动明细失败， 入库单号:{}, e:{}", noticeOrder.getWarehouseNoticeCode(), e);
+                                }
                                 /**
                                  * v2.5
                                  * 同步采购单商品详情 入库状态
@@ -1554,6 +1566,32 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     }
                 }
             }
+        }
+    }
+
+    private void insertStockDetail(Map<String,Long> stockMap, WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder) {
+        JdStockInDetail jdStockInDetail = new JdStockInDetail();
+        jdStockInDetail.setWarehouseCode(noticeOrder.getWarehouseCode());
+        jdStockInDetail.setStockType(QualityTypeEnum.QUALITY.getCode());
+        jdStockInDetail.setOperationType(StockOperationTypeEnum.PURCHASE.getCode());
+        jdStockInDetail.setSupplierCode(noticeOrder.getSupplierCode());
+        jdStockInDetail.setOrderCode(noticeOrder.getWarehouseNoticeCode());
+        jdStockInDetail.setWarehouseOrderCode(noticeOrder.getEntryOrderId());
+        jdStockInDetail.setSkuCode(warehouseDetail.getSkuCode());
+        jdStockInDetail.setBarCode(warehouseDetail.getBarCode());
+        jdStockInDetail.setGoodsType("");
+        jdStockInDetail.setSpecInfo(warehouseDetail.getSpecInfo());
+        jdStockInDetail.setPrice(warehouseDetail.getPurchasePrice());
+        jdStockInDetail.setTotalPrice(warehouseDetail.getPurchaseAmount());
+        jdStockInDetail.setPlannedQuantity(warehouseDetail.getPurchasingQuantity());
+        jdStockInDetail.setQuantity(stockMap.get("normalQ") + stockMap.get("defectiveQ"));
+        jdStockInDetail.setNormalQuantity(stockMap.get("normalQ"));
+        jdStockInDetail.setDefectiveQuantity(stockMap.get("defectiveQ"));
+        jdStockInDetail.setTaxRate(warehouseDetail.getTaxRate());
+
+        int insert = jdStockInDetailService.insert(jdStockInDetail);
+        if(insert == 0){
+            logger.error("JD采购入库，记录库存变动明细失败， 入库单号:{}", noticeOrder.getWarehouseNoticeCode());
         }
     }
 
