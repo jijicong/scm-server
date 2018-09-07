@@ -100,7 +100,6 @@
             <foreach collection="userIds" index="index" item="item" close=")" open="(" separator=",">
                 #{item}
             </foreach>
-            AND  a.is_valid=1
             AND  a.is_deleted=0
         </where>
 

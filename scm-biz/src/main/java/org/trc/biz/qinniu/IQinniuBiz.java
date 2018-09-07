@@ -1,6 +1,9 @@
 package org.trc.biz.qinniu;
 
 import com.qiniu.storage.model.FetchRet;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.trc.domain.purchase.QiNiuResponse;
+import org.trc.domain.util.QiNiuUrlInfo;
 import org.trc.form.FileUrl;
 
 import java.io.InputStream;
@@ -64,5 +67,33 @@ public interface IQinniuBiz {
      * @throws Exception
      */
     String fetch(String url, String key) throws Exception;
+
+    /**
+     * 保存文件信息
+     * @param uploadedInputStream
+     * @param fileDetail
+     * @param code
+     */
+    QiNiuResponse uploadFile(InputStream uploadedInputStream, FormDataContentDisposition fileDetail)throws Exception ;
+
+    /**
+     * 删除文件信息
+     * @param id
+     */
+    void deleteFile(Long id);
+
+    /**
+     * 获取文件信息
+     * @param code
+     * @return
+     */
+    List<QiNiuUrlInfo> getFileInfo(String code);
+
+    /**
+     * 下载文件
+     * @param fileName
+     * @return
+     */
+    String fileDownload(String fileName) throws Exception;
 
 }

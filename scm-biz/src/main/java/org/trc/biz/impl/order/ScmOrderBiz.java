@@ -1690,6 +1690,15 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                         storeItemCount++;
                     }
                 }
+            } else {
+            	/**
+            	 * 商品所在的发货单里面存在运单号的话，则说明是京东的商品 
+            	 **/
+            	for (OrderItem item : orderItemList) {
+                    if (StringUtils.equals(outboundOrder.getWarehouseOrderCode(), item.getWarehouseOrderCode())) {
+                    	item.setWaybillNumber(outboundOrder.getWaybillNumber());
+                    }
+            	}
             }
         }
         if(storeItemCount == orderItemList.size()){//全部商品都是门店的
@@ -2127,7 +2136,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                             }else {
                                 //匹配仓库优先级
                                 for (WarehousePriority warehouse:warehousePriorityList ) {
-                                    if ((StringUtils.equals(warehouseItemInfo.getWarehouseCode(), warehouse.getWarehouseCode()))){
+                                    if ((StringUtils.equals(warehouseItemInfo.getWarehouseCode(), warehouse.getWarehouseCode())) && StringUtils.equals(skuCode,warehouseItemInfo.getSkuCode())){
                                         _warehouseItemInfoList.add(warehouseItemInfo);
                                     }
                                 }

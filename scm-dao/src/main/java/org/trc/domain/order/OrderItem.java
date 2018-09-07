@@ -257,6 +257,8 @@ public class OrderItem implements Serializable {
      */
     @Transient
     private String isAppointStock;
+    @Transient
+    private String waybillNumber;
 
     public OrderItem(){
 
@@ -1417,4 +1419,13 @@ public class OrderItem implements Serializable {
     public void setIsAppointStock(String isAppointStock) {
         this.isAppointStock = isAppointStock;
     }
+
+	public String getWaybillNumber() {
+		return waybillNumber;
+	}
+
+	public void setWaybillNumber(String waybillNumber) {
+		this.waybillNumber = waybillNumber;
+	}
+    
 }
