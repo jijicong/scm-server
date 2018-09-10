@@ -90,7 +90,19 @@ public class Items extends BaseDO{
      */
     @FormParam("mainPicture")
     private String mainPicture;
-    
+
+    @FormParam("itemType")
+    private String itemType;//V3.3-商品类别：0-小泰良品，1-非小泰良品
+
+
+    public String getItemType() {
+        return itemType;
+    }
+
+    public void setItemType(String itemType) {
+        this.itemType = itemType;
+    }
+
     public Long getId() {
         return id;
     }
