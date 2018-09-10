@@ -40,4 +40,8 @@ public class AfterSaleWarehouseNoticeDO {
 	@QueryParam("operator")
 	@ApiModelProperty(value="操作人")
 	public String operator;
+
+	@QueryParam("status")
+	@ApiModelProperty(value="状态")
+	public String status;
 }
