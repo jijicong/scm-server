@@ -1,6 +1,8 @@
 package org.trc.service.afterSale;
 
 
+import java.util.List;
+
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.service.IBaseService;
 
@@ -15,4 +17,12 @@ import org.trc.service.IBaseService;
  */
 public interface IAfterSaleOrderService extends IBaseService<AfterSaleOrder, String> {
 	
+	/**
+	 * 售后单，取消发货
+	 * @param scmShopOrderCode 系统订单号
+	 * @param skuList  待取消的商品编码列表
+	 * @return 
+	 */
+	public boolean deliveryCancel(String scmShopOrderCode, List<String> skuList);
 }
+	
