@@ -1952,10 +1952,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         //查询供应商相关品牌
         SupplierBrand supplierBrand = new SupplierBrand();
-        supplierBrand.setSupplierCode(supplierCode);
+        //supplierBrand.setSupplierCode(supplierCode);
         supplierBrand.setIsValid(ValidStateEnum.ENABLE.getCode().toString());
         List<SupplierBrand> supplierBrandList = iSupplierBrandService.select(supplierBrand);
-        AssertUtil.notEmpty(supplierBrandList, String.format("供应商%s没有关联品牌", supplierCode));
+        //AssertUtil.notEmpty(supplierBrandList, String.format("供应商%s没有关联品牌", supplierCode));
+        AssertUtil.notEmpty(supplierBrandList, "启用的供应商信息为空");
         Set<Long> categoryIds = new HashSet<>();
         Set<Long> brandIds = new HashSet<>();
         for(SupplierBrand sb: supplierBrandList){
@@ -1999,7 +2000,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
                     CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));
             if(!flag){
-                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
+                //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在状态为启用的自采商品！");
             }
             return new ArrayList<PurchaseDetail>();
         }
@@ -2083,8 +2085,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         if(CollectionUtils.isEmpty(warehouseItemInfoList)){
             if(!flag){
+               /* throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,
+                        "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");*/
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,
-                        "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
+                        "无数据，请确认【商品管理】中，存在所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
             }
         }
         return getPurchaseDetails(warehouseItemInfoList, skusList);
