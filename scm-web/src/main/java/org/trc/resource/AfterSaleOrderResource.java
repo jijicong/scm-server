@@ -148,7 +148,7 @@ public class AfterSaleOrderResource {
 		if(checkresult){
 			return ResultUtil.createSuccessResult("订单校验成功，可以创建售后单",true );
 		}
-		return ResultUtil.createfailureResult(404,"该订单不能创建售后单");
+		return ResultUtil.createfailureResult(404,"系统订单号无效");
 	}
 
 
