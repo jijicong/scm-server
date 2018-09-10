@@ -201,7 +201,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//查询该订单创建售后单的数量
 		int afterSaleNum=getCount(shopOrder);
 		//售后单编号
-		String afterSaleCode =SupplyConstants.Serial.AFTER_SALE_CODE+scmShopOrderCode+"-"+(afterSaleNum+1);
+		String afterSaleCode =SupplyConstants.Serial.AFTER_SALE_CODE+"-"+scmShopOrderCode+"-"+(afterSaleNum+1);
         			
 		String warehouseNoticeCode = serialUtilService.generateCode(SupplyConstants.Serial.WAREHOUSE_NOTICE_LENGTH,
         		SupplyConstants.Serial.WAREHOUSE_NOTICE_CODE,
