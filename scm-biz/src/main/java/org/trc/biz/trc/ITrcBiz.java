@@ -18,6 +18,7 @@ import org.trc.form.trc.BrandForm2;
 import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
+import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
 
@@ -200,5 +201,5 @@ public interface ITrcBiz {
      * 退货仓库查询
      * @return
      */
-    List<WarehouseInfo> returnWarehouseQuery();
+    List<TaiRanWarehouseInfo> returnWarehouseQuery();
 }

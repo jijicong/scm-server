@@ -89,7 +89,7 @@ public class WarehouseInfo extends BaseDO {
     @FormParam("ownerWarehouseState")
     private String ownerWarehouseState;
 
-    //备注
+    //仓库编号
     @FormParam("code")
     private String code;
 
