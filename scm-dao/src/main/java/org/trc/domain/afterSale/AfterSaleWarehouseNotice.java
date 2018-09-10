@@ -279,5 +279,26 @@ public class AfterSaleWarehouseNotice implements Serializable {
 	private Date warehouseTime;
 
 
+    /**
+     * 快递公司编码
+     */
+    @FormParam("logisticsCorporationCode")
+    @Column(name="logistics_corporation_code")
+    private String logisticsCorporationCode;
+    /**
+     * 快递公司名称
+     */
+    @FormParam("logisticsCorporation")
+    @Column(name="logistics_corporation")
+    private String logisticsCorporation;
+    /**
+     * 运单号
+     */
+    @FormParam("waybillNumber")
+    @Column(name="waybill_number")
+    private String waybillNumber;
+
+
+
 	
 }
