@@ -198,9 +198,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		WarehouseInfo warehouseInfo=warehouseInfoService.selectOne(selectWarehouse);
 		AssertUtil.notNull(warehouseInfo,"该仓库编号"+afterSaleOrderAddDO.getReturnWarehouseCode()+"查询到的仓库为空!");
 
-		String afterSaleCode = serialUtilService.generateCode(SupplyConstants.Serial.AFTER_SALE_LENGTH,
-        		SupplyConstants.Serial.AFTER_SALE_CODE,
-        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+		//查询该订单创建售后单的数量
+		int afterSaleNum=getCount(shopOrder);
+		//售后单编号
+		String afterSaleCode =SupplyConstants.Serial.AFTER_SALE_CODE+scmShopOrderCode+"-"+(afterSaleNum+1);
+        			
 		String warehouseNoticeCode = serialUtilService.generateCode(SupplyConstants.Serial.WAREHOUSE_NOTICE_LENGTH,
         		SupplyConstants.Serial.WAREHOUSE_NOTICE_CODE,
         			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
@@ -236,6 +238,16 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 
 	
 
+	private int getCount(ShopOrder shopOrder) {
+		AfterSaleOrder select=new AfterSaleOrder();
+		select.setShopOrderCode(shopOrder.getShopOrderCode());
+		List<AfterSaleOrder> list=afterSaleOrderService.select(select);
+		if(list!=null ) {
+			return list.size();
+		}
+		return 0;
+	}
+
 	private ScmReturnOrderCreateRequest getReturnInOrder(String afterSaleCode, String warehouseNoticeCode,
 			ShopOrder shopOrder, AfterSaleOrderAddDO afterSaleOrderAddDO, AclUserAccreditInfo aclUserAccreditInfo,
 			PlatformOrder platformOrder, WarehouseInfo warehouseInfo) {
@@ -263,6 +275,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		returnOrderCreateRequest.setSellCode(shopOrder.getSellCode());
 		returnOrderCreateRequest.setShopId(shopOrder.getShopId());
 		returnOrderCreateRequest.setShopName(shopOrder.getShopName());
+		returnOrderCreateRequest.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
+		returnOrderCreateRequest.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
+		returnOrderCreateRequest.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
 		
 		List<ScmReturnInOrderDetail> list=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:afterSaleOrderAddDO.getAfterSaleOrderDetailList()) {
@@ -392,6 +407,9 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNotice.setRemark(afterSaleOrderAddDO.getMemo());
 		afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleWarehouseNotice.setCreateTime(new Date());
+		afterSaleWarehouseNotice.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
+		afterSaleWarehouseNotice.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
+		afterSaleWarehouseNotice.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
 		return afterSaleWarehouseNotice;
 	}
 

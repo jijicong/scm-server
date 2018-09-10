@@ -45,6 +45,7 @@ import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
+import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
@@ -2184,16 +2185,31 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public List<WarehouseInfo> returnWarehouseQuery() {
+    public List<TaiRanWarehouseInfo> returnWarehouseQuery() {
+    	List<TaiRanWarehouseInfo> list=new ArrayList<TaiRanWarehouseInfo>();
+    	
         Example example = new Example(WarehouseInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isSupportReturn", ZeroToNineEnum.ONE.getCode());
         criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
         List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(warehouseInfoList)){
-            return warehouseInfoList;
+        	for(WarehouseInfo warehouseInfo:warehouseInfoList) {
+        		TaiRanWarehouseInfo taiRanWarehouseInfo=new TaiRanWarehouseInfo();
+            	taiRanWarehouseInfo.setCode(warehouseInfo.getCode());
+            	taiRanWarehouseInfo.setWarehouseName(warehouseInfo.getWarehouseName());
+            	taiRanWarehouseInfo.setWarehouseTypeCode(warehouseInfo.getWarehouseTypeCode());
+            	taiRanWarehouseInfo.setWarehouseContactNumber(warehouseInfo.getWarehouseContactNumber());
+            	taiRanWarehouseInfo.setWarehouseContact(warehouseInfo.getWarehouseContact());
+            	taiRanWarehouseInfo.setProvince(warehouseInfo.getProvince());
+            	taiRanWarehouseInfo.setCity(warehouseInfo.getCity());
+            	taiRanWarehouseInfo.setArea(warehouseInfo.getArea());
+            	taiRanWarehouseInfo.setAllAreaName(warehouseInfo.getAllAreaName());
+            	list.add(taiRanWarehouseInfo);
+        	}
+        	
         }
-        return new ArrayList<>();
+        return list;
     }
 
 

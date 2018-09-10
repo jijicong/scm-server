@@ -34,6 +34,7 @@ import org.trc.util.ExceptionUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -353,6 +354,16 @@ public class TaiRanResource {
     @Produces("application/json;charset=utf-8")
     public ResponseAck<List<SupplyConstants.WarehouseInfo>> returnWarehouseQuery() throws Exception {
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "查询退货仓库成功", trcBiz.returnWarehouseQuery());
+    }
+    
+    /**
+     * 创建售后单接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck afterSaleCreate() {
+    	 return null;
     }
 
 }
