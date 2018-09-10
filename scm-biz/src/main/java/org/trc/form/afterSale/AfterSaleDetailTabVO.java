@@ -48,7 +48,7 @@ public class AfterSaleDetailTabVO {
     /**
      * 售后单状态（0待客户发货，1客户已经发货，2是待分配仓库,3已经完成，4已经取消）
      */
-    @ApiModelProperty("售后单状态（0待客户发货，1客户已经发货，2是待分配仓库,3已经完成，4已经取消）")
+    @ApiModelProperty("售后单状态（0待客户发货，1客户已经发货，2已经完成，3已经取消）")
     private Integer status;
 
     /**
