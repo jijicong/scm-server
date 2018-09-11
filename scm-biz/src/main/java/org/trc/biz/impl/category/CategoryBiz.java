@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
@@ -414,6 +415,23 @@ public class CategoryBiz implements ICategoryBiz {
             categoryList.add(Long.parseLong(categoryId));
         }
         List<CategoryBrandExt> categoryBrandExts = categoryBrandService.queryCategoryBrands(categoryList);
+        if (StringUtils.isNotEmpty(categoryBrandForm.getBrandName())&& !CollectionUtils.isEmpty(categoryBrandExts)){
+            Iterator<CategoryBrandExt> iterator = categoryBrandExts.iterator();
+            while (iterator.hasNext()){
+                CategoryBrandExt categoryBrandExt = iterator.next();
+                Example example = new Example(Brand.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("id",categoryBrandExt.getBrandId());
+                criteria.andLike("name","%"+categoryBrandForm.getBrandName()+"%");
+                List<Brand> brands = brandService.selectByExample(example);
+                if (StringUtils.equals(String.valueOf(brands.size()),ZeroToNineEnum.ZERO.getCode())){
+                    iterator.remove();
+                }
+            }
+        }
+        if (categoryBrandExts.size()==0){
+            return null;
+        }
         Collections.sort(categoryBrandExts, new Comparator<CategoryBrandExt>() {
             @Override
             public int compare(CategoryBrandExt o1, CategoryBrandExt o2) {

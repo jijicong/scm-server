@@ -4,7 +4,9 @@ package org.trc.enums;
  * Created by wangyz on 2017/11/21.
  */
 public enum ItemTypeEnum {
-    NOEMAL("ZC","正常");
+    NOEMAL("ZC","正常"),
+    XIAOTAI("0","小泰良品"),
+    NON_XIAOTAI("1","非小泰良品");
 
     ItemTypeEnum(String code, String name) {
         this.code = code;
