@@ -362,8 +362,9 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck afterSaleCreate() {
-    	 return null;
+    public ResponseAck<String> afterSaleCreate() {
+    	
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "查询退货仓库成功", "");
     }
 
 }
