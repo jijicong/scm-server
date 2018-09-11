@@ -31,6 +31,11 @@ public class ReportInventoryForm implements Serializable {
     @QueryParam("stockType")
     private String stockType;
 
+    @NotBlank
+    @ApiParam(value = "仓库CODE", required = true)
+    @QueryParam("warehouseCode")
+    private String warehouseCode;
+
     public String getReportType() {
         return reportType;
     }
@@ -53,5 +58,13 @@ public class ReportInventoryForm implements Serializable {
 
     public void setStockType(String stockType) {
         this.stockType = stockType;
+    }
+
+    public String getWarehouseCode() {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
     }
 }

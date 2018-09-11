@@ -8,6 +8,6 @@
       FROM
         report_inventory
       WHERE
-        create_time LIKE CONCAT( #{time}, '%' )
+        TO_DAYS(`create_time`) = TO_DAYS(#{time})
     </select>
 </mapper>

@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.report.IReportBiz;
-import org.trc.domain.report.ReportInventory;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -44,7 +43,7 @@ public class ReportResource {
     @GET
     @Path("/reportPageList")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getReportPageList(@BeanParam ReportInventoryForm form, @BeanParam Pagenation<ReportInventory> page){
+    public Response getReportPageList(@BeanParam ReportInventoryForm form, @BeanParam Pagenation page){
         return ResultUtil.createSuccessPageResult(reportBiz.getReportPageList(form, page));
     }
 

@@ -28,5 +28,5 @@ public interface IReportBiz {
      * @param page
      * @return
      */
-    Object getReportPageList(ReportInventoryForm form, Pagenation<ReportInventory> page);
+    Pagenation getReportPageList(ReportInventoryForm form, Pagenation page);
 }
