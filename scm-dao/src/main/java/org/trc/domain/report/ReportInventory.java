@@ -183,6 +183,42 @@ public class ReportInventory implements Serializable {
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
+    @Transient
+    @ApiModelProperty(value = "仓库名称")
+    private String warehouseName;
+
+    @Transient
+    @ApiModelProperty(value = "SKU名称")
+    private String skuName;
+
+    @Transient
+    @ApiModelProperty(value = "所属类目")
+    private String categoryName;
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
     /**
      * @return id
      */

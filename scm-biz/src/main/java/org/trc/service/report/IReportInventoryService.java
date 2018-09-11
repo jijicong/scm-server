@@ -62,4 +62,11 @@ public interface IReportInventoryService extends IBaseService<ReportInventory, L
      * @return
      */
     List<AllocateSkuDetail> selectAllocateInDetailList(String allocateOrderCode);
+
+    /**
+     *
+     * @param time
+     */
+    List<ReportInventory> selectPageList(String time);
+
 }

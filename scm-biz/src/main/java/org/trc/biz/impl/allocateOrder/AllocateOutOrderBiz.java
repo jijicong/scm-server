@@ -22,7 +22,6 @@ import org.trc.enums.AllocateOrderEnum.AllocateOrderInventoryStatusEnum;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.report.StockOperationTypeEnum;
-import org.trc.enums.stock.QualityTypeEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
@@ -337,27 +336,27 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOrderExtService.setAllocateOrderWarehouseName(outOrder);
 		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
 				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())
-					&& !(AllocateOutOrderStatusEnum.CANCEL.getCode().equals(outOrder.getStatus()) 
+					&& !(AllocateOutOrderStatusEnum.CANCEL.getCode().equals(outOrder.getStatus())
 							&& ZeroToNineEnum.ONE.getCode().equals(outOrder.getIsCancel()) // 手工“取消出库”
 							&& (!DateCheckUtil.checkDate(outOrder.getUpdateTime())))) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");
 		}
 		WarehouseInfo queryWhi = new WarehouseInfo();
-		
+
 		queryWhi.setCode(outOrder.getInWarehouseCode());
 		WarehouseInfo inWarehouse = warehouseInfoService.selectOne(queryWhi);
 		AssertUtil.notNull(inWarehouse, "调入仓库不存在");
-		
+
 		queryWhi.setCode(outOrder.getOutWarehouseCode());
 		WarehouseInfo outWarehouse = warehouseInfoService.selectOne(queryWhi);
 		AssertUtil.notNull(outWarehouse, "调出仓库不存在");
-		
+
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService.getDetailListByOrderCode(outOrder.getAllocateOrderCode());
 
 		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
 
 		String reNoticeOrderCode = null;// 重新发货单号
-		
+
 		commonService.getWarehoueType(outOrder.getOutWarehouseCode(), request);
 
 		if (WarehouseTypeEnum.Zy.getCode().equals(request.getWarehouseType())) {
@@ -423,13 +422,13 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			orderDo.setReciverName(outOrder.getReceiver());//客户姓名
 			orderDo.setReciverMobile(outOrder.getReceiverMobile());//客户手机
 			orderDo.setOrderType(JdDeliverOrderTypeEnum.B2C.getCode()); // b2c
-			
+
 			orderDo.setReciverProvince(getAreaName(inWarehouse.getProvince(), "Province"));// 省
 			orderDo.setReciverCity(getAreaName(inWarehouse.getCity(), "City"));// 城市
 			orderDo.setReciverCountry(getAreaName(inWarehouse.getArea(), "District"));// 区
 			orderDo.setReciverDetailAddress(inWarehouse.getAddress()); // 地址取自仓库
 			orderDo.setOrderMark(jDWmsConstantConfig.getOrderMark());// 订单标记位
-			
+
 			scmDeleveryOrderDOList.add(orderDo);
 			request.setWarehouseType("JD");
 			request.setScmDeleveryOrderDOList(scmDeleveryOrderDOList);
@@ -438,7 +437,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), uerAccredit.getUserId(),
                 LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE.getMessage(), reNoticeOrderCode, null);
-        
+
         String status = null;
         String logOp = null;
         String resultMsg = null;
@@ -462,7 +461,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		}
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), outWarehouse.getWarehouseName(),
         		logOp, errMsg, null);
-		
+
 		allocateOutOrderService.updateOutOrderById(status, id, errMsg, wmsAllocatOutCode, orderSeq);
 		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, outOrder.getAllocateOrderCode());
 		return ResultUtil.createSuccessResult(resultMsg, "");
@@ -900,7 +899,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         jdStockOutDetail.setOutboundOrderCode(allocateOutOrder.getAllocateOutOrderCode());
         jdStockOutDetail.setWarehouseCode(allocateOutOrder.getOutWarehouseCode());
-        jdStockOutDetail.setStockType(QualityTypeEnum.QUALITY.getCode());
+        jdStockOutDetail.setStockType(detail.getInventoryType());
         jdStockOutDetail.setOperationType(StockOperationTypeEnum.ALLALLOCATE_OUT.getCode());
         jdStockOutDetail.setWarehouseOutboundOrderCode("");
         jdStockOutDetail.setPlatformOrderCode("");

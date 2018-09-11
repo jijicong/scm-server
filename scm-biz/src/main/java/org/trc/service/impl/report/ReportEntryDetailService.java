@@ -13,4 +13,6 @@ import org.trc.service.report.IReportEntryDetailService;
  */
 @Service("reportEntryDetailService")
 public class ReportEntryDetailService extends BaseService<ReportEntryDetail, Long> implements IReportEntryDetailService {
+
+
 }
