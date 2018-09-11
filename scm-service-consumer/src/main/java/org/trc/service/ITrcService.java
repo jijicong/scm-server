@@ -1,6 +1,7 @@
 package org.trc.service;
 
 
+import org.trc.form.AfterSaleNoticeTrcForm;
 import org.trc.form.ChannelOrderResponse;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.ReturnInResultNoticeForm;
@@ -89,4 +90,8 @@ public interface ITrcService {
      */
     ToGlyResultDO sendReturnInResult(ReturnInResultNoticeForm returnInResultNoticeForm);
 
+    /**
+     * 发送创建通知接口
+     */
+    ToGlyResultDO createAfterSaleNotice(AfterSaleNoticeTrcForm saleNoticeTrcForm);
 }
