@@ -35,8 +35,7 @@ import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
-import org.trc.form.ReturnInResultNoticeForm;
-import org.trc.form.ReturnInSkuInfo;
+import org.trc.form.*;
 import org.trc.form.afterSale.*;
 import org.trc.form.returnIn.ReturnInDetailWmsResponseForm;
 import org.trc.form.returnIn.ReturnInWmsResponseForm;
@@ -118,6 +117,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
     private ISellChannelService sellChannelService;
 	@Autowired
 	private ITrcService trcService;
+	@Autowired
+	private TrcConfig trcConfig;
 
 
 	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTEROD-";
@@ -230,15 +231,44 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//通知wms，新增退货入库单
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo,platformOrder,warehouseInfo);
 		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
-		//通知泰然城
-		createAfterSaleNoticeTrc(afterSaleOrder);
+		//通知泰然城退货入库单收货结果
+		try{
+			createAfterSaleNoticeTrc(afterSaleOrder,details);
+		}catch (Exception e){
+			logger.error("通知泰然城创建售后单异常", e);
+		}
 		//日志
 		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
 				aclUserAccreditInfo.getUserId(), "创建", "", null);
 	}
 
-	private void createAfterSaleNoticeTrc(AfterSaleOrder afterSaleOrder) {
-
+	private void createAfterSaleNoticeTrc(AfterSaleOrder afterSaleOrder, List<AfterSaleOrderDetail> details) {
+		TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
+		AfterSaleNoticeTrcForm afterSaleOrderForm = (AfterSaleNoticeTrcForm) trcParam;
+		AssertUtil.notNull(afterSaleOrder, "售后单信息不能为空!");
+		AssertUtil.notBlank(afterSaleOrder.getAfterSaleCode(), "售后单编码不能为空");
+		AssertUtil.notBlank(afterSaleOrder.getShopOrderCode(), "店铺订单号不能为空");
+		AssertUtil.notBlank(afterSaleOrder.getReturnWarehouseCode(), "仓库编码不能为空");
+		AssertUtil.notBlank(afterSaleOrder.getReturnWarehouseName(), "仓库名称不能为空");
+		AssertUtil.notEmpty(details, "售后单商品明细不能为空");
+		afterSaleOrderForm.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+		afterSaleOrderForm.setShopOrderCode(afterSaleOrder.getShopOrderCode());
+		afterSaleOrderForm.setWarehouseCode(afterSaleOrder.getReturnWarehouseCode());
+		afterSaleOrderForm.setWarehouseName(afterSaleOrder.getReturnWarehouseName());
+		afterSaleOrderForm.setMemo(afterSaleOrder.getMemo() == null ? StringUtils.EMPTY : afterSaleOrder.getMemo());
+		afterSaleOrderForm.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation() == null ? StringUtils.EMPTY : afterSaleOrder.getLogisticsCorporation());
+		afterSaleOrderForm.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode() == null ? StringUtils.EMPTY : afterSaleOrder.getLogisticsCorporationCode());
+		afterSaleOrderForm.setPicture(afterSaleOrder.getPicture() == null ? StringUtils.EMPTY : afterSaleOrder.getPicture());
+		List<AfterSaleSkuInfoNoticeTrcForm> skus = new ArrayList<>();
+		for (AfterSaleOrderDetail afterSaleOrderDetailDO : details) {
+			AfterSaleSkuInfoNoticeTrcForm afterSaleSkuInfoNoticeTrcForm = new AfterSaleSkuInfoNoticeTrcForm();
+			afterSaleSkuInfoNoticeTrcForm.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+			afterSaleSkuInfoNoticeTrcForm.setOrderItemCode(afterSaleOrderDetailDO.getOrderItemCode());
+			afterSaleSkuInfoNoticeTrcForm.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
+			afterSaleSkuInfoNoticeTrcForm.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+		}
+		afterSaleOrderForm.setSkus(skus);
+		trcService.createAfterSaleNotice(afterSaleOrderForm);
 	}
 
 	private int getCount(ShopOrder shopOrder) {
