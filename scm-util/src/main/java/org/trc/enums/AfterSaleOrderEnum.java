@@ -9,8 +9,8 @@ public class AfterSaleOrderEnum {
 		
 		STATUS_0(0,"待客户发货"),
 		STATUS_1(1,"客户已发货"),
-		STATUS_3(2,"已完成"),
-		STATUS_4(3,"已取消"),
+		STATUS_2(2,"已完成"),
+		STATUS_3(3,"已取消"),
 		STATUS_IS_CANCELING(4,"取消中"),
 		STATUS_IS_FAIL(5,"申请失败");
 

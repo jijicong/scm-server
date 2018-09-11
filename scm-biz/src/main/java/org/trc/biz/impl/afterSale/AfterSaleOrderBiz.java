@@ -883,7 +883,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 				logger.info(String.format("根据售后单%s状态已经是已经完成", req.getAfterSaleCode()));
 			}
 			return;
-		}else if(AfterSaleOrderStatusEnum.STATUS_4.getCode() == afterSaleOrder.getStatus()){
+		}else if(AfterSaleOrderStatusEnum.STATUS_IS_CANCELING.getCode() == afterSaleOrder.getStatus()){
 			throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("根据售后单%s状态已经是已经取消", req.getAfterSaleCode()));
 		}
 		AssertUtil.notNull(afterSaleOrder, String.format("根据售后单号%s查询售后单信息为空", req.getAfterSaleCode()));
