@@ -65,6 +65,13 @@ public class AfterSaleOrder  implements Serializable{
 	 */
 	@Column(name="sell_code")
     private String sellCode;
+	
+    /**
+	 * 请求流水号,每个售后申请唯一,用来做幂等
+	 */
+	@Column(name="request_no")
+    private String requestNo;
+    
 	/**
 	 * 销售渠道名称
 	 */
@@ -247,6 +254,11 @@ public class AfterSaleOrder  implements Serializable{
     @Column(name="update_operator")
 	private String updateOperator;
 
+    /**
+     * 退货场景：0实体店退货，1线上商城退货
+     */
+    @Column(name="return_scene")
+    private Integer returnScene;
 
 
 

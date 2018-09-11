@@ -28,6 +28,7 @@ import org.trc.enums.OrderTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.OrderException;
 import org.trc.form.OrderSubmitResult;
+import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
@@ -363,9 +364,30 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> afterSaleCreate() {
+    public ResponseAck afterSaleCreate(@BeanParam TairanAfterSaleOrderDO afterSaleOrder) {
+    	return trcBiz.afterSaleCreate(afterSaleOrder);
+    }
+    
+    /**
+     * 取消售后单接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.CANCEL_AFTER_SALE_ORDER)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<String> cancelAfterSaleOrder() {
     	
-    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "查询退货仓库成功", "");
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接口成功", "");
+    }
+    
+    /**
+     * 提交物流单号接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.SUBMIT_WAYBILL)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<String> submitWaybill() {
+    	
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交物流单号接口", "");
     }
 
 }

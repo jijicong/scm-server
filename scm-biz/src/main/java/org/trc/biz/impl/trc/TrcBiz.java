@@ -21,11 +21,22 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.System.SellChannel;
+import org.trc.domain.afterSale.AfterSaleOrder;
+import org.trc.domain.afterSale.AfterSaleOrderDetail;
+import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
+import org.trc.domain.afterSale.AfterSaleWarehouseNoticeDetail;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.forTrc.PropertyValueForTrc;
 import org.trc.domain.goods.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.order.OrderItem;
+import org.trc.domain.order.OutboundDetail;
+import org.trc.domain.order.OutboundOrder;
+import org.trc.domain.order.PlatformOrder;
+import org.trc.domain.order.ShopOrder;
+import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
@@ -33,10 +44,17 @@ import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
+import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
+import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
+import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
+import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
+import org.trc.form.afterSale.AfterSaleOrderAddDO;
+import org.trc.form.afterSale.TaiRanAfterSaleOrderDetail;
+import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
@@ -45,6 +63,8 @@ import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
+import org.trc.form.warehouse.ScmReturnInOrderDetail;
+import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
@@ -53,17 +73,31 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.IQimenService;
 import org.trc.service.ITrcService;
 import org.trc.service.System.ISellChannelService;
+import org.trc.service.afterSale.IAfterSaleOrderDetailService;
+import org.trc.service.afterSale.IAfterSaleOrderService;
+import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
+import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.*;
+import org.trc.service.impl.AfterSale.AfterSaleOrderService;
 import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.system.ChannelService;
+import org.trc.service.order.IOrderItemService;
+import org.trc.service.order.IPlatformOrderService;
+import org.trc.service.order.IShopOrderService;
+import org.trc.service.order.IWarehouseOrderService;
+import org.trc.service.outbound.IOutBoundOrderService;
+import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
@@ -132,8 +166,37 @@ public class TrcBiz implements ITrcBiz {
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
     private IWarehouseExtService warehouseExtService;
+    @Autowired
+    private IAfterSaleOrderService afterSaleOrderService;
+    @Autowired
+    private IShopOrderService shopOrderService;
+    @Autowired
+    private IPlatformOrderService platformOrderService;
+    @Autowired
+    private ISerialUtilService serialUtilService;
+    @Autowired
+    private IOrderItemService orderItemService;
+    @Autowired
+    private IWarehouseOrderService warehouseOrderService;
+    @Autowired
+    private IAfterSaleOrderDetailService afterSaleOrderDetailService;
+    @Autowired
+    private IAfterSaleWarehouseNoticeDetailService afterSaleWarehouseNoticeDetailService;
+    @Autowired
+    private IAfterSaleWarehouseNoticeService afterSaleWarehouseNoticeService;
+    @Autowired
+    private IWarehouseApiService warehouseApiService;
+    @Autowired
+    private ILogInfoService logInfoService;
+    @Autowired
+    private IOutBoundOrderService outBoundOrderService;
+    @Autowired
+    private IOutboundDetailService outboundDetailService;
 
-
+    private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
+	private static final String AFTER_SALE_ORDER_ID="AFTERO-";
+	private static final String AFTER_SALE_WAREHOUSE_NOTICE_ID="AFTERW-";
+	private static final String AFTER_SALE_WAREHOUSE_NOTICE_DETAIL_ID="AFTERN-";
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -2211,6 +2274,546 @@ public class TrcBiz implements ITrcBiz {
         }
         return list;
     }
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) {
+		//退货场景：0实体店退货，1线上商城退货
+		int returnScene=afterSaleOrderDO.getReturnScene();
+		//售后类型：0取消发货，1退货
+		int afterSaleType=afterSaleOrderDO.getAfterSaleType();
+		//请求流水号,每个售后申请唯一
+		
+		String requestNo=afterSaleOrderDO.getRequestNo();
+		AssertUtil.notBlank(requestNo, "请求流水号不能为空 !");
+		
+		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
+		AssertUtil.notBlank(shopOrderCode, "店铺订单号不能为空 !");
+		
+		boolean isExistRequestNo=isExistRequestNo(requestNo);
+		AssertUtil.isTrue(!isExistRequestNo, "请勿重复创建售后单!");
+		
+		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
+		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
+		if(details.size()>1) {
+			AssertUtil.notNull(null, "售后单详情只能包含一个sku!");
+		}
+		
+		ShopOrder shopOrderselect=new ShopOrder();
+		shopOrderselect.setShopOrderCode(shopOrderCode);
+		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
+		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
+		
+		//线下退货
+		if(returnScene==returnSceneEnum.STATUS_0.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
+			String afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
+		}
+		//线上退货
+		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
+			//判断该订单能否退货
+			boolean canReturn=judgeCanReturn(shopOrderCode,details.get(0));
+			if(canReturn) {
+				String afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
+			}else {
+				AssertUtil.notNull(null,"只有部分发货或者全部发货的状态才能退货!");
+			}
+		}
+		
+		//线上取消发货
+		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.CANCEL_DELIVER.getCode()) {
+			//判断该订单能否取消发货   确认是等待供应商发货还是 等待仓库发货
+			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
+			if(canCancel) {
+				onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+			}else {
+				AssertUtil.notNull(null,"只有在未发货状态才能取消!");
+			}
+		}
+		
+		
+		return null;
+		
+	}
+
+
+	
+
+	private boolean judgeCanCancel(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+		OrderItem orderItemSelect=new OrderItem();
+		orderItemSelect.setShopOrderCode(shopOrderCode);
+		AssertUtil.notBlank(taiRanAfterSaleOrderDetail.getSkuCode(), "skuCode不能为空!");
+		orderItemSelect.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
+		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+		AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+taiRanAfterSaleOrderDetail.getSkuCode()+"查询子订单为空!");
+		if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.WAIT_FOR_DELIVER.getCode())) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean judgeCanReturn(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+		OrderItem orderItemSelect=new OrderItem();
+		orderItemSelect.setShopOrderCode(shopOrderCode);
+		AssertUtil.notBlank(taiRanAfterSaleOrderDetail.getSkuCode(), "skuCode不能为空!");
+		orderItemSelect.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
+		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+		AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+taiRanAfterSaleOrderDetail.getSkuCode()+"查询子订单为空!");
+		if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode()) ||
+				orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode())	) {
+			return true;
+		}
+		return false;
+	}
+
+	private void onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) {
+		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
+		
+		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
+		
+		
+		PlatformOrder platformOrderSelect=new PlatformOrder();
+		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
+		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
+		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
+		
+		WarehouseInfo selectWarehouse=new WarehouseInfo();
+		AssertUtil.notBlank(afterSaleOrderDO.getReturnWarehouseCode(), "仓库编号为空!");
+		selectWarehouse.setCode(afterSaleOrderDO.getReturnWarehouseCode());
+		WarehouseInfo warehouseInfo=warehouseInfoService.selectOne(selectWarehouse);
+		AssertUtil.notNull(warehouseInfo,"该仓库编号"+afterSaleOrderDO.getReturnWarehouseCode()+"查询到的仓库为空!");
+
+		//查询该订单创建售后单的数量
+		int afterSaleNum=getCount(shopOrder);
+		//售后单编号
+		String afterSaleCode =SupplyConstants.Serial.AFTER_SALE_CODE+"-"+shopOrder.getScmShopOrderCode()+"-"+(afterSaleNum+1);
+        			
+		//售后单
+		AfterSaleOrder afterSaleOrder=getAfterSaleOrderCancel(afterSaleCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
+		
+		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:details) {
+
+			OrderItem orderItemSelect=new OrderItem();
+			orderItemSelect.setShopOrderCode(shopOrderCode);
+			AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
+			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+			AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
+			//售后单子单
+			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
+		}
+		
+	}
+
+	private boolean isExistRequestNo(String requestNo) {
+		Example example = new Example(AfterSaleOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("requestNo", requestNo);
+        int count=afterSaleOrderService.selectCountByExample(example);
+        if(count>0) {
+        	return true;
+        }
+		return false;
+	}
+
+	private String ReturnGoods(TairanAfterSaleOrderDO afterSaleOrderDO,ShopOrder shopOrder,int returnScene) {
+		
+		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
+		
+		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
+		
+		
+		PlatformOrder platformOrderSelect=new PlatformOrder();
+		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
+		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
+		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
+		
+		WarehouseInfo selectWarehouse=new WarehouseInfo();
+		AssertUtil.notBlank(afterSaleOrderDO.getReturnWarehouseCode(), "仓库编号为空!");
+		selectWarehouse.setCode(afterSaleOrderDO.getReturnWarehouseCode());
+		WarehouseInfo warehouseInfo=warehouseInfoService.selectOne(selectWarehouse);
+		AssertUtil.notNull(warehouseInfo,"该仓库编号"+afterSaleOrderDO.getReturnWarehouseCode()+"查询到的仓库为空!");
+
+		//查询该订单创建售后单的数量
+		int afterSaleNum=getCount(shopOrder);
+		//售后单编号
+		String afterSaleCode =SupplyConstants.Serial.AFTER_SALE_CODE+"-"+shopOrder.getScmShopOrderCode()+"-"+(afterSaleNum+1);
+        			
+		String warehouseNoticeCode = serialUtilService.generateCode(SupplyConstants.Serial.WAREHOUSE_NOTICE_LENGTH,
+        		SupplyConstants.Serial.WAREHOUSE_NOTICE_CODE,
+        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+		//售后单
+		AfterSaleOrder afterSaleOrder=getAfterSaleOrder(afterSaleCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
+		
+		//退货入库单
+		AfterSaleWarehouseNotice afterSaleWarehouseNotice=getAfterSaleWarehouseNotice(afterSaleCode,warehouseNoticeCode,shopOrder,
+				afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
+		
+
+		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:details) {
+
+			OrderItem orderItemSelect=new OrderItem();
+			orderItemSelect.setShopOrderCode(shopOrderCode);
+			AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
+			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+			AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
+			//售后单子单
+			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
+			//退货入库单子单
+			getAfterSaleWarehouseNoticeDetail(orderItem,warehouseNoticeCode,afterSaleOrderDetailDO);
+		}
+
+		afterSaleOrderService.insert(afterSaleOrder);
+		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
+		//通知wms，新增退货入库单
+		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo);
+		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		
+		//日志
+		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 
+				null, "创建", "", null);
+		
+		return afterSaleCode;
+	}
+	
+	private ScmReturnOrderCreateRequest getReturnInOrder(String afterSaleCode, String warehouseNoticeCode,
+			ShopOrder shopOrder, TairanAfterSaleOrderDO afterSaleOrderDO, PlatformOrder platformOrder,
+			WarehouseInfo warehouseInfo) {
+		ScmReturnOrderCreateRequest returnOrderCreateRequest=new ScmReturnOrderCreateRequest();
+		returnOrderCreateRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
+		returnOrderCreateRequest.setAfterSaleCode(afterSaleCode);
+		returnOrderCreateRequest.setWarehouseNoticeCode(warehouseNoticeCode);
+		returnOrderCreateRequest.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		returnOrderCreateRequest.setShopOrderCode(shopOrder.getShopOrderCode());
+		returnOrderCreateRequest.setWarehouseCode(afterSaleOrderDO.getReturnWarehouseCode());
+		returnOrderCreateRequest.setSender(platformOrder.getReceiverName());
+		returnOrderCreateRequest.setSenderAddress(platformOrder.getReceiverAddress());
+		returnOrderCreateRequest.setSenderCity(platformOrder.getReceiverCity());
+		returnOrderCreateRequest.setSenderNumber(platformOrder.getReceiverMobile());
+		returnOrderCreateRequest.setSenderProvince(platformOrder.getReceiverProvince());
+		returnOrderCreateRequest.setReceiver(warehouseInfo.getWarehouseContact());
+		returnOrderCreateRequest.setReceiverAddress(warehouseInfo.getAddress());
+		returnOrderCreateRequest.setReceiverCity(warehouseInfo.getCity());
+		returnOrderCreateRequest.setReceiverNumber(warehouseInfo.getWarehouseContactNumber());
+		returnOrderCreateRequest.setReceiverProvince(warehouseInfo.getProvince());
+		returnOrderCreateRequest.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
+//		returnOrderCreateRequest.setOperator(aclUserAccreditInfo.getName());
+//		returnOrderCreateRequest.setRemark(afterSaleOrderAddDO.getMemo());
+		returnOrderCreateRequest.setChannelCode(shopOrder.getChannelCode());
+		returnOrderCreateRequest.setSellCode(shopOrder.getSellCode());
+		returnOrderCreateRequest.setShopId(shopOrder.getShopId());
+		returnOrderCreateRequest.setShopName(shopOrder.getShopName());
+		returnOrderCreateRequest.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
+		returnOrderCreateRequest.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
+		returnOrderCreateRequest.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
+		returnOrderCreateRequest.setReturnScene(returnSceneEnum.STATUS_0.getCode());
+		
+		List<ScmReturnInOrderDetail> list=new ArrayList<>();
+		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:afterSaleOrderDO.getAfterSaleOrderDetailList()) {
+			OrderItem orderItemSelect=new OrderItem();
+			orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+			
+			ScmReturnInOrderDetail detail=new ScmReturnInOrderDetail();
+			detail.setWarehouseNoticeCode(warehouseNoticeCode);
+			detail.setShopOrderCode(shopOrder.getShopOrderCode());
+			detail.setOrderItemCode(orderItem.getOrderItemCode());
+			detail.setSkuCode(orderItem.getSkuCode());
+			detail.setSkuName(orderItem.getItemName());
+			detail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
+			detail.setBarCode(orderItem.getBarCode());
+			detail.setBrandName(getBrandName(orderItem.getSpuCode()));
+			detail.setPicture(orderItem.getPicPath());
+			detail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+			detail.setMaxReturnNum(getMaxReturnNum(orderItem));
+			list.add(detail);
+		}
+		
+		returnOrderCreateRequest.setReturnInOrderDetailList(list);
+		return returnOrderCreateRequest;
+	}
+
+	private void getAfterSaleWarehouseNoticeDetail(OrderItem orderItem, String warehouseNoticeCode,
+			TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO) {
+		AfterSaleWarehouseNoticeDetail afterSaleWarehouseNoticeDetail=new AfterSaleWarehouseNoticeDetail();
+		String afterSaleWarehouseNoticeDetailId=GuidUtil.getNextUid(AFTER_SALE_WAREHOUSE_NOTICE_DETAIL_ID);
+		afterSaleWarehouseNoticeDetail.setId(afterSaleWarehouseNoticeDetailId);
+		afterSaleWarehouseNoticeDetail.setWarehouseNoticeCode(warehouseNoticeCode);
+		afterSaleWarehouseNoticeDetail.setShopOrderCode(orderItem.getShopOrderCode());
+		afterSaleWarehouseNoticeDetail.setOrderItemCode(orderItem.getOrderItemCode());
+		afterSaleWarehouseNoticeDetail.setSpuCode(orderItem.getSpuCode());
+		afterSaleWarehouseNoticeDetail.setSkuCode(orderItem.getSkuCode());
+		afterSaleWarehouseNoticeDetail.setSkuName(orderItem.getItemName());
+		afterSaleWarehouseNoticeDetail.setBarCode(orderItem.getBarCode());
+		afterSaleWarehouseNoticeDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
+		afterSaleWarehouseNoticeDetail.setPicture(orderItem.getPicPath());
+		afterSaleWarehouseNoticeDetail.setCreateTime(new Date());
+		afterSaleWarehouseNoticeDetail.setUpdateTime(new Date());
+		afterSaleWarehouseNoticeDetail.setBrandName(getBrandName(orderItem.getSpuCode()));
+		afterSaleWarehouseNoticeDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+		afterSaleWarehouseNoticeDetailService.insert(afterSaleWarehouseNoticeDetail);
+		
+	}
+
+	private void getAfterSaleOrderDetail(OrderItem orderItem, TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO,
+			String afterSaleCode) {
+		AfterSaleOrderDetail afterSaleOrderDetail=new AfterSaleOrderDetail();
+		String afterSaleOrderDetailId=GuidUtil.getNextUid(AFTER_SALE_ORDER_DETAIL_ID);
+		afterSaleOrderDetail.setId(afterSaleOrderDetailId);
+		afterSaleOrderDetail.setAfterSaleCode(afterSaleCode);
+		afterSaleOrderDetail.setShopOrderCode(orderItem.getShopOrderCode());
+		afterSaleOrderDetail.setScmShopOrderCode(orderItem.getScmShopOrderCode());
+		afterSaleOrderDetail.setBrandName(getBrandName(orderItem.getSpuCode()));
+		afterSaleOrderDetail.setOrderItemCode(orderItem.getOrderItemCode());
+		afterSaleOrderDetail.setSkuCode(orderItem.getSkuCode());
+		afterSaleOrderDetail.setSpuCode(orderItem.getSpuCode());
+		afterSaleOrderDetail.setSkuName(orderItem.getItemName());
+		afterSaleOrderDetail.setBarCode(orderItem.getBarCode());
+		afterSaleOrderDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
+		afterSaleOrderDetail.setNum(orderItem.getNum());
+		afterSaleOrderDetail.setMaxReturnNum(getMaxReturnNum(orderItem));
+		afterSaleOrderDetail.setReturnNum(afterSaleOrderDetailDO.getReturnNum());
+		afterSaleOrderDetail.setRefundAmont(afterSaleOrderDetailDO.getRefundAmont());
+		afterSaleOrderDetail.setInNum(afterSaleOrderDetailDO.getInNum());
+		afterSaleOrderDetail.setDefectiveInNum(afterSaleOrderDetailDO.getDefectiveInNum());
+		afterSaleOrderDetail.setPicture(orderItem.getPicPath());
+		WarehouseOrder warehouseOrder=getWarehouseOrder(orderItem.getWarehouseOrderCode());
+		afterSaleOrderDetail.setDeliverWarehouseCode(warehouseOrder.getWarehouseCode());
+		afterSaleOrderDetail.setDeliverWarehouseName(warehouseOrder.getWarehouseName());
+		afterSaleOrderDetail.setCreateTime(new Date());
+		afterSaleOrderDetail.setUpdateTime(new Date());
+		afterSaleOrderDetailService.insert(afterSaleOrderDetail);
+		
+	}
+
+	private Integer getMaxReturnNum(OrderItem orderItem) {
+		
+		//根据系统订单号查询发货单号
+		OutboundOrder selectOutboundOrder=new OutboundOrder();
+		selectOutboundOrder.setScmShopOrderCode(orderItem.getScmShopOrderCode());
+		OutboundOrder outboundOrder=outBoundOrderService.selectOne(selectOutboundOrder);
+		AssertUtil.notNull(outboundOrder, "没有该订单的发货单!");
+		String outboundOrderCode=outboundOrder.getOutboundOrderCode();
+		//实际发货的数量-退货数量
+		int realSendNum=(int) getRealSendNum(outboundOrderCode,orderItem.getSkuCode());
+		//已取消
+		if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
+			return 0;
+		}else {
+			int refundNum=getAlreadyRefundNum(orderItem);
+			return (realSendNum-refundNum);
+		}
+	}
+	
+	private long getRealSendNum(String outboundOrderCode, String skuCode) {
+		OutboundDetail select=new OutboundDetail();
+		select.setOutboundOrderCode(outboundOrderCode);
+		select.setSkuCode(skuCode);
+		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
+		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
+		return outboundDetail.getRealSentItemNum();
+	}
+
+	/**
+	 * 订单退货数量
+	 * @param orderItem
+	 * @return
+	 */
+	private int getAlreadyRefundNum(OrderItem orderItem) {
+		AfterSaleOrderDetail afterSaleOrderDetailSelect=new AfterSaleOrderDetail();
+		afterSaleOrderDetailSelect.setShopOrderCode(orderItem.getShopOrderCode());
+		afterSaleOrderDetailSelect.setSkuCode(orderItem.getSkuCode());
+
+		int num=0;
+		List<AfterSaleOrderDetail> afterSaleOrderDetailsList=afterSaleOrderDetailService.select(afterSaleOrderDetailSelect);
+		if(afterSaleOrderDetailsList!=null) {
+			for(AfterSaleOrderDetail afterSaleOrderDetail:afterSaleOrderDetailsList) {
+				int inNum=afterSaleOrderDetail.getInNum()==null?0:afterSaleOrderDetail.getInNum();
+				int defectiveInNum=afterSaleOrderDetail.getDefectiveInNum()==null?0:afterSaleOrderDetail.getDefectiveInNum();;
+				num=num+inNum+defectiveInNum;
+			}
+
+		}
+		return num;
+	}
+
+	private WarehouseOrder getWarehouseOrder(String warehouseOrderCode) {
+		WarehouseOrder select=new WarehouseOrder();
+		select.setWarehouseOrderCode(warehouseOrderCode);
+		return warehouseOrderService.selectOne(select);
+	}
+
+	private String getBrandName(String spuCode) {
+		Items selectItems=new Items();
+		selectItems.setSpuCode(spuCode);
+		Items items=itemsService.selectOne(selectItems);
+		
+		Brand selectBrand=new Brand();
+		selectBrand.setId(items.getBrandId());
+		return brandService.selectOne(selectBrand).getName();
+	}
+
+	private AfterSaleWarehouseNotice getAfterSaleWarehouseNotice(String afterSaleCode, String warehouseNoticeCode,
+			ShopOrder shopOrder, TairanAfterSaleOrderDO afterSaleOrderDO, PlatformOrder platformOrder,
+			WarehouseInfo warehouseInfo,int returnScene) {
+		
+		AfterSaleWarehouseNotice afterSaleWarehouseNotice=new AfterSaleWarehouseNotice();
+		String afterSaleWarehouseNoticeId=GuidUtil.getNextUid(AFTER_SALE_WAREHOUSE_NOTICE_ID);
+		afterSaleWarehouseNotice.setId(afterSaleWarehouseNoticeId);
+		afterSaleWarehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
+		afterSaleWarehouseNotice.setAfterSaleCode(afterSaleCode);
+		afterSaleWarehouseNotice.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		afterSaleWarehouseNotice.setShopOrderCode(shopOrder.getShopOrderCode());
+		afterSaleWarehouseNotice.setChannelCode(shopOrder.getChannelCode());
+		afterSaleWarehouseNotice.setSellCode(shopOrder.getSellCode());
+		afterSaleWarehouseNotice.setShopName(shopOrder.getShopName());
+		afterSaleWarehouseNotice.setShopId(shopOrder.getShopId());
+		afterSaleWarehouseNotice.setWarehouseName(warehouseInfo.getWarehouseName());
+		afterSaleWarehouseNotice.setWarehouseCode(warehouseInfo.getCode());
+		afterSaleWarehouseNotice.setSender(platformOrder.getReceiverName());
+		afterSaleWarehouseNotice.setSenderAddress(platformOrder.getReceiverAddress());
+		afterSaleWarehouseNotice.setSenderCity(platformOrder.getReceiverCity());
+		afterSaleWarehouseNotice.setSenderNumber(platformOrder.getReceiverMobile());
+		afterSaleWarehouseNotice.setSenderProvince(platformOrder.getReceiverProvince());
+		afterSaleWarehouseNotice.setReceiverNumber(warehouseInfo.getWarehouseContactNumber());
+		afterSaleWarehouseNotice.setReceiver(warehouseInfo.getWarehouseContact());
+		afterSaleWarehouseNotice.setReceiverProvince(warehouseInfo.getProvince());
+		afterSaleWarehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
+		afterSaleWarehouseNotice.setReceiverCity(warehouseInfo.getCity());
+		afterSaleWarehouseNotice.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
+		//afterSaleWarehouseNotice.setOperator(aclUserAccreditInfo.getName());
+		afterSaleWarehouseNotice.setRemark(afterSaleOrderDO.getMemo());
+		//afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
+		afterSaleWarehouseNotice.setCreateTime(new Date());
+		afterSaleWarehouseNotice.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
+		afterSaleWarehouseNotice.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
+		afterSaleWarehouseNotice.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
+		//线下退货
+		if(returnScene==returnSceneEnum.STATUS_0.getCode()) {
+			afterSaleWarehouseNotice.setReturnScene(returnSceneEnum.STATUS_0.getCode());
+			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_2.getCode());
+		}else {
+			afterSaleWarehouseNotice.setReturnScene(returnSceneEnum.STATUS_1.getCode());
+			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_0.getCode());
+			
+		}
+		return afterSaleWarehouseNotice;
+	}
+
+	private AfterSaleOrder getAfterSaleOrder(String afterSaleCode, ShopOrder shopOrder,TairanAfterSaleOrderDO afterSaleOrderDO
+			,PlatformOrder platformOrder,WarehouseInfo warehouseInfo,int returnScene) {
+		
+		
+		AfterSaleOrder afterSaleOrder=new AfterSaleOrder();
+		String afterSaleOrderId=GuidUtil.getNextUid(AFTER_SALE_ORDER_ID);
+		afterSaleOrder.setId(afterSaleOrderId);
+		afterSaleOrder.setAfterSaleCode(afterSaleCode);
+		afterSaleOrder.setShopOrderCode(shopOrder.getShopOrderCode());
+		afterSaleOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		afterSaleOrder.setChannelCode(shopOrder.getChannelCode());
+		afterSaleOrder.setSellCode(shopOrder.getSellCode());
+		afterSaleOrder.setPicture(afterSaleOrderDO.getPicture());
+		afterSaleOrder.setShopId(shopOrder.getShopId());
+		afterSaleOrder.setShopName(shopOrder.getShopName());
+		afterSaleOrder.setSender(platformOrder.getReceiverName());
+		afterSaleOrder.setSenderAddress(platformOrder.getReceiverAddress());
+		afterSaleOrder.setSenderCity(platformOrder.getReceiverCity());
+		afterSaleOrder.setSenderNumber(platformOrder.getReceiverMobile());
+		afterSaleOrder.setSenderProvince(platformOrder.getReceiverProvince());
+		afterSaleOrder.setUserId(platformOrder.getUserId());
+		afterSaleOrder.setUserName(platformOrder.getUserName());
+		afterSaleOrder.setReceiverProvince(warehouseInfo.getProvince());
+		afterSaleOrder.setReceiverCity(warehouseInfo.getCity());
+		afterSaleOrder.setReceiverDistrict(warehouseInfo.getArea());
+		afterSaleOrder.setReceiverAddress(warehouseInfo.getAddress());
+		afterSaleOrder.setReceiverName(warehouseInfo.getWarehouseContact());
+		afterSaleOrder.setReceiverPhone(warehouseInfo.getWarehouseContactNumber());
+		afterSaleOrder.setReceiverMobile(warehouseInfo.getWarehouseContactNumber());
+		afterSaleOrder.setPayTime(shopOrder.getPayTime());
+		afterSaleOrder.setReturnWarehouseCode(warehouseInfo.getCode());
+		afterSaleOrder.setReturnAddress(warehouseInfo.getAddress());
+		afterSaleOrder.setReturnWarehouseName(warehouseInfo.getWarehouseName());
+		afterSaleOrder.setMemo(afterSaleOrderDO.getMemo());
+		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
+		afterSaleOrder.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
+		afterSaleOrder.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
+		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
+		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_0.getCode());
+		afterSaleOrder.setCreateTime(new Date());
+		afterSaleOrder.setUpdateTime(new Date());
+		//实体店退货
+		if(returnScene==returnSceneEnum.STATUS_0.getCode()) {
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_2.getCode());
+			afterSaleOrder.setReturnScene(returnSceneEnum.STATUS_0.getCode());
+		}else{
+			afterSaleOrder.setReturnScene(returnSceneEnum.STATUS_1.getCode());
+			if(StringUtils.isNotBlank(afterSaleOrderDO.getLogisticsCorporationCode()) && StringUtils.isNotBlank(afterSaleOrderDO.getWaybillNumber())) {
+				afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
+			}else {
+				afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
+			}
+		}
+		return afterSaleOrder;
+	}
+	
+	
+	private AfterSaleOrder getAfterSaleOrderCancel(String afterSaleCode, ShopOrder shopOrder,TairanAfterSaleOrderDO afterSaleOrderDO
+			,PlatformOrder platformOrder,WarehouseInfo warehouseInfo,int returnScene) {
+		
+		
+		AfterSaleOrder afterSaleOrder=new AfterSaleOrder();
+		String afterSaleOrderId=GuidUtil.getNextUid(AFTER_SALE_ORDER_ID);
+		afterSaleOrder.setId(afterSaleOrderId);
+		afterSaleOrder.setAfterSaleCode(afterSaleCode);
+		afterSaleOrder.setShopOrderCode(shopOrder.getShopOrderCode());
+		afterSaleOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		afterSaleOrder.setChannelCode(shopOrder.getChannelCode());
+		afterSaleOrder.setSellCode(shopOrder.getSellCode());
+		afterSaleOrder.setPicture(afterSaleOrderDO.getPicture());
+		afterSaleOrder.setShopId(shopOrder.getShopId());
+		afterSaleOrder.setShopName(shopOrder.getShopName());
+		afterSaleOrder.setSender(platformOrder.getReceiverName());
+		afterSaleOrder.setSenderAddress(platformOrder.getReceiverAddress());
+		afterSaleOrder.setSenderCity(platformOrder.getReceiverCity());
+		afterSaleOrder.setSenderNumber(platformOrder.getReceiverMobile());
+		afterSaleOrder.setSenderProvince(platformOrder.getReceiverProvince());
+		afterSaleOrder.setUserId(platformOrder.getUserId());
+		afterSaleOrder.setUserName(platformOrder.getUserName());
+		afterSaleOrder.setReceiverProvince(warehouseInfo.getProvince());
+		afterSaleOrder.setReceiverCity(warehouseInfo.getCity());
+		afterSaleOrder.setReceiverDistrict(warehouseInfo.getArea());
+		afterSaleOrder.setReceiverAddress(warehouseInfo.getAddress());
+		afterSaleOrder.setReceiverName(warehouseInfo.getWarehouseContact());
+		afterSaleOrder.setReceiverPhone(warehouseInfo.getWarehouseContactNumber());
+		afterSaleOrder.setReceiverMobile(warehouseInfo.getWarehouseContactNumber());
+		afterSaleOrder.setPayTime(shopOrder.getPayTime());
+		afterSaleOrder.setReturnWarehouseCode(warehouseInfo.getCode());
+		afterSaleOrder.setReturnAddress(warehouseInfo.getAddress());
+		afterSaleOrder.setReturnWarehouseName(warehouseInfo.getWarehouseName());
+		afterSaleOrder.setMemo(afterSaleOrderDO.getMemo());
+//		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
+//		afterSaleOrder.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
+//		afterSaleOrder.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
+		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
+		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_0.getCode());
+		afterSaleOrder.setCreateTime(new Date());
+		afterSaleOrder.setUpdateTime(new Date());
+		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
+		return afterSaleOrder;
+	}
+	
+	private int getCount(ShopOrder shopOrder) {
+		AfterSaleOrder select=new AfterSaleOrder();
+		select.setShopOrderCode(shopOrder.getShopOrderCode());
+		List<AfterSaleOrder> list=afterSaleOrderService.select(select);
+		if(list!=null ) {
+			return list.size();
+		}
+		return 0;
+	}
 
 
 }
