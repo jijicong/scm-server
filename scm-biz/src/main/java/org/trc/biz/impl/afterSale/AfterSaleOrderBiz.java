@@ -850,12 +850,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		/**
 		 * 更新退货入库单状态及明细
 		 */
-		warehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_2.getCode());
-		warehouseNotice.setRecordRemark(req.getRecordRemark());
-		warehouseNotice.setRecordPic(req.getRecordPicture());
-		warehouseNotice.setConfirmRemark(req.getConfirmRemark());
-		warehouseNotice.setWarehouseTime(req.getWarehouseTime());
-		afterSaleWarehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+		int _inNum = 0;
+		int _defectiveInNum = 0;
 		for(AfterSaleWarehouseNoticeDetail detail: warehouseNoticeDetailList){
 			for(ReturnInDetailWmsResponseForm responseForm: req.getReturnInDetailWmsResponseFormList()){
 				if(StringUtils.equals(responseForm.getSkuCode(), detail.getSkuCode())){
@@ -863,11 +859,26 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 					detail.setDefectiveInNum(responseForm.getDefectiveInNum());
 					int totalInNum = getReturnNum(responseForm.getInNum(), responseForm.getDefectiveInNum());
 					detail.setTotalInNum(totalInNum);
+					if(null != responseForm.getInNum()){
+						_inNum = _inNum + responseForm.getInNum().intValue();
+					}
+					if(null != responseForm.getDefectiveInNum()){
+						_defectiveInNum = _defectiveInNum + responseForm.getDefectiveInNum().intValue();
+					}
 					detail.setUpdateTime(currentTime);
 					afterSaleWarehouseNoticeDetailService.updateByPrimaryKey(detail);
 				}
 			}
 		}
+		warehouseNotice.setInNum(_inNum);
+		warehouseNotice.setDefectiveInNum(_defectiveInNum);
+		warehouseNotice.setTotalInNum(_inNum + _defectiveInNum);
+		warehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_2.getCode());
+		warehouseNotice.setRecordRemark(req.getRecordRemark());
+		warehouseNotice.setRecordPic(req.getRecordPicture());
+		warehouseNotice.setConfirmRemark(req.getConfirmRemark());
+		warehouseNotice.setWarehouseTime(req.getWarehouseTime());
+		afterSaleWarehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 		/**
 		 * 更新售后单状态及明细
 		 */
