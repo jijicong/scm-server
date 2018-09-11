@@ -230,13 +230,16 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//通知wms，新增退货入库单
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo,platformOrder,warehouseInfo);
 		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
-		
+		//通知泰然城
+		createAfterSaleNoticeTrc(afterSaleOrder,afterSaleWarehouseNotice);
 		//日志
-		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 
+		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
 				aclUserAccreditInfo.getUserId(), "创建", "", null);
 	}
 
-	
+	private void createAfterSaleNoticeTrc(AfterSaleOrder afterSaleOrder, AfterSaleWarehouseNotice afterSaleWarehouseNotice) {
+
+	}
 
 	private int getCount(ShopOrder shopOrder) {
 		AfterSaleOrder select=new AfterSaleOrder();
