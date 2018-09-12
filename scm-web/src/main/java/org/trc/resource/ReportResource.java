@@ -1,10 +1,12 @@
 package org.trc.resource;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.report.IReportBiz;
+import org.trc.domain.report.ReportInventory;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -33,6 +35,7 @@ public class ReportResource {
     @GET
     @Path("/pageList/{date}")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "库存报表首页列表", response = ReportInventory.class)
     public Response getPageList(@ApiParam(name = "date", value = "年份", required = true) @PathParam("date") String date){
         return ResultUtil.createSuccessResult("库存报表首页列表", reportBiz.getPageList(date));
     }
@@ -43,6 +46,7 @@ public class ReportResource {
     @GET
     @Path("/reportPageList")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "具体类型报表列表")
     public Response getReportPageList(@BeanParam ReportInventoryForm form, @BeanParam Pagenation page){
         return ResultUtil.createSuccessPageResult(reportBiz.getReportPageList(form, page, true));
     }
@@ -52,8 +56,9 @@ public class ReportResource {
      */
     @GET
     @Path("/detailPageList")
+    @ApiOperation(value = "特殊查询报表列表")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getReportDetailedPageList(){
-
+    public Response getReportDetailPageList(@BeanParam ReportInventoryForm form, @BeanParam Pagenation page){
+        return ResultUtil.createSuccessPageResult(reportBiz.getReportDetailPageList(form, page, true));
     }
 }

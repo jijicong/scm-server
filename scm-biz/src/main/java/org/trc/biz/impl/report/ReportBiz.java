@@ -13,12 +13,15 @@ import org.trc.domain.report.ReportInventory;
 import org.trc.domain.report.ReportOutboundDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ItemTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.report.StockOperationTypeEnum;
 import org.trc.enums.report.StockTypeEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.category.ICategoryService;
@@ -29,6 +32,7 @@ import org.trc.service.report.IReportInventoryService;
 import org.trc.service.report.IReportOutboundDetailService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 import tk.mybatis.mapper.entity.Example;
@@ -39,7 +43,9 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Description〈报表统计〉
@@ -76,6 +82,9 @@ public class ReportBiz implements IReportBiz {
 
     @Autowired
     private ISellChannelService sellChannelService;
+
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
 
     /**
      * 每日统计前一天明细报表数据
@@ -135,6 +144,7 @@ public class ReportBiz implements IReportBiz {
     @Override
     public Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean b) {
 
+
         //总库存查询
         if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
             return getReportInventoryList(form, (Pagenation<ReportInventory>) page, b);
@@ -151,13 +161,45 @@ public class ReportBiz implements IReportBiz {
         return new Pagenation<>();
     }
 
+    /**
+     * 特殊查询报表列表
+     *
+     * @param form
+     * @param page
+     * @param b    是否分页
+     * @return
+     */
+    @Override
+    public Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean b) {
+
+        if (StringUtils.isBlank(form.getDate()) && (StringUtils.isBlank(form.getStartDate()) && StringUtils.isBlank(form.getEndDate()))
+                && !StringUtils.isBlank(form.getDate()) && (!StringUtils.isBlank(form.getStartDate()) && !StringUtils.isBlank(form.getEndDate()))) {
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "参数校验异常");
+        }
+
+        //总库存查询
+        if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
+            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, b);
+        }
+        //入库明细查询
+        else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
+            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, b);
+        }
+        //出库明细查询
+        else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.THREE.getCode())) {
+            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, b);
+        }
+
+        return null;
+    }
+
     private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("stockType", form.getStockType());
-        criteria.andEqualTo("warehouseCode", form.getWarehouseCode());
-        criteria.andCondition("DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( " + form.getDate() + " , '%Y%m' )");
-        //criteria.andLike("createTime", form.getDate() + "%");
+
+        //设置查询条件
+        setOutboundDetailSelectExample(criteria, form);
+
         List<ReportOutboundDetail> result = new ArrayList<>();
         if (b) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
@@ -169,6 +211,39 @@ public class ReportBiz implements IReportBiz {
             setOutboundResultDetail(result, form);
             return result;
         }
+    }
+
+    private void setOutboundDetailSelectExample(Example.Criteria criteria, ReportInventoryForm form) {
+        criteria.andEqualTo("stockType", form.getStockType());
+        criteria.andEqualTo("warehouseCode", form.getWarehouseCode());
+
+        if (StringUtils.isNotBlank(form.getDate())) {
+            criteria.andCondition("DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( " + form.getDate() + " , '%Y%m' )");
+        } else {
+            criteria.andBetween("createTime", form.getStartDate(), form.getEndDate());
+        }
+
+        if (StringUtils.isNotBlank(form.getSkuCode())) {
+            criteria.andIn("skuCode", Collections.singleton(form.getSkuCode()));
+        }
+
+        if (StringUtils.isNotBlank(form.getBarCode())) {
+            criteria.andEqualTo("barCode", form.getBarCode());
+        }
+
+        if (StringUtils.isNotBlank(form.getSkuName())) {
+            Example example = new Example(WarehouseItemInfo.class);
+            Example.Criteria criteria1 = example.createCriteria();
+            criteria1.andEqualTo("warehouseCode", form.getWarehouseCode());
+            criteria1.andLike("itemName", "%" + form.getSkuName() + "%");
+            List<WarehouseItemInfo> warehouseInfos = warehouseItemInfoService.selectByExample(example);
+            if(!CollectionUtils.isEmpty(warehouseInfos)){
+                List<String> skuCodes = warehouseInfos.stream().map(WarehouseItemInfo::getSkuCode).collect(Collectors.toList());
+                criteria.andIn("skuCode", skuCodes);
+            }
+        }
+
+
     }
 
     private void setOutboundResultDetail(List<ReportOutboundDetail> result, ReportInventoryForm form) {
@@ -360,9 +435,9 @@ public class ReportBiz implements IReportBiz {
     private List<ReportInventory> getResult(int i, String date) {
         String time = "";
         if (i < 10) {
-            time = "-0" + i;
+            time = "-0" + i + "-01";
         } else {
-            time = "-" + i;
+            time = "-" + i + "-01";
         }
         return reportInventoryService.selectPageList(date + time);
     }

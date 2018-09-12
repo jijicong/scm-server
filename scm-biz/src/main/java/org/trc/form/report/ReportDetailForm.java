@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author hzliuwei
  * @create 2018/9/11
  */
-public class ReportInventoryForm implements Serializable {
+public class ReportDetailForm implements Serializable {
 
     private static final long serialVersionUID = 4376634840756965104L;
 
@@ -21,8 +21,7 @@ public class ReportInventoryForm implements Serializable {
     @QueryParam("reportType")
     private String reportType;
 
-    @NotBlank
-    @ApiParam(value = "查询报表日期")
+    @ApiParam(value = "查询报表日期(yyyy-MM)")
     @QueryParam("date")
     private String date;
 
@@ -75,38 +74,6 @@ public class ReportInventoryForm implements Serializable {
     @QueryParam("warehousePurchaseOrderCode")
     @ApiParam(value = "仓库反馈入库单编号")
     private String warehousePurchaseOrderCode;
-
-    public String getReportType() {
-        return reportType;
-    }
-
-    public void setReportType(String reportType) {
-        this.reportType = reportType;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public String getStockType() {
-        return stockType;
-    }
-
-    public void setStockType(String stockType) {
-        this.stockType = stockType;
-    }
-
-    public String getWarehouseCode() {
-        return warehouseCode;
-    }
-
-    public void setWarehouseCode(String warehouseCode) {
-        this.warehouseCode = warehouseCode;
-    }
 
     public String getStartDate() {
         return startDate;
@@ -186,5 +153,37 @@ public class ReportInventoryForm implements Serializable {
 
     public void setWarehousePurchaseOrderCode(String warehousePurchaseOrderCode) {
         this.warehousePurchaseOrderCode = warehousePurchaseOrderCode;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getStockType() {
+        return stockType;
+    }
+
+    public void setStockType(String stockType) {
+        this.stockType = stockType;
+    }
+
+    public String getWarehouseCode() {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
     }
 }

@@ -4,10 +4,10 @@
 
     <select id="selectPageList" resultType="org.trc.domain.report.ReportInventory">
       SELECT
-        DISTINCT( warehouse_code )
+        DISTINCT( warehouse_code ) as warehouse_code
       FROM
         report_inventory
       WHERE
-        TO_DAYS(`create_time`) = TO_DAYS(#{time})
+        DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( #{time} , '%Y%m' )
     </select>
 </mapper>
