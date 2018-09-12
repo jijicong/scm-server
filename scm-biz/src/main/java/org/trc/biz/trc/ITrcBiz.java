@@ -8,6 +8,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.TrcActionTypeEnum;
+import org.trc.form.afterSale.AfterSaleWaybillForm;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
@@ -211,4 +212,13 @@ public interface ITrcBiz {
      * @param afterSaleOrder
      */
     ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception;
+
+    /**
+     * 提交物流单号接口
+     * @param afterSaleWaybillForm
+     * @return
+     * @throws Exception
+     */
+    ResponseAck<Object> submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception;
+
 }

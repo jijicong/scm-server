@@ -53,6 +53,7 @@ import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
+import org.trc.form.afterSale.AfterSaleWaybillForm;
 import org.trc.form.afterSale.TaiRanAfterSaleOrderDetail;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
@@ -2336,10 +2337,13 @@ public class TrcBiz implements ITrcBiz {
 		
 	}
 
+    @Override
+    public ResponseAck<Object> submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
+        return null;
+    }
 
-	
 
-	private void cancelOutboundOrder(ShopOrder shopOrder, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+    private void cancelOutboundOrder(ShopOrder shopOrder, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
 		//根据系统订单号查询发货单号
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
