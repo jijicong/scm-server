@@ -1,10 +1,17 @@
 package org.trc.biz.impl.report;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.util.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.report.IReportBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.ReportEntryDetail;
@@ -28,10 +35,11 @@ import org.trc.service.report.IReportInventoryService;
 import org.trc.service.report.IReportOutboundDetailService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
-import org.trc.util.Pagenation;
-import org.trc.util.QueryModel;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.ws.rs.core.Response;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,6 +47,8 @@ import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Description〈报表统计〉
@@ -48,6 +58,8 @@ import java.util.List;
  */
 @Service("reportBiz")
 public class ReportBiz implements IReportBiz {
+
+    private Logger logger = LoggerFactory.getLogger(ReportBiz.class);
 
     @Autowired
     private IReportInventoryService reportInventoryService;
@@ -75,6 +87,10 @@ public class ReportBiz implements IReportBiz {
 
     @Autowired
     private ISellChannelService sellChannelService;
+
+    public static String XLS = "xls";
+
+    public static String ZIP = "zip";
 
     /**
      * 每日统计前一天明细报表数据
@@ -147,6 +163,63 @@ public class ReportBiz implements IReportBiz {
         }
 
         return new Pagenation<>();
+    }
+
+    @Override
+    public Response downloadAllForWarehouse(ReportInventoryForm form) {
+        String warehouseCode = form.getWarehouseCode();
+        String date = form.getDate();
+        AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
+        AssertUtil.notBlank(date, "查询周期不能为空");
+
+        logger.info(String.format("开始下载仓库编码为%s,日期为%s的全报表!"), warehouseCode, date);
+
+        //仓库名称
+        WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(warehouseCode);
+        if (warehouseInfo == null) {
+            String msg = String.format("不存在此%s仓库编码的仓库", warehouseCode);
+            logger.error(msg);
+            throw new RuntimeException(msg);
+        }
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        ZipOutputStream zipOutputStream = null;
+        DataOutputStream dataOutputStream = null;
+        try{
+            zipOutputStream = new ZipOutputStream(new BufferedOutputStream(stream));
+            //设置压缩方式
+            zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
+
+//            //循环将文件写入压缩流
+//            for(ContractSignInfo contractSignInfo : contractSignInfoList) {
+//                String fileName = "contract_" + contractSignInfo.getInvestsId() + ".pdf";
+//                zipOutputStream.putNextEntry(new ZipEntry(fileName));
+//                dataOutputStream = new DataOutputStream(zipOutputStream);
+//                byte[] bytes = bestSignApiManagerBiz.downloadContract(contractSignInfo.getContractId());
+//                InputStream inputStream = new ByteArrayInputStream(bytes);
+//                IOUtils.copy(inputStream,dataOutputStream);
+//            }
+
+        }catch (Exception e) {
+//            logger.error("批量下载用户合同信息userId=" + userId +"异常",e);
+//            throw new BizException("批量下载用户合同信息异常");
+        }finally {
+//            try {
+//                //一定要flush  不然你就等着报错吧
+//                dataOutputStream.flush();
+//                dataOutputStream.close();
+//                zipOutputStream.close();
+//            }catch (Exception e) {
+//                logger.error("批量下载用户合同信息userId=" + userId +"异常",e);
+//                throw new BizException("批量下载用户合同信息异常");
+//            }
+        }
+
+        String zipName = String.format("【%s】库存报表%s%s%s", warehouseInfo.getWarehouseName(), date,
+                SupplyConstants.Symbol.FILE_NAME_SPLIT, ZIP);
+
+        logger.info(String.format("仓库编码为%s,日期为%s的全报表下载打包完成!"), warehouseCode, date);
+        return null;
     }
 
     private Pagenation getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page) {
@@ -402,5 +475,71 @@ public class ReportBiz implements IReportBiz {
         Month month = LocalDateTime.now().getMonth();
         System.out.println(month.getValue());
         System.out.println(year);
+    }
+
+    private List<HSSFWorkbook> getAllReportExcels(String warehouseCode, String date){
+
+        return null;
+    }
+
+    private HSSFWorkbook reportExcel(List<ReportInventory> reportInventorys, String fileName) {
+        //校验数据
+        if(reportInventorys == null || reportInventorys.size() < 1){
+            String msg = "报表数据为空!";
+            logger.error(msg);
+            throw new RuntimeException(msg);
+        }
+
+        //组装信息
+        List<CellDefinition> cellDefinitionList = new ArrayList<>();
+        this.createCellDefinition(cellDefinitionList);
+
+        return ExportExcel.generateExcel(reportInventorys, cellDefinitionList, fileName);
+    }
+
+    private void createCellDefinition(List<CellDefinition> cellDefinitionList) {
+        CellDefinition warehouseName = new CellDefinition("warehouseName", "仓库名称", CellDefinition.TEXT, null, 15000);
+        CellDefinition stockType = new CellDefinition("stockType", "仓库类型", CellDefinition.TEXT, null, 4000);
+        CellDefinition skuCode = new CellDefinition("skuCode", "SKU编码", CellDefinition.TEXT, null, 10000);
+        CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, null, 6000);
+        CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 15000);
+        CellDefinition categoryName = new CellDefinition("categoryName", "所属类目", CellDefinition.TEXT, null, 15000);
+        CellDefinition goodsType = new CellDefinition("goodsType", "商品类别", CellDefinition.TEXT, null, 5000);
+        CellDefinition specInfo = new CellDefinition("specInfo", "规格", CellDefinition.TEXT, null, 13000);
+        CellDefinition initialQuantity = new CellDefinition("initialQuantity", "期初数量", CellDefinition.TEXT, null, 6000);
+        CellDefinition outboundQuantity = new CellDefinition("outboundQuantity", "销售出库数量", CellDefinition.TEXT, null, 6000);
+        CellDefinition outboundTotalAmount = new CellDefinition("outboundTotalAmount", "销售出库实付总金额（元）", CellDefinition.TEXT, null, 12000);
+        CellDefinition salesReturnQuantity = new CellDefinition("salesReturnQuantity", "退货入库数量", CellDefinition.TEXT, null, 6000);
+        CellDefinition purchaseQuantity = new CellDefinition("purchaseQuantity", "采购入库数量", CellDefinition.TEXT, null, 4000);
+        CellDefinition purchaseTotalAmount = new CellDefinition("purchaseTotalAmount", "含税采购总金额（元）", CellDefinition.TEXT, null, 10000);
+        CellDefinition supplierReturnOutboundQuantity = new CellDefinition("supplierReturnOutboundQuantity", "退供应商出库数量", CellDefinition.TEXT, null, 8000);
+        CellDefinition suppliderReturnTotalAmount = new CellDefinition("suppliderReturnTotalAmount", "退供应商出库金额（元）", CellDefinition.TEXT, null, 12000);
+        CellDefinition allocateInQuantity = new CellDefinition("allocateInQuantity", "调拨入库数量", CellDefinition.TEXT, null, 4000);
+        CellDefinition allocateOutQuantity = new CellDefinition("allocateOutQuantity", "调拨出库数量", CellDefinition.TEXT, null, 4000);
+        CellDefinition entryTotalQuantity = new CellDefinition("entryTotalQuantity", "本期入库总数量", CellDefinition.TEXT, null, 4000);
+        CellDefinition outboundTotalQuantity = new CellDefinition("outboundTotalQuantity", "本期出库总数量", CellDefinition.TEXT, null, 4000);
+        CellDefinition balanceTotalQuantity = new CellDefinition("balanceTotalQuantity", "期末结存数量", CellDefinition.TEXT, null, 4000);
+
+        cellDefinitionList.add(warehouseName);
+        cellDefinitionList.add(stockType);
+        cellDefinitionList.add(skuCode);
+        cellDefinitionList.add(barCode);
+        cellDefinitionList.add(skuName);
+        cellDefinitionList.add(categoryName);
+        cellDefinitionList.add(goodsType);
+        cellDefinitionList.add(specInfo);
+        cellDefinitionList.add(initialQuantity);
+        cellDefinitionList.add(outboundQuantity);
+        cellDefinitionList.add(outboundTotalAmount);
+        cellDefinitionList.add(salesReturnQuantity);
+        cellDefinitionList.add(purchaseQuantity);
+        cellDefinitionList.add(purchaseTotalAmount);
+        cellDefinitionList.add(supplierReturnOutboundQuantity);
+        cellDefinitionList.add(suppliderReturnTotalAmount);
+        cellDefinitionList.add(allocateInQuantity);
+        cellDefinitionList.add(allocateOutQuantity);
+        cellDefinitionList.add(entryTotalQuantity);
+        cellDefinitionList.add(outboundTotalQuantity);
+        cellDefinitionList.add(balanceTotalQuantity);
     }
 }

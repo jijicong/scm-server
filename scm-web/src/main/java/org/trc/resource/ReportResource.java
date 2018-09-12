@@ -56,4 +56,24 @@ public class ReportResource {
     public void getReportDetailedPageList(){
 
     }
+
+    /**
+     * 下载具体仓库全部报表
+     */
+    @GET
+    @Path("/downloadAllForWarehouse")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadAllForWarehouse(@BeanParam ReportInventoryForm form) {
+        return null;
+    }
+
+    /**
+     * 下载具体仓库全部报表
+     */
+    @GET
+    @Path("/downloadCurrentForWarehouse")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadCurrentForWarehouse(@BeanParam ReportInventoryForm form) {
+        return null;
+    }
 }
