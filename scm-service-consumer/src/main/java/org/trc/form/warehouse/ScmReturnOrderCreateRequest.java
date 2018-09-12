@@ -108,5 +108,21 @@ public class ScmReturnOrderCreateRequest  extends ScmWarehouseRequestBase{
 	 */
 	private List<ScmReturnInOrderDetail> returnInOrderDetailList;
 	
+	/**
+	 * 快递公司名称
+	 */
+	private String logisticsCorporation;
+	/**
+	 * 快递公司编码
+	 */
+	private String logisticsCorporationCode;
+	/**
+	 * 快递单号
+	 */
+	private String waybillNumber;
+	/**
+	 * 退货场景：0实体店退货，1线上商城退货
+	 */
+	private Integer returnScene;
 
 }

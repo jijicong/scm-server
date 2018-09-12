@@ -81,6 +81,12 @@ public class SupplyConstants {
         public static final String SUPPLIER_LIST = "supplierList";//供应商分页查询
 
         public static final String RETURN_WAREHOUSE= "returnWarehouseQuery";//供应商分页查询
+        
+        public static final String AFTER_SALE_CREATE= "afterSaleCreate";//创建售后单接口
+        
+        public static final String CANCEL_AFTER_SALE_ORDER= "cancelAfterSaleOrder";//取消售后单接口
+        
+        public static final String SUBMIT_WAYBILL= "submitWaybill";//提交物流单号接口
     }
 
     /**
@@ -890,7 +896,7 @@ public class SupplyConstants {
         //售后单编码长度
         public static final Integer AFTER_SALE_LENGTH=5;
         //售后单编码前缀
-        public static final String AFTER_SALE_CODE="ASL";
+        public static final String AFTER_SALE_CODE="AS";
 
         //退货入库单编码长度
         public static final Integer WAREHOUSE_NOTICE_LENGTH=5;
