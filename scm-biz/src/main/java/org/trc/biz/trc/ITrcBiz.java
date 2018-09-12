@@ -7,6 +7,10 @@ import org.trc.domain.goods.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.TrcActionTypeEnum;
+import org.trc.form.afterSale.AfterSaleWaybillForm;
+import org.trc.form.afterSale.TairanAfterSaleOrderDO;
+import org.trc.form.category.BrandForm;
+import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
@@ -17,9 +21,11 @@ import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 泰然城交互
@@ -197,4 +203,25 @@ public interface ITrcBiz {
      * @return
      */
     List<TaiRanWarehouseInfo> returnWarehouseQuery();
+
+    /**
+     * 创建售后单接口
+     * @param afterSaleOrder
+     */
+    ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception;
+
+    /**
+     * 售后单取消
+     * @param afterSaleCode
+     * @return
+     */
+	Map<String, Object> cancelAfterSaleOrder(String afterSaleCode);
+	/**
+     * 提交物流单号接口
+     * @param afterSaleWaybillForm
+     * @return
+     * @throws Exception
+     */
+    void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception;
+
 }

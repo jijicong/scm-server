@@ -21,6 +21,8 @@ import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
+import org.trc.form.afterSale.AfterSaleWaybillForm;
+import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.order.SkuWarehouseDO;
@@ -34,7 +36,6 @@ import org.trc.util.ExceptionUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -362,9 +363,36 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> afterSaleCreate() {
-    	
-    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "查询退货仓库成功", "");
+    public ResponseAck afterSaleCreate(@BeanParam TairanAfterSaleOrderDO afterSaleOrder) throws Exception{
+    	return trcBiz.afterSaleCreate(afterSaleOrder);
+    }
+
+    /**
+     * 取消售后单接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.CANCEL_AFTER_SALE_ORDER)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<Map<String, Object>> cancelAfterSaleOrder(@QueryParam("afterSaleCode") String afterSaleCode) {
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接口成功", trcBiz.cancelAfterSaleOrder(afterSaleCode));
+    }
+
+    /**
+     * 提交物流单号接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.SUBMIT_WAYBILL)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<String> submitWaybill(String waybillMessage) {
+        AssertUtil.notBlank(waybillMessage, "请求参数不能为空");
+        try {
+            AfterSaleWaybillForm afterSaleWaybillForm = JSONObject.parseObject(waybillMessage,AfterSaleWaybillForm.class);
+            trcBiz.submitWaybill(afterSaleWaybillForm);
+        } catch (Exception e) {
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", waybillMessage), "");
+        }
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
     }
 
 }

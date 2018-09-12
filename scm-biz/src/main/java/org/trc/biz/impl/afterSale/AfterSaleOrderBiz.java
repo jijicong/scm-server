@@ -25,6 +25,8 @@ import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
+import org.trc.domain.order.OutboundDetail;
+import org.trc.domain.order.OutboundOrder;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
@@ -33,6 +35,7 @@ import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
+import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
 import org.trc.form.*;
@@ -52,10 +55,13 @@ import org.trc.service.category.IBrandService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.outbound.OutboundDetailService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
 import org.trc.service.order.IWarehouseOrderService;
+import org.trc.service.outbound.IOutBoundOrderService;
+import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -118,13 +124,17 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	@Autowired
 	private ITrcService trcService;
 	@Autowired
+	private IOutBoundOrderService outBoundOrderService;
+	@Autowired
+	private IOutboundDetailService outboundDetailService;
+	
 	private TrcConfig trcConfig;
 
 
-	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTEROD-";
+	private static final String AFTER_SALE_ORDER_DETAIL_ID="AFTERD-";
 	private static final String AFTER_SALE_ORDER_ID="AFTERO-";
 	private static final String AFTER_SALE_WAREHOUSE_NOTICE_ID="AFTERW-";
-	private static final String AFTER_SALE_WAREHOUSE_NOTICE_DETAIL_ID="AFTERWN-";
+	private static final String AFTER_SALE_WAREHOUSE_NOTICE_DETAIL_ID="AFTERN-";
 
 	@Override
 	public List<AfterSaleOrderItemVO> selectAfterSaleInfo(String scmShopOrderCode) throws Exception{
@@ -133,23 +143,39 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		selectOrderItem.setScmShopOrderCode(scmShopOrderCode);
 		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
 		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
+		
+		//根据系统订单号查询发货单号
+		OutboundOrder selectOutboundOrder=new OutboundOrder();
+		selectOutboundOrder.setScmShopOrderCode(scmShopOrderCode);
+		OutboundOrder outboundOrder=outBoundOrderService.selectOne(selectOutboundOrder);
+		AssertUtil.notNull(outboundOrder, "没有该订单的发货单!");
+		String outboundOrderCode=outboundOrder.getOutboundOrderCode();
 
 		List<AfterSaleOrderItemVO> afterSaleOrderItemVOList=new ArrayList<>();
 		for(OrderItem orderItem:orderItemList) {
 			AfterSaleOrderItemVO vo=new AfterSaleOrderItemVO();
 			BeanUtils.copyProperties(orderItem, vo);
-			//下单的数量-退货数量
-			int orderNum=orderItem.getNum();
+			//实际发货的数量-退货数量
+			int realSendNum=(int) getRealSendNum(outboundOrderCode,orderItem.getSkuCode());
 			//已取消
 			if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
 				vo.setMaxReturnNum(0);
 			}else {
 				int refundNum=getAlreadyRefundNum(orderItem);
-				vo.setMaxReturnNum(orderNum-refundNum);
+				vo.setMaxReturnNum(realSendNum-refundNum);
 			}
 			afterSaleOrderItemVOList.add(vo);
 		}
 		return afterSaleOrderItemVOList;
+	}
+
+	private long getRealSendNum(String outboundOrderCode, String skuCode) {
+		OutboundDetail select=new OutboundDetail();
+		select.setOutboundOrderCode(outboundOrderCode);
+		select.setSkuCode(skuCode);
+		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
+		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
+		return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
 	}
 
 	/**
@@ -215,11 +241,13 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		
 
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:details) {
-
+			
 			OrderItem orderItemSelect=new OrderItem();
 			orderItemSelect.setScmShopOrderCode(scmShopOrderCode);
+			AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
 			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+			AssertUtil.notNull(orderItem, "更具系统订单号"+scmShopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
 			//售后单子单
 			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
 			//退货入库单子单
@@ -311,6 +339,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		returnOrderCreateRequest.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
 		returnOrderCreateRequest.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
 		returnOrderCreateRequest.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
+		returnOrderCreateRequest.setReturnScene(returnSceneEnum.STATUS_1.getCode());
 		
 		List<ScmReturnInOrderDetail> list=new ArrayList<>();
 		for(AfterSaleOrderDetail afterSaleOrderDetailDO:afterSaleOrderAddDO.getAfterSaleOrderDetailList()) {
@@ -443,6 +472,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNotice.setLogisticsCorporation(afterSaleOrderAddDO.getLogisticsCorporation());
 		afterSaleWarehouseNotice.setLogisticsCorporationCode(afterSaleOrderAddDO.getLogisticsCorporationCode());
 		afterSaleWarehouseNotice.setWaybillNumber(afterSaleOrderAddDO.getWaybillNumber());
+		afterSaleWarehouseNotice.setReturnScene(returnSceneEnum.STATUS_1.getCode());
 		return afterSaleWarehouseNotice;
 	}
 
@@ -494,6 +524,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleOrder.setUpdateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleOrder.setUpdateTime(new Date());
+		afterSaleOrder.setReturnScene(returnSceneEnum.STATUS_1.getCode());
 		return afterSaleOrder;
 	}
 
@@ -852,7 +883,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 				logger.info(String.format("根据售后单%s状态已经是已经完成", req.getAfterSaleCode()));
 			}
 			return;
-		}else if(AfterSaleOrderStatusEnum.STATUS_4.getCode() == afterSaleOrder.getStatus()){
+		}else if(AfterSaleOrderStatusEnum.STATUS_IS_CANCELING.getCode() == afterSaleOrder.getStatus()){
 			throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("根据售后单%s状态已经是已经取消", req.getAfterSaleCode()));
 		}
 		AssertUtil.notNull(afterSaleOrder, String.format("根据售后单号%s查询售后单信息为空", req.getAfterSaleCode()));

@@ -3,9 +3,9 @@ package org.trc.exception;
 import org.trc.enums.ExceptionEnum;
 
 /**
- * Created by hzcyn on 2017/12/4.
+ * 配置管理异常
  */
-public class OutboundOrderException extends  RuntimeException  {
+public class AfterSaleException extends RuntimeException {
 
     /**
      * 异常枚举
@@ -16,15 +16,10 @@ public class OutboundOrderException extends  RuntimeException  {
      */
     private String message;
 
-    public OutboundOrderException(ExceptionEnum exceptionEnum, String message) {
+    public AfterSaleException(ExceptionEnum exceptionEnum, String message) {
         super(message);
         this.exceptionEnum = exceptionEnum;
         this.message = message;
-    }
-    
-    public OutboundOrderException(String message) {
-    	super(message);
-    	this.message = message;
     }
 
     public ExceptionEnum getExceptionEnum() {

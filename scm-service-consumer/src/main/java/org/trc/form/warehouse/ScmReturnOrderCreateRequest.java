@@ -120,5 +120,9 @@ public class ScmReturnOrderCreateRequest  extends ScmWarehouseRequestBase{
 	 * 快递单号
 	 */
 	private String waybillNumber;
+	/**
+	 * 退货场景：0实体店退货，1线上商城退货
+	 */
+	private Integer returnScene;
 
 }

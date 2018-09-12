@@ -8,10 +8,13 @@ import org.trc.biz.afterSale.IAfterSaleWarehouseNoticeBiz;
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.domain.afterSale.AfterSaleWarehouseNoticeDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.enums.ValidEnum;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeDO;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
@@ -28,6 +31,8 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
 	private IAfterSaleWarehouseNoticeService  afterSaleWarehouseNoticeService;
 	@Autowired
 	private IAfterSaleWarehouseNoticeDetailService  afterSaleWarehouseNoticeDetailService;
+	@Autowired
+	private IWarehouseInfoService  warehouseInfoService;
 	
 	@Override
 	public Pagenation<AfterSaleWarehouseNotice> warehouseNoticeList(AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,Pagenation<AfterSaleWarehouseNotice> page,
@@ -101,6 +106,13 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
 		BeanUtils.copyProperties(VO, afterSaleWarehouseNotice);
 		VO.setWarehouseNoticeDetailList(afterSaleWarehouseNoticeDetailList);
 		return VO;
+	}
+
+	@Override
+	public List<WarehouseInfo> selectWarehouse() {
+		WarehouseInfo warehouseInfo=new WarehouseInfo();
+		warehouseInfo.setIsSupportReturn(Integer.parseInt(ValidEnum.VALID.getCode()));
+		return warehouseInfoService.select(warehouseInfo);
 	}
 	
 

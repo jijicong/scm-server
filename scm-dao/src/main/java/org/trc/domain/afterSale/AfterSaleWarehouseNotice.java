@@ -297,6 +297,13 @@ public class AfterSaleWarehouseNotice implements Serializable {
     @FormParam("waybillNumber")
     @Column(name="waybill_number")
     private String waybillNumber;
+    
+    /**
+     * 退货场景：0实体店退货，1线上商城退货
+     */
+    @FormParam("returnScene")
+    @Column(name="return_scene")
+    private Integer returnScene;
 
 
 

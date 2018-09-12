@@ -15,6 +15,8 @@ import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.warehouse.*;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.form.warehouse.allocateOrder.*;
+import org.trc.form.warehouse.entryReturnOrder.*;
+import org.trc.form.warehouse.allocateOrder.*;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
@@ -120,7 +122,23 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 	public AppResult<List<ScmEntryReturnDetailResponse>> entryReturnDetail(ScmEntryReturnDetailRequest request) {
 		return wmsInvoke(request);
 	}
-	
+
+	@Override
+	public AppResult<ScmAfterSaleOrderCancelResponse> afterSaleCancel(ScmAfterSaleOrderCancelRequest request) {
+		return wmsInvoke(request);
+	}
+
+    @Override
+    public AppResult<ScmCancelAfterSaleOrderResponse> returnInOrderCancel(ScmCancelAfterSaleOrderRequest request) {
+        return wmsInvoke(request);
+    }
+
+    @Override
+    public AppResult<ScmSubmitAfterSaleOrderLogisticsResponse> submitAfterSaleLogistics(ScmSubmitAfterSaleOrderLogisticsRequest request) {
+        return wmsInvoke(request);
+    }
+
+
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
         if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){
             return wmsInvokeMock(scmWarehouseRequestBase);
@@ -169,6 +187,15 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmReturnOrderCreateRequest){
             url = externalSupplierConfig.getReturnOrderCreateUrl();
             method = "退货入库单创建";
+        }else if(scmWarehouseRequestBase instanceof ScmAfterSaleOrderCancelRequest){
+            url = externalSupplierConfig.getAfterSaleOrderCancelUrl();
+            method = "售后子仓库取消订单";
+        }else if(scmWarehouseRequestBase instanceof ScmCancelAfterSaleOrderRequest){
+            url = externalSupplierConfig.getReturnInOrderCancelUrl();
+            method = "售后子仓库取消售后单";
+        }else if(scmWarehouseRequestBase instanceof ScmSubmitAfterSaleOrderLogisticsRequest){
+            url = externalSupplierConfig.getSubmitAfterSaleLogisticsUrl();
+            method = "售后子仓库提交售后单物流信息";
         }
             
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
@@ -244,6 +271,12 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseArray(appResult.getResult().toString(), ScmEntryReturnDetailResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmReturnOrderCreateRequest){
             response = appResult.getResult();
+        }else if(scmWarehouseRequestBase instanceof ScmAfterSaleOrderCancelRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAfterSaleOrderCancelResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmCancelAfterSaleOrderRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmCancelAfterSaleOrderResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmSubmitAfterSaleOrderLogisticsRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmSubmitAfterSaleOrderLogisticsResponse.class);
         }
         appResult.setResult(response);
     }
@@ -401,5 +434,6 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         appResult.setResult(response);
         return appResult;
     }
+
 
 }
