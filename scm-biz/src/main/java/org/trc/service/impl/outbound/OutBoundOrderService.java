@@ -33,13 +33,11 @@ import org.trc.service.goods.ISkuStockService;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impl.TrcService;
 import org.trc.service.impl.config.RequestFlowService;
-import org.trc.service.impl.system.LogisticsCompanyService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
-import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouse.IWarehouseMockService;
@@ -48,13 +46,9 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
 import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
-import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
-
-import javax.ws.rs.core.Response;
 
 @Service("outBoundOrderService")
 public class OutBoundOrderService extends BaseService<OutboundOrder, Long> implements IOutBoundOrderService {

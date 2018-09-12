@@ -16,11 +16,6 @@ import org.trc.form.warehouse.*;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.form.warehouse.allocateOrder.*;
 import org.trc.form.warehouse.entryReturnOrder.*;
-import org.trc.form.warehouse.allocateOrder.*;
-import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailRequest;
-import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnDetailResponse;
-import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateRequest;
-import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.*;
 
