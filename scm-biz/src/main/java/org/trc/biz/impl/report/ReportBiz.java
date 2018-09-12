@@ -455,7 +455,17 @@ public class ReportBiz implements IReportBiz {
             }
         }
 
+        if(StringUtils.isNotBlank(form.getOutboundOrderCode())){
+            criteria.andEqualTo("outboundOrderCode", form.getOutboundOrderCode());
+        }
 
+        if(StringUtils.isNotBlank(form.getWarehouseOutboundOrderCode())){
+            criteria.andEqualTo("warehouseOutboundOrderCode", form.getWarehouseOutboundOrderCode());
+        }
+
+        if(StringUtils.isNotBlank(form.getSellChannelCode())){
+            criteria.andEqualTo("sellChannelCode", form.getSellChannelCode());
+        }
     }
 
     private void setOutboundResultDetail(List<ReportOutboundDetail> result, ReportInventoryForm form) {
@@ -512,7 +522,6 @@ public class ReportBiz implements IReportBiz {
         criteria.andEqualTo("warehouseCode", form.getWarehouseCode());
 
         criteria.andCondition("DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( " + form.getDate() + " , '%Y%m' )");
-        //criteria.andLike("createTime", form.getDate() + "%");
         List<ReportEntryDetail> result = new ArrayList<>();
         if (b) {
             Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
@@ -591,7 +600,6 @@ public class ReportBiz implements IReportBiz {
         criteria.andEqualTo("stockType", form.getStockType());
         criteria.andEqualTo("warehouseCode", form.getWarehouseCode());
         criteria.andCondition("DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( " + form.getDate() + " , '%Y%m' )");
-        //criteria.andLike("createTime", form.getDate() + "%");
         List<ReportInventory> result = new ArrayList<>();
         if (b) {
             Pagenation<ReportInventory> pagination = reportInventoryService.pagination(example, page, new QueryModel());

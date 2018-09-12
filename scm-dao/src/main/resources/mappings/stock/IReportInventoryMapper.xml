@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.report.IReportInventoryMapper">
 
-    <select id="selectPageList" resultType="org.trc.domain.report.ReportInventory">
+    <select id="selectPageList" resultType="org.trc.domain.report.ReportInventory" >
       SELECT
-        DISTINCT( warehouse_code ) as warehouse_code
+         DISTINCT warehouse_code AS warehouseCode
       FROM
         report_inventory
       WHERE
