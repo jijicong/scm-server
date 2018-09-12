@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.report.IReportBiz;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.ReportEntryDetail;
@@ -128,48 +129,72 @@ public class ReportBiz implements IReportBiz {
      *
      * @param form
      * @param page
+     * @param b    是否分页
      * @return
      */
     @Override
-    public Pagenation getReportPageList(ReportInventoryForm form, Pagenation page) {
+    public Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean b) {
 
         //总库存查询
         if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
-            return getReportInventoryList(form, (Pagenation<ReportInventory>) page);
+            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, b);
         }
         //入库明细查询
         else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
-            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page);
+            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, b);
         }
         //出库明细查询
         else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.THREE.getCode())) {
-            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page);
+            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, b);
         }
 
         return new Pagenation<>();
     }
 
-    private Pagenation getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page) {
+    private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("stockType", form.getStockType());
         criteria.andEqualTo("warehouseCode", form.getWarehouseCode());
-        criteria.andCondition("and TO_DAYS(`create_time`) = TO_DAYS(" + form.getDate() + ")");
+        criteria.andCondition("DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( " + form.getDate() + " , '%Y%m' )");
         //criteria.andLike("createTime", form.getDate() + "%");
-        Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
-        List<ReportOutboundDetail> result = pagination.getResult();
-        setOutboundResultDetail(result, form);
-        return pagination;
+        List<ReportOutboundDetail> result = new ArrayList<>();
+        if (b) {
+            Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
+            result = pagination.getResult();
+            setOutboundResultDetail(result, form);
+            return pagination;
+        } else {
+            result = reportOutboundDetailService.selectByExample(example);
+            setOutboundResultDetail(result, form);
+            return result;
+        }
     }
 
     private void setOutboundResultDetail(List<ReportOutboundDetail> result, ReportInventoryForm form) {
         for (ReportOutboundDetail reportOutboundDetail : result) {
 
+            //销售出库
+            if (StringUtils.equals(reportOutboundDetail.getOperationType(), StockOperationTypeEnum.SALES_OF_OUTBOUND.getCode())) {
+                if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
+                    reportOutboundDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
+                    reportOutboundDetail.setOutboundQuantity(0L);
+                    reportOutboundDetail.setSalesPrice(new BigDecimal(0));
+                    reportOutboundDetail.setPayment(new BigDecimal(0));
+                }
+            } else {
+                if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
+                    reportOutboundDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
+                }
+            }
+
+            reportOutboundDetail.setResidualQuantity(reportOutboundDetail.getOutboundQuantity() - reportOutboundDetail.getRealQuantity());
             //仓库名称
             WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(reportOutboundDetail.getWarehouseCode());
             if (warehouseInfo != null) {
                 reportOutboundDetail.setWarehouseName(warehouseInfo.getWarehouseName());
             }
+
             //sku名称
             Skus skus = skusService.selectSkuBySkuCode(reportOutboundDetail.getSkuCode());
             if (skus != null) {
@@ -186,21 +211,33 @@ public class ReportBiz implements IReportBiz {
             }
 
             //销售渠道
-            //sellChannelService.selectSellByCode(reportOutboundDetail.getSellCode());
+            SellChannel sellChannel = sellChannelService.selectSellByCode(reportOutboundDetail.getSellCode());
+            if (sellChannel != null) {
+                reportOutboundDetail.setSellName(sellChannel.getSellName());
+            }
         }
     }
 
-    private Pagenation getReportEntryDetailList(ReportInventoryForm form, Pagenation<ReportEntryDetail> page) {
+    private Object getReportEntryDetailList(ReportInventoryForm form, Pagenation<ReportEntryDetail> page, boolean b) {
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("stockType", form.getStockType());
         criteria.andEqualTo("warehouseCode", form.getWarehouseCode());
-        criteria.andCondition("and TO_DAYS(`create_time`) = TO_DAYS(" + form.getDate() + ")");
+
+        criteria.andCondition("DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( " + form.getDate() + " , '%Y%m' )");
         //criteria.andLike("createTime", form.getDate() + "%");
-        Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
-        List<ReportEntryDetail> result = pagination.getResult();
-        setEntryResultDetail(result, form);
-        return pagination;
+        List<ReportEntryDetail> result = new ArrayList<>();
+        if (b) {
+            Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
+            result = pagination.getResult();
+            setEntryResultDetail(result, form);
+            return pagination;
+        } else {
+            result = reportEntryDetailService.selectByExample(example);
+            setEntryResultDetail(result, form);
+            return result;
+        }
+
     }
 
     private void setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
@@ -260,18 +297,26 @@ public class ReportBiz implements IReportBiz {
     }
 
 
-    private Pagenation getReportInventoryList(ReportInventoryForm form, Pagenation<ReportInventory> page) {
+    private Object getReportInventoryList(ReportInventoryForm form, Pagenation<ReportInventory> page, boolean b) {
 
         Example example = new Example(ReportInventory.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("stockType", form.getStockType());
         criteria.andEqualTo("warehouseCode", form.getWarehouseCode());
-        criteria.andCondition("and TO_DAYS(`create_time`) = TO_DAYS(" + form.getDate() + ")");
+        criteria.andCondition("DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( " + form.getDate() + " , '%Y%m' )");
         //criteria.andLike("createTime", form.getDate() + "%");
-        Pagenation<ReportInventory> pagination = reportInventoryService.pagination(example, page, new QueryModel());
-        List<ReportInventory> result = pagination.getResult();
-        setResultDetail(result);
-        return pagination;
+        List<ReportInventory> result = new ArrayList<>();
+        if (b) {
+            Pagenation<ReportInventory> pagination = reportInventoryService.pagination(example, page, new QueryModel());
+            result = pagination.getResult();
+            setResultDetail(result);
+            return pagination;
+        } else {
+            result = reportInventoryService.selectByExample(example);
+            setResultDetail(result);
+            return result;
+        }
+
     }
 
     private void setResultDetail(List<ReportInventory> result) {
@@ -402,5 +447,12 @@ public class ReportBiz implements IReportBiz {
         Month month = LocalDateTime.now().getMonth();
         System.out.println(month.getValue());
         System.out.println(year);
+
+        LocalDate localDateTime1 = LocalDate.now().minusDays(1);
+        System.out.println(localDateTime1);
+
+        LocalDate of = LocalDate.of(2000, 3, 1);
+        LocalDate localDate1 = of.minusDays(1);
+        System.out.println(localDate1);
     }
 }

@@ -44,7 +44,7 @@ public class ReportResource {
     @Path("/reportPageList")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getReportPageList(@BeanParam ReportInventoryForm form, @BeanParam Pagenation page){
-        return ResultUtil.createSuccessPageResult(reportBiz.getReportPageList(form, page));
+        return ResultUtil.createSuccessPageResult(reportBiz.getReportPageList(form, page, true));
     }
 
     /**
