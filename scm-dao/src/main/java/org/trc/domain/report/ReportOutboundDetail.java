@@ -71,8 +71,15 @@ public class ReportOutboundDetail implements Serializable {
     /**
      * 销售渠道订单号
      */
-    @Column(name = "sell_code")
+    @Column(name = "sell_channel_code")
     @ApiModelProperty(value = "销售渠道订单号")
+    private String sellChannelCode;
+
+    /**
+     * 销售渠道
+     */
+    @Column(name = "sell_code")
+    @ApiModelProperty(value = "销售渠道")
     private String sellCode;
 
     /**
@@ -204,11 +211,56 @@ public class ReportOutboundDetail implements Serializable {
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
+    @Transient
+    @ApiModelProperty(value = "仓库名称")
+    private String warehouseName;
+
     /**
      * 快递公司
      */
     @ApiModelProperty(value = "快递公司")
     private String express;
+
+    @Transient
+    @ApiModelProperty(value = "SKU名称")
+    private String skuName;
+
+    @Transient
+    @ApiModelProperty(value = "销售渠道名称")
+
+    private String sellName;
+
+    public String getSellChannelCode() {
+        return sellChannelCode;
+    }
+
+    public void setSellChannelCode(String sellChannelCode) {
+        this.sellChannelCode = sellChannelCode;
+    }
+
+    public String getSellName() {
+        return sellName;
+    }
+
+    public void setSellName(String sellName) {
+        this.sellName = sellName;
+    }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
 
     /**
      * @return id

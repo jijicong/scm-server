@@ -8,4 +8,5 @@ import org.trc.service.IBaseService;
  */
 public interface IItemsService extends IBaseService<Items, Long>{
 
+    Items selectOneBySpuCode(String spuCode);
 }

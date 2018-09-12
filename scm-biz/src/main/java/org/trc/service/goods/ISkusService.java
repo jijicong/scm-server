@@ -23,4 +23,5 @@ public interface ISkusService extends IBaseService<Skus, String>{
     Set<String> selectSkuListByBarCode(List<String> barCodeList);
 
 
+    Skus selectSkuBySkuCode(String skuCode);
 }

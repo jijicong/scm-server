@@ -22,7 +22,6 @@ import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.report.StockOperationTypeEnum;
-import org.trc.enums.stock.QualityTypeEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
@@ -821,7 +820,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private void insertStockDetail(AllocateSkuDetail detail, AllocateInOrder allocateInOrder, Map<String,Long> stockMap) {
         JdStockInDetail jdStockInDetail = new JdStockInDetail();
         jdStockInDetail.setWarehouseCode(allocateInOrder.getInWarehouseCode());
-        jdStockInDetail.setStockType(QualityTypeEnum.QUALITY.getCode());
+        jdStockInDetail.setStockType(detail.getInventoryType());
         jdStockInDetail.setOperationType(StockOperationTypeEnum.ALLALLOCATE_IN.getCode());
         jdStockInDetail.setSupplierCode(allocateInOrder.getSupplierCode());
         jdStockInDetail.setOrderCode(allocateInOrder.getAllocateInOrderCode());

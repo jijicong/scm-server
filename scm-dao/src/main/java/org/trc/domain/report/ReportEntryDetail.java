@@ -128,6 +128,13 @@ public class ReportEntryDetail implements Serializable {
     private Long realQuantity;
 
     /**
+     * 正品数量
+     */
+    @Column(name = "normal_quantity")
+    @ApiModelProperty(value = "正品数量")
+    private Long normalQuantity;
+
+    /**
      * 残品数量
      */
     @Column(name = "defective_quantity")
@@ -160,6 +167,39 @@ public class ReportEntryDetail implements Serializable {
     @Column(name = "update_time")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
+
+    @Transient
+    @ApiModelProperty(value = "仓库名称")
+    private String warehouseName;
+
+    @Transient
+    @ApiModelProperty(value = "SKU名称")
+    private String skuName;
+
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public Long getNormalQuantity() {
+        return normalQuantity;
+    }
+
+    public void setNormalQuantity(Long normalQuantity) {
+        this.normalQuantity = normalQuantity;
+    }
 
     /**
      * @return id

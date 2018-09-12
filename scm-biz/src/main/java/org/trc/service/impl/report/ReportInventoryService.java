@@ -11,6 +11,7 @@ import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.mapper.report.IReportInventoryMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.report.IReportInventoryService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -28,6 +29,9 @@ import java.util.List;
  */
 @Service("reportInventoryService")
 public class ReportInventoryService extends BaseService<ReportInventory, Long> implements IReportInventoryService {
+
+    @Autowired
+    private IReportInventoryMapper reportInventoryMapper;
 
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
@@ -111,4 +115,13 @@ public class ReportInventoryService extends BaseService<ReportInventory, Long> i
     public List<AllocateSkuDetail> selectAllocateInDetailList(String allocateOrderCode) {
         return null;
     }
+
+    /**
+     * @param time
+     */
+    @Override
+    public List<ReportInventory> selectPageList(String time) {
+        return reportInventoryMapper.selectPageList(time);
+    }
+
 }
