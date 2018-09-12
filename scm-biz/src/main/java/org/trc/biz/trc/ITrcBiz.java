@@ -214,6 +214,12 @@ public interface ITrcBiz {
     ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception;
 
     /**
+     * 售后单取消
+     * @param afterSaleCode
+     * @return
+     */
+	Map<String, Object> cancelAfterSaleOrder(String afterSaleCode);
+	/**
      * 提交物流单号接口
      * @param afterSaleWaybillForm
      * @return

@@ -365,9 +365,8 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.CANCEL_AFTER_SALE_ORDER)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> cancelAfterSaleOrder() {
-    	
-    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接口成功", "");
+    public ResponseAck<Map<String, Object>> cancelAfterSaleOrder(@QueryParam("afterSaleCode") String afterSaleCode) {
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接口成功", trcBiz.cancelAfterSaleOrder(afterSaleCode));
     }
     
     /**

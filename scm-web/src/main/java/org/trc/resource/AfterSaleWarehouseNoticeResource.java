@@ -60,4 +60,15 @@ public class AfterSaleWarehouseNoticeResource {
 		return ResultUtil.createSuccessResult("查询成功",iAfterSaleWarehouseNoticeBiz.warehouseNoticeInfo(warehouseNoticeCode));
 		
 	}
+	
+	/**
+	 * 查询支持退货仓库
+	 */
+	@GET
+	@Path("selectWarehouse")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "查询支持退货仓库")
+	public Response selectWarehouse() throws Exception{
+		return ResultUtil.createSuccessResult("查询成功",iAfterSaleWarehouseNoticeBiz.selectWarehouse());
+	}
 }
