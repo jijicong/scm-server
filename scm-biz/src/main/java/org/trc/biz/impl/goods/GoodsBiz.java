@@ -1775,6 +1775,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (items1.getBrandId() != items.getBrandId()) {
             map.put("brandId", items.getBrandId());
         }
+        AssertUtil.notNull(items.getItemType(),"商品类别不能为空");
         int count = itemsService.updateByPrimaryKeySelective(items);
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改商品基础信息", JSON.toJSONString(items), "数据库操作失败").toString();
