@@ -51,7 +51,7 @@ public class ReportResource {
      * 特殊查询报表列表
      */
     @GET
-    @Path("/detailedPageList")
+    @Path("/detailPageList")
     @Produces(MediaType.APPLICATION_JSON)
     public void getReportDetailedPageList(){
 
