@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.report.IReportBiz;
 import org.trc.constants.SupplyConstants;
@@ -16,12 +15,15 @@ import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.ReportEntryDetail;
+import org.trc.domain.report.ReportExcelDetail;
 import org.trc.domain.report.ReportInventory;
 import org.trc.domain.report.ReportOutboundDetail;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.util.ExcelException;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ItemTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.report.StockOperationTypeEnum;
@@ -39,8 +41,13 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -170,7 +177,7 @@ public class ReportBiz implements IReportBiz {
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
         AssertUtil.notBlank(date, "查询周期不能为空");
 
-        logger.info(String.format("开始下载仓库编码为%s,日期为%s的全报表!"), warehouseCode, date);
+        logger.info(String.format("开始下载仓库编码为%s,日期为%s的全报表!", warehouseCode, date));
 
         //仓库名称
         WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(warehouseCode);
@@ -179,45 +186,183 @@ public class ReportBiz implements IReportBiz {
             logger.error(msg);
             throw new RuntimeException(msg);
         }
+        //获取仓库名称
+        String warehouseName = warehouseInfo.getWarehouseName();
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = null;
         DataOutputStream dataOutputStream = null;
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try{
             zipOutputStream = new ZipOutputStream(new BufferedOutputStream(stream));
             //设置压缩方式
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
-
-//            //循环将文件写入压缩流
-//            for(ContractSignInfo contractSignInfo : contractSignInfoList) {
-//                String fileName = "contract_" + contractSignInfo.getInvestsId() + ".pdf";
-//                zipOutputStream.putNextEntry(new ZipEntry(fileName));
-//                dataOutputStream = new DataOutputStream(zipOutputStream);
-//                byte[] bytes = bestSignApiManagerBiz.downloadContract(contractSignInfo.getContractId());
-//                InputStream inputStream = new ByteArrayInputStream(bytes);
-//                IOUtils.copy(inputStream,dataOutputStream);
-//            }
-
+            //获取信息
+            List<ReportExcelDetail> reportExcelDetails = this.getReportExcelDetail(form, warehouseName);
+            //循环将文件写入压缩流
+            for(ReportExcelDetail reportExcelDetail : reportExcelDetails) {
+                String fileName = reportExcelDetail.getFileName() + SupplyConstants.Symbol.FILE_NAME_SPLIT  +ZIP;
+                zipOutputStream.putNextEntry(new ZipEntry(fileName));
+                dataOutputStream = new DataOutputStream(zipOutputStream);
+                byte[] bytes = reportExcelDetail.getSheet().getBytes();
+                InputStream inputStream = new ByteArrayInputStream(bytes);
+                IOUtils.copy(inputStream,dataOutputStream);
+            }
         }catch (Exception e) {
-//            logger.error("批量下载用户合同信息userId=" + userId +"异常",e);
-//            throw new BizException("批量下载用户合同信息异常");
+            e.printStackTrace();
+            String msg = String.format("下载用户合同信息异常,仓库编码为%s,日期为%s", warehouseCode, date);
+            logger.error(msg);
+            throw new RuntimeException(msg);
         }finally {
-//            try {
-//                //一定要flush  不然你就等着报错吧
-//                dataOutputStream.flush();
-//                dataOutputStream.close();
-//                zipOutputStream.close();
-//            }catch (Exception e) {
-//                logger.error("批量下载用户合同信息userId=" + userId +"异常",e);
-//                throw new BizException("批量下载用户合同信息异常");
-//            }
+            try {
+                dataOutputStream.flush();
+                dataOutputStream.close();
+                zipOutputStream.close();
+            }catch (Exception e) {
+                e.printStackTrace();
+                String msg = String.format("下载用户合同信息异常,仓库编码为%s,日期为%s", warehouseCode, date);
+                logger.error(msg);
+                throw new RuntimeException(msg);
+            }
         }
 
-        String zipName = String.format("【%s】库存报表%s%s%s", warehouseInfo.getWarehouseName(), date,
+        String zipName = String.format("【%s】库存报表%s%s%s", warehouseName, date,
                 SupplyConstants.Symbol.FILE_NAME_SPLIT, ZIP);
 
-        logger.info(String.format("仓库编码为%s,日期为%s的全报表下载打包完成!"), warehouseCode, date);
-        return null;
+        logger.info(String.format("仓库编码为%s,日期为%s的全报表下载打包完成!", warehouseCode, date));
+        return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + zipName).type(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Cache-Control", "no-cache").build();
+    }
+
+    @Override
+    public Response downloadCurrentForWarehouse(ReportInventoryForm form) {
+        String warehouseCode = form.getWarehouseCode();
+        String date = form.getDate();
+        AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
+        AssertUtil.notBlank(date, "查询周期不能为空");
+
+        logger.info(String.format("开始下载仓库编码为%s,日期为%s,报表类型为%s,库存类型为%s的报表!",
+                warehouseCode, date, form.getReportType(), form.getStockType()));
+
+        //仓库名称
+        WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(warehouseCode);
+        if (warehouseInfo == null) {
+            String msg = String.format("不存在此%s仓库编码的仓库", warehouseCode);
+            logger.error(msg);
+            throw new RuntimeException(msg);
+        }
+        //获取仓库名称
+        String warehouseName = warehouseInfo.getWarehouseName();
+
+        try {
+            String sheetName = this.getExcelName(form, warehouseName);
+            HSSFWorkbook hssfWorkbook = this.reportExcel(
+                    (List<ReportInventory>)this.getReportPageList(form, null, false), sheetName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            hssfWorkbook.write(stream);
+            String fileName = sheetName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+
+            logger.info(String.format("下载仓库编码为%s,日期为%s,报表类型为%s,库存类型为%s的报表完成!",
+                    warehouseCode, date, form.getReportType(), form.getStockType()));
+
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Cache-Control", "no-cache").build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            String msg = String.format("下载报表异常异常仓库编码为%s,日期为%s,报表类型为%s,库存类型为%s!",
+                    warehouseCode, date, form.getReportType(), form.getStockType());
+            logger.error(msg + e.getMessage(), e);
+            return ResultUtil.createfailureResult(
+                    Integer.parseInt(ExceptionEnum.FILE_DOWNLOAD_EXCEPTION.getCode()), msg);
+        }
+    }
+
+    private String getExcelName(ReportInventoryForm form, String warehouseName){
+        if(StringUtils.equals(form.getStockType(), StockTypeEnum.QUALITY.getCode())){
+            if(StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())){
+                return String.format("【%s】正品总库存%s", warehouseName, form.getDate());
+            }else if(StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())){
+                return String.format("【%s】正品入库明细%s", warehouseName, form.getDate());
+            }else{
+                return String.format("【%s】正品出库明细%s", warehouseName, form.getDate());
+            }
+        }else{
+            if(StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())){
+                return String.format("【%s】残品总库存%s", warehouseName, form.getDate());
+            }else if(StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())){
+                return String.format("【%s】残品入库明细%s", warehouseName, form.getDate());
+            }else{
+                return String.format("【%s】残品出库明细%s", warehouseName, form.getDate());
+            }
+        }
+    }
+
+    /**
+     * 获取全部信息
+     * @param form
+     * @param warehouseName
+     * @return
+     */
+    private List<ReportExcelDetail> getReportExcelDetail(ReportInventoryForm form, String warehouseName){
+        List<ReportExcelDetail> reportExcelDetails = new ArrayList<>();
+        String date = form.getDate();
+
+        ReportExcelDetail reportExcelDetail = new ReportExcelDetail();
+
+        //正品总库存
+        form.setStockType(StockTypeEnum.QUALITY.getCode());
+        form.setReportType(ZeroToNineEnum.ONE.getCode());
+        List<ReportInventory> reportInventoryList = (List<ReportInventory>)this.getReportPageList(form, null, false);
+        String fileName = String.format("【%s】正品总库存%s", warehouseName, date);
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail);
+
+        //残品总库存
+        form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
+        form.setReportType(ZeroToNineEnum.ONE.getCode());
+        reportInventoryList = (List<ReportInventory>)this.getReportPageList(form, null, false);
+        fileName = String.format("【%s】残品总库存%s", warehouseName, date);
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail);
+
+        //正品入库明细
+        form.setStockType(StockTypeEnum.QUALITY.getCode());
+        form.setReportType(ZeroToNineEnum.TWO.getCode());
+        reportInventoryList = (List<ReportInventory>)this.getReportPageList(form, null, false);
+        fileName = String.format("【%s】正品入库明细%s", warehouseName, date);
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail);
+
+        //残品入库明细
+        form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
+        form.setReportType(ZeroToNineEnum.TWO.getCode());
+        reportInventoryList = (List<ReportInventory>)this.getReportPageList(form, null, false);
+        fileName = String.format("【%s】残品入库明细%s", warehouseName, date);
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail);
+
+        //正品出库明细
+        form.setStockType(StockTypeEnum.QUALITY.getCode());
+        form.setReportType(ZeroToNineEnum.THREE.getCode());
+        reportInventoryList = (List<ReportInventory>)this.getReportPageList(form, null, false);
+        fileName = String.format("【%s】正品出库明细%s", warehouseName, date);
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail);
+
+        //残品出库明细
+        form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
+        form.setReportType(ZeroToNineEnum.THREE.getCode());
+        reportInventoryList = (List<ReportInventory>)this.getReportPageList(form, null, false);
+        fileName = String.format("【%s】残品出库明细%s", warehouseName, date);
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail);
+
+        return reportExcelDetails;
     }
 
     private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
@@ -488,11 +633,6 @@ public class ReportBiz implements IReportBiz {
         LocalDate of = LocalDate.of(2000, 3, 1);
         LocalDate localDate1 = of.minusDays(1);
         System.out.println(localDate1);
-    }
-
-    private List<HSSFWorkbook> getAllReportExcels(String warehouseCode, String date){
-
-        return null;
     }
 
     private HSSFWorkbook reportExcel(List<ReportInventory> reportInventorys, String fileName) {

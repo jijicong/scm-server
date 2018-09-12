@@ -64,16 +64,16 @@ public class ReportResource {
     @Path("/downloadAllForWarehouse")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadAllForWarehouse(@BeanParam ReportInventoryForm form) {
-        return null;
+        return reportBiz.downloadAllForWarehouse(form);
     }
 
     /**
-     * 下载具体仓库全部报表
+     * 下载具体仓库当前报表
      */
     @GET
     @Path("/downloadCurrentForWarehouse")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadCurrentForWarehouse(@BeanParam ReportInventoryForm form) {
-        return null;
+        return reportBiz.downloadCurrentForWarehouse(form);
     }
 }

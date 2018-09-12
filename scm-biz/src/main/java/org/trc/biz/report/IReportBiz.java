@@ -35,8 +35,14 @@ public interface IReportBiz {
     /**
      * 下载具体仓库全部报表
      *
-     * @param warehouseCode
      * @return
      */
     Response downloadAllForWarehouse(ReportInventoryForm form);
+
+    /**
+     * 下载具体仓库全部报表
+     *
+     * @return
+     */
+    Response downloadCurrentForWarehouse(ReportInventoryForm form);
 }
