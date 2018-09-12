@@ -129,8 +129,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     }
 
     @Override
-    public AppResult<ScmSubmitAfterSaleOrderLogisticsResponse> submitAfterSaleLogistics(ScmSubmitAfterSaleOrderLogisticsRequest req) {
-        return null;
+    public AppResult<ScmSubmitAfterSaleOrderLogisticsResponse> submitAfterSaleLogistics(ScmSubmitAfterSaleOrderLogisticsRequest request) {
+        return wmsInvoke(request);
     }
 
 
@@ -185,6 +185,12 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmAfterSaleOrderCancelRequest){
             url = externalSupplierConfig.getAfterSaleOrderCancelUrl();
             method = "售后子仓库取消订单";
+        }else if(scmWarehouseRequestBase instanceof ScmCancelAfterSaleOrderRequest){
+            url = externalSupplierConfig.getReturnInOrderCancelUrl();
+            method = "售后子仓库取消售后单";
+        }else if(scmWarehouseRequestBase instanceof ScmSubmitAfterSaleOrderLogisticsRequest){
+            url = externalSupplierConfig.getSubmitAfterSaleLogisticsUrl();
+            method = "售后子仓库提交售后单物流信息";
         }
             
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
@@ -262,6 +268,10 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = appResult.getResult();
         }else if(scmWarehouseRequestBase instanceof ScmAfterSaleOrderCancelRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAfterSaleOrderCancelResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmCancelAfterSaleOrderRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmCancelAfterSaleOrderResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmSubmitAfterSaleOrderLogisticsRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmSubmitAfterSaleOrderLogisticsResponse.class);
         }
         appResult.setResult(response);
     }
