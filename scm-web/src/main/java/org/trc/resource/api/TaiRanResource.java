@@ -9,9 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
-import org.trc.biz.category.IPropertyBiz;
-import org.trc.biz.goods.ISkuRelationBiz;
-import org.trc.biz.impl.category.BrandBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.ITrcBiz;
@@ -23,13 +20,9 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
-import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.OrderException;
-import org.trc.form.OrderSubmitResult;
+import org.trc.form.afterSale.AfterSaleWaybillForm;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
-import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.order.SkuWarehouseDO;
@@ -43,9 +36,7 @@ import org.trc.util.ExceptionUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.validation.constraints.Max;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -385,9 +376,16 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.SUBMIT_WAYBILL)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> submitWaybill() {
-    	
-    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交物流单号接口", "");
+    public ResponseAck<String> submitWaybill(String waybillMessage) {
+        AssertUtil.notBlank(waybillMessage, "请求参数不能为空");
+        try {
+            AfterSaleWaybillForm afterSaleWaybillForm = JSONObject.parseObject(waybillMessage,AfterSaleWaybillForm.class);
+            trcBiz.submitWaybill(afterSaleWaybillForm);
+        } catch (Exception e) {
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", waybillMessage), "");
+        }
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
     }
 
 }
