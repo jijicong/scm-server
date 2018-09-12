@@ -2277,7 +2277,7 @@ public class TrcBiz implements ITrcBiz {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) {
+	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception{
 		//退货场景：0实体店退货，1线上商城退货
 		int returnScene=afterSaleOrderDO.getReturnScene();
 		//售后类型：0取消发货，1退货
@@ -2324,9 +2324,10 @@ public class TrcBiz implements ITrcBiz {
 			//判断该订单能否取消发货   确认是等待供应商发货还是 等待仓库发货
 			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
 			if(canCancel) {
-				onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+				//创建售后单（待客户发货）
+				String afterSaleCode=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
 			}else {
-				AssertUtil.notNull(null,"只有在未发货状态才能取消!");
+				AssertUtil.notNull(null,"只有在仓库未发货状态才能取消!");
 			}
 		}
 		
@@ -2338,6 +2339,20 @@ public class TrcBiz implements ITrcBiz {
 
 	
 
+	private void cancelOutboundOrder(ShopOrder shopOrder, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+		//根据系统订单号查询发货单号
+		OutboundOrder selectOutboundOrder=new OutboundOrder();
+		selectOutboundOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
+		OutboundOrder outboundOrder=outBoundOrderService.selectOne(selectOutboundOrder);
+		AssertUtil.notNull(outboundOrder, "根据scmShopOrderCode"+shopOrder.getScmShopOrderCode()+"查询发货单为空!");
+		String outboundOrderCode=outboundOrder.getOutboundOrderCode();
+		
+		OutboundDetail selectOutboundDetail=new OutboundDetail();
+		selectOutboundDetail.setOutboundOrderCode(outboundOrderCode);
+		selectOutboundDetail.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
+		
+	}
+
 	private boolean judgeCanCancel(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
 		OrderItem orderItemSelect=new OrderItem();
 		orderItemSelect.setShopOrderCode(shopOrderCode);
@@ -2345,7 +2360,7 @@ public class TrcBiz implements ITrcBiz {
 		orderItemSelect.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
 		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
 		AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+taiRanAfterSaleOrderDetail.getSkuCode()+"查询子订单为空!");
-		if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.WAIT_FOR_DELIVER.getCode())) {
+		if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.WAIT_WAREHOUSE_DELIVER.getCode())) {
 			return true;
 		}
 		return false;
@@ -2365,7 +2380,7 @@ public class TrcBiz implements ITrcBiz {
 		return false;
 	}
 
-	private void onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) {
+	private String onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) throws Exception{
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
 		
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
@@ -2401,8 +2416,13 @@ public class TrcBiz implements ITrcBiz {
 			AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
 			//售后单子单
 			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
+			
+			//调用 接口通知子系统
+			afterSaleOrderService.deliveryCancel(shopOrder.getScmShopOrderCode(), afterSaleOrderDetailDO.getSkuCode());
 		}
 		
+		
+		return afterSaleCode;
 	}
 
 	private boolean isExistRequestNo(String requestNo) {
@@ -2797,7 +2817,7 @@ public class TrcBiz implements ITrcBiz {
 //		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
 //		afterSaleOrder.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
 //		afterSaleOrder.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
-		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
+		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.CANCEL_DELIVER.getCode());
 		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_0.getCode());
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());

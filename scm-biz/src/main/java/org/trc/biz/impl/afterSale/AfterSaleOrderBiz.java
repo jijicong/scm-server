@@ -175,7 +175,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		select.setSkuCode(skuCode);
 		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
 		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
-		return outboundDetail.getRealSentItemNum();
+		return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
 	}
 
 	/**

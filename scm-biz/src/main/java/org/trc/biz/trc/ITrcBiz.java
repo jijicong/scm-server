@@ -210,5 +210,5 @@ public interface ITrcBiz {
      * 创建售后单接口
      * @param afterSaleOrder
      */
-    ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO);
+    ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception;
 }
