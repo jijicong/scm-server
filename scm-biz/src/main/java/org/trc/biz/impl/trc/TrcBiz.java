@@ -48,6 +48,7 @@ import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
+import org.trc.exception.AfterSaleException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
@@ -2326,10 +2327,10 @@ public class TrcBiz implements ITrcBiz {
 				AssertUtil.notNull(null,"只有在仓库未发货状态才能取消!");
 			}
 		}
-		
+
 		data.put("afterSaleCode", afterSaleCode);
 		return new ResponseAck("200","售后单接受成功",data);
-		
+
 	}
 
     private void afterSaleCreateCheckParam(TairanAfterSaleOrderDO afterSaleOrderDO) {
@@ -2355,10 +2356,6 @@ public class TrcBiz implements ITrcBiz {
 		AssertUtil.notBlank(skuCode, "skuCode编码不能为空 !");
 	}
 
-	@Override
-    public ResponseAck<Object> submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
-        return null;
-    }
 
 
     private void cancelOutboundOrder(ShopOrder shopOrder, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
@@ -2437,7 +2434,7 @@ public class TrcBiz implements ITrcBiz {
 		AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
 		//售后单子单
 		getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
-		
+
 		//调用 接口通知子系统
 		Map<String, Object> map=afterSaleOrderService.deliveryCancel(shopOrder.getScmShopOrderCode(), afterSaleOrderDetailDO.getSkuCode());
 		boolean flg=(boolean) map.get("flg");
@@ -2867,7 +2864,7 @@ public class TrcBiz implements ITrcBiz {
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public Map<String, Object> cancelAfterSaleOrder(String afterSaleCode) {
 		Map<String, Object> data=new HashMap<>();
-		
+
 		AssertUtil.notBlank(afterSaleCode, "售后单号不能为空!");
 		AfterSaleOrder select=new AfterSaleOrder();
 		select.setAfterSaleCode(afterSaleCode);
@@ -2876,12 +2873,12 @@ public class TrcBiz implements ITrcBiz {
 		if(!(afterSaleOrder.getStatus()==AfterSaleOrderStatusEnum.STATUS_0.getCode())) {
 			AssertUtil.notNull(null,"只有待客户发货状态才能取消!");
 		}
-		
+
 		AfterSaleWarehouseNotice selectWarehouseNotice=new AfterSaleWarehouseNotice();
 		selectWarehouseNotice.setAfterSaleCode(afterSaleCode);
 		AfterSaleWarehouseNotice afterSaleWarehouseNotice=afterSaleWarehouseNoticeService.selectOne(selectWarehouseNotice);
 		AssertUtil.notNull(afterSaleWarehouseNotice,"根据售后单号"+afterSaleCode+"查询退货入库单为空!");
-		
+
 		//调用子系统接口 取消售后单  //取消成功
 		boolean istrue=false;
 		if(istrue) {
@@ -2889,15 +2886,42 @@ public class TrcBiz implements ITrcBiz {
 			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_3.getCode());
 			afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
 			afterSaleWarehouseNoticeService.updateByPrimaryKey(afterSaleWarehouseNotice);
-			
 			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
 		}else {
 			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
 		}
-		
+
 		data.put("afterSaleCode", afterSaleCode);
 		return data;
 	}
+
+
+    @Override
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
+	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
+	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
+	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
+	    AssertUtil.notBlank(afterSaleWaybillForm.getWaybillNumber(),"物流单号不能为空!");
+
+        AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
+        afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
+        afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
+        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
+        //更新售后单
+        afterSaleOrder.setLogisticsCorporationCode(afterSaleWaybillForm.getLogisticsCorporationCode());
+        afterSaleOrder.setLogisticsCorporation(afterSaleWaybillForm.getLogisticsCorporation());
+        afterSaleOrder.setWaybillNumber(afterSaleWaybillForm.getWaybillNumber());
+        //修改状态
+        afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
+
+        int count =  afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改售后单信息",JSON.toJSONString(afterSaleOrder),"数据库操作失败").toString();
+            logger.error(msg);
+            throw new AfterSaleException(ExceptionEnum.AFTER_SALE_ORDER_UPDATE_EXCEPTION, msg);
+        }
+    }
+
 
 
 }

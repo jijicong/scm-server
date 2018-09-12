@@ -225,6 +225,6 @@ public interface ITrcBiz {
      * @return
      * @throws Exception
      */
-    ResponseAck<Object> submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception;
+    void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception;
 
 }
