@@ -61,4 +61,24 @@ public class ReportResource {
     public Response getReportDetailPageList(@BeanParam ReportInventoryForm form, @BeanParam Pagenation page){
         return ResultUtil.createSuccessPageResult(reportBiz.getReportDetailPageList(form, page, true));
     }
+
+    /**
+     * 下载具体仓库全部报表
+     */
+    @GET
+    @Path("/downloadAllForWarehouse")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadAllForWarehouse(@BeanParam ReportInventoryForm form) {
+        return reportBiz.downloadAllForWarehouse(form);
+    }
+
+    /**
+     * 下载具体仓库当前报表
+     */
+    @GET
+    @Path("/downloadCurrentForWarehouse")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadCurrentForWarehouse(@BeanParam ReportInventoryForm form) {
+        return reportBiz.downloadCurrentForWarehouse(form);
+    }
 }

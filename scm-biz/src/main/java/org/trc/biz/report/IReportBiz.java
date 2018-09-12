@@ -4,6 +4,7 @@ import org.trc.domain.report.ReportInventory;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 public interface IReportBiz {
@@ -30,6 +31,20 @@ public interface IReportBiz {
      * @return
      */
     Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean b);
+
+    /**
+     * 下载具体仓库全部报表
+     *
+     * @return
+     */
+    Response downloadAllForWarehouse(ReportInventoryForm form);
+
+    /**
+     * 下载具体仓库全部报表
+     *
+     * @return
+     */
+    Response downloadCurrentForWarehouse(ReportInventoryForm form);
 
     /**
      * 特殊查询报表列表
