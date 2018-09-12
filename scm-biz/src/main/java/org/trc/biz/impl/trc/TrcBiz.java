@@ -2278,6 +2278,7 @@ public class TrcBiz implements ITrcBiz {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception{
+		Map<String,Object> data=new HashMap<>();
 		//退货场景：0实体店退货，1线上商城退货
 		int returnScene=afterSaleOrderDO.getReturnScene();
 		//售后类型：0取消发货，1退货
@@ -2303,17 +2304,17 @@ public class TrcBiz implements ITrcBiz {
 		shopOrderselect.setShopOrderCode(shopOrderCode);
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
 		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
-		
+		String afterSaleCode=null;
 		//线下退货
 		if(returnScene==returnSceneEnum.STATUS_0.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
-			String afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
+			 afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
 		}
 		//线上退货
 		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
 			//判断该订单能否退货
 			boolean canReturn=judgeCanReturn(shopOrderCode,details.get(0));
 			if(canReturn) {
-				String afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
+				 afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
 			}else {
 				AssertUtil.notNull(null,"只有部分发货或者全部发货的状态才能退货!");
 			}
@@ -2324,15 +2325,18 @@ public class TrcBiz implements ITrcBiz {
 			//判断该订单能否取消发货   确认是等待供应商发货还是 等待仓库发货
 			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
 			if(canCancel) {
-				//创建售后单（待客户发货）
-				String afterSaleCode=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+				//创建售后单（待客户发货）  取消失败返回null
+				 afterSaleCode=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+				 if(afterSaleCode==null) {
+					 return new ResponseAck("500","取消失败","");
+				 }
 			}else {
 				AssertUtil.notNull(null,"只有在仓库未发货状态才能取消!");
 			}
 		}
 		
-		
-		return null;
+		data.put("afterSaleCode", afterSaleCode);
+		return new ResponseAck("200","售后单接受成功",data);
 		
 	}
 
@@ -2406,19 +2410,25 @@ public class TrcBiz implements ITrcBiz {
 		//售后单
 		AfterSaleOrder afterSaleOrder=getAfterSaleOrderCancel(afterSaleCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
 		
-		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:details) {
-
-			OrderItem orderItemSelect=new OrderItem();
-			orderItemSelect.setShopOrderCode(shopOrderCode);
-			AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
-			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
-			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
-			AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
-			//售后单子单
-			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
-			
-			//调用 接口通知子系统
-			afterSaleOrderService.deliveryCancel(shopOrder.getScmShopOrderCode(), afterSaleOrderDetailDO.getSkuCode());
+		TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0);
+		OrderItem orderItemSelect=new OrderItem();
+		orderItemSelect.setShopOrderCode(shopOrderCode);
+		AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
+		orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+		AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
+		//售后单子单
+		getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
+		
+		//调用 接口通知子系统
+		Map<String, Object> map=afterSaleOrderService.deliveryCancel(shopOrder.getScmShopOrderCode(), afterSaleOrderDetailDO.getSkuCode());
+		boolean flg=(boolean) map.get("flg");
+		if(!flg) {
+			//取消失败
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_FAIL.getCode());
+			return null;
+		}else {
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
 		}
 		
 		
@@ -2634,7 +2644,7 @@ public class TrcBiz implements ITrcBiz {
 		select.setSkuCode(skuCode);
 		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
 		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
-		return outboundDetail.getRealSentItemNum();
+		return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
 	}
 
 	/**
@@ -2833,6 +2843,42 @@ public class TrcBiz implements ITrcBiz {
 			return list.size();
 		}
 		return 0;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public Map<String, Object> cancelAfterSaleOrder(String afterSaleCode) {
+		Map<String, Object> data=new HashMap<>();
+		
+		AssertUtil.notBlank(afterSaleCode, "售后单号不能为空!");
+		AfterSaleOrder select=new AfterSaleOrder();
+		select.setAfterSaleCode(afterSaleCode);
+		AfterSaleOrder afterSaleOrder=afterSaleOrderService.selectOne(select);
+		AssertUtil.notNull(afterSaleOrder, "根据售后单号"+afterSaleOrder+"查询到的售后单为空!");
+		if(!(afterSaleOrder.getStatus()==AfterSaleOrderStatusEnum.STATUS_0.getCode())) {
+			AssertUtil.notNull(null,"只有待客户发货状态才能取消!");
+		}
+		
+		AfterSaleWarehouseNotice selectWarehouseNotice=new AfterSaleWarehouseNotice();
+		selectWarehouseNotice.setAfterSaleCode(afterSaleCode);
+		AfterSaleWarehouseNotice afterSaleWarehouseNotice=afterSaleWarehouseNoticeService.selectOne(selectWarehouseNotice);
+		AssertUtil.notNull(afterSaleWarehouseNotice,"根据售后单号"+afterSaleCode+"查询退货入库单为空!");
+		
+		//调用子系统接口 取消售后单  //取消成功
+		boolean istrue=false;
+		if(istrue) {
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_3.getCode());
+			afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
+			afterSaleWarehouseNoticeService.updateByPrimaryKey(afterSaleWarehouseNotice);
+			
+			data.put("afterSaleOrderState", 1);
+		}else {
+			data.put("afterSaleOrderState", 0);
+		}
+		
+		data.put("afterSaleCode", afterSaleCode);
+		return data;
 	}
 
 
