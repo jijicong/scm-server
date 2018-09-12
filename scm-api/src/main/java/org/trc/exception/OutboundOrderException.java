@@ -21,6 +21,11 @@ public class OutboundOrderException extends  RuntimeException  {
         this.exceptionEnum = exceptionEnum;
         this.message = message;
     }
+    
+    public OutboundOrderException(String message) {
+    	super(message);
+    	this.message = message;
+    }
 
     public ExceptionEnum getExceptionEnum() {
         return exceptionEnum;

@@ -2,6 +2,8 @@ package org.trc.service.warehouse;
 
 import java.util.List;
 
+import org.trc.form.warehouse.ScmAfterSaleOrderCancelRequest;
+import org.trc.form.warehouse.ScmAfterSaleOrderCancelResponse;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateRequest;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
 import org.trc.form.warehouse.ScmDeliveryOrderDetailRequest;
@@ -134,4 +136,11 @@ public interface IWarehouseApiService {
      * @return
      */
 	AppResult<List<ScmEntryReturnDetailResponse>> entryReturnDetail(ScmEntryReturnDetailRequest request);
+
+    /**
+     * 售后取消发货单通知
+     * @param 
+     * @return
+     */
+	AppResult<ScmAfterSaleOrderCancelResponse> afterSaleCancel(ScmAfterSaleOrderCancelRequest req);
 }

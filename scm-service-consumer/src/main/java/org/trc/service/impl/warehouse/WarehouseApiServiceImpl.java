@@ -19,6 +19,8 @@ import org.trc.enums.JingdongInventoryTypeEnum;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.ExternalSupplierConfig;
+import org.trc.form.warehouse.ScmAfterSaleOrderCancelRequest;
+import org.trc.form.warehouse.ScmAfterSaleOrderCancelResponse;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateRequest;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
 import org.trc.form.warehouse.ScmDeliveryOrderDO;
@@ -154,6 +156,11 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 		return wmsInvoke(request);
 	}
 	
+	@Override
+	public AppResult<ScmAfterSaleOrderCancelResponse> afterSaleCancel(ScmAfterSaleOrderCancelRequest request) {
+		return wmsInvoke(request);
+	}
+	
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
         if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){
             return wmsInvokeMock(scmWarehouseRequestBase);
@@ -202,6 +209,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmReturnOrderCreateRequest){
             url = externalSupplierConfig.getReturnOrderCreateUrl();
             method = "退货入库单创建";
+        }else if(scmWarehouseRequestBase instanceof ScmAfterSaleOrderCancelRequest){
+            url = externalSupplierConfig.getAfterSaleOrderCancelUrl();
+            method = "售后子仓库取消订单";
         }
             
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
@@ -277,6 +287,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseArray(appResult.getResult().toString(), ScmEntryReturnDetailResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmReturnOrderCreateRequest){
             response = appResult.getResult();
+        }else if(scmWarehouseRequestBase instanceof ScmAfterSaleOrderCancelRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAfterSaleOrderCancelResponse.class);
         }
         appResult.setResult(response);
     }
@@ -434,5 +446,6 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         appResult.setResult(response);
         return appResult;
     }
+
 
 }

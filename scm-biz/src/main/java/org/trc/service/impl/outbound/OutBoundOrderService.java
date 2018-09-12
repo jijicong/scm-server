@@ -23,6 +23,8 @@ import org.trc.domain.config.RequestFlow;
 import org.trc.domain.order.*;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
+import org.trc.enums.warehouse.CancelOrderType;
+import org.trc.exception.OutboundOrderException;
 import org.trc.form.*;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
@@ -45,10 +47,14 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
+import org.trc.util.ResponseAck;
+import org.trc.util.ResultUtil;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
+
+import javax.ws.rs.core.Response;
 
 @Service("outBoundOrderService")
 public class OutBoundOrderService extends BaseService<OutboundOrder, Long> implements IOutBoundOrderService {
@@ -90,6 +96,8 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
     private IWarehouseMockService warehouseMockService;
     @Autowired
     private IOrderExtBiz orderExtBiz;
+	@Autowired
+	private IWarehouseExtService warehouseExtService;
 
     //修改发货单详情
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -597,4 +605,112 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         }
         return count;
     }
+
+	@Override
+	@Transactional
+	public Map<String, String> deliveryCancel(OutboundOrder order, String skuCode) {
+		
+        if (!OutboundOrderStatusEnum.WAITING.getCode().equals(order.getStatus())) {
+        	throw new OutboundOrderException("发货单状态非等待仓库发货状态!");
+        }
+
+        String remark = "销售退货单取消发货";
+        WarehouseTypeEnum warehouseType = warehouseExtService.getWarehouseType(order.getWarehouseCode());
+
+        if (WarehouseTypeEnum.Jingdong == warehouseType) {
+        	
+        	return deliveryOrderCancel(order, warehouseType, remark);
+            
+        } else if (WarehouseTypeEnum.Zy == warehouseType) {
+        	
+        	return afterSaleCancel(order.getWmsOrderCode(), skuCode);
+        	
+        } else {
+        	throw new OutboundOrderException("发货单的仓库类型错误!");
+        }
+
+	}
+	
+	private Map<String, String> afterSaleCancel(String wmsOrderCode, String skuCode) {
+		ScmAfterSaleOrderCancelRequest req = new ScmAfterSaleOrderCancelRequest();
+		req.setOutboundOrderCode(wmsOrderCode);
+		req.setSkuCode(skuCode);
+		AppResult<ScmAfterSaleOrderCancelResponse> resp = warehouseApiService.afterSaleCancel(req);
+		return null;
+	}
+
+	/**
+	 * @param order  待取消的发货单
+	 * @param warehouseType 仓库类型 自营或者京东
+	 * @param remark  取消的备注信息
+	 * @return 取消结果
+	 */
+	public Map<String, String> deliveryOrderCancel (OutboundOrder order, WarehouseTypeEnum warehouseType, String remark) {
+		
+        //返回结果map
+        Map<String, String> resultMap = new HashMap<>();
+        
+        //组装请求
+        ScmOrderCancelRequest cancelReq = new ScmOrderCancelRequest();
+        cancelReq.setOrderCode(order.getWmsOrderCode());
+        cancelReq.setOrderType(CancelOrderType.DELIVERY.getCode());
+        cancelReq.setWarehouseType(warehouseType.getCode());
+        
+        //调用仓库接口
+        AppResult<ScmOrderCancelResponse> appResult = warehouseApiService.orderCancel(cancelReq);
+        
+        if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) { // 成功
+        	
+            ScmOrderCancelResponse response = (ScmOrderCancelResponse) appResult.getResult();
+            String flag = response.getFlag();
+            
+            String cancelResult = null;
+            String detailCancelResult = null;
+            if (StringUtils.equals(flag, OrderCancelResultEnum.CANCEL_SUCC.code)) { // 取消成功
+            	
+            	cancelResult = OutboundOrderStatusEnum.CANCELED.getCode();
+            	detailCancelResult = OutboundDetailStatusEnum.CANCELED.getCode();
+            	resultMap.put("flg", OrderCancelResultEnum.CANCEL_SUCC.code);
+                
+            } else if (StringUtils.equals(flag, OrderCancelResultEnum.CANCELLING.code)) {// 取消中
+            	
+            	cancelResult = OutboundOrderStatusEnum.ON_CANCELED.getCode();
+            	detailCancelResult = OutboundDetailStatusEnum.ON_CANCELED.getCode();
+            	resultMap.put("flg", OrderCancelResultEnum.CANCELLING.code);
+
+            } else {
+            	
+            	resultMap.put("flg", OrderCancelResultEnum.CANCEL_FAIL.code);
+            	resultMap.put("msg", appResult.getDatabuffer());
+            	// 取消失败，直接返回，数据状态不用维护
+            	return resultMap;
+            }
+            //更新发货单详情信息
+            updateDetailStatus(detailCancelResult, order.getOutboundOrderCode());
+            //更新发货单信息
+            updateOutBoundOrder(order.getId(), cancelResult, remark);
+            //更新订单信息
+            updateItemOrderSupplierOrderStatus(order.getOutboundOrderCode(), order.getWarehouseOrderCode());
+            
+            return resultMap;
+            
+        } else {
+        	throw new OutboundOrderException("发货单" + order.getOutboundOrderCode() + 
+        			"取消异常，原因:" + appResult.getDatabuffer());
+        }
+	}
+	
+    //修改取消发货单信息
+    private void updateOutBoundOrder(Long orderId, String status, String remark){
+    	OutboundOrder order = new OutboundOrder();
+    	order.setId(orderId);
+    	order.setStatus(status);
+        if (OutboundOrderStatusEnum.CANCELED.getCode().equals(status)) { // 取消成功
+        	order.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        }
+        order.setUpdateTime(Calendar.getInstance().getTime());
+        order.setRemark(remark); // 取消备注
+        outBoundOrderService.updateByPrimaryKey(order);
+    }
+
 }

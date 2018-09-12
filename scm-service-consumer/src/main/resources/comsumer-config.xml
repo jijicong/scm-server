@@ -60,6 +60,7 @@
         <property name="entryReturnDetailUrl" value="${wms.entryReturnOrder.detail.url}"/>
         
         <property name="returnOrderCreateUrl" value="${wms.returnOrder.create.url}"/>
+        <property name="afterSaleOrderCancelUrl" value="${wms.afterSaleOrder.cancel.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->

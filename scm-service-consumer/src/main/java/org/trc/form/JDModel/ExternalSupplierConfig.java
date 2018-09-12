@@ -135,8 +135,11 @@ public class ExternalSupplierConfig {
      * 退货入库单创建URL
      */
     private String returnOrderCreateUrl;
-
-
+    
+    /**
+     * 售后子仓库取消订单URL
+     */
+    private String afterSaleOrderCancelUrl;
 
 
 
