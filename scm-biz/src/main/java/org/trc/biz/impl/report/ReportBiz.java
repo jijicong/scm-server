@@ -103,10 +103,6 @@ public class ReportBiz implements IReportBiz {
         //仓库信息管理中“SKU数量”大于0且“货主仓库状态”为“通知成功”的所有仓库
         List<WarehouseInfo> warehouseInfos = reportInventoryService.selectWarehouseInfoList();
         if (!CollectionUtils.isEmpty(warehouseInfos)) {
-            //查询当前仓库中入库时间在当前统计时间范围内的所有入库单据
-            insertEntryDetailReport(warehouseInfos, localDate);
-            //查询当前仓库中出库时间在当前统计时间范围内的所有出库单据
-            insertOutboundDetailReport(warehouseInfos, localDate);
         }
     }
 
@@ -224,7 +220,6 @@ public class ReportBiz implements IReportBiz {
         return null;
     }
 
-    private Pagenation getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page) {
     private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
@@ -420,6 +415,7 @@ public class ReportBiz implements IReportBiz {
         }
     }
 
+
     private void setWarehouseName(List<ReportInventory> warehouseCodes) {
         if (!CollectionUtils.isEmpty(warehouseCodes)) {
             for (ReportInventory reportInventory : warehouseCodes) {
@@ -439,42 +435,6 @@ public class ReportBiz implements IReportBiz {
             time = "-" + i;
         }
         return reportInventoryService.selectPageList(date + time);
-    }
-
-    private void insertOutboundDetailReport(List<WarehouseInfo> warehouseInfos, LocalDate localDate) {
-    }
-
-    private void insertEntryDetailReport(List<WarehouseInfo> warehouseInfos, LocalDate localDate) {
-        /*//采购入库
-        List<WarehouseNotice> warehouseNotices = reportInventoryService.selectWarehouseNoticeList(warehouseInfo.getCode(), localDate);
-        //调拨入库
-        List<AllocateInOrder> allocates = reportInventoryService.selectAllocateInList(warehouseInfo.getCode(), localDate);
-
-        List<ReportEntryDetail> reportEntryDetails = new ArrayList<>();
-
-        if (!CollectionUtils.isEmpty(warehouseNotices)) {
-            for (WarehouseNotice warehouseNotice : warehouseNotices) {
-                List<WarehouseNoticeDetails> warehouseNoticeDetails = reportInventoryService.selectWarehouseNoticeDetailsByWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
-                if (!CollectionUtils.isEmpty(warehouseNoticeDetails)) {
-                    for (WarehouseNoticeDetails warehouseNoticeDetail : warehouseNoticeDetails) {
-                        setReportEntryDetail(reportEntryDetails, warehouseNotice, warehouseNoticeDetail);
-                    }
-                }
-            }
-        }
-        if (!CollectionUtils.isEmpty(allocates)) {
-            for (AllocateInOrder allocateInOrder : allocates) {
-                List<AllocateSkuDetail> allocateSkuDetails = reportInventoryService.selectAllocateInDetailList(allocateInOrder.getAllocateOrderCode());
-                if (!CollectionUtils.isEmpty(allocateSkuDetails)) {
-                    for (AllocateSkuDetail allocateSkuDetail : allocateSkuDetails) {
-                        //setReportEntryDetailByAllocateIn(reportEntryDetails, allocateInOrder, allocateSkuDetail);
-                    }
-                }
-            }
-        }*/
-        // 查询JD仓入库单库存变动明细
-
-        // 查询子仓库入库单库存变动明细
     }
 
     private void setReportEntryDetail(List<ReportEntryDetail> reportEntryDetails, WarehouseNotice warehouseNotice, WarehouseNoticeDetails warehouseNoticeDetail) {
