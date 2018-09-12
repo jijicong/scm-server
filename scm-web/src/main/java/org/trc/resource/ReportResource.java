@@ -44,14 +44,14 @@ public class ReportResource {
     @Path("/reportPageList")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getReportPageList(@BeanParam ReportInventoryForm form, @BeanParam Pagenation page){
-        return ResultUtil.createSuccessPageResult(reportBiz.getReportPageList(form, page));
+        return ResultUtil.createSuccessPageResult(reportBiz.getReportPageList(form, page, true));
     }
 
     /**
      * 特殊查询报表列表
      */
     @GET
-    @Path("/detailedPageList")
+    @Path("/detailPageList")
     @Produces(MediaType.APPLICATION_JSON)
     public void getReportDetailedPageList(){
 

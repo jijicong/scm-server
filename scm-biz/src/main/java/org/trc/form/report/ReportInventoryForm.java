@@ -22,7 +22,7 @@ public class ReportInventoryForm implements Serializable {
     private String reportType;
 
     @NotBlank
-    @ApiParam(value = "查询报表日期(yyyy-MM)", required = true)
+    @ApiParam(value = "查询报表日期(yyyy-MM-dd)", required = true)
     @QueryParam("date")
     private String date;
 

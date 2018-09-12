@@ -27,9 +27,10 @@ public interface IReportBiz {
      *
      * @param form
      * @param page
+     * @param b 是否分页
      * @return
      */
-    Pagenation getReportPageList(ReportInventoryForm form, Pagenation page);
+    Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean b);
 
     /**
      * 下载具体仓库全部报表
