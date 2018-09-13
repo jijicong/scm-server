@@ -34,6 +34,7 @@ import org.trc.form.afterSale.AfterSaleNoticeWmsForm;
 import org.trc.form.afterSale.AfterSaleNoticeWmsResultVO;
 import org.trc.form.order.OutboundForm;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
+import org.trc.mapper.afterSale.AfterSaleOrderMapper;
 import org.trc.mapper.outbound.IOutboundDetailMapper;
 import org.trc.mapper.outbound.IOutboundOrderMapper;
 import org.trc.service.afterSale.IAfterSaleOrderService;
@@ -79,6 +80,8 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
     private IWarehouseInfoService warehouseInfoService;
     @Autowired
     private DataSourceTransactionManager transactionManager;
+	@Autowired
+	private AfterSaleOrderMapper afterSaleOrderMapper;
     
 	private Logger logger = LoggerFactory.getLogger(AfterSaleOrderService.class);
 	
@@ -297,6 +300,10 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 		}
 		return retList;
 	}
+	@Override
+	public int updateAfterSaleOrderList(List<AfterSaleOrder> afterSaleOrderList) throws Exception {
+		return afterSaleOrderMapper.updateAfterSaleOrderList(afterSaleOrderList);
+	}
 	
     //修改详情状态
     private void updateDetail(String skuCode, String outboundOrderCode){
@@ -344,15 +351,5 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
         orderService.updateByPrimaryKeySelective(outboundOrder);
         
 	}
-	
-//	public static void main(String[] args) {
-//		OutboundDetail  detail = new OutboundDetail();
-//		List<OutboundDetail> list = new ArrayList<>();
-//		detail.setSkuName("12212");
-//		list.add(detail);
-//		detail.setSkuName("eeeeee");
-//		list.add(detail);
-//		System.out.println(list.size());
-//	}
-//	
+
 }

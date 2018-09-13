@@ -54,6 +54,7 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("outBoundOrderBiz")
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
@@ -138,13 +139,31 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     || StringUtils.equals(order.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
                     DateCheckUtil.checkDate(order.getUpdateTime())){
                 order.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
-            }else{
+            }else if (isAfterSaleCancel(order)) { // 所有商品都被用户取消
+            	order.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
+            } else {
                 order.setIsTimeOut(ZeroToNineEnum.ZERO.getCode());
             }
         }
 
         orderExtBiz.setOrderSellName(pagenation);
         return pagenation;
+    }
+    
+    private boolean isAfterSaleCancel (OutboundOrder outboundOrder) {
+    	
+    	OutboundDetail outboundDetail = new OutboundDetail();
+    	outboundDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
+    	List<OutboundDetail> detailList = outboundDetailService.select(outboundDetail);
+    	if (CollectionUtils.isNotEmpty(detailList)) {
+    		List<OutboundDetail> cancelList = detailList.stream().filter(
+    				item -> ZeroToNineEnum.ONE.getCode().equals(item.getCancelFlg())).collect(Collectors.toList());
+    		if (cancelList.size() == detailList.size()) { // 全部都是用户售后取消的商品
+    			return true;
+    		}
+    	}
+    	
+    	return false;
     }
 
     //调用获取商品详情接口
@@ -1028,6 +1047,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("outboundOrderCode",outboundOrderCode);
+        criteria.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode());
         OutboundDetail outboundDetail = new OutboundDetail();
         if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == isStoreOrder.intValue()){
             outboundDetail.setStatus(state);
@@ -1724,7 +1744,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         this.warehouseApiService = service;
 
     }
-
 
 
 }

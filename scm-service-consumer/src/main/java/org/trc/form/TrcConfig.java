@@ -29,6 +29,8 @@ public class TrcConfig {
     private String returnInResultNotifyUrl;
     //发送创建通知URL
     private String createAfterSaleNoticeUrl;
+    //取消发货通知URL
+    private String cancelSendNoticeUrl;
     //是否通知渠道,0-不通知,1-通知
     private String noticeChannal;
 
@@ -134,5 +136,13 @@ public class TrcConfig {
 
     public void setCreateAfterSaleNoticeUrl(String createAfterSaleNoticeUrl) {
         this.createAfterSaleNoticeUrl = createAfterSaleNoticeUrl;
+    }
+
+    public String getCancelSendNoticeUrl() {
+        return cancelSendNoticeUrl;
+    }
+
+    public void setCancelSendNoticeUrl(String cancelSendNoticeUrl) {
+        this.cancelSendNoticeUrl = cancelSendNoticeUrl;
     }
 }

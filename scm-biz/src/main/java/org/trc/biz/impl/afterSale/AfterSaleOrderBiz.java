@@ -24,18 +24,10 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.order.OrderItem;
-import org.trc.domain.order.OutboundDetail;
-import org.trc.domain.order.OutboundOrder;
-import org.trc.domain.order.PlatformOrder;
-import org.trc.domain.order.ShopOrder;
-import org.trc.domain.order.WarehouseOrder;
+import org.trc.domain.order.*;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
+import org.trc.enums.AfterSaleOrderEnum.*;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleTypeEnum;
-import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
-import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
-import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
 import org.trc.form.*;
@@ -55,7 +47,6 @@ import org.trc.service.category.IBrandService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
-import org.trc.service.impl.outbound.OutboundDetailService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
@@ -127,7 +118,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IOutBoundOrderService outBoundOrderService;
 	@Autowired
 	private IOutboundDetailService outboundDetailService;
-	
+	@Autowired
 	private TrcConfig trcConfig;
 
 
@@ -144,19 +135,23 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
 		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
 		
+		//过滤代发商品
+		List<OrderItem> orderItems=filterSP1(orderItemList);
 		//根据系统订单号查询发货单号
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(scmShopOrderCode);
-		OutboundOrder outboundOrder=outBoundOrderService.selectOne(selectOutboundOrder);
-		AssertUtil.notNull(outboundOrder, "没有该订单的发货单!");
-		String outboundOrderCode=outboundOrder.getOutboundOrderCode();
-
+		List<OutboundOrder> outboundOrderList=outBoundOrderService.select(selectOutboundOrder);
+		AssertUtil.notNull(outboundOrderList, "没有该订单的发货单!");
+		
+		List<OutboundDetail> list=getOutboundDetailList(outboundOrderList);
+		AssertUtil.notNull(list, "没有该订单的发货单详情!");
+		
 		List<AfterSaleOrderItemVO> afterSaleOrderItemVOList=new ArrayList<>();
-		for(OrderItem orderItem:orderItemList) {
+		for(OrderItem orderItem:orderItems) {
 			AfterSaleOrderItemVO vo=new AfterSaleOrderItemVO();
 			BeanUtils.copyProperties(orderItem, vo);
 			//实际发货的数量            
-			int realSendNum=(int) getRealSendNum(outboundOrderCode,orderItem.getSkuCode());
+			int realSendNum=(int) getRealSendNum(list,orderItem.getSkuCode());
 			//全部发货、部分发货的SKU   可退货数量=正向订单出库数量-已退货入库数量    其他状态可退都为0
 			if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode())  ||
 					orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode())) {
@@ -172,13 +167,39 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		return afterSaleOrderItemVOList;
 	}
 
-	private long getRealSendNum(String outboundOrderCode, String skuCode) {
-		OutboundDetail select=new OutboundDetail();
-		select.setOutboundOrderCode(outboundOrderCode);
-		select.setSkuCode(skuCode);
-		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
-		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
-		return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
+	private List<OrderItem> filterSP1(List<OrderItem> orderItemList) {
+		List<OrderItem> orderItems=new ArrayList<>();
+		for(OrderItem orderItem:orderItemList) {
+			String skuCode=orderItem.getSkuCode();
+			if(skuCode.startsWith("SP1")) {
+				continue;
+			}
+			
+			orderItems.add(orderItem);
+		}
+		return orderItems;
+	}
+
+	private List<OutboundDetail> getOutboundDetailList(List<OutboundOrder> outboundOrderList) {
+		List<String> outboundOrderCodes=new ArrayList<>();
+		for(OutboundOrder outboundOrder:outboundOrderList) {
+			outboundOrderCodes.add(outboundOrder.getOutboundOrderCode());
+		}
+		//根据条件分页查询
+		Example example = new Example(OutboundDetail.class);
+		Example.Criteria criteria = example.createCriteria();
+		
+		criteria.andIn("outboundOrderCode", outboundOrderCodes);
+		return outboundDetailService.selectByExample(example);
+	}
+
+	private long getRealSendNum(List<OutboundDetail> list, String skuCode) {
+		for(OutboundDetail outboundDetail: list) {
+			if(outboundDetail.getSkuCode().equals(skuCode)) {
+				return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
+			}
+		}
+		return 0;
 	}
 
 	/**
@@ -222,7 +243,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
@@ -887,6 +908,19 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			return false;
 		}
         return true;
+	}
+
+	@Override
+	public AfterSaleOrderStatusResponse afterSaleOrderStatus(String afterSaleCode) {
+		AssertUtil.notBlank(afterSaleCode, "请求参数售后单号不能为空");
+		AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
+		afterSaleOrder.setAfterSaleCode(afterSaleCode);
+		afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
+		AssertUtil.notNull(afterSaleOrder, String.format("根据售后单编码%s查询售后单信息为空", afterSaleCode));
+		AfterSaleOrderStatusResponse response = new AfterSaleOrderStatusResponse();
+		response.setAfterSaleCode(afterSaleCode);
+		response.setStatus(afterSaleOrder.getStatus());
+		return response;
 	}
 
 	@Override

@@ -67,6 +67,10 @@ import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.form.warehouse.ScmReturnInOrderDetail;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
+import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderRequest;
+import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmSubmitAfterSaleOrderLogisticsRequest;
 import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
@@ -2354,6 +2358,10 @@ public class TrcBiz implements ITrcBiz {
 		
 		String skuCode=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0).getSkuCode();
 		AssertUtil.notBlank(skuCode, "skuCode编码不能为空 !");
+		
+		if(skuCode.startsWith("SP1")) {
+			AssertUtil.notNull(null, "代发商品暂时不支持售后!");
+		}
 	}
 
 
@@ -2401,9 +2409,6 @@ public class TrcBiz implements ITrcBiz {
 
 	private String onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) throws Exception{
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
-		
-		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
-		
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
@@ -2639,27 +2644,44 @@ public class TrcBiz implements ITrcBiz {
 		//根据系统订单号查询发货单号
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(orderItem.getScmShopOrderCode());
-		OutboundOrder outboundOrder=outBoundOrderService.selectOne(selectOutboundOrder);
-		AssertUtil.notNull(outboundOrder, "没有该订单的发货单!");
-		String outboundOrderCode=outboundOrder.getOutboundOrderCode();
+		List<OutboundOrder> outboundOrderList=outBoundOrderService.select(selectOutboundOrder);
+		AssertUtil.notNull(outboundOrderList, "没有该订单的发货单!");
+		
+		List<OutboundDetail> list=getOutboundDetailList(outboundOrderList);
+		AssertUtil.notNull(list, "没有该订单的发货单详情!");
 		//实际发货的数量-退货数量
-		int realSendNum=(int) getRealSendNum(outboundOrderCode,orderItem.getSkuCode());
-		//已取消
-		if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
-			return 0;
-		}else {
+		int realSendNum=(int) getRealSendNum(list,orderItem.getSkuCode());
+		//全部发货、部分发货的SKU   可退货数量=正向订单出库数量-已退货入库数量    其他状态可退都为0
+		if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode())  ||
+				orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode())) {
+			//退货数量
 			int refundNum=getAlreadyRefundNum(orderItem);
 			return (realSendNum-refundNum);
+			
 		}
+		return 0;
 	}
 	
-	private long getRealSendNum(String outboundOrderCode, String skuCode) {
-		OutboundDetail select=new OutboundDetail();
-		select.setOutboundOrderCode(outboundOrderCode);
-		select.setSkuCode(skuCode);
-		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
-		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
-		return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
+	private List<OutboundDetail> getOutboundDetailList(List<OutboundOrder> outboundOrderList) {
+		List<String> outboundOrderCodes=new ArrayList<>();
+		for(OutboundOrder outboundOrder:outboundOrderList) {
+			outboundOrderCodes.add(outboundOrder.getOutboundOrderCode());
+		}
+		//根据条件分页查询
+		Example example = new Example(OutboundDetail.class);
+		Example.Criteria criteria = example.createCriteria();
+		
+		criteria.andIn("outboundOrderCode", outboundOrderCodes);
+		return outboundDetailService.selectByExample(example);
+	}
+
+	private long getRealSendNum(List<OutboundDetail> list, String skuCode) {
+		for(OutboundDetail outboundDetail: list) {
+			if(outboundDetail.getSkuCode().equals(skuCode)) {
+				return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
+			}
+		}
+		return 0;
 	}
 
 	/**
@@ -2864,6 +2886,9 @@ public class TrcBiz implements ITrcBiz {
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public Map<String, Object> cancelAfterSaleOrder(String afterSaleCode) {
 		Map<String, Object> data=new HashMap<>();
+		data.put("afterSaleCode", afterSaleCode);
+		//返回泰然城   取消状态结果:0-取消失败,1取消成功
+		data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
 
 		AssertUtil.notBlank(afterSaleCode, "售后单号不能为空!");
 		AfterSaleOrder select=new AfterSaleOrder();
@@ -2880,24 +2905,30 @@ public class TrcBiz implements ITrcBiz {
 		AssertUtil.notNull(afterSaleWarehouseNotice,"根据售后单号"+afterSaleCode+"查询退货入库单为空!");
 
 		//调用子系统接口 取消售后单  //取消成功
-		boolean istrue=false;
-		if(istrue) {
-			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
-			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_3.getCode());
-			afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
-			afterSaleWarehouseNoticeService.updateByPrimaryKey(afterSaleWarehouseNotice);
-			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
-		}else {
-			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+		ScmCancelAfterSaleOrderRequest scmCancelAfterSaleOrderRequest=new ScmCancelAfterSaleOrderRequest();
+		scmCancelAfterSaleOrderRequest.setAfterSaleCode(afterSaleCode);
+		AppResult<ScmCancelAfterSaleOrderResponse> response=warehouseApiService.returnInOrderCancel(scmCancelAfterSaleOrderRequest);
+		if(StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			//是否取消成功: 1-取消成功, 2-取消失败
+			ScmCancelAfterSaleOrderResponse scmCancelAfterSaleOrderResponse=(ScmCancelAfterSaleOrderResponse) response.getResult();
+			String flag=scmCancelAfterSaleOrderResponse.getFlag();
+			if(ZeroToNineEnum.ONE.getCode().equals(flag)) {
+				afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+				afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_3.getCode());
+				afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
+				afterSaleWarehouseNoticeService.updateByPrimaryKey(afterSaleWarehouseNotice);
+				
+				data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+			}
 		}
-
-		data.put("afterSaleCode", afterSaleCode);
 		return data;
 	}
 
+	
 
     @Override
-    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm)  {
 	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
@@ -2905,6 +2936,8 @@ public class TrcBiz implements ITrcBiz {
 
         AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
         afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
+        //售后单类型为退货的
+        afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
         afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
         AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
         //更新售后单
@@ -2920,6 +2953,14 @@ public class TrcBiz implements ITrcBiz {
             logger.error(msg);
             throw new AfterSaleException(ExceptionEnum.AFTER_SALE_ORDER_UPDATE_EXCEPTION, msg);
         }
+
+        //通知自营仓
+        ScmSubmitAfterSaleOrderLogisticsRequest logisticsRequest  = new ScmSubmitAfterSaleOrderLogisticsRequest();
+        logisticsRequest.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+        logisticsRequest.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode());
+        logisticsRequest.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
+        logisticsRequest.setWaybillNumber(afterSaleOrder.getWaybillNumber());
+        warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
     }
 
 
