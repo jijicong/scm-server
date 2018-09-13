@@ -448,7 +448,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         }
         int detailSize = outboundDetailList.size() - cancelNum;
         //已取消：所有商品的发货状态均更新为“已取消”时，发货单的状态就更新为“已取消”；
-        if(cancelNum == detailSize){
+        if(cancelNum == outboundDetailList.size()){
             return OutboundOrderStatusEnum.CANCELED.getCode();
         }
         //仓库接收失败：所有商品的发货状态均为“仓库接收失败”时，发货单的状态就为“仓库接收失败”
@@ -656,20 +656,16 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
 			/**
 			 * 更新发货单商品状态为已取消
 			 */
-			OutboundDetail detail = new OutboundDetail();
-			detail.setStatus(OutboundDetailStatusEnum.CANCELED.getCode());
-			detail.setUpdateTime(Calendar.getInstance().getTime());
-			
-	        Example exa = new Example(OutboundDetail.class);
-	        Example.Criteria cra = exa.createCriteria();
-	        cra.andEqualTo("outboundOrderCode", orderCode);
-	        cra.andEqualTo("skuCode", skuCode);
-	        outboundDetailService.updateByExampleSelective(detail, exa);
-
+	        
+	        updateDetail(skuCode, order.getOutboundOrderCode());
 			/**
 			 * 更新发货单状态
 			 */
 	        setOutboundOrderStatus(orderCode, order);
+			/**
+			 * 更新订单信息
+			 */
+            updateItemOrderSupplierOrderStatus(order.getOutboundOrderCode(), order.getWarehouseOrderCode());
 	        
 	        resultMap.put("flg", OrderCancelResultEnum.CANCEL_SUCC.code);
 			

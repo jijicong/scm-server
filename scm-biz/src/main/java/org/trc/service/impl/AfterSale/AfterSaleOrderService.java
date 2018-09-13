@@ -4,6 +4,7 @@ package org.trc.service.impl.AfterSale;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,15 +13,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.IsStoreOrderEnum;
 import org.trc.enums.OrderCancelResultEnum;
 import org.trc.enums.OutboundDetailStatusEnum;
 import org.trc.enums.OutboundOrderStatusEnum;
@@ -43,7 +46,6 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
 
 import tk.mybatis.mapper.entity.Example;
 
@@ -75,6 +77,8 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
     private IScmOrderBiz scmOrderBiz;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private DataSourceTransactionManager transactionManager;
     
 	private Logger logger = LoggerFactory.getLogger(AfterSaleOrderService.class);
 	
@@ -208,7 +212,11 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 	        		retList.add(generateVo(item, CANCELLING, null));
 	        		
 	        	} else if (StringUtils.equals(order.getStatus(), OutboundOrderStatusEnum.CANCELED.getCode())) {// 2.已取消
+	        	    TransactionDefinition def = new DefaultTransactionDefinition();
+        	        TransactionStatus status = transactionManager.getTransaction(def);
 	        		try {
+	        			
+	        			updateDetail(skuCode, order.getOutboundOrderCode());
 		                
 		                Example example = new Example(OutboundDetail.class);
 		                Example.Criteria criteria = example.createCriteria();
@@ -239,27 +247,35 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 	                    
 	                    if (StringUtils.equals(ResponseAck.SUCCESS_CODE, responses.get(0).getCode())) {
 	                    	
-	                    	retList.add(generateVo(item, CANCEL_SUCCESS, null));
-	                    	
 	                        updateOutboundDetailState(order, OutboundDetailStatusEnum.WAITING.getCode(), responses.get(0).getWmsOrderCode(), skuCode);
 	                        logInfoService.recordLog(order, order.getId().toString(), 
 	                        		warehouse.getWarehouseName(), "售后取消-仓库接收成功", "收货取消发货-重新发货",null);
+			                //更新订单信息
+			                orderService.updateItemOrderSupplierOrderStatus(order.getOutboundOrderCode(), order.getWarehouseOrderCode());
+			                
+	                        retList.add(generateVo(item, CANCEL_SUCCESS, null));
 	                        
 	                    } else {
 	        	        	/**
 	        	        	 * 仓库接受失败
 	        	        	 */
-	                    	retList.add(generateVo(item, CANCEL_FAILED, responses.get(0).getMessage()));
 	                    	
 	                    	scmOrderBiz.outboundOrderSubmitResultNoticeChannel(order.getShopOrderCode());
 	                    	updateOutboundDetailState(order, OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(), null, skuCode);
 	                        logInfoService.recordLog(order, order.getId().toString(), 
 	                        		warehouse.getWarehouseName(), "售后取消-仓库接收失败", responses.get(0).getMessage(), null);
+			                //更新订单信息
+			                orderService.updateItemOrderSupplierOrderStatus(order.getOutboundOrderCode(), order.getWarehouseOrderCode());
+			                
+	                        retList.add(generateVo(item, CANCEL_FAILED, responses.get(0).getMessage()));
 	                        
 	                    }
-		                //更新订单信息
-		                orderService.updateItemOrderSupplierOrderStatus(order.getOutboundOrderCode(), order.getWarehouseOrderCode());
+	                    
+	                    transactionManager.commit(status);
+
 	        		} catch (Exception e) {
+	        			
+	        			transactionManager.rollback(status);
 	        			
 	        			retList.add(generateVo(item, CANCEL_FAILED, e.getMessage()));
 	        			logger.error("scmShopOrderCode:{}, outboundOrderCode:{}, skuCode: {}, 售后取消发货异常", 
@@ -281,6 +297,19 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 		}
 		return retList;
 	}
+	
+    //修改详情状态
+    private void updateDetail(String skuCode, String outboundOrderCode){
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setCancelFlg(ZeroToNineEnum.ONE.getCode());// 用户取消
+        outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+        outboundDetail.setStatus(OutboundOrderStatusEnum.CANCELED.getCode());
+        Example exampleOrder = new Example(OutboundDetail.class);
+        Example.Criteria criteriaOrder = exampleOrder.createCriteria();
+        criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
+        criteriaOrder.andEqualTo("skuCode", skuCode);
+        detailService.updateByExampleSelective(outboundDetail, exampleOrder);
+    }
 	
 	private AfterSaleNoticeWmsResultVO generateVo (AfterSaleNoticeWmsForm item, String flg, String msg) {
 		AfterSaleNoticeWmsResultVO vo = new AfterSaleNoticeWmsResultVO();
@@ -316,4 +345,14 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
         
 	}
 	
+//	public static void main(String[] args) {
+//		OutboundDetail  detail = new OutboundDetail();
+//		List<OutboundDetail> list = new ArrayList<>();
+//		detail.setSkuName("12212");
+//		list.add(detail);
+//		detail.setSkuName("eeeeee");
+//		list.add(detail);
+//		System.out.println(list.size());
+//	}
+//	
 }
