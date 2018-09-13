@@ -24,18 +24,10 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.order.OrderItem;
-import org.trc.domain.order.OutboundDetail;
-import org.trc.domain.order.OutboundOrder;
-import org.trc.domain.order.PlatformOrder;
-import org.trc.domain.order.ShopOrder;
-import org.trc.domain.order.WarehouseOrder;
+import org.trc.domain.order.*;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
+import org.trc.enums.AfterSaleOrderEnum.*;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleTypeEnum;
-import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
-import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
-import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
 import org.trc.form.*;
@@ -55,7 +47,6 @@ import org.trc.service.category.IBrandService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
-import org.trc.service.impl.outbound.OutboundDetailService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
@@ -887,6 +878,19 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			return false;
 		}
         return true;
+	}
+
+	@Override
+	public AfterSaleOrderStatusResponse afterSaleOrderStatus(String afterSaleCode) {
+		AssertUtil.notBlank(afterSaleCode, "请求参数售后单号不能为空");
+		AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
+		afterSaleOrder.setAfterSaleCode(afterSaleCode);
+		afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
+		AssertUtil.notNull(afterSaleOrder, String.format("根据售后单编码%s查询售后单信息为空", afterSaleCode));
+		AfterSaleOrderStatusResponse response = new AfterSaleOrderStatusResponse();
+		response.setAfterSaleCode(afterSaleCode);
+		response.setStatus(afterSaleOrder.getStatus());
+		return response;
 	}
 
 	@Override
