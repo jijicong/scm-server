@@ -4,6 +4,7 @@ import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.form.AfterSaleOrderStatusResponse;
 import org.trc.form.afterSale.*;
 import org.trc.form.returnIn.ReturnInWmsResponseForm;
 import org.trc.util.Pagenation;
@@ -54,6 +55,12 @@ public interface IAfterSaleOrderBiz {
 	 * @param req
 	 */
 	void returnInOrderResultNotice(ReturnInWmsResponseForm req);
+
+	/**
+	 * 售后单状态查询接口
+	 * @param afterSaleCode
+	 */
+	AfterSaleOrderStatusResponse afterSaleOrderStatus(String afterSaleCode);
 
 
 }
