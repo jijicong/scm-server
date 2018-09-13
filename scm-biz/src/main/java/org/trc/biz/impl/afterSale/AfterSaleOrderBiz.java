@@ -243,7 +243,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
