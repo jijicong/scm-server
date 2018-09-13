@@ -147,16 +147,18 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//根据系统订单号查询发货单号
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(scmShopOrderCode);
-		OutboundOrder outboundOrder=outBoundOrderService.selectOne(selectOutboundOrder);
-		AssertUtil.notNull(outboundOrder, "没有该订单的发货单!");
-		String outboundOrderCode=outboundOrder.getOutboundOrderCode();
-
+		List<OutboundOrder> outboundOrderList=outBoundOrderService.select(selectOutboundOrder);
+		AssertUtil.notNull(outboundOrderList, "没有该订单的发货单!");
+		
+		List<OutboundDetail> list=getOutboundDetailList(outboundOrderList);
+		AssertUtil.notNull(list, "没有该订单的发货单详情!");
+		
 		List<AfterSaleOrderItemVO> afterSaleOrderItemVOList=new ArrayList<>();
 		for(OrderItem orderItem:orderItemList) {
 			AfterSaleOrderItemVO vo=new AfterSaleOrderItemVO();
 			BeanUtils.copyProperties(orderItem, vo);
 			//实际发货的数量            
-			int realSendNum=(int) getRealSendNum(outboundOrderCode,orderItem.getSkuCode());
+			int realSendNum=(int) getRealSendNum(list,orderItem.getSkuCode());
 			//全部发货、部分发货的SKU   可退货数量=正向订单出库数量-已退货入库数量    其他状态可退都为0
 			if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode())  ||
 					orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode())) {
@@ -172,13 +174,26 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		return afterSaleOrderItemVOList;
 	}
 
-	private long getRealSendNum(String outboundOrderCode, String skuCode) {
-		OutboundDetail select=new OutboundDetail();
-		select.setOutboundOrderCode(outboundOrderCode);
-		select.setSkuCode(skuCode);
-		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
-		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
-		return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
+	private List<OutboundDetail> getOutboundDetailList(List<OutboundOrder> outboundOrderList) {
+		List<String> outboundOrderCodes=new ArrayList<>();
+		for(OutboundOrder outboundOrder:outboundOrderList) {
+			outboundOrderCodes.add(outboundOrder.getOutboundOrderCode());
+		}
+		//根据条件分页查询
+		Example example = new Example(OutboundDetail.class);
+		Example.Criteria criteria = example.createCriteria();
+		
+		criteria.andIn("outboundOrderCode", outboundOrderCodes);
+		return outboundDetailService.selectByExample(example);
+	}
+
+	private long getRealSendNum(List<OutboundDetail> list, String skuCode) {
+		for(OutboundDetail outboundDetail: list) {
+			if(outboundDetail.getSkuCode().equals(skuCode)) {
+				return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
+			}
+		}
+		return 0;
 	}
 
 	/**
