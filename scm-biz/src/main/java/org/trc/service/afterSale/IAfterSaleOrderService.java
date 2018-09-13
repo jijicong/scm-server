@@ -35,7 +35,11 @@ public interface IAfterSaleOrderService extends IBaseService<AfterSaleOrder, Str
 	 * @return
 	 */
 	public List<AfterSaleNoticeWmsResultVO> deliveryCancelResult(List<AfterSaleNoticeWmsForm> form);
-	
-	
+
+
+	/**
+	 * 批量更新售后单状态
+	 */
+	int updateAfterSaleOrderList(List<AfterSaleOrder> afterSaleOrderList) throws Exception;
 }
 	

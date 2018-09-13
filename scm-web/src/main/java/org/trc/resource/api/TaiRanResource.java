@@ -393,11 +393,11 @@ public class TaiRanResource {
         try {
             AfterSaleWaybillForm afterSaleWaybillForm = JSONObject.parseObject(waybillMessage,AfterSaleWaybillForm.class);
             trcBiz.submitWaybill(afterSaleWaybillForm);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             logger.error("参数转json格式错误", e);
             return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", waybillMessage), "");
         }
-    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
     }
 
 

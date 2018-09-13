@@ -63,6 +63,7 @@ import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmSubmitAfterSaleOrderLogisticsRequest;
 import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
@@ -2918,7 +2919,8 @@ public class TrcBiz implements ITrcBiz {
 	
 
     @Override
-    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm)  {
 	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
@@ -2926,6 +2928,8 @@ public class TrcBiz implements ITrcBiz {
 
         AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
         afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
+        //售后单类型为退货的
+        afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
         afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
         AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
         //更新售后单
@@ -2941,6 +2945,14 @@ public class TrcBiz implements ITrcBiz {
             logger.error(msg);
             throw new AfterSaleException(ExceptionEnum.AFTER_SALE_ORDER_UPDATE_EXCEPTION, msg);
         }
+
+        //通知自营仓
+        ScmSubmitAfterSaleOrderLogisticsRequest logisticsRequest  = new ScmSubmitAfterSaleOrderLogisticsRequest();
+        logisticsRequest.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+        logisticsRequest.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode());
+        logisticsRequest.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
+        logisticsRequest.setWaybillNumber(afterSaleOrder.getWaybillNumber());
+        warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
     }
 
 
