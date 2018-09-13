@@ -118,7 +118,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 	private IOutBoundOrderService outBoundOrderService;
 	@Autowired
 	private IOutboundDetailService outboundDetailService;
-	
+	@Autowired
 	private TrcConfig trcConfig;
 
 
