@@ -213,10 +213,11 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 		                Example example = new Example(OutboundDetail.class);
 		                Example.Criteria criteria = example.createCriteria();
 		                criteria.andEqualTo("outboundOrderCode", order.getOutboundOrderCode());
-		                criteria.andNotEqualTo("skuCode", skuCode);// 取消的商品过滤
+		                //criteria.andNotEqualTo("skuCode", skuCode);// 取消的商品过滤
+		                criteria.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode());// 取消的商品过滤
 		                List<OutboundDetail> outboundDetails = detailService.selectByExample(example);
 			        	/**
-			        	 * 如果发货单只有一个商品，取消后就不需要重新发货
+			        	 * 如果发货单所有商品都已经取消，取消后就不需要重新发货
 			        	 */
 		                if (CollectionUtils.isEmpty(outboundDetails)) {
 		                	retList.add(generateVo(item, CANCEL_SUCCESS, null));
@@ -296,7 +297,8 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
         Example example = new Example(OutboundDetail.class);
         Example.Criteria cra = example.createCriteria();
         cra.andEqualTo("outboundOrderCode", order.getOutboundOrderCode());
-        cra.andNotEqualTo("skuCode", skuCode);// 取消的商品过滤
+        //cra.andNotEqualTo("skuCode", skuCode);// 取消的商品过滤
+        cra.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode());// 取消的商品过滤
         OutboundDetail detail = new OutboundDetail();
         detail.setStatus(state);
 

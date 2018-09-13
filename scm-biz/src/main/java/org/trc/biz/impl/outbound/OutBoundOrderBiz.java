@@ -1559,6 +1559,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Example exampleOrder = new Example(OutboundDetail.class);
         Example.Criteria criteriaOrder = exampleOrder.createCriteria();
         criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
+        criteriaOrder.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode()); //  取消的商品过滤
         outboundDetailService.updateByExampleSelective(outboundDetail, exampleOrder);
     }
 
