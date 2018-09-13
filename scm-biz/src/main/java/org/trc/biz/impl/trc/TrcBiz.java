@@ -2884,7 +2884,8 @@ public class TrcBiz implements ITrcBiz {
 
 
     @Override
-    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm)  {
 	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
@@ -2892,6 +2893,8 @@ public class TrcBiz implements ITrcBiz {
 
         AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
         afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
+        //售后单类型为退货的
+        afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
         afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
         AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
         //更新售后单
@@ -2907,6 +2910,8 @@ public class TrcBiz implements ITrcBiz {
             logger.error(msg);
             throw new AfterSaleException(ExceptionEnum.AFTER_SALE_ORDER_UPDATE_EXCEPTION, msg);
         }
+
+        //通知自营仓
     }
 
 
