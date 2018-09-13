@@ -124,4 +124,17 @@ public class ReportInventoryService extends BaseService<ReportInventory, Long> i
         return reportInventoryMapper.selectPageList(time);
     }
 
+    /**
+     * 获取当天所有记录
+     *
+     * @param warehouseCode
+     * @param with
+     * @param stockType
+     * @return
+     */
+    @Override
+    public List<ReportInventory> getReportInventoryByWarehouseCodeAndTime(String warehouseCode, LocalDate with, String stockType) {
+        return reportInventoryMapper.getReportInventoryByWarehouseCodeAndTime(warehouseCode, with, stockType);
+    }
+
 }

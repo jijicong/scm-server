@@ -173,7 +173,7 @@ public class JdStockOutDetail implements Serializable {
     /**
      * 快递公司
      */
-    private byte[] express;
+    private String express;
 
     /**
      * @return id
@@ -690,7 +690,7 @@ public class JdStockOutDetail implements Serializable {
      *
      * @return express - 快递公司
      */
-    public byte[] getExpress() {
+    public String getExpress() {
         return express;
     }
 
@@ -699,7 +699,7 @@ public class JdStockOutDetail implements Serializable {
      *
      * @param express 快递公司
      */
-    public void setExpress(byte[] express) {
+    public void setExpress(String express) {
         this.express = express;
     }
 }

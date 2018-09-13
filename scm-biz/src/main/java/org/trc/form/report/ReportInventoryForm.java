@@ -21,7 +21,6 @@ public class ReportInventoryForm implements Serializable {
     @QueryParam("reportType")
     private String reportType;
 
-    @NotBlank
     @ApiParam(value = "查询报表日期")
     @QueryParam("date")
     private String date;

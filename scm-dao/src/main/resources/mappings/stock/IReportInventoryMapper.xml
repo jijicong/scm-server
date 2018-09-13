@@ -10,4 +10,17 @@
       WHERE
         DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( #{time} , '%Y%m' )
     </select>
+    
+    <select id="getReportInventoryByWarehouseCodeAndTime" resultMap="org.trc.domain.report.ReportInventory">
+        SELECT
+            *
+        FROM
+            report_inventory
+        WHERE
+            warehouse_code = #{warehouseCode}
+        AND
+            stock_type = #{stockType}
+        AND
+            DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( #{date}, '%Y%m' )
+    </select>
 </mapper>

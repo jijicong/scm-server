@@ -69,4 +69,12 @@ public interface IReportInventoryService extends IBaseService<ReportInventory, L
      */
     List<ReportInventory> selectPageList(String time);
 
+    /**
+     * 获取当天所有记录
+     * @param warehouseCode
+     * @param with
+     * @param stockType
+     * @return
+     */
+    List<ReportInventory> getReportInventoryByWarehouseCodeAndTime(String warehouseCode, LocalDate with, String stockType);
 }

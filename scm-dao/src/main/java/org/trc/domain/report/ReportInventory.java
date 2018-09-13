@@ -149,6 +149,34 @@ public class ReportInventory implements Serializable {
     private Long inventoryLossesQuantity;
 
     /**
+     * 残品转正品入库数量
+     */
+    @Column(name = "defective_to_normal")
+    @ApiModelProperty(value = "残品转正品数量")
+    private Long defectiveToNormal;
+
+    /**
+     * 正品转残品出库数量
+     */
+    @Column(name = "normal_to_defective")
+    @ApiModelProperty(value = "正品转残品数量")
+    private Long normalToDefective;
+
+    /**
+     * 其他入库
+     */
+    @Column(name = "other_in")
+    @ApiModelProperty(value = "其他入库")
+    private Long otherIn;
+
+    /**
+     * 其他出库
+     */
+    @Column(name = "other_out")
+    @ApiModelProperty(value = "其他出库")
+    private Long otherOut;
+
+    /**
      * 本期入库总数量
      */
     @Column(name = "entry_total_quantity")
@@ -669,5 +697,37 @@ public class ReportInventory implements Serializable {
      */
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Long getDefectiveToNormal() {
+        return defectiveToNormal;
+    }
+
+    public void setDefectiveToNormal(Long defectiveToNormal) {
+        this.defectiveToNormal = defectiveToNormal;
+    }
+
+    public Long getNormalToDefective() {
+        return normalToDefective;
+    }
+
+    public void setNormalToDefective(Long normalToDefective) {
+        this.normalToDefective = normalToDefective;
+    }
+
+    public Long getOtherIn() {
+        return otherIn;
+    }
+
+    public void setOtherIn(Long otherIn) {
+        this.otherIn = otherIn;
+    }
+
+    public Long getOtherOut() {
+        return otherOut;
+    }
+
+    public void setOtherOut(Long otherOut) {
+        this.otherOut = otherOut;
     }
 }

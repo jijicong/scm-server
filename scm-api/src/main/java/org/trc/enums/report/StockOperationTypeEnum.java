@@ -6,11 +6,16 @@ public enum StockOperationTypeEnum {
     SALES_RETURN_IN("2", "退货入库"),
     ALLALLOCATE_IN("3", "调拨入库"),
     INVENTORY_PROFIT("4", "盘盈入库"),
+    DEFECTIVE_TO_NORMAL("5", "残品转正品入库数量"),
+    OTHER_IN("6", "其他入库"),
+
 
     SALES_OF_OUTBOUND("1", "销售出库"),
     ALLALLOCATE_OUT("2", "调拨出库"),
     SALES_RETURN_OUT("3", "退货出库"),
-    INVENTORY_LOSSES("4", "盘亏出库");
+    INVENTORY_LOSSES("4", "盘亏出库"),
+    NORMAL_TO_DEFECTIVE("5", "正品转残品出库数量"),
+    OTHER_OUT("6", "其他出库");
 
     public static StockOperationTypeEnum queryNameByCode(String code){
         for(StockOperationTypeEnum stockOperationTypeEnum: StockOperationTypeEnum.values()){
