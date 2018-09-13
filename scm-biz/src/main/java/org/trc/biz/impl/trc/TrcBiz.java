@@ -2349,6 +2349,10 @@ public class TrcBiz implements ITrcBiz {
 		
 		String skuCode=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0).getSkuCode();
 		AssertUtil.notBlank(skuCode, "skuCode编码不能为空 !");
+		
+		if(skuCode.startsWith("SP1")) {
+			AssertUtil.notNull(null, "代发商品暂时不支持售后!");
+		}
 	}
 
 
