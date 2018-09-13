@@ -146,14 +146,17 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		for(OrderItem orderItem:orderItemList) {
 			AfterSaleOrderItemVO vo=new AfterSaleOrderItemVO();
 			BeanUtils.copyProperties(orderItem, vo);
-			//实际发货的数量-退货数量
+			//实际发货的数量            
 			int realSendNum=(int) getRealSendNum(outboundOrderCode,orderItem.getSkuCode());
-			//已取消
-			if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode())) {
-				vo.setMaxReturnNum(0);
-			}else {
+			//全部发货、部分发货的SKU   可退货数量=正向订单出库数量-已退货入库数量    其他状态可退都为0
+			if(orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode())  ||
+					orderItem.getSupplierOrderStatus().equals(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode())) {
+				//退货数量
 				int refundNum=getAlreadyRefundNum(orderItem);
 				vo.setMaxReturnNum(realSendNum-refundNum);
+				
+			}else {
+				vo.setMaxReturnNum(0);
 			}
 			afterSaleOrderItemVOList.add(vo);
 		}
@@ -201,10 +204,14 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
 		AssertUtil.notNull(shopOrder, "根据该订单号"+scmShopOrderCode+"查询到的订单为空!");
 		
-		List<AfterSaleOrderDetail> details=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
-		AssertUtil.notEmpty(details, "售后单子订单为空!");
+		List<AfterSaleOrderDetail> detailsList=afterSaleOrderAddDO.getAfterSaleOrderDetailList();
+		AssertUtil.notEmpty(detailsList, "售后单子订单为空!");
+		//过滤供应商订单(代发)和拟退货数量为0的商品
+		List<AfterSaleOrderDetail> details=filterOrder(detailsList);
+		AssertUtil.notEmpty(details, "无效的售后单!");
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
+		
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
 		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
@@ -259,6 +266,20 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//日志
 		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
 				aclUserAccreditInfo.getUserId(), "创建", "", null);
+	}
+
+	private List<AfterSaleOrderDetail> filterOrder(List<AfterSaleOrderDetail> detailsList) {
+		List<AfterSaleOrderDetail> list=new ArrayList<>();
+		
+		for(AfterSaleOrderDetail afterSaleOrderDetail:detailsList) {
+			int returnNum=afterSaleOrderDetail.getReturnNum();
+			String skuCode=afterSaleOrderDetail.getSkuCode();
+			if(returnNum==0 || skuCode.startsWith("SP1")) {
+				continue;
+			}
+			list.add(afterSaleOrderDetail);
+		}
+		return list;
 	}
 
 	private void createAfterSaleNoticeTrc(AfterSaleOrder afterSaleOrder, List<AfterSaleOrderDetail> details) {
@@ -857,6 +878,19 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			return false;
 		}
         return true;
+	}
+
+	@Override
+	public AfterSaleOrderStatusResponse afterSaleOrderStatus(String afterSaleCode) {
+		AssertUtil.notBlank(afterSaleCode, "请求参数售后单号不能为空");
+		AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
+		afterSaleOrder.setAfterSaleCode(afterSaleCode);
+		afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
+		AssertUtil.notNull(afterSaleOrder, String.format("根据售后单编码%s查询售后单信息为空", afterSaleCode));
+		AfterSaleOrderStatusResponse response = new AfterSaleOrderStatusResponse();
+		response.setAfterSaleCode(afterSaleCode);
+		response.setStatus(afterSaleOrder.getStatus());
+		return response;
 	}
 
 	@Override

@@ -89,6 +89,9 @@ public class SupplyConstants {
         public static final String CANCEL_AFTER_SALE_ORDER= "cancelAfterSaleOrder";//取消售后单接口
         
         public static final String SUBMIT_WAYBILL= "submitWaybill";//提交物流单号接口
+
+        public static final String AFTER_SALE_ORDER_STATUS= "afterSaleOrderStatus";//售后单状态查询接口
+
     }
 
     /**

@@ -1695,16 +1695,17 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             else if(StringUtils.equals(OutboundDetailStatusEnum.CANCELED.getCode(), detail.getStatus()))
                 cancelNum++;
         }
+        int detailSize = outboundDetailList.size() - cancelNum;
         //已取消：所有商品的发货状态均更新为“已取消”时，发货单的状态就更新为“已取消”；
-        if(cancelNum == outboundDetailList.size()){
+        if(cancelNum == detailSize){
             return OutboundOrderStatusEnum.CANCELED.getCode();
         }
         //仓库接收失败：所有商品的发货状态均为“仓库接收失败”时，发货单的状态就为“仓库接收失败”
-        if(failureNum == outboundDetailList.size()){
+        if(failureNum == detailSize){
             return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode();
         }
         //全部发货：所有商品的发货状态均为“全部发货”时，发货单的状态就为“全部发货”
-        if(allDeliverNum == outboundDetailList.size()){
+        if(allDeliverNum == detailSize){
             return OutboundOrderStatusEnum.ALL_GOODS.getCode();
         }
         //部分发货：存在发货状态为“部分发货”的商品或者同时存在待发货和已发货(部分发货或全部发货)的商品，发货单的状态就为“部分发货”
