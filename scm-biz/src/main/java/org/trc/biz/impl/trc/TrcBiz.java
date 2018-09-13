@@ -2287,20 +2287,11 @@ public class TrcBiz implements ITrcBiz {
 		int afterSaleType=afterSaleOrderDO.getAfterSaleType();
 		//请求流水号,每个售后申请唯一
 		
-		String requestNo=afterSaleOrderDO.getRequestNo();
-		AssertUtil.notBlank(requestNo, "请求流水号不能为空 !");
+		//参数校验
+		afterSaleCreateCheckParam(afterSaleOrderDO);
 		
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
-		AssertUtil.notBlank(shopOrderCode, "店铺订单号不能为空 !");
-		
-		boolean isExistRequestNo=isExistRequestNo(requestNo);
-		AssertUtil.isTrue(!isExistRequestNo, "请勿重复创建售后单!");
-		
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
-		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
-		if(details.size()>1) {
-			AssertUtil.notNull(null, "售后单详情只能包含一个sku!");
-		}
 		
 		ShopOrder shopOrderselect=new ShopOrder();
 		shopOrderselect.setShopOrderCode(shopOrderCode);
@@ -2340,6 +2331,29 @@ public class TrcBiz implements ITrcBiz {
 		data.put("afterSaleCode", afterSaleCode);
 		return new ResponseAck("200","售后单接受成功",data);
 
+	}
+
+    private void afterSaleCreateCheckParam(TairanAfterSaleOrderDO afterSaleOrderDO) {
+    	String requestNo=afterSaleOrderDO.getRequestNo();
+		AssertUtil.notBlank(requestNo, "请求流水号不能为空 !");
+		boolean isExistRequestNo=isExistRequestNo(requestNo);
+		AssertUtil.isTrue(!isExistRequestNo, "请勿重复创建售后单!");
+		
+		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
+		AssertUtil.notBlank(shopOrderCode, "店铺订单号不能为空 !");
+		
+		String returnWarehouseCode=afterSaleOrderDO.getReturnWarehouseCode();
+		AssertUtil.notBlank(returnWarehouseCode, "入库仓库仓库编码不能为空 !");
+		
+		
+		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
+		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
+		if(details.size()>1) {
+			AssertUtil.notNull(null, "售后单详情只能包含一个sku!");
+		}
+		
+		String skuCode=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0).getSkuCode();
+		AssertUtil.notBlank(skuCode, "skuCode编码不能为空 !");
 	}
 
 
@@ -2872,10 +2886,9 @@ public class TrcBiz implements ITrcBiz {
 			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_3.getCode());
 			afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
 			afterSaleWarehouseNoticeService.updateByPrimaryKey(afterSaleWarehouseNotice);
-
-			data.put("afterSaleOrderState", 1);
+			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
 		}else {
-			data.put("afterSaleOrderState", 0);
+			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
 		}
 
 		data.put("afterSaleCode", afterSaleCode);

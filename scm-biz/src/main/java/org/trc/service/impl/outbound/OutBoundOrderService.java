@@ -199,6 +199,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         Example exampleOrder = new Example(OutboundDetail.class);
         Example.Criteria criteriaOrder = exampleOrder.createCriteria();
         criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
+        criteriaOrder.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode());
         outboundDetailService.updateByExampleSelective(outboundDetail, exampleOrder);
     }
 
@@ -216,7 +217,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
     }
 
     //更新itemOrder
-    private void updateItemOrderSupplierOrderStatus(String outboundOrderCode, String warehouseOrderCode){
+    public void updateItemOrderSupplierOrderStatus(String outboundOrderCode, String warehouseOrderCode){
         List<OutboundDetail> outboundDetailList = this.getOutboundDetailListByOutboundOrderCode(outboundOrderCode, null);
         String status = null;
         OrderItem orderItem = null;
@@ -427,7 +428,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
     }
 
     //获取状态
-    private String getOutboundOrderStatusByDetail(List<OutboundDetail> outboundDetailList){
+    public String getOutboundOrderStatusByDetail(List<OutboundDetail> outboundDetailList){
         int failureNum = 0;//仓库接收失败数
         int waitDeliverNum = 0;//等待发货数
         int allDeliverNum = 0;//全部发货数
@@ -445,16 +446,17 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
             else if(StringUtils.equals(OutboundDetailStatusEnum.CANCELED.getCode(), detail.getStatus()))
                 cancelNum++;
         }
+        int detailSize = outboundDetailList.size() - cancelNum;
         //已取消：所有商品的发货状态均更新为“已取消”时，发货单的状态就更新为“已取消”；
-        if(cancelNum == outboundDetailList.size()){
+        if(cancelNum == detailSize){
             return OutboundOrderStatusEnum.CANCELED.getCode();
         }
         //仓库接收失败：所有商品的发货状态均为“仓库接收失败”时，发货单的状态就为“仓库接收失败”
-        if(failureNum == outboundDetailList.size()){
+        if(failureNum == detailSize){
             return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode();
         }
         //全部发货：所有商品的发货状态均为“全部发货”时，发货单的状态就为“全部发货”
-        if(allDeliverNum == outboundDetailList.size()){
+        if(allDeliverNum == detailSize){
             return OutboundOrderStatusEnum.ALL_GOODS.getCode();
         }
         //部分发货：存在发货状态为“部分发货”的商品或者同时存在待发货和已发货(部分发货或全部发货)的商品，发货单的状态就为“部分发货”
@@ -619,11 +621,11 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
 
         if (WarehouseTypeEnum.Jingdong == warehouseType) {
         	
-        	return deliveryOrderCancel(order, warehouseType, remark);
+        	return deliveryOrderCancel(order, warehouseType, skuCode, remark);
             
         } else if (WarehouseTypeEnum.Zy == warehouseType) {
         	
-        	return afterSaleCancel(order.getWmsOrderCode(), skuCode);
+        	return selfWarehouseAfterSaleCancel(order, skuCode);
         	
         } else {
         	throw new OutboundOrderException("发货单的仓库类型错误!");
@@ -631,12 +633,51 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
 
 	}
 	
-	private Map<String, String> afterSaleCancel(String wmsOrderCode, String skuCode) {
+
+	private Map<String, String> selfWarehouseAfterSaleCancel (OutboundOrder order, String skuCode) {
+		
+		String orderCode = order.getOutboundOrderCode();
+		
+        //返回结果map
+        Map<String, String> resultMap = new HashMap<>();
+        
+		/**
+		 * 通知自营仓库取消发货
+		 */
 		ScmAfterSaleOrderCancelRequest req = new ScmAfterSaleOrderCancelRequest();
-		req.setOutboundOrderCode(wmsOrderCode);
+		req.setOutboundOrderCode(orderCode);
 		req.setSkuCode(skuCode);
-		AppResult<ScmAfterSaleOrderCancelResponse> resp = warehouseApiService.afterSaleCancel(req);
-		return null;
+		req.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
+		
+		AppResult<ScmAfterSaleOrderCancelResponse> appResult = warehouseApiService.afterSaleCancel(req);
+		
+		if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) { // 成功
+			
+			/**
+			 * 更新发货单商品状态为已取消
+			 */
+			OutboundDetail detail = new OutboundDetail();
+			detail.setStatus(OutboundDetailStatusEnum.CANCELED.getCode());
+			detail.setUpdateTime(Calendar.getInstance().getTime());
+			
+	        Example exa = new Example(OutboundDetail.class);
+	        Example.Criteria cra = exa.createCriteria();
+	        cra.andEqualTo("outboundOrderCode", orderCode);
+	        cra.andEqualTo("skuCode", skuCode);
+	        outboundDetailService.updateByExampleSelective(detail, exa);
+
+			/**
+			 * 更新发货单状态
+			 */
+	        setOutboundOrderStatus(orderCode, order);
+	        
+	        resultMap.put("flg", OrderCancelResultEnum.CANCEL_SUCC.code);
+			
+		} else {
+        	resultMap.put("flg", OrderCancelResultEnum.CANCEL_FAIL.code);
+        	resultMap.put("msg", appResult.getDatabuffer());
+		}
+		return resultMap;
 	}
 
 	/**
@@ -645,11 +686,8 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
 	 * @param remark  取消的备注信息
 	 * @return 取消结果
 	 */
-	public Map<String, String> deliveryOrderCancel (OutboundOrder order, WarehouseTypeEnum warehouseType, String remark) {
+	public Map<String, String> deliveryOrderCancel (OutboundOrder order, WarehouseTypeEnum warehouseType, String skuCode, String remark) {
 		
-        //返回结果map
-        Map<String, String> resultMap = new HashMap<>();
-        
         //组装请求
         ScmOrderCancelRequest cancelReq = new ScmOrderCancelRequest();
         cancelReq.setOrderCode(order.getWmsOrderCode());
@@ -659,9 +697,18 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         //调用仓库接口
         AppResult<ScmOrderCancelResponse> appResult = warehouseApiService.orderCancel(cancelReq);
         
+        return resultProcess(appResult, order, skuCode, remark);
+        
+	}
+	
+	private Map<String, String> resultProcess (AppResult<ScmOrderCancelResponse> appResult, OutboundOrder order, String skuCode, String remark) {
+		
+        //返回结果map
+        Map<String, String> resultMap = new HashMap<>();
+        
         if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) { // 成功
         	
-            ScmOrderCancelResponse response = (ScmOrderCancelResponse) appResult.getResult();
+        	ScmOrderCancelResponse response = (ScmOrderCancelResponse) appResult.getResult();
             String flag = response.getFlag();
             
             String cancelResult = null;
@@ -671,6 +718,8 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
             	cancelResult = OutboundOrderStatusEnum.CANCELED.getCode();
             	detailCancelResult = OutboundDetailStatusEnum.CANCELED.getCode();
             	resultMap.put("flg", OrderCancelResultEnum.CANCEL_SUCC.code);
+            	
+            	updateDetail(skuCode, order.getOutboundOrderCode());
                 
             } else if (StringUtils.equals(flag, OrderCancelResultEnum.CANCELLING.code)) {// 取消中
             	
@@ -681,7 +730,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
             } else {
             	
             	resultMap.put("flg", OrderCancelResultEnum.CANCEL_FAIL.code);
-            	resultMap.put("msg", appResult.getDatabuffer());
+            	resultMap.put("msg", response.getMessage());
             	// 取消失败，直接返回，数据状态不用维护
             	return resultMap;
             }
@@ -699,6 +748,19 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         			"取消异常，原因:" + appResult.getDatabuffer());
         }
 	}
+	
+    //修改详情状态
+    private void updateDetail(String skuCode, String outboundOrderCode){
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setCancelFlg(ZeroToNineEnum.ONE.getCode());// 用户取消
+        outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+        outboundDetail.setStatus(OutboundOrderStatusEnum.CANCELED.getCode());
+        Example exampleOrder = new Example(OutboundDetail.class);
+        Example.Criteria criteriaOrder = exampleOrder.createCriteria();
+        criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
+        criteriaOrder.andEqualTo("skuCode", skuCode);
+        outboundDetailService.updateByExampleSelective(outboundDetail, exampleOrder);
+    }
 	
     //修改取消发货单信息
     private void updateOutBoundOrder(Long orderId, String status, String remark){

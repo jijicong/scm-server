@@ -67,8 +67,23 @@ public class OutboundDetail implements Serializable {
 
     @Column(name = "warehouse_item_id")
     private String warehouseItemId;
+    
+    /**
+     * 用户取消标识
+     */
+    @Column(name = "cancel_flg")
+    private String cancelFlg;
 
-    public List<OutboundDetailLogistics> getOutboundDetailLogisticsList() {
+    
+    public String getCancelFlg() {
+		return cancelFlg;
+	}
+
+	public void setCancelFlg(String cancelFlg) {
+		this.cancelFlg = cancelFlg;
+	}
+
+	public List<OutboundDetailLogistics> getOutboundDetailLogisticsList() {
         return outboundDetailLogisticsList;
     }
 

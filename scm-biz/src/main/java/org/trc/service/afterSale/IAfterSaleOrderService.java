@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.trc.domain.afterSale.AfterSaleOrder;
+import org.trc.form.afterSale.AfterSaleNoticeWmsForm;
+import org.trc.form.afterSale.AfterSaleNoticeWmsResultVO;
 import org.trc.service.IBaseService;
 
 
@@ -21,10 +23,19 @@ public interface IAfterSaleOrderService extends IBaseService<AfterSaleOrder, Str
 	/**
 	 * 售后单，取消发货
 	 * @param scmShopOrderCode 系统订单号
-	 * @param skuList  待取消的商品编码列表
+	 * @param skuCode  待取消的商品编码
 	 * @return 
 	 * @throws Exception 
 	 */
-	public Map<String, Object> deliveryCancel(String scmShopOrderCode, String skuCode) throws Exception;
+	public Map<String, Object> deliveryCancel(String scmShopOrderCode, String skuCode);
+	
+	/**
+	 * 售后单，取消结果
+	 * @param form
+	 * @return
+	 */
+	public List<AfterSaleNoticeWmsResultVO> deliveryCancelResult(List<AfterSaleNoticeWmsForm> form);
+	
+	
 }
 	

@@ -8,7 +8,7 @@ import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
 import org.trc.enums.AfterSaleOrderEnum;
 import org.trc.enums.AfterSaleTypeEnum;
-import org.trc.form.afterSale.AfterSaleNoticeWmsFrom;
+import org.trc.form.afterSale.AfterSaleNoticeWmsForm;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.util.AssertUtil;
@@ -48,9 +48,9 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
             detailCriteria.andIn("afterSaleCode", afterSaleCodeSet);
             List<AfterSaleOrderDetail> afterSaleOrderDetailList = afterSaleOrderDetailService.selectByExample(detailExample);
             if (!AssertUtil.collectionIsEmpty(afterSaleOrderDetailList)) {
-                List<AfterSaleNoticeWmsFrom> wmsFromList = new ArrayList<>();
+                List<AfterSaleNoticeWmsForm> wmsFromList = new ArrayList<>();
                 for (AfterSaleOrderDetail orderDetail : afterSaleOrderDetailList) {
-                    AfterSaleNoticeWmsFrom saleNoticeWmsFrom = new AfterSaleNoticeWmsFrom();
+                    AfterSaleNoticeWmsForm saleNoticeWmsFrom = new AfterSaleNoticeWmsForm();
                     saleNoticeWmsFrom.setAfterSaleCode(orderDetail.getAfterSaleCode());
                     saleNoticeWmsFrom.setScmShopOrderCode(orderDetail.getScmShopOrderCode());
                     saleNoticeWmsFrom.setSkuCode(orderDetail.getSkuCode());
