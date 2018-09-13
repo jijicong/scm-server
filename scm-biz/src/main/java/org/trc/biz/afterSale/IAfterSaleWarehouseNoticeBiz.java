@@ -1,8 +1,11 @@
 package org.trc.biz.afterSale;
 
 
+import java.util.List;
+
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeDO;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
 import org.trc.util.Pagenation;
@@ -14,5 +17,7 @@ public interface IAfterSaleWarehouseNoticeBiz {
 			Pagenation<AfterSaleWarehouseNotice> page,AclUserAccreditInfo aclUserAccreditInfo);
 
 	AfterSaleWarehouseNoticeVO warehouseNoticeInfo(String warehouseNoticeCode) throws Exception;
+
+	List<WarehouseInfo> selectWarehouse();
 
 }

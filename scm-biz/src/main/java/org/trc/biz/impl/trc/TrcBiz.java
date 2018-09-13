@@ -48,11 +48,13 @@ import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
+import org.trc.exception.AfterSaleException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
 import org.trc.form.afterSale.AfterSaleOrderAddDO;
+import org.trc.form.afterSale.AfterSaleWaybillForm;
 import org.trc.form.afterSale.TaiRanAfterSaleOrderDetail;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
@@ -2278,42 +2280,34 @@ public class TrcBiz implements ITrcBiz {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception{
+		Map<String,Object> data=new HashMap<>();
 		//退货场景：0实体店退货，1线上商城退货
 		int returnScene=afterSaleOrderDO.getReturnScene();
 		//售后类型：0取消发货，1退货
 		int afterSaleType=afterSaleOrderDO.getAfterSaleType();
 		//请求流水号,每个售后申请唯一
 		
-		String requestNo=afterSaleOrderDO.getRequestNo();
-		AssertUtil.notBlank(requestNo, "请求流水号不能为空 !");
+		//参数校验
+		afterSaleCreateCheckParam(afterSaleOrderDO);
 		
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
-		AssertUtil.notBlank(shopOrderCode, "店铺订单号不能为空 !");
-		
-		boolean isExistRequestNo=isExistRequestNo(requestNo);
-		AssertUtil.isTrue(!isExistRequestNo, "请勿重复创建售后单!");
-		
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
-		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
-		if(details.size()>1) {
-			AssertUtil.notNull(null, "售后单详情只能包含一个sku!");
-		}
 		
 		ShopOrder shopOrderselect=new ShopOrder();
 		shopOrderselect.setShopOrderCode(shopOrderCode);
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
 		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
-		
+		String afterSaleCode=null;
 		//线下退货
 		if(returnScene==returnSceneEnum.STATUS_0.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
-			String afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
+			 afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
 		}
 		//线上退货
 		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
 			//判断该订单能否退货
 			boolean canReturn=judgeCanReturn(shopOrderCode,details.get(0));
 			if(canReturn) {
-				String afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
+				 afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
 			}else {
 				AssertUtil.notNull(null,"只有部分发货或者全部发货的状态才能退货!");
 			}
@@ -2324,22 +2318,47 @@ public class TrcBiz implements ITrcBiz {
 			//判断该订单能否取消发货   确认是等待供应商发货还是 等待仓库发货
 			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
 			if(canCancel) {
-				//创建售后单（待客户发货）
-				String afterSaleCode=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+				//创建售后单（待客户发货）  取消失败返回null
+				 afterSaleCode=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+				 if(afterSaleCode==null) {
+					 return new ResponseAck("500","取消失败","");
+				 }
 			}else {
 				AssertUtil.notNull(null,"只有在仓库未发货状态才能取消!");
 			}
 		}
+
+		data.put("afterSaleCode", afterSaleCode);
+		return new ResponseAck("200","售后单接受成功",data);
+
+	}
+
+    private void afterSaleCreateCheckParam(TairanAfterSaleOrderDO afterSaleOrderDO) {
+    	String requestNo=afterSaleOrderDO.getRequestNo();
+		AssertUtil.notBlank(requestNo, "请求流水号不能为空 !");
+		boolean isExistRequestNo=isExistRequestNo(requestNo);
+		AssertUtil.isTrue(!isExistRequestNo, "请勿重复创建售后单!");
+		
+		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
+		AssertUtil.notBlank(shopOrderCode, "店铺订单号不能为空 !");
+		
+		String returnWarehouseCode=afterSaleOrderDO.getReturnWarehouseCode();
+		AssertUtil.notBlank(returnWarehouseCode, "入库仓库仓库编码不能为空 !");
 		
 		
-		return null;
+		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
+		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
+		if(details.size()>1) {
+			AssertUtil.notNull(null, "售后单详情只能包含一个sku!");
+		}
 		
+		String skuCode=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0).getSkuCode();
+		AssertUtil.notBlank(skuCode, "skuCode编码不能为空 !");
 	}
 
 
-	
 
-	private void cancelOutboundOrder(ShopOrder shopOrder, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+    private void cancelOutboundOrder(ShopOrder shopOrder, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
 		//根据系统订单号查询发货单号
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
@@ -2406,19 +2425,25 @@ public class TrcBiz implements ITrcBiz {
 		//售后单
 		AfterSaleOrder afterSaleOrder=getAfterSaleOrderCancel(afterSaleCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
 		
-		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:details) {
+		TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0);
+		OrderItem orderItemSelect=new OrderItem();
+		orderItemSelect.setShopOrderCode(shopOrderCode);
+		AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
+		orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
+		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
+		AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
+		//售后单子单
+		getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
 
-			OrderItem orderItemSelect=new OrderItem();
-			orderItemSelect.setShopOrderCode(shopOrderCode);
-			AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
-			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
-			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
-			AssertUtil.notNull(orderItem, "根据订单号"+shopOrderCode+"和sku:"+afterSaleOrderDetailDO.getSkuCode()+"查询子订单为空!");
-			//售后单子单
-			getAfterSaleOrderDetail(orderItem,afterSaleOrderDetailDO,afterSaleCode);
-			
-			//调用 接口通知子系统
-			afterSaleOrderService.deliveryCancel(shopOrder.getScmShopOrderCode(), afterSaleOrderDetailDO.getSkuCode());
+		//调用 接口通知子系统
+		Map<String, Object> map=afterSaleOrderService.deliveryCancel(shopOrder.getScmShopOrderCode(), afterSaleOrderDetailDO.getSkuCode());
+		boolean flg=(boolean) map.get("flg");
+		if(!flg) {
+			//取消失败
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_FAIL.getCode());
+			return null;
+		}else {
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
 		}
 		
 		
@@ -2634,7 +2659,7 @@ public class TrcBiz implements ITrcBiz {
 		select.setSkuCode(skuCode);
 		OutboundDetail outboundDetail=outboundDetailService.selectOne(select);
 		AssertUtil.notNull(outboundDetail, "根据发货单号"+outboundOrderCode+",skuCode"+skuCode+" 查询子发货单为空!");
-		return outboundDetail.getRealSentItemNum();
+		return outboundDetail.getRealSentItemNum()==null?0:outboundDetail.getRealSentItemNum();
 	}
 
 	/**
@@ -2834,6 +2859,69 @@ public class TrcBiz implements ITrcBiz {
 		}
 		return 0;
 	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public Map<String, Object> cancelAfterSaleOrder(String afterSaleCode) {
+		Map<String, Object> data=new HashMap<>();
+
+		AssertUtil.notBlank(afterSaleCode, "售后单号不能为空!");
+		AfterSaleOrder select=new AfterSaleOrder();
+		select.setAfterSaleCode(afterSaleCode);
+		AfterSaleOrder afterSaleOrder=afterSaleOrderService.selectOne(select);
+		AssertUtil.notNull(afterSaleOrder, "根据售后单号"+afterSaleOrder+"查询到的售后单为空!");
+		if(!(afterSaleOrder.getStatus()==AfterSaleOrderStatusEnum.STATUS_0.getCode())) {
+			AssertUtil.notNull(null,"只有待客户发货状态才能取消!");
+		}
+
+		AfterSaleWarehouseNotice selectWarehouseNotice=new AfterSaleWarehouseNotice();
+		selectWarehouseNotice.setAfterSaleCode(afterSaleCode);
+		AfterSaleWarehouseNotice afterSaleWarehouseNotice=afterSaleWarehouseNoticeService.selectOne(selectWarehouseNotice);
+		AssertUtil.notNull(afterSaleWarehouseNotice,"根据售后单号"+afterSaleCode+"查询退货入库单为空!");
+
+		//调用子系统接口 取消售后单  //取消成功
+		boolean istrue=false;
+		if(istrue) {
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_3.getCode());
+			afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
+			afterSaleWarehouseNoticeService.updateByPrimaryKey(afterSaleWarehouseNotice);
+			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+		}else {
+			data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+		}
+
+		data.put("afterSaleCode", afterSaleCode);
+		return data;
+	}
+
+
+    @Override
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
+	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
+	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
+	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
+	    AssertUtil.notBlank(afterSaleWaybillForm.getWaybillNumber(),"物流单号不能为空!");
+
+        AfterSaleOrder afterSaleOrder = new AfterSaleOrder();
+        afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
+        afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
+        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
+        //更新售后单
+        afterSaleOrder.setLogisticsCorporationCode(afterSaleWaybillForm.getLogisticsCorporationCode());
+        afterSaleOrder.setLogisticsCorporation(afterSaleWaybillForm.getLogisticsCorporation());
+        afterSaleOrder.setWaybillNumber(afterSaleWaybillForm.getWaybillNumber());
+        //修改状态
+        afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
+
+        int count =  afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改售后单信息",JSON.toJSONString(afterSaleOrder),"数据库操作失败").toString();
+            logger.error(msg);
+            throw new AfterSaleException(ExceptionEnum.AFTER_SALE_ORDER_UPDATE_EXCEPTION, msg);
+        }
+    }
+
 
 
 }

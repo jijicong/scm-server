@@ -141,6 +141,16 @@ public class ExternalSupplierConfig {
      */
     private String afterSaleOrderCancelUrl;
 
+    /**
+     * 退货入库单取消URL
+     */
+    private String returnInOrderCancelUrl;
+
+    /**
+     * 提交物流信息URL
+     */
+    private String submitAfterSaleLogisticsUrl;
+
 
 
 }
