@@ -13,12 +13,17 @@ import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.afterSale.AfterSaleOrderDetail;
 import org.trc.enums.*;
 import org.trc.exception.AfterSaleException;
+import org.trc.form.CancelSendNoticeTrcForm;
+import org.trc.form.TrcConfig;
+import org.trc.form.TrcParam;
 import org.trc.form.afterSale.AfterSaleNoticeWmsForm;
 import org.trc.form.afterSale.AfterSaleNoticeWmsResultVO;
+import org.trc.service.ITrcService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.util.AssertUtil;
+import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -35,6 +40,12 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
 
     @Autowired
     ILogInfoService logInfoService;
+
+    @Autowired
+    private ITrcService trcService;
+
+    @Autowired
+    private TrcConfig trcConfig;
 
     @Override
     public void cancelSendOutGoods() {
@@ -111,13 +122,25 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
     }
 
     private void pushAfterSaleState(List<AfterSaleNoticeWmsResultVO> saleNoticeWmsResultVOList) {
-
+        for (AfterSaleNoticeWmsResultVO saleNoticeWmsResultVO : saleNoticeWmsResultVOList) {
+            if (!StringUtils.equals(saleNoticeWmsResultVO.getFlg(), "2")) {
+                TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
+                CancelSendNoticeTrcForm sendNoticeTrcForm = (CancelSendNoticeTrcForm) trcParam;
+                sendNoticeTrcForm.setAfterSaleCode(saleNoticeWmsResultVO.getAfterSaleCode());
+                if (StringUtils.equals(saleNoticeWmsResultVO.getFlg(), "1")) {
+                    sendNoticeTrcForm.setAfterSaleOrderState("1");
+                } else if (StringUtils.equals(saleNoticeWmsResultVO.getFlg(), "3")) {
+                    sendNoticeTrcForm.setAfterSaleOrderState("2");
+                }
+                trcService.cancelSendNotice(sendNoticeTrcForm);
+            }
+        }
     }
 
     private void recordLog(Map<String, AfterSaleOrder> afterSaleCodeMap, List<AfterSaleOrder> afterSaleOrderList, List<AfterSaleNoticeWmsResultVO> saleNoticeWmsResultVOList) {
-        Map<String,AfterSaleNoticeWmsResultVO> wmsResultVOMap = new HashMap<>();
-        for (AfterSaleNoticeWmsResultVO saleNoticeWmsResultVO:saleNoticeWmsResultVOList) {
-            wmsResultVOMap.put(saleNoticeWmsResultVO.getAfterSaleCode(),saleNoticeWmsResultVO);
+        Map<String, AfterSaleNoticeWmsResultVO> wmsResultVOMap = new HashMap<>();
+        for (AfterSaleNoticeWmsResultVO saleNoticeWmsResultVO : saleNoticeWmsResultVOList) {
+            wmsResultVOMap.put(saleNoticeWmsResultVO.getAfterSaleCode(), saleNoticeWmsResultVO);
         }
         for (AfterSaleOrder afterSaleOrder : afterSaleOrderList) {
             //数据对比记录日志,失败的记录备注

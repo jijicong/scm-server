@@ -70,6 +70,7 @@ import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmSubmitAfterSaleOrderLogisticsRequest;
 import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
@@ -2954,6 +2955,12 @@ public class TrcBiz implements ITrcBiz {
         }
 
         //通知自营仓
+        ScmSubmitAfterSaleOrderLogisticsRequest logisticsRequest  = new ScmSubmitAfterSaleOrderLogisticsRequest();
+        logisticsRequest.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+        logisticsRequest.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode());
+        logisticsRequest.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
+        logisticsRequest.setWaybillNumber(afterSaleOrder.getWaybillNumber());
+        warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
     }
 
 
