@@ -8,7 +8,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class AfterSaleNoticeWmsFrom {
+public class AfterSaleNoticeWmsForm {
 
     /**
      * 售后单号
