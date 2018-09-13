@@ -135,6 +135,8 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
 		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
 		
+		//过滤代发商品
+		List<OrderItem> orderItems=filterSP1(orderItemList);
 		//根据系统订单号查询发货单号
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(scmShopOrderCode);
@@ -145,7 +147,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		AssertUtil.notNull(list, "没有该订单的发货单详情!");
 		
 		List<AfterSaleOrderItemVO> afterSaleOrderItemVOList=new ArrayList<>();
-		for(OrderItem orderItem:orderItemList) {
+		for(OrderItem orderItem:orderItems) {
 			AfterSaleOrderItemVO vo=new AfterSaleOrderItemVO();
 			BeanUtils.copyProperties(orderItem, vo);
 			//实际发货的数量            
@@ -163,6 +165,19 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 			afterSaleOrderItemVOList.add(vo);
 		}
 		return afterSaleOrderItemVOList;
+	}
+
+	private List<OrderItem> filterSP1(List<OrderItem> orderItemList) {
+		List<OrderItem> orderItems=new ArrayList<>();
+		for(OrderItem orderItem:orderItemList) {
+			String skuCode=orderItem.getSkuCode();
+			if(skuCode.startsWith("SP1")) {
+				continue;
+			}
+			
+			orderItems.add(orderItem);
+		}
+		return orderItems;
 	}
 
 	private List<OutboundDetail> getOutboundDetailList(List<OutboundOrder> outboundOrderList) {
