@@ -1,10 +1,7 @@
 package org.trc.service;
 
 
-import org.trc.form.AfterSaleNoticeTrcForm;
-import org.trc.form.ChannelOrderResponse;
-import org.trc.form.LogisticNoticeForm;
-import org.trc.form.ReturnInResultNoticeForm;
+import org.trc.form.*;
 import org.trc.model.ToGlyResultDO;
 
 /**
@@ -94,4 +91,11 @@ public interface ITrcService {
      * 发送创建通知接口
      */
     ToGlyResultDO createAfterSaleNotice(AfterSaleNoticeTrcForm saleNoticeTrcForm);
+
+    /**
+     * 取消发货通知接口
+     * @param cancelSendNoticeTrcForm
+     * @return
+     */
+    ToGlyResultDO  cancelSendNotice(CancelSendNoticeTrcForm cancelSendNoticeTrcForm);
 }

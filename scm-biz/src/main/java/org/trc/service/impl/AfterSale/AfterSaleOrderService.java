@@ -31,6 +31,7 @@ import org.trc.form.afterSale.AfterSaleNoticeWmsForm;
 import org.trc.form.afterSale.AfterSaleNoticeWmsResultVO;
 import org.trc.form.order.OutboundForm;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
+import org.trc.mapper.afterSale.AfterSaleOrderMapper;
 import org.trc.mapper.outbound.IOutboundDetailMapper;
 import org.trc.mapper.outbound.IOutboundOrderMapper;
 import org.trc.service.afterSale.IAfterSaleOrderService;
@@ -75,6 +76,8 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
     private IScmOrderBiz scmOrderBiz;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+	@Autowired
+	private AfterSaleOrderMapper afterSaleOrderMapper;
     
 	private Logger logger = LoggerFactory.getLogger(AfterSaleOrderService.class);
 	
@@ -280,7 +283,12 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 		}
 		return retList;
 	}
-	
+
+	@Override
+	public int updateAfterSaleOrderList(List<AfterSaleOrder> afterSaleOrderList) throws Exception {
+		return afterSaleOrderMapper.updateAfterSaleOrderList(afterSaleOrderList);
+	}
+
 	private AfterSaleNoticeWmsResultVO generateVo (AfterSaleNoticeWmsForm item, String flg, String msg) {
 		AfterSaleNoticeWmsResultVO vo = new AfterSaleNoticeWmsResultVO();
     	vo.setAfterSaleCode(item.getAfterSaleCode());
@@ -313,5 +321,5 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
         orderService.updateByPrimaryKeySelective(outboundOrder);
         
 	}
-	
+
 }
