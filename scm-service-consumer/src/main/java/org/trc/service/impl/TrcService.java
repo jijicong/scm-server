@@ -357,7 +357,7 @@ public class TrcService implements ITrcService {
         if(StringUtils.equals(trcConfig.getNoticeChannal(), ZeroToNineEnum.ZERO.getCode())){//不通知
             return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "通知渠道开关关闭");
         }
-        String url = trcConfig.getReturnInResultNotifyUrl();
+        String url = trcConfig.getCancelSendNoticeUrl();
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
         String response = null;
         try{
