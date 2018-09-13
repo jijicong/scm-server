@@ -80,6 +80,8 @@
         <property name="orderSubmitNotifyUrl" value="${trc.orderSubmit.notify.url}"/>
         <property name="returnInResultNotifyUrl" value="${trc.returnInResult.notify.url}"/>
         <property name="noticeChannal" value="${notice.channal}"/>
+        <property name="createAfterSaleNoticeUrl" value="${trc.createAfterSale.notify.url}"/>
+        <property name="cancelSendNoticeUrl" value="${trc.cancelSend.notify.url}"/>
     </bean>
 
     <!--奇门接口调用地址-->
