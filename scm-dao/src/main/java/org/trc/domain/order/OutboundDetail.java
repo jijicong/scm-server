@@ -4,12 +4,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;

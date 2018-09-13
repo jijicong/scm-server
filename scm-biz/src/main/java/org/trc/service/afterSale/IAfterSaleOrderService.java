@@ -6,6 +6,7 @@ import org.trc.form.afterSale.AfterSaleNoticeWmsForm;
 import org.trc.form.afterSale.AfterSaleNoticeWmsResultVO;
 import org.trc.service.IBaseService;
 
+import java.util.List;
 import java.util.Map;
 
 

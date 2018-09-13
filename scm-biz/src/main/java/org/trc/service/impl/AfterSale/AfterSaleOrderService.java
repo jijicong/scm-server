@@ -1,13 +1,6 @@
 package org.trc.service.impl.AfterSale;
 
 
-import static java.util.stream.Collectors.toList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +12,7 @@ import org.trc.domain.afterSale.AfterSaleOrder;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.IsStoreOrderEnum;
-import org.trc.enums.OrderCancelResultEnum;
-import org.trc.enums.OutboundDetailStatusEnum;
-import org.trc.enums.OutboundOrderStatusEnum;
-import org.trc.enums.WarehouseTypeEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.OutboundOrderException;
 import org.trc.form.afterSale.AfterSaleNoticeWmsForm;
 import org.trc.form.afterSale.AfterSaleNoticeWmsResultVO;
@@ -43,10 +30,9 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
-
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

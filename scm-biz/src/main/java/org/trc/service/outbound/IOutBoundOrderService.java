@@ -1,14 +1,12 @@
 package org.trc.service.outbound;
 
-import java.util.List;
-import java.util.Map;
-
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.form.warehouse.ScmDeliveryOrderDetailResponse;
 import org.trc.service.IBaseService;
 import org.trc.util.AppResult;
 
+import java.util.List;
 import java.util.Map;
 
 public interface IOutBoundOrderService extends IBaseService<OutboundOrder,Long> {
