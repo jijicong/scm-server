@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.order.IScmOrderBiz;
@@ -21,6 +23,7 @@ import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
+import org.trc.form.AfterSaleOrderStatusResponse;
 import org.trc.form.afterSale.AfterSaleWaybillForm;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
@@ -61,6 +64,8 @@ public class TaiRanResource {
     private ITrcBiz trcBiz;
     @Resource
     private IScmOrderBiz scmOrderBiz;
+    @Autowired
+    private IAfterSaleOrderBiz afterSaleOrderBiz;
 
 
     /**
@@ -385,6 +390,21 @@ public class TaiRanResource {
             return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", waybillMessage), "");
         }
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
+    }
+
+
+    @GET
+    @Path(SupplyConstants.TaiRan.AFTER_SALE_ORDER_STATUS)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<AfterSaleOrderStatusResponse> afterSaleOrderStatus(@QueryParam("afterSaleCode") String afterSaleCode){
+        try {
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "售后单状态查询成功", afterSaleOrderBiz.afterSaleOrderStatus(afterSaleCode));
+        } catch (Exception e) {
+            logger.error("售后单状态查询异常", e);
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("售后单%s状态查询异常,%s", afterSaleCode, e.getMessage()), "");
+        }
+
     }
 
 }
