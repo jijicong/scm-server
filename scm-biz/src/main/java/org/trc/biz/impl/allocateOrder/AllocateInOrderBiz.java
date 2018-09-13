@@ -324,6 +324,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 						scmEntryOrderItem = new ScmEntryOrderItem();
 						scmEntryOrderItem.setItemId(info.getWarehouseItemId());
 						scmEntryOrderItem.setPlanQty(detail.getPlanAllocateNum());
+						scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());//良品调拨
 						list.add(scmEntryOrderItem);
 						break;
 					}
