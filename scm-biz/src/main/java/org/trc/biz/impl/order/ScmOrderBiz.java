@@ -2027,7 +2027,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
         //获取店铺订单
-        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPlatformType(), platformOrder.getPayTime());
+        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPayTime());
         Map<String, Object> map = processOrder(platformOrder, shopOrderList, ZeroToNineEnum.ZERO.getCode(), null,"","","");
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", map);
     }
@@ -5175,11 +5175,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
 
         platformOrder.setCreateTime(new Date());//创建时间
         platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
-        platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
-        platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
+        //platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
+        //platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
         platformOrder.setUpdateTime(DateUtils.timestampToDate(platformObj.getLong("updateTime")));//修改时间
-        platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
-        platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
+        //platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
+        //platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
         platformOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 
         //适配地址,主要是对直辖市处理
@@ -5261,7 +5261,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
      * @param payTime 支付时间
      * @return
      */
-    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray, String platformType, Date payTime) {
+    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray, Date payTime) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         BigDecimal totalShop = new BigDecimal(0);
         for (Object obj : shopOrderArray) {
@@ -5270,11 +5270,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             ShopOrder shopOrder = JSONObject.parseObject(tmpObj.getString("shopOrder"),ShopOrder.class);
             String scmShopOrderCode = serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
             shopOrder.setScmShopOrderCode(scmShopOrderCode);
-            shopOrder.setPlatformType(platformType);
+            //shopOrder.setPlatformType(platformType);
             shopOrder.setCreateTime(new Date());//创建时间
             shopOrder.setPayTime(payTime);//支付时间
-            shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
-            shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
+            //shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
+            //shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
             shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());//待发货
             //设置店铺金额
             setShopOrderFee(shopOrder, shopOrderObj);
@@ -5336,7 +5336,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             orderItem.setDiscountCouponPlatform(orderItemObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
             orderItem.setDiscountFee(orderItemObj.getBigDecimal("discountFee"));//订单优惠总金额
             orderItem.setPostDiscount(orderItemObj.getBigDecimal("postDiscount"));//运费分摊
-            orderItem.setRefundFee(orderItemObj.getBigDecimal("refundFee"));//退款金额
+            //orderItem.setRefundFee(orderItemObj.getBigDecimal("refundFee"));//退款金额
             orderItem.setPriceTax(orderItemObj.getBigDecimal("priceTax"));//商品税费
             orderItem.setPrice(orderItemObj.getBigDecimal("price"));//商品价格
             BigDecimal promotionPrice = orderItemObj.getBigDecimal("promotionPrice");
@@ -5351,10 +5351,10 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
 
             orderItem.setCreateTime(new Date());//创建时间
             orderItem.setPayTime(DateUtils.timestampToDate(orderItemObj.getLong("payTime")));//支付时间
-            orderItem.setConsignTime(DateUtils.timestampToDate(orderItemObj.getLong("consignTime")));//发货时间
-            orderItem.setUpdateTime(DateUtils.timestampToDate(orderItemObj.getLong("updateTime")));//修改时间
-            orderItem.setTimeoutActionTime(DateUtils.timestampToDate(orderItemObj.getLong("timeoutActionTime")));//超时确认时间
-            orderItem.setEndTime(DateUtils.timestampToDate(orderItemObj.getLong("endTime")));//结束时间
+            //orderItem.setConsignTime(DateUtils.timestampToDate(orderItemObj.getLong("consignTime")));//发货时间
+            //orderItem.setUpdateTime(DateUtils.timestampToDate(orderItemObj.getLong("updateTime")));//修改时间
+            //orderItem.setTimeoutActionTime(DateUtils.timestampToDate(orderItemObj.getLong("timeoutActionTime")));//超时确认时间
+            //orderItem.setEndTime(DateUtils.timestampToDate(orderItemObj.getLong("endTime")));//结束时间
             if(orderItem.getSkuCode().startsWith(SP0)){
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_WAREHOUSE_DELIVER.getCode());//等待仓库发货
             }else if(orderItem.getSkuCode().startsWith(SP1)){
@@ -6080,11 +6080,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         warehouseOrder.setShopId(shopOrder.getShopId());
         warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
         warehouseOrder.setShopName(shopOrder.getShopName());
-        warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
+        //warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
         warehouseOrder.setChannelCode(shopOrder.getChannelCode());
         warehouseOrder.setSellCode(shopOrder.getSellCode());
         warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-        warehouseOrder.setPlatformType(shopOrder.getPlatformType());
+        //warehouseOrder.setPlatformType(shopOrder.getPlatformType());
         warehouseOrder.setUserId(shopOrder.getUserId());
         warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
         warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -6366,11 +6366,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             warehouseOrder.setShopId(shopOrder.getShopId());
             warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
             warehouseOrder.setShopName(shopOrder.getShopName());
-            warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
+            //warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
             warehouseOrder.setChannelCode(shopOrder.getChannelCode());
             warehouseOrder.setSellCode(shopOrder.getSellCode());
             warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-            warehouseOrder.setPlatformType(shopOrder.getPlatformType());
+            //warehouseOrder.setPlatformType(shopOrder.getPlatformType());
             warehouseOrder.setUserId(shopOrder.getUserId());
             warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
             warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
