@@ -1006,7 +1006,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		/**
 		 * 更新售后单状态及明细
 		 */
-		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_2.getCode());
 		afterSaleOrder.setUpdateTime(currentTime);
 		afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
 		for(AfterSaleOrderDetail detail: afterSaleOrderDetailList){
