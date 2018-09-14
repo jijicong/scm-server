@@ -153,7 +153,7 @@ public class ShopOrder extends OrderBase {
     /**
      * 是否门店订单
      */
-    //@Transient
+    @Transient
     private boolean isStoreOrder;
 
     /**
