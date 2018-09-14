@@ -67,6 +67,7 @@ import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.form.warehouse.ScmReturnInOrderDetail;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
+import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
@@ -2284,7 +2285,6 @@ public class TrcBiz implements ITrcBiz {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception{
-		Map<String,Object> data=new HashMap<>();
 		//退货场景：0实体店退货，1线上商城退货
 		int returnScene=afterSaleOrderDO.getReturnScene();
 		//售后类型：0取消发货，1退货
@@ -2332,6 +2332,7 @@ public class TrcBiz implements ITrcBiz {
 			}
 		}
 
+		Map<String,Object> data=new HashMap<>();
 		data.put("afterSaleCode", afterSaleCode);
 		return new ResponseAck("200","售后单接受成功",data);
 
@@ -2519,7 +2520,10 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
 		//通知wms，新增退货入库单
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo);
-		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			//AssertUtil.notNull(null, response.getDatabuffer());
+		}
 		
 		//日志
 		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 
