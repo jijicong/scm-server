@@ -2285,6 +2285,7 @@ public class TrcBiz implements ITrcBiz {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception{
+		Map<String,Object> data=new HashMap<>();
 		//退货场景：0实体店退货，1线上商城退货
 		int returnScene=afterSaleOrderDO.getReturnScene();
 		//售后类型：0取消发货，1退货
@@ -2323,16 +2324,18 @@ public class TrcBiz implements ITrcBiz {
 			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
 			if(canCancel) {
 				//创建售后单（待客户发货）  取消失败返回null
-				 afterSaleCode=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
-				 if(afterSaleCode==null) {
-					 return new ResponseAck("500","取消失败","");
+				Map<String,Object> result=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+				boolean res=(boolean) result.get("res");
+				afterSaleCode=(String) result.get("afterSaleCode");
+				 if(!res) {
+					 data.put("afterSaleCode", afterSaleCode);
+					 return new ResponseAck("500",(String) result.get("msg"),data);
 				 }
 			}else {
 				AssertUtil.notNull(null,"只有在仓库未发货状态才能取消!");
 			}
 		}
 
-		Map<String,Object> data=new HashMap<>();
 		data.put("afterSaleCode", afterSaleCode);
 		return new ResponseAck("200","售后单接受成功",data);
 
@@ -2408,7 +2411,8 @@ public class TrcBiz implements ITrcBiz {
 		return false;
 	}
 
-	private String onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) throws Exception{
+	private Map<String,Object> onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) throws Exception{
+		Map<String, Object> resultmap=new HashMap<>();
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
@@ -2447,13 +2451,14 @@ public class TrcBiz implements ITrcBiz {
 		if(!flg) {
 			//取消失败
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_FAIL.getCode());
-			return null;
+			resultmap.put("msg", map.get("msg"));
 		}else {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
 		}
 		
-		
-		return afterSaleCode;
+		resultmap.put("res", flg);
+		resultmap.put("afterSaleCode", afterSaleCode);
+		return resultmap;
 	}
 
 	private boolean isExistRequestNo(String requestNo) {
@@ -2522,7 +2527,7 @@ public class TrcBiz implements ITrcBiz {
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo);
 		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
 		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
-			//AssertUtil.notNull(null, response.getDatabuffer());
+			AssertUtil.notNull(null, response.getDatabuffer());
 		}
 		
 		//日志
