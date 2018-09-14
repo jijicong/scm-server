@@ -22,6 +22,7 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
 import org.trc.form.AfterSaleOrderStatusResponse;
 import org.trc.form.afterSale.AfterSaleWaybillForm;
@@ -396,6 +397,8 @@ public class TaiRanResource {
         } catch (JSONException e) {
             logger.error("参数转json格式错误", e);
             return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", waybillMessage), "");
+        }catch (Exception e) {
+            return new ResponseAck(ExceptionEnum.AFTER_SALE_ORDER_QUERY_EXCEPTION.getCode(), e.getMessage(), "");
         }
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
     }
