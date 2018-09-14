@@ -672,6 +672,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
 		} else {
         	resultMap.put("flg", OrderCancelResultEnum.CANCEL_FAIL.code);
         	resultMap.put("msg", appResult.getDatabuffer());
+        	logger.error("通知自营仓库取消发货错误：{}", appResult.getDatabuffer());
 		}
 		return resultMap;
 	}

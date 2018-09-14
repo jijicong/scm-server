@@ -97,7 +97,11 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 		checkParam(scmShopOrderCode, skuCode);
 		
 		OutboundOrder targetOrder = getOutboundOrder(scmShopOrderCode, skuCode);
-
+		
+		if (null == targetOrder) {
+			throw new IllegalArgumentException("查询发货单号为空");
+		}
+		
         Map<String, String> cancelResult = null;
         Map<String, Object> returnMap = new HashMap<>();
         try {
