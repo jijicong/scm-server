@@ -2930,7 +2930,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm)  {
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
 	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
@@ -2978,7 +2978,10 @@ public class TrcBiz implements ITrcBiz {
         logisticsRequest.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode());
         logisticsRequest.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
         logisticsRequest.setWaybillNumber(afterSaleOrder.getWaybillNumber());
-        warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
+        AppResult appResult = warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
+        if (!StringUtils.equals(appResult.getAppcode(),ResponseAck.SUCCESS_CODE)){
+           throw new AfterSaleException(ExceptionEnum.SYSTEM_EXCEPTION,appResult.getDatabuffer());
+        }
     }
 
 
