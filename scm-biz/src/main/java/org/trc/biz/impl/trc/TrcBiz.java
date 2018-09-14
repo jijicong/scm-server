@@ -2818,6 +2818,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
 		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
 		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_0.getCode());
+		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());
 		//实体店退货
