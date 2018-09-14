@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.afterSale.IAfterSaleWarehouseNoticeBiz;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.afterSale.AfterSaleWarehouseNotice;
 import org.trc.domain.afterSale.AfterSaleWarehouseNoticeDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -12,8 +13,10 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.ValidEnum;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeDO;
 import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
+import org.trc.service.impl.system.SellChannelService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
@@ -33,6 +36,8 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
 	private IAfterSaleWarehouseNoticeDetailService  afterSaleWarehouseNoticeDetailService;
 	@Autowired
 	private IWarehouseInfoService  warehouseInfoService;
+	@Autowired
+	private ISellChannelService sellChannelService;
 	
 	@Override
 	public Pagenation<AfterSaleWarehouseNotice> warehouseNoticeList(AfterSaleWarehouseNoticeDO afterSaleWarehouseNoticeDO,Pagenation<AfterSaleWarehouseNotice> page,
@@ -105,7 +110,19 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
 		
 		BeanUtils.copyProperties(VO, afterSaleWarehouseNotice);
 		VO.setWarehouseNoticeDetailList(afterSaleWarehouseNoticeDetailList);
+		String sellCodeName=getSellCodeName(VO.getSellCode());
+		VO.setSellCodeName(sellCodeName);
 		return VO;
+	}
+
+	private String getSellCodeName(String sellCode) {
+		SellChannel select=new SellChannel();
+		select.setSellCode(sellCode);
+		SellChannel sellChannel=sellChannelService.selectOne(select);
+		if(sellChannel!=null) {
+			return sellChannel.getSellName();
+		}
+		return null;
 	}
 
 	@Override

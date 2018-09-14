@@ -14,6 +14,9 @@ public class AfterSaleWarehouseNoticeVO extends AfterSaleWarehouseNotice{
 	
 	private static final long serialVersionUID = 1L;
 	
+	//销售渠道名称
+	private String sellCodeName;
+	
 	public List<AfterSaleWarehouseNoticeDetail> warehouseNoticeDetailList;
 
 }
