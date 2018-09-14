@@ -43,6 +43,7 @@ import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
 import org.trc.enums.*;
 import org.trc.exception.AfterSaleException;
+import org.trc.exception.AfterSaleWarehousesNoticeException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
@@ -2949,15 +2950,31 @@ public class TrcBiz implements ITrcBiz {
         afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
 
         int count =  afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
+
         if(count == 0){
             String msg = CommonUtil.joinStr("修改售后单信息",JSON.toJSONString(afterSaleOrder),"数据库操作失败").toString();
             logger.error(msg);
             throw new AfterSaleException(ExceptionEnum.AFTER_SALE_ORDER_UPDATE_EXCEPTION, msg);
         }
+        //修改退货入库单
+        AfterSaleWarehouseNotice selectWarehouseNotice=new AfterSaleWarehouseNotice();
+        selectWarehouseNotice.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+        AfterSaleWarehouseNotice afterSaleWarehouseNotice=afterSaleWarehouseNoticeService.selectOne(selectWarehouseNotice);
+        AssertUtil.notNull(afterSaleWarehouseNotice,"根据售后单号"+afterSaleOrder.getAfterSaleCode()+"查询退货入库单为空!");
+        afterSaleWarehouseNotice.setWaybillNumber(afterSaleOrder.getWaybillNumber());
+        afterSaleWarehouseNotice.setLogisticsCorporationCode(afterSaleWaybillForm.getLogisticsCorporationCode());
+        afterSaleWarehouseNotice.setLogisticsCorporation(afterSaleWaybillForm.getLogisticsCorporation());
+        int count2 =  afterSaleWarehouseNoticeService.updateByPrimaryKeySelective(afterSaleWarehouseNotice);
 
+        if(count2 == 0){
+            String msg = CommonUtil.joinStr("修改退货入库单信息",JSON.toJSONString(afterSaleWarehouseNotice),"数据库操作失败").toString();
+            logger.error(msg);
+            throw new AfterSaleWarehousesNoticeException(ExceptionEnum.SYSTEM_EXCEPTION, msg);
+        }
         //通知自营仓
         ScmSubmitAfterSaleOrderLogisticsRequest logisticsRequest  = new ScmSubmitAfterSaleOrderLogisticsRequest();
         logisticsRequest.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+        logisticsRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
         logisticsRequest.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode());
         logisticsRequest.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
         logisticsRequest.setWaybillNumber(afterSaleOrder.getWaybillNumber());
