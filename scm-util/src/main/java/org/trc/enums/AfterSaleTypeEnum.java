@@ -1,8 +1,8 @@
 package org.trc.enums;
 
 public enum AfterSaleTypeEnum {
-    RETURN_GOODS(0, "退货"),
-    CANCEL_DELIVER(1, "取消发货");
+    RETURN_GOODS(1, "退货"),
+    CANCEL_DELIVER(0, "取消发货");
     private int code;
     private String name;
 
