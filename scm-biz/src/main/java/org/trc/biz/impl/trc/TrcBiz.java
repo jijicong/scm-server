@@ -67,6 +67,7 @@ import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.form.warehouse.ScmReturnInOrderDetail;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
+import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
@@ -2323,9 +2324,12 @@ public class TrcBiz implements ITrcBiz {
 			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
 			if(canCancel) {
 				//创建售后单（待客户发货）  取消失败返回null
-				 afterSaleCode=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
-				 if(afterSaleCode==null) {
-					 return new ResponseAck("500","取消失败","");
+				Map<String,Object> result=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
+				boolean res=(boolean) result.get("res");
+				afterSaleCode=(String) result.get("afterSaleCode");
+				 if(!res) {
+					 data.put("afterSaleCode", afterSaleCode);
+					 return new ResponseAck("500",(String) result.get("msg"),data);
 				 }
 			}else {
 				AssertUtil.notNull(null,"只有在仓库未发货状态才能取消!");
@@ -2407,7 +2411,8 @@ public class TrcBiz implements ITrcBiz {
 		return false;
 	}
 
-	private String onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) throws Exception{
+	private Map<String,Object> onlineCancel(TairanAfterSaleOrderDO afterSaleOrderDO, ShopOrder shopOrder,int returnScene) throws Exception{
+		Map<String, Object> resultmap=new HashMap<>();
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
@@ -2446,13 +2451,14 @@ public class TrcBiz implements ITrcBiz {
 		if(!flg) {
 			//取消失败
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_FAIL.getCode());
-			return null;
+			resultmap.put("msg", map.get("msg"));
 		}else {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
 		}
 		
-		
-		return afterSaleCode;
+		resultmap.put("res", flg);
+		resultmap.put("afterSaleCode", afterSaleCode);
+		return resultmap;
 	}
 
 	private boolean isExistRequestNo(String requestNo) {
@@ -2519,7 +2525,10 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
 		//通知wms，新增退货入库单
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo);
-		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			AssertUtil.notNull(null, response.getDatabuffer());
+		}
 		
 		//日志
 		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 

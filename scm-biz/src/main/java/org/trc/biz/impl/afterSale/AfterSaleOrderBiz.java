@@ -36,6 +36,8 @@ import org.trc.form.returnIn.ReturnInDetailWmsResponseForm;
 import org.trc.form.returnIn.ReturnInWmsResponseForm;
 import org.trc.form.warehouse.ScmReturnInOrderDetail;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
+import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
+import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
 import org.trc.service.ITrcService;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
@@ -286,7 +288,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
 		//通知wms，新增退货入库单
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo,platformOrder,warehouseInfo);
-		warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
+		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			AssertUtil.notNull(null, response.getDatabuffer());
+		}
 		//通知泰然城退货入库单收货结果
 		try{
 			createAfterSaleNoticeTrc(afterSaleOrder,details);
@@ -1001,7 +1006,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		/**
 		 * 更新售后单状态及明细
 		 */
-		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_2.getCode());
 		afterSaleOrder.setUpdateTime(currentTime);
 		afterSaleOrderService.updateByPrimaryKey(afterSaleOrder);
 		for(AfterSaleOrderDetail detail: afterSaleOrderDetailList){
