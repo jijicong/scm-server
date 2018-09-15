@@ -3,10 +3,13 @@ package org.trc.resource;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.report.IReportBiz;
 import org.trc.domain.report.ReportInventory;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -79,6 +82,20 @@ public class ReportResource {
     @Path("/downloadCurrentForWarehouse")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadCurrentForWarehouse(@BeanParam ReportInventoryForm form) {
+        return reportBiz.downloadCurrentForWarehouse(form);
+    }
+
+    /**
+     * 下载特殊查询报表
+     */
+    @GET
+    @Path("/downloadOtherReport")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadOtherReport(@BeanParam ReportInventoryForm form) {
+        if (StringUtils.isBlank(form.getDate()) && (StringUtils.isBlank(form.getStartDate()) && StringUtils.isBlank(form.getEndDate()))
+                && !StringUtils.isBlank(form.getDate()) && (!StringUtils.isBlank(form.getStartDate()) && !StringUtils.isBlank(form.getEndDate()))) {
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "参数校验异常");
+        }
         return reportBiz.downloadCurrentForWarehouse(form);
     }
 }

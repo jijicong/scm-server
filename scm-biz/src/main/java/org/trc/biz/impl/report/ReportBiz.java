@@ -168,6 +168,7 @@ public class ReportBiz implements IReportBiz {
     public Response downloadAllForWarehouse(ReportInventoryForm form) {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
+        String reportDate = DateUtils.getYM(date) + "";
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
         AssertUtil.notBlank(date, "查询周期不能为空");
 
@@ -191,12 +192,12 @@ public class ReportBiz implements IReportBiz {
             //设置压缩方式
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
             //获取信息
-            List<ReportExcelDetail> reportExcelDetails = this.getReportExcelDetail(form, warehouseName);
+            List<ReportExcelDetail> reportExcelDetails = this.getReportExcelDetail(form, warehouseName, reportDate);
+            String fileName = "【"+warehouseName+"】"+ "库存报表"+ reportDate + SupplyConstants.Symbol.FILE_NAME_SPLIT + ZIP;
+            zipOutputStream.putNextEntry(new ZipEntry(fileName));
+            dataOutputStream = new DataOutputStream(zipOutputStream);
             //循环将文件写入压缩流
             for (ReportExcelDetail reportExcelDetail : reportExcelDetails) {
-                String fileName = reportExcelDetail.getFileName() + SupplyConstants.Symbol.FILE_NAME_SPLIT + ZIP;
-                zipOutputStream.putNextEntry(new ZipEntry(fileName));
-                dataOutputStream = new DataOutputStream(zipOutputStream);
                 byte[] bytes = reportExcelDetail.getSheet().getBytes();
                 InputStream inputStream = new ByteArrayInputStream(bytes);
                 IOUtils.copy(inputStream, dataOutputStream);
@@ -231,8 +232,14 @@ public class ReportBiz implements IReportBiz {
     public Response downloadCurrentForWarehouse(ReportInventoryForm form) {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
+        String reportDate = DateUtils.getYM(date) + "";
+        String  reportType =  form.getReportType();
+        String  stockType =  form.getStockType();
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
         AssertUtil.notBlank(date, "查询周期不能为空");
+        AssertUtil.notBlank(reportType, "报表类型不能为空");
+        AssertUtil.notBlank(stockType, "库存类型不能为空");
+
 
         logger.info(String.format("开始下载仓库编码为%s,日期为%s,报表类型为%s,库存类型为%s的报表!",
                 warehouseCode, date, form.getReportType(), form.getStockType()));
@@ -248,8 +255,7 @@ public class ReportBiz implements IReportBiz {
         String warehouseName = warehouseInfo.getWarehouseName();
 
         try {
-            String sheetName = this.getExcelName(form, warehouseName);
-            String  reportType =  form.getReportType();
+            String sheetName = this.getExcelName(form, warehouseName, reportDate);
             HSSFWorkbook hssfWorkbook = null;
             if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), reportType)){
                 hssfWorkbook = this.reportExcel(
@@ -283,22 +289,22 @@ public class ReportBiz implements IReportBiz {
         }
     }
 
-    private String getExcelName(ReportInventoryForm form, String warehouseName) {
+    private String getExcelName(ReportInventoryForm form, String warehouseName, String date) {
         if (StringUtils.equals(form.getStockType(), StockTypeEnum.QUALITY.getCode())) {
             if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
-                return String.format("【%s】正品总库存%s", warehouseName, form.getDate());
+                return String.format("【%s】正品总库存%s", warehouseName, date);
             } else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
-                return String.format("【%s】正品入库明细%s", warehouseName, form.getDate());
+                return String.format("【%s】正品入库明细%s", warehouseName, date);
             } else {
-                return String.format("【%s】正品出库明细%s", warehouseName, form.getDate());
+                return String.format("【%s】正品出库明细%s", warehouseName, date);
             }
         } else {
             if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
-                return String.format("【%s】残品总库存%s", warehouseName, form.getDate());
+                return String.format("【%s】残品总库存%s", warehouseName, date);
             } else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
-                return String.format("【%s】残品入库明细%s", warehouseName, form.getDate());
+                return String.format("【%s】残品入库明细%s", warehouseName, date);
             } else {
-                return String.format("【%s】残品出库明细%s", warehouseName, form.getDate());
+                return String.format("【%s】残品出库明细%s", warehouseName, date);
             }
         }
     }
@@ -310,7 +316,7 @@ public class ReportBiz implements IReportBiz {
      * @param warehouseName
      * @return
      */
-    private List<ReportExcelDetail> getReportExcelDetail(ReportInventoryForm form, String warehouseName) {
+    private List<ReportExcelDetail> getReportExcelDetail(ReportInventoryForm form, String warehouseName, String reportDate) {
         List<ReportExcelDetail> reportExcelDetails = new ArrayList<>();
         String date = form.getDate();
 
@@ -320,7 +326,7 @@ public class ReportBiz implements IReportBiz {
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         List<ReportInventory> reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
-        String fileName = String.format("【%s】正品总库存%s", warehouseName, date);
+        String fileName = String.format("【%s】正品总库存%s", warehouseName, reportDate);
         reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
@@ -329,7 +335,7 @@ public class ReportBiz implements IReportBiz {
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
-        fileName = String.format("【%s】残品总库存%s", warehouseName, date);
+        fileName = String.format("【%s】残品总库存%s", warehouseName, reportDate);
         reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
@@ -338,7 +344,7 @@ public class ReportBiz implements IReportBiz {
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
         List<ReportEntryDetail> reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
-        fileName = String.format("【%s】正品入库明细%s", warehouseName, date);
+        fileName = String.format("【%s】正品入库明细%s", warehouseName, reportDate);
         reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
@@ -347,7 +353,7 @@ public class ReportBiz implements IReportBiz {
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
         reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
-        fileName = String.format("【%s】残品入库明细%s", warehouseName, date);
+        fileName = String.format("【%s】残品入库明细%s", warehouseName, reportDate);
         reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
@@ -356,7 +362,7 @@ public class ReportBiz implements IReportBiz {
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
         List<ReportOutboundDetail> reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
-        fileName = String.format("【%s】正品出库明细%s", warehouseName, date);
+        fileName = String.format("【%s】正品出库明细%s", warehouseName, reportDate);
         reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
@@ -365,7 +371,7 @@ public class ReportBiz implements IReportBiz {
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
         reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
-        fileName = String.format("【%s】残品出库明细%s", warehouseName, date);
+        fileName = String.format("【%s】残品出库明细%s", warehouseName, reportDate);
         reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
