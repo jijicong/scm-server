@@ -1,16 +1,19 @@
 package org.trc.service.impl.report;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.report.ReportInventory;
+import org.trc.domain.report.ReportInventoryDTO;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.form.report.ReportInventoryForm;
 import org.trc.mapper.report.IReportInventoryMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.report.IReportInventoryService;
@@ -19,6 +22,7 @@ import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import tk.mybatis.mapper.entity.Example;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -135,6 +139,21 @@ public class ReportInventoryService extends BaseService<ReportInventory, Long> i
     @Override
     public List<ReportInventory> getReportInventoryByWarehouseCodeAndTime(String warehouseCode, LocalDate with, String stockType) {
         return reportInventoryMapper.getReportInventoryByWarehouseCodeAndTime(warehouseCode, with, stockType);
+    }
+
+    /**
+     * 分组查询数据
+     *
+     * @param form
+     * @param skuCodes
+     * @return
+     */
+    @Override
+    public List<ReportInventory> selectReportInventoryLimit(ReportInventoryForm form, List<String> skuCodes) {
+        ReportInventoryDTO dto = new ReportInventoryDTO();
+        BeanUtils.copyProperties(form, dto);
+        List<String> barCodes = Arrays.asList(dto.getBarCode().split(","));
+        return reportInventoryMapper.selectReportInventoryLimit(dto, skuCodes, barCodes);
     }
 
 }

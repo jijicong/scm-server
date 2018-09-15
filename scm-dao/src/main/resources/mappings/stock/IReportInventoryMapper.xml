@@ -8,10 +8,10 @@
       FROM
         report_inventory
       WHERE
-        DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( #{time} , '%Y%m' )
+        DATE_FORMAT( `periods`, '%Y%m' ) = DATE_FORMAT( #{time} , '%Y%m' )
     </select>
     
-    <select id="getReportInventoryByWarehouseCodeAndTime" resultMap="org.trc.domain.report.ReportInventory">
+    <select id="getReportInventoryByWarehouseCodeAndTime" resultType="org.trc.domain.report.ReportInventory">
         SELECT
             *
         FROM
@@ -21,6 +21,43 @@
         AND
             stock_type = #{stockType}
         AND
-            DATE_FORMAT( `create_time`, '%Y%m' ) = DATE_FORMAT( #{date}, '%Y%m' )
+            DATE_FORMAT( `periods`, '%Y%m' ) = DATE_FORMAT( #{date}, '%Y%m' )
+    </select>
+
+    <select id="selectReportInventoryLimit" resultType="org.trc.domain.report.ReportInventory">
+        SELECT
+            warehouse_code AS warehouseCode,  sku_code AS skuCode
+        FROM
+            `report_inventory`
+        where
+            warehouse_code = #{dto.warehouseCode}
+        AND
+            stock_type = #{dto.stockType}
+            <if test="dto.date != null and dto.date != ''">
+                and DATE_FORMAT( `periods`, '%Y%m' ) = DATE_FORMAT( #{dto.date}, '%Y%m' )
+            </if>
+            <if test="dto.startDate != null and dto.endDate != null">
+                and periods BETWEEN #{dto.startDate} AND #{dto.endDate}
+            </if>
+            <if test="dto.skuCode != null and dto.skuCode != ''">
+                and sku_code in (#{dto.skuCode})
+            </if>
+            <if test="skuCodes != null and skuCodes.size > 0">
+                and sku_code in
+                <foreach collection="item" item="skuCode" open="(" close=")" separator=",">
+                  #{item}
+                </foreach>
+            </if>
+            <if test="codes != null and codes.size > 0">
+                and (
+                <trim suffixOverrides="OR">
+                    <foreach collection="codes" item="item">
+                        FIND_IN_SET(#{item}, `bar_code`) OR
+                    </foreach>
+                </trim>
+                )
+            </if>
+        GROUP BY
+            warehouse_code, sku_code
     </select>
 </mapper>

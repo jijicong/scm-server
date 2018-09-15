@@ -7,6 +7,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
+import org.trc.form.report.ReportInventoryForm;
 import org.trc.service.IBaseService;
 
 import java.time.LocalDate;
@@ -77,4 +78,12 @@ public interface IReportInventoryService extends IBaseService<ReportInventory, L
      * @return
      */
     List<ReportInventory> getReportInventoryByWarehouseCodeAndTime(String warehouseCode, LocalDate with, String stockType);
+
+    /**
+     * 分组查询数据
+     * @param form
+     * @param skuCodes
+     * @return
+     */
+    List<ReportInventory> selectReportInventoryLimit(ReportInventoryForm form, List<String> skuCodes);
 }

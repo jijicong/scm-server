@@ -198,6 +198,12 @@ public class ReportInventory implements Serializable {
     private Long balanceTotalQuantity;
 
     /**
+     * 期数(yyyy-MM-dd)
+     */
+    @ApiModelProperty(value = "期数(yyyy-MM-dd)")
+    private String periods;
+
+    /**
      * 是否删除:0-否,1-是
      */
     @Column(name = "is_deleted")
@@ -222,6 +228,14 @@ public class ReportInventory implements Serializable {
     @Transient
     @ApiModelProperty(value = "所属类目")
     private String categoryName;
+
+    public String getPeriods() {
+        return periods;
+    }
+
+    public void setPeriods(String periods) {
+        this.periods = periods;
+    }
 
     public String getCategoryName() {
         return categoryName;
