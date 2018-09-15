@@ -43,7 +43,7 @@ public class ReportTest {
         form.setStockType("1");
         form.setWarehouseCode("CK00177");
         form.setSkuName("床上用品尺寸");
-        form.setBarCode("38");
+        //form.setBarCode("38");
         form.setSkuCode("SP0201708140000159");
         Object reportPageList = reportBiz.getReportDetailPageList(form, new Pagenation(), false);
         System.out.println(JSON.toJSONString(reportPageList));
@@ -58,7 +58,7 @@ public class ReportTest {
         form.setStockType("2");
         form.setWarehouseCode("CK00238");
         //form.setSkuName("床上用品尺寸");
-        //form.setBarCode("38");
+        form.setBarCode("38");
         //form.setSkuCode("SP0201708140000159");
         Object reportPageList = reportBiz.getReportDetailPageList(form, new Pagenation(), false);
         System.out.println(JSON.toJSONString(reportPageList));
