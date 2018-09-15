@@ -233,8 +233,13 @@ public class ReportBiz implements IReportBiz {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
         String reportDate = DateUtils.getYM(date) + "";
+        String  reportType =  form.getReportType();
+        String  stockType =  form.getStockType();
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
         AssertUtil.notBlank(date, "查询周期不能为空");
+        AssertUtil.notBlank(reportType, "报表类型不能为空");
+        AssertUtil.notBlank(stockType, "库存类型不能为空");
+
 
         logger.info(String.format("开始下载仓库编码为%s,日期为%s,报表类型为%s,库存类型为%s的报表!",
                 warehouseCode, date, form.getReportType(), form.getStockType()));
@@ -251,7 +256,6 @@ public class ReportBiz implements IReportBiz {
 
         try {
             String sheetName = this.getExcelName(form, warehouseName, reportDate);
-            String  reportType =  form.getReportType();
             HSSFWorkbook hssfWorkbook = null;
             if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), reportType)){
                 hssfWorkbook = this.reportExcel(
