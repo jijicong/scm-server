@@ -421,14 +421,21 @@ public class ReportBiz implements IReportBiz {
             criteria.andEqualTo("sellChannelCode", form.getSellChannelCode());
         }
 
-        List<ReportOutboundDetail> result = new ArrayList<>();
         if (b) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
-            result = pagination.getResult();
-            setOutboundResultDetail(result, form);
+
+            if(CollectionUtils.isEmpty(pagination.getResult())){
+                return new Pagenation<>();
+            }
+
+            setOutboundResultDetail(pagination.getResult(), form);
             return pagination;
         } else {
-            result = reportOutboundDetailService.selectByExample(example);
+            List<ReportOutboundDetail> result = reportOutboundDetailService.selectByExample(example);
+
+            if(CollectionUtils.isEmpty(result)){
+                return new ArrayList<>();
+            }
             setOutboundResultDetail(result, form);
             return result;
         }
@@ -532,14 +539,21 @@ public class ReportBiz implements IReportBiz {
             criteria.andEqualTo("warehouseOrderCode", form.getWarehousePurchaseOrderCode());
         }
 
-        List<ReportEntryDetail> result = new ArrayList<>();
         if (b) {
             Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
-            result = pagination.getResult();
-            setEntryResultDetail(result, form);
+
+            if(CollectionUtils.isEmpty(pagination.getResult())){
+                return new Pagenation<>();
+            }
+
+            setEntryResultDetail(pagination.getResult(), form);
             return pagination;
         } else {
-            result = reportEntryDetailService.selectByExample(example);
+            List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
+
+            if(CollectionUtils.isEmpty(result)){
+                return new ArrayList<>();
+            }
             setEntryResultDetail(result, form);
             return result;
         }
@@ -622,6 +636,11 @@ public class ReportBiz implements IReportBiz {
             Page pages = PageHelper.startPage(page.getPageNo(), page.getPageSize());
             List<ReportInventory> reportInventoryList = reportInventoryService.selectReportInventoryLimit(form, skuCodes);
             page.setTotalCount(pages.getTotal());
+
+            if (CollectionUtils.isEmpty(pages.getResult())) {
+                return new Pagenation<>();
+            }
+
             //统计数据
             List<ReportInventory> statisticsDate = getStatisticsDate(pages.getResult(), form);
             setResultDetail(statisticsDate);
@@ -629,6 +648,11 @@ public class ReportBiz implements IReportBiz {
             return page;
         } else {
             List<ReportInventory> reportInventoryList = reportInventoryService.selectReportInventoryLimit(form, skuCodes);
+
+            if (CollectionUtils.isEmpty(reportInventoryList)) {
+                return new ArrayList<>();
+            }
+
             //统计数据
             List<ReportInventory> statisticsDate = getStatisticsDate(reportInventoryList, form);
             setResultDetail(statisticsDate);
@@ -646,7 +670,7 @@ public class ReportBiz implements IReportBiz {
         criteria.andEqualTo("stockType", form.getStockType());
 
         if (StringUtils.isNotBlank(form.getDate())) {
-            criteria.andCondition("DATE_FORMAT( `periods`, '%Y%m' ) = DATE_FORMAT( '"+ form.getDate() +"' , '%Y%m' )");
+            criteria.andCondition("DATE_FORMAT( `periods`, '%Y%m' ) = DATE_FORMAT( '" + form.getDate() + "' , '%Y%m' )");
         } else {
             criteria.andBetween("periods", form.getStartDate(), form.getEndDate());
         }
