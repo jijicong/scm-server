@@ -22,6 +22,7 @@ import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import tk.mybatis.mapper.entity.Example;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -152,7 +153,10 @@ public class ReportInventoryService extends BaseService<ReportInventory, Long> i
     public List<ReportInventory> selectReportInventoryLimit(ReportInventoryForm form, List<String> skuCodes) {
         ReportInventoryDTO dto = new ReportInventoryDTO();
         BeanUtils.copyProperties(form, dto);
-        List<String> barCodes = Arrays.asList(dto.getBarCode().split(","));
+        List<String> barCodes = new ArrayList<>();
+        if(StringUtils.isNotBlank(dto.getBarCode())){
+            barCodes = Arrays.asList(dto.getBarCode().split(","));
+        }
         return reportInventoryMapper.selectReportInventoryLimit(dto, skuCodes, barCodes);
     }
 
