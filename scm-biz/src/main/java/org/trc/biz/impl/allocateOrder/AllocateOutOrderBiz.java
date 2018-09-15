@@ -901,7 +901,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         jdStockOutDetail.setWarehouseCode(allocateOutOrder.getOutWarehouseCode());
         jdStockOutDetail.setStockType(detail.getInventoryType());
         jdStockOutDetail.setOperationType(StockOperationTypeEnum.ALLALLOCATE_OUT.getCode());
-        jdStockOutDetail.setWarehouseOutboundOrderCode("");
+        jdStockOutDetail.setWarehouseOutboundOrderCode(allocateOutOrder.getWmsAllocateOutOrderCode());
         jdStockOutDetail.setPlatformOrderCode("");
         jdStockOutDetail.setSellChannelCode("");
         jdStockOutDetail.setSellCode("");
