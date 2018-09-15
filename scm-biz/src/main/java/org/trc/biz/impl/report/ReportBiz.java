@@ -249,8 +249,21 @@ public class ReportBiz implements IReportBiz {
 
         try {
             String sheetName = this.getExcelName(form, warehouseName);
-            HSSFWorkbook hssfWorkbook = this.reportExcel(
-                    (List<ReportInventory>) this.getReportPageList(form, null, false), sheetName);
+            String  reportType =  form.getReportType();
+            HSSFWorkbook hssfWorkbook = null;
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), reportType)){
+                hssfWorkbook = this.reportExcel(
+                        (List<ReportInventory>) this.getReportPageList(form, null, false),
+                        sheetName, reportType);
+            }else if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), reportType)){
+                hssfWorkbook = this.reportExcel(
+                        (List<ReportEntryDetail>) this.getReportPageList(form, null, false),
+                        sheetName, reportType);
+            }else{
+                hssfWorkbook = this.reportExcel(
+                        (List<ReportOutboundDetail>) this.getReportPageList(form, null, false),
+                        sheetName, reportType);
+            }
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             hssfWorkbook.write(stream);
             String fileName = sheetName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
@@ -308,7 +321,7 @@ public class ReportBiz implements IReportBiz {
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         List<ReportInventory> reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
         String fileName = String.format("【%s】正品总库存%s", warehouseName, date);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
@@ -317,43 +330,43 @@ public class ReportBiz implements IReportBiz {
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品总库存%s", warehouseName, date);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
         //正品入库明细
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
-        reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
+        List<ReportEntryDetail> reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品入库明细%s", warehouseName, date);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
         //残品入库明细
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
-        reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
+        reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品入库明细%s", warehouseName, date);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
         //正品出库明细
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
-        reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
+        List<ReportOutboundDetail> reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品出库明细%s", warehouseName, date);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
         //残品出库明细
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
-        reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
+        reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品出库明细%s", warehouseName, date);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName));
+        reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
@@ -816,24 +829,22 @@ public class ReportBiz implements IReportBiz {
         return reportInventoryService.selectPageList(date + time);
     }
 
-    private HSSFWorkbook reportExcel(List<ReportInventory> reportInventorys, String fileName) {
-        //校验数据
-        if (reportInventorys == null || reportInventorys.size() < 1) {
-            String msg = "报表数据为空!";
-            logger.error(msg);
-            throw new RuntimeException(msg);
-        }
-
+    private HSSFWorkbook reportExcel(List<?> info, String fileName, String type) {
         //组装信息
         List<CellDefinition> cellDefinitionList = new ArrayList<>();
-        this.createCellDefinition(cellDefinitionList);
-
-        return ExportExcel.generateExcel(reportInventorys, cellDefinitionList, fileName);
+        if(StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())){
+            this.createCellDefinitionForAll(cellDefinitionList);
+        }else if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode())){
+            this.createCellDefinitionForEntry(cellDefinitionList);
+        }else{
+            this.createCellDefinitionForOutbound(cellDefinitionList);
+        }
+        return ExportExcel.generateExcel(info, cellDefinitionList, fileName);
     }
 
-    private void createCellDefinition(List<CellDefinition> cellDefinitionList) {
+    private void createCellDefinitionForAll(List<CellDefinition> cellDefinitionList) {
         CellDefinition warehouseName = new CellDefinition("warehouseName", "仓库名称", CellDefinition.TEXT, null, 15000);
-        CellDefinition stockType = new CellDefinition("stockType", "仓库类型", CellDefinition.TEXT, null, 4000);
+        CellDefinition stockType = new CellDefinition("stockType", "库存类型", CellDefinition.TEXT, null, 4000);
         CellDefinition skuCode = new CellDefinition("skuCode", "SKU编码", CellDefinition.TEXT, null, 10000);
         CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, null, 6000);
         CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 15000);
@@ -875,5 +886,105 @@ public class ReportBiz implements IReportBiz {
         cellDefinitionList.add(entryTotalQuantity);
         cellDefinitionList.add(outboundTotalQuantity);
         cellDefinitionList.add(balanceTotalQuantity);
+    }
+
+    private void createCellDefinitionForEntry(List<CellDefinition> cellDefinitionList) {
+        CellDefinition warehouseName = new CellDefinition("warehouseName", "入库仓库名称", CellDefinition.TEXT, null, 15000);
+        CellDefinition stockType = new CellDefinition("stockType", "库存类型", CellDefinition.TEXT, null, 4000);
+        CellDefinition entryTime = new CellDefinition("entryTime", "入库时间", CellDefinition.TEXT, null, 10000);
+        CellDefinition operationType = new CellDefinition("operationType", "入库类型", CellDefinition.TEXT, null, 6000);
+        CellDefinition orderCode = new CellDefinition("orderCode", "入库单编号", CellDefinition.TEXT, null, 6000);
+        CellDefinition warehouseOrderCode = new CellDefinition("warehouseOrderCode", "仓库反馈入库单编号", CellDefinition.TEXT, null, 6000);
+        CellDefinition supplierCode = new CellDefinition("supplierCode", "供应商编号", CellDefinition.TEXT, null, 6000);
+        CellDefinition supplierName = new CellDefinition("supplierName", "供应商名称", CellDefinition.TEXT, null, 6000);
+        CellDefinition skuCode = new CellDefinition("skuCode", "SKU编码", CellDefinition.TEXT, null, 10000);
+        CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, null, 6000);
+        CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 15000);
+        CellDefinition goodsType = new CellDefinition("goodsType", "商品类别", CellDefinition.TEXT, null, 5000);
+        CellDefinition specInfo = new CellDefinition("specInfo", "规格", CellDefinition.TEXT, null, 13000);
+        CellDefinition entryQuantity = new CellDefinition("entryQuantity", "计划入库数量", CellDefinition.TEXT, null, 6000);
+        CellDefinition price = new CellDefinition("price", "含税采购单价（元）", CellDefinition.TEXT, null, 12000);
+        CellDefinition totalPrice = new CellDefinition("totalPrice", "含税采购总金额（元）", CellDefinition.TEXT, null, 6000);
+        CellDefinition realQuantity = new CellDefinition("realQuantity", "实际入库数量", CellDefinition.TEXT, null, 4000);
+        CellDefinition residualQuantity = new CellDefinition("residualQuantity", "未入库数量", CellDefinition.TEXT, null, 10000);
+        CellDefinition remark = new CellDefinition("remark", "系统备注", CellDefinition.TEXT, null, 8000);
+
+        cellDefinitionList.add(warehouseName);
+        cellDefinitionList.add(stockType);
+        cellDefinitionList.add(entryTime);
+        cellDefinitionList.add(operationType);
+        cellDefinitionList.add(orderCode);
+        cellDefinitionList.add(warehouseOrderCode);
+        cellDefinitionList.add(supplierCode);
+        cellDefinitionList.add(supplierName);
+        cellDefinitionList.add(skuCode);
+        cellDefinitionList.add(barCode);
+        cellDefinitionList.add(skuName);
+        cellDefinitionList.add(goodsType);
+        cellDefinitionList.add(specInfo);
+        cellDefinitionList.add(entryQuantity);
+        cellDefinitionList.add(price);
+        cellDefinitionList.add(totalPrice);
+        cellDefinitionList.add(realQuantity);
+        cellDefinitionList.add(residualQuantity);
+        cellDefinitionList.add(remark);
+    }
+
+    private void createCellDefinitionForOutbound(List<CellDefinition> cellDefinitionList) {
+        CellDefinition warehouseName = new CellDefinition("warehouseName", "出库仓库名称", CellDefinition.TEXT, null, 15000);
+        CellDefinition stockType = new CellDefinition("stockType", "库存类型", CellDefinition.TEXT, null, 4000);
+        CellDefinition outboundTime = new CellDefinition("outboundTime", "出库时间", CellDefinition.TEXT, null, 4000);
+        CellDefinition operationType = new CellDefinition("operationType", "出库类型", CellDefinition.TEXT, null, 4000);
+        CellDefinition outboundOrderCode = new CellDefinition("outboundOrderCode", "出库单编号", CellDefinition.TEXT, null, 4000);
+        CellDefinition warehouseOutboundOrderCode = new CellDefinition("warehouseOutboundOrderCode", "仓库反馈出库单号", CellDefinition.TEXT, null, 4000);
+        CellDefinition platformOrderCode = new CellDefinition("platformOrderCode", "平台订单号", CellDefinition.TEXT, null, 4000);
+        CellDefinition sellChannelCode = new CellDefinition("sellChannelCode", "销售渠道订单号", CellDefinition.TEXT, null, 4000);
+        CellDefinition goodsOrderCode = new CellDefinition("goodsOrderCode", "商品订单号", CellDefinition.TEXT, null, 4000);
+        CellDefinition sellName = new CellDefinition("sellName", "销售渠道", CellDefinition.TEXT, null, 4000);
+        CellDefinition skuCode = new CellDefinition("skuCode", "SKU编码", CellDefinition.TEXT, null, 10000);
+        CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, null, 6000);
+        CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, null, 15000);
+        CellDefinition goodsType = new CellDefinition("goodsType", "商品类别", CellDefinition.TEXT, null, 5000);
+        CellDefinition specInfo = new CellDefinition("specInfo", "规格", CellDefinition.TEXT, null, 13000);
+        CellDefinition outboundQuantity = new CellDefinition("outboundQuantity", "计划出库数量", CellDefinition.TEXT, null, 6000);
+        CellDefinition salesPrice = new CellDefinition("salesPrice", "销售单价（元）", CellDefinition.TEXT, null, 12000);
+        CellDefinition salesTotalAmount = new CellDefinition("salesTotalAmount", "销售总价（元）", CellDefinition.TEXT, null, 6000);
+        CellDefinition payment = new CellDefinition("payment", "销售出库实付总金额（元）", CellDefinition.TEXT, null, 4000);
+        CellDefinition realQuantity = new CellDefinition("realQuantity", "实际出库数量", CellDefinition.TEXT, null, 10000);
+        CellDefinition residualQuantity = new CellDefinition("residualQuantity", "未出库数量", CellDefinition.TEXT, null, 8000);
+        CellDefinition receiver = new CellDefinition("receiver", "收货人", CellDefinition.TEXT, null, 12000);
+        CellDefinition mobile = new CellDefinition("mobile", "收货人手机", CellDefinition.TEXT, null, 4000);
+        CellDefinition address = new CellDefinition("address", "收货地址", CellDefinition.TEXT, null, 4000);
+        CellDefinition express = new CellDefinition("express", "快递公司", CellDefinition.TEXT, null, 4000);
+        CellDefinition waybillNumber = new CellDefinition("waybillNumber", "快递单号", CellDefinition.TEXT, null, 4000);
+        CellDefinition outboundSupplierAmount = new CellDefinition("outboundSupplierAmount", "退供应商出库金额（元）", CellDefinition.TEXT, null, 4000);
+
+        cellDefinitionList.add(warehouseName);
+        cellDefinitionList.add(stockType);
+        cellDefinitionList.add(outboundTime);
+        cellDefinitionList.add(operationType);
+        cellDefinitionList.add(outboundOrderCode);
+        cellDefinitionList.add(warehouseOutboundOrderCode);
+        cellDefinitionList.add(platformOrderCode);
+        cellDefinitionList.add(sellChannelCode);
+        cellDefinitionList.add(goodsOrderCode);
+        cellDefinitionList.add(sellName);
+        cellDefinitionList.add(skuCode);
+        cellDefinitionList.add(barCode);
+        cellDefinitionList.add(skuName);
+        cellDefinitionList.add(goodsType);
+        cellDefinitionList.add(specInfo);
+        cellDefinitionList.add(outboundQuantity);
+        cellDefinitionList.add(salesPrice);
+        cellDefinitionList.add(salesTotalAmount);
+        cellDefinitionList.add(payment);
+        cellDefinitionList.add(realQuantity);
+        cellDefinitionList.add(residualQuantity);
+        cellDefinitionList.add(receiver);
+        cellDefinitionList.add(mobile);
+        cellDefinitionList.add(address);
+        cellDefinitionList.add(express);
+        cellDefinitionList.add(waybillNumber);
+        cellDefinitionList.add(outboundSupplierAmount);
     }
 }

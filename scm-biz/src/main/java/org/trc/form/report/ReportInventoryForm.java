@@ -16,7 +16,6 @@ public class ReportInventoryForm implements Serializable {
 
     private static final long serialVersionUID = 4376634840756965104L;
 
-    @NotBlank
     @ApiParam(value = "报表类型1.总库存 2.入库明细 3.出库明细", required = true)
     @QueryParam("reportType")
     private String reportType;
@@ -25,7 +24,6 @@ public class ReportInventoryForm implements Serializable {
     @QueryParam("date")
     private String date;
 
-    @NotBlank
     @ApiParam(value = "库存类型1.正品 2.残品", required = true)
     @QueryParam("stockType")
     private String stockType;
