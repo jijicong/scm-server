@@ -771,7 +771,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("outboundOrderCode",outboundOrder.getOutboundOrderCode());
-        criteria.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode()); //  取消的商品过滤
+        criteria.andIsNull("cancelFlg"); //  取消的商品过滤
         List<OutboundDetail> outboundDetails = outboundDetailService.selectByExample(example);
         
         AssertUtil.isTrue(outboundDetails.size() != 0, "发货通知单详情记录不能为空");
@@ -1047,7 +1047,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("outboundOrderCode",outboundOrderCode);
-        criteria.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode());
+        criteria.andIsNull("cancelFlg");
         OutboundDetail outboundDetail = new OutboundDetail();
         if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == isStoreOrder.intValue()){
             outboundDetail.setStatus(state);
@@ -1247,7 +1247,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     Example example = new Example(OutboundDetail.class);
                     Example.Criteria criteria = example.createCriteria();
                     criteria.andEqualTo("outboundOrderCode", outboundOrder.getOutboundOrderCode());
-                    criteria.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode()); //  取消的商品过滤
+                    criteria.andIsNull("cancelFlg");
                     outboundDetailService.updateByExampleSelective(outboundDetail, example);
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
@@ -1536,6 +1536,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){
                     this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
                     this.updateOrderCancelInfo(outboundOrder, outboundOrder.getRemark(),false);
+                    this.updateDetailCancelFlgStatus(outboundOrder.getOutboundOrderCode()); //改发货单商品详情的cancelFlg状态 取消中→取消成功
 
                     //更新库存
                     skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
@@ -1558,11 +1559,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     Example example = new Example(OutboundDetail.class);
                     Example.Criteria criteria = example.createCriteria();
                     criteria.andEqualTo("outboundOrderCode", outboundOrder.getOutboundOrderCode());
-                    criteria.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode()); //  取消的商品过滤
+                    criteria.andIsNull("cancelFlg");
                     outboundDetailService.updateByExampleSelective(outboundDetail, example);
 
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+                    
+                    this.updateDetailCancelFlgStatusInit(outboundOrder.getOutboundOrderCode()); //改发货单商品详情的cancelFlg状态 取消中→初始状态
 
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"admin",
                             "取消发货", "取消原因:"+outboundOrder.getRemark()+"<br>取消结果:取消失败,"+response.getMessage(),
@@ -1583,8 +1586,42 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Example exampleOrder = new Example(OutboundDetail.class);
         Example.Criteria criteriaOrder = exampleOrder.createCriteria();
         criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
-        criteriaOrder.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode()); //  取消的商品过滤
+        criteriaOrder.andIsNull("cancelFlg");
         outboundDetailService.updateByExampleSelective(outboundDetail, exampleOrder);
+    }
+    
+    /**
+     * 改发货单商品详情的cancelFlg状态 取消中→初始状态
+     * @param outboundOrderCode
+     */
+    private void updateDetailCancelFlgStatusInit(String outboundOrderCode) {
+    	Example exampleOrder = new Example(OutboundDetail.class);
+    	Example.Criteria criteriaOrder = exampleOrder.createCriteria();
+    	criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
+    	criteriaOrder.andEqualTo("cancelFlg", ZeroToNineEnum.ZERO.getCode());// 取消中
+    	List<OutboundDetail> detailList = outboundDetailService.selectByExample(exampleOrder);
+    	if (CollectionUtils.isNotEmpty(detailList)) {
+    		for (OutboundDetail detail : detailList) {
+    			detail.setUpdateTime(Calendar.getInstance().getTime());
+    			detail.setCancelFlg(null); // 取消成功
+    			outboundDetailService.updateByPrimaryKey(detail);
+    		}
+    	}
+    }
+    
+    /**
+     * 修改发货单商品详情的cancelFlg状态 取消中→取消成功
+     * @param outboundOrderCode
+     */
+    private void updateDetailCancelFlgStatus(String outboundOrderCode){
+    	OutboundDetail outboundDetail = new OutboundDetail();
+    	outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+    	outboundDetail.setCancelFlg(ZeroToNineEnum.ONE.getCode()); // 取消成功
+    	Example exampleOrder = new Example(OutboundDetail.class);
+    	Example.Criteria criteriaOrder = exampleOrder.createCriteria();
+    	criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
+    	criteriaOrder.andEqualTo("cancelFlg", ZeroToNineEnum.ZERO.getCode());// 取消中
+    	outboundDetailService.updateByExampleSelective(outboundDetail, exampleOrder);
     }
 
     //修改取消发货单信息

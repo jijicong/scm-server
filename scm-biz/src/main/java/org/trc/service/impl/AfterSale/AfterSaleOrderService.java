@@ -200,6 +200,10 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 				continue;
 			}
 			OutboundOrder order = getOutboundOrder(scmShopOrderCode, skuCode);
+			
+			if (null == order) {
+				continue;
+			}
 	        WarehouseTypeEnum warehouseType = warehouseExtService.getWarehouseType(order.getWarehouseCode());
 	        
 	        if (WarehouseTypeEnum.Zy == warehouseType) {
@@ -223,13 +227,13 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
         	        TransactionStatus status = transactionManager.getTransaction(def);
 	        		try {
 	        			
-	        			updateDetail(skuCode, order.getOutboundOrderCode());
+	        			//updateDetail(skuCode, order.getOutboundOrderCode());
 		                
 		                Example example = new Example(OutboundDetail.class);
 		                Example.Criteria criteria = example.createCriteria();
 		                criteria.andEqualTo("outboundOrderCode", order.getOutboundOrderCode());
 		                //criteria.andNotEqualTo("skuCode", skuCode);// 取消的商品过滤
-		                criteria.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode());// 取消的商品过滤
+		                criteria.andIsNull("cancelFlg");
 		                List<OutboundDetail> outboundDetails = detailService.selectByExample(example);
 			        	/**
 			        	 * 如果发货单所有商品都已经取消，取消后就不需要重新发货
@@ -252,6 +256,9 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 		                
 	                    List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>) result.getResult();
 	                    
+	                    String processResult = null;
+	                    String returnMsg = null;
+	                    
 	                    if (StringUtils.equals(ResponseAck.SUCCESS_CODE, responses.get(0).getCode())) {
 	                    	
 	                        updateOutboundDetailState(order, OutboundDetailStatusEnum.WAITING.getCode(), responses.get(0).getWmsOrderCode(), skuCode);
@@ -260,13 +267,13 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 			                //更新订单信息
 			                orderService.updateItemOrderSupplierOrderStatus(order.getOutboundOrderCode(), order.getWarehouseOrderCode());
 			                
-	                        retList.add(generateVo(item, CANCEL_SUCCESS, null));
+			                processResult = CANCEL_SUCCESS;
 	                        
 	                    } else {
+	                    	
 	        	        	/**
 	        	        	 * 仓库接受失败
 	        	        	 */
-	                    	
 	                    	scmOrderBiz.outboundOrderSubmitResultNoticeChannel(order.getShopOrderCode());
 	                    	updateOutboundDetailState(order, OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(), null, skuCode);
 	                        logInfoService.recordLog(order, order.getId().toString(), 
@@ -274,11 +281,14 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 			                //更新订单信息
 			                orderService.updateItemOrderSupplierOrderStatus(order.getOutboundOrderCode(), order.getWarehouseOrderCode());
 			                
-	                        retList.add(generateVo(item, CANCEL_FAILED, responses.get(0).getMessage()));
+			                processResult = CANCEL_SUCCESS;
+			                returnMsg = responses.get(0).getMessage();
 	                        
 	                    }
 	                    
 	                    transactionManager.commit(status);
+	                    
+	                    retList.add(generateVo(item, processResult, returnMsg));
 
 	        		} catch (Exception e) {
 	        			
@@ -292,11 +302,32 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
 
 	        	} else if (StringUtils.equals(order.getStatus(), OutboundOrderStatusEnum.WAITING.getCode())) {
 	        		/**
-	        		 * 1.发货单在取消失败时，会重置为等待发货状态;
-	        		 * 2.这里因为发货单在执行定时任务时设置取消失败的原因，
-	        		 * 	  故此处暂时没办法返回取消失败的原因 ;
+	        		 * 1.发货单在取消失败时，会重置为等待发货状态 - 商品的cancelFlg 为 null
+	        		 * 2.后台已经手动触发重新发货状态 - 商品的cancelFlg 为 1
 	        		 */
-	        		retList.add(generateVo(item, CANCEL_FAILED, null));
+	        		try {
+	            		OutboundDetail detailRecord = new OutboundDetail();
+		        		detailRecord.setOutboundOrderCode(order.getOutboundOrderCode());
+		        		detailRecord.setSkuCode(skuCode);
+		                OutboundDetail detail = detailService.selectOne(detailRecord);
+		                
+		        		if (null == detail.getCancelFlg()) {
+		        			retList.add(generateVo(item, CANCEL_FAILED, null));
+		        		} else if (ZeroToNineEnum.ONE.getCode().equals(detail.getCancelFlg())) {
+		        			retList.add(generateVo(item, CANCEL_SUCCESS, null));
+		        		}
+	        		} catch (Exception e) {
+	        			retList.add(generateVo(item, CANCEL_FAILED, e.getMessage()));
+	        			logger.error("scmShopOrderCode:{}, outboundOrderCode:{}, skuCode: {}, 等待仓库发货状态时售后取消发货异常", 
+	        					scmShopOrderCode, order.getOutboundOrderCode(), skuCode, e);
+	        		}
+	
+	        		
+	        	} else {
+	        		/**
+	        		 * 其他情况都返回成功 
+	        		 **/
+	        		retList.add(generateVo(item, CANCEL_SUCCESS, null));
 	        	}
 	        	
 	        }
@@ -338,7 +369,7 @@ public class AfterSaleOrderService extends BaseService<AfterSaleOrder, String> i
         Example.Criteria cra = example.createCriteria();
         cra.andEqualTo("outboundOrderCode", order.getOutboundOrderCode());
         //cra.andNotEqualTo("skuCode", skuCode);// 取消的商品过滤
-        cra.andNotEqualTo("cancelFlg", ZeroToNineEnum.ONE.getCode());// 取消的商品过滤
+        cra.andIsNull("cancelFlg");
         OutboundDetail detail = new OutboundDetail();
         detail.setStatus(state);
 
