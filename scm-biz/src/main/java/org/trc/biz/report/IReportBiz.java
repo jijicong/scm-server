@@ -23,10 +23,10 @@ public interface IReportBiz {
      *
      * @param form
      * @param page
-     * @param b    是否分页
+     * @param flag    是否分页
      * @return
      */
-    Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean b);
+    Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean flag);
 
     /**
      * 下载具体仓库全部报表
@@ -47,10 +47,10 @@ public interface IReportBiz {
      *
      * @param form
      * @param page
-     * @param b    是否分页
+     * @param flag    是否分页
      * @return
      */
-    Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean b);
+    Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean flag);
 
     /**
      * 【仓库信息管理】中“SKU数量”大于0且“货主仓库状态”为“通知成功”的所有仓库
