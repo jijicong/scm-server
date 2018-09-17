@@ -26,6 +26,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
 import org.trc.form.AfterSaleOrderStatusResponse;
 import org.trc.form.afterSale.AfterSaleWaybillForm;
+import org.trc.form.afterSale.TaiRanAfterSaleOrderDetail;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
@@ -45,7 +46,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -358,25 +361,47 @@ public class TaiRanResource {
     /**
      * 创建售后单接口
      */
-    @POST
+    //@POST
+    @GET
     @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
     @Produces("application/json;charset=utf-8")
     public ResponseAck afterSaleCreate(String afterSaleOrder) throws Exception{
-        AssertUtil.notBlank(afterSaleOrder, "请求参数不能为空");
-        TairanAfterSaleOrderDO afterSaleOrderDO=null;
-        try{
-             afterSaleOrderDO=JSONObject.parseObject(afterSaleOrder,TairanAfterSaleOrderDO.class);
-        }catch(Exception e){
-            logger.error("参数转json格式错误", e);
-            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", afterSaleOrder), "");
-        }
-    	return trcBiz.afterSaleCreate(afterSaleOrderDO);
+//        AssertUtil.notBlank(afterSaleOrder, "请求参数不能为空");
+//        TairanAfterSaleOrderDO afterSaleOrderDO=null;
+//        try{
+//             afterSaleOrderDO=JSONObject.parseObject(afterSaleOrder,TairanAfterSaleOrderDO.class);
+//        }catch(Exception e){
+//            logger.error("参数转json格式错误", e);
+//            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", afterSaleOrder), "");
+//        }
+//    	return trcBiz.afterSaleCreate(afterSaleOrderDO);
+
+        //测试数据
+        TairanAfterSaleOrderDO as=new TairanAfterSaleOrderDO();
+        as.setRequestNo(new Date().getTime()+"");
+        as.setShopOrderCode("7774561469");
+        as.setReturnScene(1);
+        as.setAfterSaleType(1);
+        as.setReturnWarehouseCode("CK00273");
+
+        List<TaiRanAfterSaleOrderDetail> list=new ArrayList<>();
+        TaiRanAfterSaleOrderDetail detail=new TaiRanAfterSaleOrderDetail();
+        detail.setSkuCode("SP0201808070000833");
+        detail.setRefundAmont(new BigDecimal(1));
+        list.add(detail);
+
+        as.setAfterSaleOrderDetailList(list);
+
+        trcBiz.afterSaleCreate(as);
+        return new ResponseAck("200","24","234");
+
     }
     
     /**
      * 取消售后单接口
      */
-    @POST
+    //@PUT
+    @GET
     @Path(SupplyConstants.TaiRan.CANCEL_AFTER_SALE_ORDER)
     @Produces("application/json;charset=utf-8")
     public ResponseAck<Map<String, Object>> cancelAfterSaleOrder(@QueryParam("afterSaleCode") String afterSaleCode) {
