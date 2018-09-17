@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.report.IReportBiz;
 import org.trc.domain.report.ReportInventory;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.report.ReportInventoryForm;
@@ -31,6 +32,17 @@ public class ReportResource {
 
     @Autowired
     private IReportBiz reportBiz;
+
+    /**
+     * 仓库列表
+     */
+    @GET
+    @Path("/warehouseList")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "库存报表首页列表", response = WarehouseInfo.class)
+    public Response getWarehouseList(){
+        return ResultUtil.createSuccessResult("查询所有仓库", reportBiz.getWarehouseList());
+    }
 
     /**
      * 库存报表首页列表
