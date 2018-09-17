@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "report_entry_detail")
-public class ReportEntryDetail implements Serializable {
+public class ReportEntryDetail extends ReportBase implements Serializable {
 
     private static final long serialVersionUID = -1391712478270728374L;
 
@@ -24,13 +24,6 @@ public class ReportEntryDetail implements Serializable {
     @ApiModelProperty(value = "供应商code")
     @Column(name = "warehouse_code")
     private String warehouseCode;
-
-    /**
-     * 库存类型1.正品2.残品
-     */
-    @Column(name = "stock_type")
-    @ApiModelProperty(value = "库存类型1.正品2.残品")
-    private String stockType;
 
     /**
      * 入库时间
@@ -85,13 +78,6 @@ public class ReportEntryDetail implements Serializable {
     @Column(name = "bar_code")
     @ApiModelProperty(value = "条形码")
     private String barCode;
-
-    /**
-     * 商品类别1.小泰良品2.非小泰良品
-     */
-    @Column(name = "goods_type")
-    @ApiModelProperty(value = "商品类别1.小泰良品2.非小泰良品")
-    private String goodsType;
 
     /**
      * 规格
@@ -234,24 +220,6 @@ public class ReportEntryDetail implements Serializable {
     }
 
     /**
-     * 获取库存类型1.正品2.残品
-     *
-     * @return stock_type - 库存类型1.正品2.残品
-     */
-    public String getStockType() {
-        return stockType;
-    }
-
-    /**
-     * 设置库存类型1.正品2.残品
-     *
-     * @param stockType 库存类型1.正品2.残品
-     */
-    public void setStockType(String stockType) {
-        this.stockType = stockType;
-    }
-
-    /**
      * 获取入库时间
      *
      * @return entry_time - 入库时间
@@ -389,24 +357,6 @@ public class ReportEntryDetail implements Serializable {
      */
     public void setBarCode(String barCode) {
         this.barCode = barCode;
-    }
-
-    /**
-     * 获取商品类别1.小泰良品2.非小泰良品
-     *
-     * @return goods_type - 商品类别1.小泰良品2.非小泰良品
-     */
-    public String getGoodsType() {
-        return goodsType;
-    }
-
-    /**
-     * 设置商品类别1.小泰良品2.非小泰良品
-     *
-     * @param goodsType 商品类别1.小泰良品2.非小泰良品
-     */
-    public void setGoodsType(String goodsType) {
-        this.goodsType = goodsType;
     }
 
     /**

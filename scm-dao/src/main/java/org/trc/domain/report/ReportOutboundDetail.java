@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "report_outbound_detail")
-public class ReportOutboundDetail implements Serializable {
+public class ReportOutboundDetail extends ReportBase implements Serializable {
 
     private static final long serialVersionUID = 6545215501803784916L;
 
@@ -24,13 +24,6 @@ public class ReportOutboundDetail implements Serializable {
     @Column(name = "warehouse_code")
     @ApiModelProperty(value = "仓库code")
     private String warehouseCode;
-
-    /**
-     * 库存类型1.正品2.残品
-     */
-    @Column(name = "stock_type")
-    @ApiModelProperty(value = "库存类型1.正品2.残品")
-    private String stockType;
 
     /**
      * 出库时间
@@ -109,13 +102,6 @@ public class ReportOutboundDetail implements Serializable {
     @Column(name = "bar_code")
     @ApiModelProperty(value = "条形码")
     private String barCode;
-
-    /**
-     * 商品类别1.小泰良品2.非小泰良品
-     */
-    @Column(name = "goods_type")
-    @ApiModelProperty(value = "商品类别1.小泰良品2.非小泰良品")
-    private String goodsType;
 
     /**
      * 规格
@@ -292,24 +278,6 @@ public class ReportOutboundDetail implements Serializable {
      */
     public void setWarehouseCode(String warehouseCode) {
         this.warehouseCode = warehouseCode;
-    }
-
-    /**
-     * 获取库存类型1.正品2.残品
-     *
-     * @return stock_type - 库存类型1.正品2.残品
-     */
-    public String getStockType() {
-        return stockType;
-    }
-
-    /**
-     * 设置库存类型1.正品2.残品
-     *
-     * @param stockType 库存类型1.正品2.残品
-     */
-    public void setStockType(String stockType) {
-        this.stockType = stockType;
     }
 
     /**
@@ -490,24 +458,6 @@ public class ReportOutboundDetail implements Serializable {
      */
     public void setBarCode(String barCode) {
         this.barCode = barCode;
-    }
-
-    /**
-     * 获取商品类别1.小泰良品2.非小泰良品
-     *
-     * @return goods_type - 商品类别1.小泰良品2.非小泰良品
-     */
-    public String getGoodsType() {
-        return goodsType;
-    }
-
-    /**
-     * 设置商品类别1.小泰良品2.非小泰良品
-     *
-     * @param goodsType 商品类别1.小泰良品2.非小泰良品
-     */
-    public void setGoodsType(String goodsType) {
-        this.goodsType = goodsType;
     }
 
     /**
