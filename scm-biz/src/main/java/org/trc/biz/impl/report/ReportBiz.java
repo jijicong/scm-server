@@ -2,7 +2,6 @@ package org.trc.biz.impl.report;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.util.IOUtils;
@@ -45,10 +44,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -191,12 +187,11 @@ public class ReportBiz implements IReportBiz {
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
             //获取信息
             List<ReportExcelDetail> reportExcelDetails = this.getReportExcelDetail(form, warehouseName, reportDate);
-            String fileName = "【" + warehouseName + "】" + "库存报表" + reportDate + SupplyConstants.Symbol.FILE_NAME_SPLIT + ZIP;
-            zipOutputStream.putNextEntry(new ZipEntry(fileName));
-            dataOutputStream = new DataOutputStream(zipOutputStream);
             //循环将文件写入压缩流
             for (ReportExcelDetail reportExcelDetail : reportExcelDetails) {
-                byte[] bytes = reportExcelDetail.getSheet().getBytes();
+                zipOutputStream.putNextEntry(new ZipEntry(reportExcelDetail.getFileName()+ SupplyConstants.Symbol.FILE_NAME_SPLIT+XLS));
+                dataOutputStream = new DataOutputStream(zipOutputStream);
+                byte[] bytes = reportExcelDetail.getStream().toByteArray();
                 InputStream inputStream = new ByteArrayInputStream(bytes);
                 IOUtils.copy(inputStream, dataOutputStream);
             }
@@ -314,18 +309,20 @@ public class ReportBiz implements IReportBiz {
      * @param warehouseName
      * @return
      */
-    private List<ReportExcelDetail> getReportExcelDetail(ReportInventoryForm form, String warehouseName, String reportDate) {
+    private List<ReportExcelDetail> getReportExcelDetail(ReportInventoryForm form, String warehouseName, String reportDate)throws Exception {
         List<ReportExcelDetail> reportExcelDetails = new ArrayList<>();
         String date = form.getDate();
-
-        ReportExcelDetail reportExcelDetail = new ReportExcelDetail();
 
         //正品总库存
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         List<ReportInventory> reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
         String fileName = String.format("【%s】正品总库存%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
+        ReportExcelDetail reportExcelDetail = new ReportExcelDetail();
+        HSSFWorkbook hssfWorkbook = this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode());
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        reportExcelDetail.setStream(stream);
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
@@ -334,45 +331,65 @@ public class ReportBiz implements IReportBiz {
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品总库存%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail2 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode());
+        stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        reportExcelDetail2.setStream(stream);
+        reportExcelDetail2.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail2);
 
         //正品入库明细
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
         List<ReportEntryDetail> reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品入库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail3 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.ONE.getCode());
+        stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        reportExcelDetail3.setStream(stream);
+        reportExcelDetail3.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail3);
 
         //残品入库明细
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
         reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品入库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail4 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.ONE.getCode());
+        stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        reportExcelDetail4.setStream(stream);
+        reportExcelDetail4.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail4);
 
         //正品出库明细
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
         List<ReportOutboundDetail> reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品出库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail5 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.ONE.getCode());
+        stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        reportExcelDetail5.setStream(stream);
+        reportExcelDetail5.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail5);
 
         //残品出库明细
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
         reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品出库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail6 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.ONE.getCode());
+        stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        reportExcelDetail6.setStream(stream);
+        reportExcelDetail6.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail6);
 
         return reportExcelDetails;
     }
