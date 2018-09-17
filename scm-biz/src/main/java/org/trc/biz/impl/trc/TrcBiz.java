@@ -2936,6 +2936,10 @@ public class TrcBiz implements ITrcBiz {
 				
 				data.put("afterSaleOrderState", Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
 			}
+            //日志
+            logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
+                    "admin", scmCancelAfterSaleOrderResponse.getMessage(), "", null);
+
 		}
 		return data;
 	}
