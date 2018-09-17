@@ -424,7 +424,7 @@ public class ReportBiz implements IReportBiz {
     }
 
     private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
-        Example example = new Example(ReportEntryDetail.class);
+        Example example = new Example(ReportOutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
 
         //设置查询条件
