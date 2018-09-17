@@ -2447,7 +2447,13 @@ public class TrcBiz implements ITrcBiz {
 		}else {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
 		}
-		
+
+        afterSaleOrderService.insert(afterSaleOrder);
+        //日志
+        logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
+                "admin", "创建", "", null);
+
+
 		resultmap.put("res", flg);
 		resultmap.put("afterSaleCode", afterSaleCode);
 		return resultmap;
@@ -2524,7 +2530,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		//日志
 		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 
-				null, "创建", "", null);
+				"admin", "创建", "", null);
 		
 		return afterSaleCode;
 	}
@@ -2550,7 +2556,7 @@ public class TrcBiz implements ITrcBiz {
 		returnOrderCreateRequest.setReceiverNumber(warehouseInfo.getWarehouseContactNumber());
 		returnOrderCreateRequest.setReceiverProvince(warehouseInfo.getProvince());
 		returnOrderCreateRequest.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-//		returnOrderCreateRequest.setOperator(aclUserAccreditInfo.getName());
+		returnOrderCreateRequest.setOperator("system");
 //		returnOrderCreateRequest.setRemark(afterSaleOrderAddDO.getMemo());
 		returnOrderCreateRequest.setChannelCode(shopOrder.getChannelCode());
 		returnOrderCreateRequest.setSellCode(shopOrder.getSellCode());
@@ -2752,7 +2758,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleWarehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
 		afterSaleWarehouseNotice.setReceiverCity(warehouseInfo.getCity());
 		afterSaleWarehouseNotice.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-		//afterSaleWarehouseNotice.setOperator(aclUserAccreditInfo.getName());
+		afterSaleWarehouseNotice.setOperator("system");
 		afterSaleWarehouseNotice.setRemark(afterSaleOrderDO.getMemo());
 		//afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleWarehouseNotice.setCreateTime(new Date());
