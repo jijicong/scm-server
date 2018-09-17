@@ -59,5 +59,6 @@
             </if>
         GROUP BY
             warehouse_code, sku_code
+        ORDER BY sku_code ASC
     </select>
 </mapper>

@@ -448,6 +448,8 @@ public class ReportBiz implements IReportBiz {
             criteria.andEqualTo("sellChannelCode", form.getSellChannelCode());
         }
 
+        example.setOrderByClause("outbound_time, outbound_order_code DESC");
+
         if (b) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
 
@@ -565,6 +567,8 @@ public class ReportBiz implements IReportBiz {
         if (StringUtils.isNotBlank(form.getWarehousePurchaseOrderCode())) {
             criteria.andEqualTo("warehouseOrderCode", form.getWarehousePurchaseOrderCode());
         }
+
+        example.setOrderByClause("entry_time, order_code DESC");
 
         if (b) {
             Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
