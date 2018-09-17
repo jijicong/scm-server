@@ -30,30 +30,24 @@ import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.forTrc.PropertyValueForTrc;
 import org.trc.domain.goods.*;
-import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.order.OrderItem;
-import org.trc.domain.order.OutboundDetail;
-import org.trc.domain.order.OutboundOrder;
-import org.trc.domain.order.PlatformOrder;
-import org.trc.domain.order.ShopOrder;
-import org.trc.domain.order.WarehouseOrder;
+import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.enums.*;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleOrderStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.AfterSaleWarehouseNoticeStatusEnum;
 import org.trc.enums.AfterSaleOrderEnum.launchTypeEnum;
 import org.trc.enums.AfterSaleOrderEnum.returnSceneEnum;
+import org.trc.enums.*;
 import org.trc.exception.AfterSaleException;
+import org.trc.exception.AfterSaleWarehousesNoticeException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
-import org.trc.form.afterSale.AfterSaleOrderAddDO;
 import org.trc.form.afterSale.AfterSaleWaybillForm;
 import org.trc.form.afterSale.TaiRanAfterSaleOrderDetail;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
@@ -70,7 +64,6 @@ import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderRequest;
 import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
-import org.trc.form.warehouse.entryReturnOrder.ScmEntryReturnOrderCreateResponse;
 import org.trc.form.warehouse.entryReturnOrder.ScmSubmitAfterSaleOrderLogisticsRequest;
 import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.model.BrandToTrcDO;
@@ -91,7 +84,6 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.*;
-import org.trc.service.impl.AfterSale.AfterSaleOrderService;
 import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.system.ChannelService;
 import org.trc.service.order.IOrderItemService;
@@ -2524,7 +2516,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrderService.insert(afterSaleOrder);
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
 		//通知wms，新增退货入库单
-		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo);
+		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
 		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
 		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			AssertUtil.notNull(null, response.getDatabuffer());
@@ -2539,7 +2531,7 @@ public class TrcBiz implements ITrcBiz {
 	
 	private ScmReturnOrderCreateRequest getReturnInOrder(String afterSaleCode, String warehouseNoticeCode,
 			ShopOrder shopOrder, TairanAfterSaleOrderDO afterSaleOrderDO, PlatformOrder platformOrder,
-			WarehouseInfo warehouseInfo) {
+			WarehouseInfo warehouseInfo,int returnScene) {
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=new ScmReturnOrderCreateRequest();
 		returnOrderCreateRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
 		returnOrderCreateRequest.setAfterSaleCode(afterSaleCode);
@@ -2567,7 +2559,7 @@ public class TrcBiz implements ITrcBiz {
 		returnOrderCreateRequest.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
 		returnOrderCreateRequest.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
 		returnOrderCreateRequest.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
-		returnOrderCreateRequest.setReturnScene(returnSceneEnum.STATUS_0.getCode());
+		returnOrderCreateRequest.setReturnScene(returnScene);
 		
 		List<ScmReturnInOrderDetail> list=new ArrayList<>();
 		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:afterSaleOrderDO.getAfterSaleOrderDetailList()) {
@@ -2818,6 +2810,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
 		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
 		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_0.getCode());
+		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());
 		//实体店退货
@@ -2937,7 +2930,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm)  {
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
 	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
@@ -2957,19 +2950,38 @@ public class TrcBiz implements ITrcBiz {
         afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
 
         int count =  afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
+
         if(count == 0){
             String msg = CommonUtil.joinStr("修改售后单信息",JSON.toJSONString(afterSaleOrder),"数据库操作失败").toString();
             logger.error(msg);
             throw new AfterSaleException(ExceptionEnum.AFTER_SALE_ORDER_UPDATE_EXCEPTION, msg);
         }
+        //修改退货入库单
+        AfterSaleWarehouseNotice selectWarehouseNotice=new AfterSaleWarehouseNotice();
+        selectWarehouseNotice.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+        AfterSaleWarehouseNotice afterSaleWarehouseNotice=afterSaleWarehouseNoticeService.selectOne(selectWarehouseNotice);
+        AssertUtil.notNull(afterSaleWarehouseNotice,"根据售后单号"+afterSaleOrder.getAfterSaleCode()+"查询退货入库单为空!");
+        afterSaleWarehouseNotice.setWaybillNumber(afterSaleOrder.getWaybillNumber());
+        afterSaleWarehouseNotice.setLogisticsCorporationCode(afterSaleWaybillForm.getLogisticsCorporationCode());
+        afterSaleWarehouseNotice.setLogisticsCorporation(afterSaleWaybillForm.getLogisticsCorporation());
+        int count2 =  afterSaleWarehouseNoticeService.updateByPrimaryKeySelective(afterSaleWarehouseNotice);
 
+        if(count2 == 0){
+            String msg = CommonUtil.joinStr("修改退货入库单信息",JSON.toJSONString(afterSaleWarehouseNotice),"数据库操作失败").toString();
+            logger.error(msg);
+            throw new AfterSaleWarehousesNoticeException(ExceptionEnum.SYSTEM_EXCEPTION, msg);
+        }
         //通知自营仓
         ScmSubmitAfterSaleOrderLogisticsRequest logisticsRequest  = new ScmSubmitAfterSaleOrderLogisticsRequest();
         logisticsRequest.setAfterSaleCode(afterSaleOrder.getAfterSaleCode());
+        logisticsRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
         logisticsRequest.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode());
         logisticsRequest.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
         logisticsRequest.setWaybillNumber(afterSaleOrder.getWaybillNumber());
-        warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
+        AppResult appResult = warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
+        if (!StringUtils.equals(appResult.getAppcode(),ResponseAck.SUCCESS_CODE)){
+           throw new AfterSaleException(ExceptionEnum.SYSTEM_EXCEPTION,appResult.getDatabuffer());
+        }
     }
 
 

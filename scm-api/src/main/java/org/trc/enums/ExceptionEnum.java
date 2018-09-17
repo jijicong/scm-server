@@ -192,6 +192,7 @@ public enum ExceptionEnum{
     DOWNLOAD_ERROR_ORDER_EXCEPTION("1000110","下载错误导入订单异常"),
 
     AFTER_SALE_ORDER_UPDATE_EXCEPTION("1100101","售后单更新异常"),
+    AFTER_SALE_ORDER_QUERY_EXCEPTION("1100102","售后单查询异常"),
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),
