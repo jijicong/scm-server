@@ -871,8 +871,14 @@ public class ReportBiz implements IReportBiz {
         }
         info.forEach(obj -> {
             if(obj instanceof ReportBase){
-                ((ReportBase) obj).setGoodsType(GoodsTypeEnum.queryNameByCode(((ReportBase) obj).getGoodsType()).getCode());
-                ((ReportBase) obj).setStockType(StockTypeEnum.queryNameByCode(((ReportBase) obj).getStockType()).getCode());
+                if(((ReportBase) obj).getGoodsType() != null){
+                    ((ReportBase) obj).setGoodsType(GoodsTypeEnum.queryNameByCode(((ReportBase) obj).
+                            getGoodsType()).getCode());
+                }
+                if(((ReportBase) obj).getStockType() != null){
+                    ((ReportBase) obj).setStockType(StockTypeEnum.queryNameByCode(((ReportBase) obj).
+                            getStockType()).getCode());
+                }
             }
         });
         return ExportExcel.generateExcel(info, cellDefinitionList, fileName);
