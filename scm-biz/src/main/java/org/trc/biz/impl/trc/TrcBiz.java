@@ -2445,7 +2445,7 @@ public class TrcBiz implements ITrcBiz {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_FAIL.getCode());
 			resultmap.put("msg", map.get("msg"));
 		}else {
-			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_CANCELING.getCode());
 		}
 
         afterSaleOrderService.insert(afterSaleOrder);
