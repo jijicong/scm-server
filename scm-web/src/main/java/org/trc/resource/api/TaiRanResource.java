@@ -361,8 +361,9 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck afterSaleCreate(@BeanParam TairanAfterSaleOrderDO afterSaleOrder) throws Exception{
-    	return trcBiz.afterSaleCreate(afterSaleOrder);
+    public ResponseAck afterSaleCreate(String afterSaleOrder) throws Exception{
+        TairanAfterSaleOrderDO afterSaleOrderDO=JSONObject.parseObject(afterSaleOrder,TairanAfterSaleOrderDO.class);
+    	return trcBiz.afterSaleCreate(afterSaleOrderDO);
     }
     
     /**
