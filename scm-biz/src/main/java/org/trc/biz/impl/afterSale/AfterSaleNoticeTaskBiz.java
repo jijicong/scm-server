@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.afterSale.IAfterSaleNoticeTaskBiz;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.domain.afterSale.AfterSaleOrder;
@@ -49,6 +51,7 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
     private TrcConfig trcConfig;
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void cancelSendOutGoods() {
         //1.售后单状态为取消中,售后类型为取消发货的售后单
         Example example = new Example(AfterSaleOrder.class);
