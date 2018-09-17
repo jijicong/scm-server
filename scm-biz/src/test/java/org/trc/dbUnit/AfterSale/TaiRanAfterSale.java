@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.form.afterSale.TaiRanAfterSaleOrderDetail;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
+import org.trc.form.warehouseInfo.TaiRanWarehouseInfo;
 import org.trc.service.BaseTest;
 
 
@@ -37,4 +38,23 @@ public class TaiRanAfterSale extends BaseTest{
 
 	    trcBiz.afterSaleCreate(afterSaleOrder);
 	}
+
+	@Test
+	public void query(){
+
+		List<TaiRanWarehouseInfo> list=trcBiz.returnWarehouseQuery();
+		for(TaiRanWarehouseInfo taiRanWarehouseInfo:list){
+			System.out.println(taiRanWarehouseInfo.getWarehouseName());
+		}
+
+	}
+
+	/**
+	 * 取消售后单
+	 */
+	@Test
+	public void cancel(){
+		trcBiz.cancelAfterSaleOrder("AS-ZY2018081400002608-29");
+	}
+
 }
