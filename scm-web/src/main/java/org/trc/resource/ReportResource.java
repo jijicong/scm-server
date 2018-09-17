@@ -70,6 +70,7 @@ public class ReportResource {
      */
     @GET
     @Path("/downloadAllForWarehouse")
+    @ApiOperation(value = "下载具体仓库全部报表")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadAllForWarehouse(@BeanParam ReportInventoryForm form) {
         return reportBiz.downloadAllForWarehouse(form);
@@ -80,6 +81,7 @@ public class ReportResource {
      */
     @GET
     @Path("/downloadCurrentForWarehouse")
+    @ApiOperation(value = "下载具体仓库当前报表")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadCurrentForWarehouse(@BeanParam ReportInventoryForm form) {
         return reportBiz.downloadCurrentForWarehouse(form);
@@ -90,6 +92,7 @@ public class ReportResource {
      */
     @GET
     @Path("/downloadOtherReport")
+    @ApiOperation(value = "下载特殊查询报表")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadOtherReport(@BeanParam ReportInventoryForm form) {
         if (StringUtils.isBlank(form.getDate()) && (StringUtils.isBlank(form.getStartDate()) && StringUtils.isBlank(form.getEndDate()))
