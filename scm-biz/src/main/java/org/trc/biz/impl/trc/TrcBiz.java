@@ -2347,10 +2347,10 @@ public class TrcBiz implements ITrcBiz {
 
         //退货场景：0实体店退货，1线上商城退货
         int returnScene=afterSaleOrderDO.getReturnScene();
-        AssertUtil.isTrue(!(returnScene==0 ||returnScene==1),"returnScene只能传0或者1");
+        AssertUtil.isTrue((returnScene==0 ||returnScene==1),"returnScene只能传0或者1");
         //售后类型：0取消发货，1退货
         int afterSaleType=afterSaleOrderDO.getAfterSaleType();
-        AssertUtil.isTrue(!(afterSaleType==0 ||afterSaleType==1),"afterSaleType只能传0或者1");
+        AssertUtil.isTrue((afterSaleType==0 ||afterSaleType==1),"afterSaleType只能传0或者1");
 
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
