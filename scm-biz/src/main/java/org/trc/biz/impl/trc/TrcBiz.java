@@ -2329,7 +2329,7 @@ public class TrcBiz implements ITrcBiz {
 		}
 
 		data.put("afterSaleCode", afterSaleCode);
-		return new ResponseAck("200","售后单接受成功",data);
+		return new ResponseAck("200","售后单接收成功",data);
 
 	}
 
