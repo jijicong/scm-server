@@ -93,8 +93,13 @@ public class JerseyApiResourceAop {
         }catch (Exception e) {
             String errorMsg = ExceptionUtil.handlerException(e, targetClass, method.getName());
             log.error(errorMsg, e);
-            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), "");
-            resultObj = Response.status(Response.Status.BAD_REQUEST).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+            if (StringUtils.equals(returnType.getName(),"org.trc.util.ResponseAck")){
+                resultObj = new ResponseAck(ResultEnum.FAILURE.getCode(), e.getMessage(), "");
+
+            }else {
+                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), "");
+                resultObj = Response.status(Response.Status.BAD_REQUEST).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+            }
         }
         Date end = new Date();
         long endL = System.nanoTime();
