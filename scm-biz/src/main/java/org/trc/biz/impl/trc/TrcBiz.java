@@ -2989,6 +2989,9 @@ public class TrcBiz implements ITrcBiz {
         AppResult appResult = warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
         if (!StringUtils.equals(appResult.getAppcode(),ResponseAck.SUCCESS_CODE)){
            throw new AfterSaleException(ExceptionEnum.SYSTEM_EXCEPTION,appResult.getDatabuffer());
+        }else {
+            //记录日志
+            logInfoService.recordLog(afterSaleOrder,afterSaleOrder.getId(),"admin",LogOperationEnum.UPDATE.getMessage(),"接收物流单号","");
         }
     }
 
