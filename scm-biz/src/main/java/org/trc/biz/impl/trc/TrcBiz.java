@@ -2556,7 +2556,7 @@ public class TrcBiz implements ITrcBiz {
 		returnOrderCreateRequest.setReceiverNumber(warehouseInfo.getWarehouseContactNumber());
 		returnOrderCreateRequest.setReceiverProvince(warehouseInfo.getProvince());
 		returnOrderCreateRequest.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-		returnOrderCreateRequest.setOperator("admin");
+		returnOrderCreateRequest.setOperator("系统");
 //		returnOrderCreateRequest.setRemark(afterSaleOrderAddDO.getMemo());
 		returnOrderCreateRequest.setChannelCode(shopOrder.getChannelCode());
 		returnOrderCreateRequest.setSellCode(shopOrder.getSellCode());
@@ -2758,7 +2758,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleWarehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
 		afterSaleWarehouseNotice.setReceiverCity(warehouseInfo.getCity());
 		afterSaleWarehouseNotice.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-		afterSaleWarehouseNotice.setOperator("admin");
+		afterSaleWarehouseNotice.setOperator("系统");
 		afterSaleWarehouseNotice.setRemark(afterSaleOrderDO.getMemo());
 		//afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleWarehouseNotice.setCreateTime(new Date());
