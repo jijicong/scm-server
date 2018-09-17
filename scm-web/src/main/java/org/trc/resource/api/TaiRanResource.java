@@ -389,7 +389,7 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.SUBMIT_WAYBILL)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> submitWaybill(String waybillMessage) {
+    public ResponseAck<String> submitWaybill(String waybillMessage)  throws Exception{
         AssertUtil.notBlank(waybillMessage, "请求参数不能为空");
         try {
             AfterSaleWaybillForm afterSaleWaybillForm = JSONObject.parseObject(waybillMessage,AfterSaleWaybillForm.class);
@@ -397,8 +397,6 @@ public class TaiRanResource {
         } catch (JSONException e) {
             logger.error("参数转json格式错误", e);
             return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", waybillMessage), "");
-        }catch (Exception e) {
-            return new ResponseAck(ExceptionEnum.AFTER_SALE_ORDER_QUERY_EXCEPTION.getCode(), e.getMessage(), "");
         }
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
     }
