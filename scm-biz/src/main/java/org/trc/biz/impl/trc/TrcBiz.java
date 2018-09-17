@@ -2278,15 +2278,15 @@ public class TrcBiz implements ITrcBiz {
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public ResponseAck<Map<String,Object>> afterSaleCreate(TairanAfterSaleOrderDO afterSaleOrderDO) throws Exception{
 		Map<String,Object> data=new HashMap<>();
-		//退货场景：0实体店退货，1线上商城退货
-		int returnScene=afterSaleOrderDO.getReturnScene();
-		//售后类型：0取消发货，1退货
-		int afterSaleType=afterSaleOrderDO.getAfterSaleType();
-		//请求流水号,每个售后申请唯一
-		
+
 		//参数校验
 		afterSaleCreateCheckParam(afterSaleOrderDO);
-		
+
+        //退货场景：0实体店退货，1线上商城退货
+        int returnScene=afterSaleOrderDO.getReturnScene();
+        //售后类型：0取消发货，1退货
+        int afterSaleType=afterSaleOrderDO.getAfterSaleType();
+
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
 		
@@ -2306,7 +2306,7 @@ public class TrcBiz implements ITrcBiz {
 			if(canReturn) {
 				 afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
 			}else {
-				AssertUtil.notNull(null,"只有部分发货或者全部发货的状态才能退货!");
+				AssertUtil.isTrue(false,"只有部分发货或者全部发货的状态才能退货!");
 			}
 		}
 		
@@ -2324,7 +2324,7 @@ public class TrcBiz implements ITrcBiz {
 					 return new ResponseAck("500",(String) result.get("msg"),data);
 				 }
 			}else {
-				AssertUtil.notNull(null,"只有在仓库未发货状态才能取消!");
+				AssertUtil.isTrue(false,"只有在仓库未发货状态才能取消!");
 			}
 		}
 
@@ -2344,8 +2344,14 @@ public class TrcBiz implements ITrcBiz {
 		
 		String returnWarehouseCode=afterSaleOrderDO.getReturnWarehouseCode();
 		AssertUtil.notBlank(returnWarehouseCode, "入库仓库仓库编码不能为空 !");
-		
-		
+
+        //退货场景：0实体店退货，1线上商城退货
+        int returnScene=afterSaleOrderDO.getReturnScene();
+        AssertUtil.isTrue(!(returnScene==0 ||returnScene==1),"returnScene只能传0或者1");
+        //售后类型：0取消发货，1退货
+        int afterSaleType=afterSaleOrderDO.getAfterSaleType();
+        AssertUtil.isTrue(!(afterSaleType==0 ||afterSaleType==1),"afterSaleType只能传0或者1");
+
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
 		if(details.size()>1) {
