@@ -191,7 +191,7 @@ public class ReportBiz implements IReportBiz {
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
             //获取信息
             List<ReportExcelDetail> reportExcelDetails = this.getReportExcelDetail(form, warehouseName, reportDate);
-            String fileName = "【"+warehouseName+"】"+ "库存报表"+ reportDate + SupplyConstants.Symbol.FILE_NAME_SPLIT + ZIP;
+            String fileName = "【" + warehouseName + "】" + "库存报表" + reportDate + SupplyConstants.Symbol.FILE_NAME_SPLIT + ZIP;
             zipOutputStream.putNextEntry(new ZipEntry(fileName));
             dataOutputStream = new DataOutputStream(zipOutputStream);
             //循环将文件写入压缩流
@@ -231,8 +231,8 @@ public class ReportBiz implements IReportBiz {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
         String reportDate = DateUtils.getYM(date) + "";
-        String  reportType =  form.getReportType();
-        String  stockType =  form.getStockType();
+        String reportType = form.getReportType();
+        String stockType = form.getStockType();
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
         AssertUtil.notBlank(date, "查询周期不能为空");
         AssertUtil.notBlank(reportType, "报表类型不能为空");
@@ -255,15 +255,15 @@ public class ReportBiz implements IReportBiz {
         try {
             String sheetName = this.getExcelName(form, warehouseName, reportDate);
             HSSFWorkbook hssfWorkbook = null;
-            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), reportType)){
+            if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), reportType)) {
                 hssfWorkbook = this.reportExcel(
                         (List<ReportInventory>) this.getReportPageList(form, null, false),
                         sheetName, reportType);
-            }else if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), reportType)){
+            } else if (StringUtils.equals(ZeroToNineEnum.TWO.getCode(), reportType)) {
                 hssfWorkbook = this.reportExcel(
                         (List<ReportEntryDetail>) this.getReportPageList(form, null, false),
                         sheetName, reportType);
-            }else{
+            } else {
                 hssfWorkbook = this.reportExcel(
                         (List<ReportOutboundDetail>) this.getReportPageList(form, null, false),
                         sheetName, reportType);
@@ -413,6 +413,16 @@ public class ReportBiz implements IReportBiz {
         }
     }
 
+    /**
+     * 【仓库信息管理】中“SKU数量”大于0且“货主仓库状态”为“通知成功”的所有仓库
+     *
+     * @return
+     */
+    @Override
+    public List<WarehouseInfo> getWarehouseList() {
+        return reportInventoryService.selectWarehouseInfoList();
+    }
+
     private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
@@ -441,7 +451,7 @@ public class ReportBiz implements IReportBiz {
         if (b) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
 
-            if(CollectionUtils.isEmpty(pagination.getResult())){
+            if (CollectionUtils.isEmpty(pagination.getResult())) {
                 return new Pagenation<>();
             }
 
@@ -450,7 +460,7 @@ public class ReportBiz implements IReportBiz {
         } else {
             List<ReportOutboundDetail> result = reportOutboundDetailService.selectByExample(example);
 
-            if(CollectionUtils.isEmpty(result)){
+            if (CollectionUtils.isEmpty(result)) {
                 return new ArrayList<>();
             }
             setOutboundResultDetail(result, form);
@@ -559,7 +569,7 @@ public class ReportBiz implements IReportBiz {
         if (b) {
             Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
 
-            if(CollectionUtils.isEmpty(pagination.getResult())){
+            if (CollectionUtils.isEmpty(pagination.getResult())) {
                 return new Pagenation<>();
             }
 
@@ -568,7 +578,7 @@ public class ReportBiz implements IReportBiz {
         } else {
             List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
 
-            if(CollectionUtils.isEmpty(result)){
+            if (CollectionUtils.isEmpty(result)) {
                 return new ArrayList<>();
             }
             setEntryResultDetail(result, form);
@@ -746,6 +756,22 @@ public class ReportBiz implements IReportBiz {
                     balanceTotalQuantity = inventory.getBalanceTotalQuantity();
                 }
             }
+            reportInventory.setOutboundQuantity(outboundQuantity);
+            reportInventory.setOutboundTotalAmount(outboundTotalAmount);
+            reportInventory.setPurchaseTotalAmount(purchaseTotalAmount);
+            reportInventory.setSuppliderReturnTotalAmount(suppliderReturnTotalAmount);
+            reportInventory.setSalesReturnQuantity(salesReturnQuantity);
+            reportInventory.setPurchaseQuantity(purchaseQuantity);
+            reportInventory.setSupplierReturnOutboundQuantity(supplierReturnOutboundQuantity);
+            reportInventory.setAllocateInQuantity(allocateInQuantity);
+            reportInventory.setAllocateOutQuantity(allocateOutQuantity);
+            reportInventory.setInventoryLossesQuantity(inventoryLossesQuantity);
+            reportInventory.setInventoryProfitQuantity(inventoryProfitQuantity);
+            reportInventory.setDefectiveToNormal(defectiveToNormal);
+            reportInventory.setNormalToDefective(normalToDefective);
+            reportInventory.setOtherIn(otherIn);
+            reportInventory.setOtherOut(otherOut);
+
             reportInventory.setGoodsType(reportInventorys.get(0).getGoodsType());
             reportInventory.setSpecInfo(reportInventorys.get(0).getSpecInfo());
             reportInventory.setBarCode(reportInventorys.get(0).getBarCode());
@@ -836,11 +862,11 @@ public class ReportBiz implements IReportBiz {
     private HSSFWorkbook reportExcel(List<?> info, String fileName, String type) {
         //组装信息
         List<CellDefinition> cellDefinitionList = new ArrayList<>();
-        if(StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())){
+        if (StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())) {
             this.createCellDefinitionForAll(cellDefinitionList);
-        }else if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode())){
+        } else if (StringUtils.equals(type, ZeroToNineEnum.TWO.getCode())) {
             this.createCellDefinitionForEntry(cellDefinitionList);
-        }else{
+        } else {
             this.createCellDefinitionForOutbound(cellDefinitionList);
         }
         info.forEach(obj -> {

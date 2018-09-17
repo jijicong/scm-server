@@ -1,6 +1,7 @@
 package org.trc.biz.report;
 
 import org.trc.domain.report.ReportInventory;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.util.Pagenation;
 
@@ -50,4 +51,10 @@ public interface IReportBiz {
      * @return
      */
     Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean b);
+
+    /**
+     * 【仓库信息管理】中“SKU数量”大于0且“货主仓库状态”为“通知成功”的所有仓库
+     * @return
+     */
+    List<WarehouseInfo> getWarehouseList();
 }
