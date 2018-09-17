@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "report_inventory")
-public class ReportInventory implements Serializable {
+public class ReportInventory extends ReportBase implements Serializable {
 
     private static final long serialVersionUID = 3936501106124320116L;
 
@@ -24,13 +24,6 @@ public class ReportInventory implements Serializable {
     @Column(name = "warehouse_code")
     @ApiModelProperty(value = "供应商code")
     private String warehouseCode;
-
-    /**
-     * 库存类型1.正品2.残品
-     */
-    @Column(name = "stock_type")
-    @ApiModelProperty(value = "库存类型1.正品2.残品")
-    private String stockType;
 
     @Column(name = "sku_code")
     @ApiModelProperty(value = "skuCode")
@@ -49,13 +42,6 @@ public class ReportInventory implements Serializable {
     @Column(name = "category_id")
     @ApiModelProperty(value = "所属类目")
     private String categoryId;
-
-    /**
-     * 商品类别1.小泰良品2.非小泰良品
-     */
-    @Column(name = "goods_type")
-    @ApiModelProperty(value = "商品类别1.小泰良品2.非小泰良品")
-    private String goodsType;
 
     /**
      * 规格
@@ -294,24 +280,6 @@ public class ReportInventory implements Serializable {
     }
 
     /**
-     * 获取库存类型1.正品2.残品
-     *
-     * @return stock_type - 库存类型1.正品2.残品
-     */
-    public String getStockType() {
-        return stockType;
-    }
-
-    /**
-     * 设置库存类型1.正品2.残品
-     *
-     * @param stockType 库存类型1.正品2.残品
-     */
-    public void setStockType(String stockType) {
-        this.stockType = stockType;
-    }
-
-    /**
      * @return sku_code
      */
     public String getSkuCode() {
@@ -359,24 +327,6 @@ public class ReportInventory implements Serializable {
      */
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
-    }
-
-    /**
-     * 获取商品类别1.小泰良品2.非小泰良品
-     *
-     * @return goods_type - 商品类别1.小泰良品2.非小泰良品
-     */
-    public String getGoodsType() {
-        return goodsType;
-    }
-
-    /**
-     * 设置商品类别1.小泰良品2.非小泰良品
-     *
-     * @param goodsType 商品类别1.小泰良品2.非小泰良品
-     */
-    public void setGoodsType(String goodsType) {
-        this.goodsType = goodsType;
     }
 
     /**

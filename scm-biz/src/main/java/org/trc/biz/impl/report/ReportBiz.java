@@ -16,10 +16,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
-import org.trc.domain.report.ReportEntryDetail;
-import org.trc.domain.report.ReportExcelDetail;
-import org.trc.domain.report.ReportInventory;
-import org.trc.domain.report.ReportOutboundDetail;
+import org.trc.domain.report.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
@@ -27,6 +24,7 @@ import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ItemTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.report.GoodsTypeEnum;
 import org.trc.enums.report.StockOperationTypeEnum;
 import org.trc.enums.report.StockTypeEnum;
 import org.trc.exception.ParamValidException;
@@ -845,6 +843,12 @@ public class ReportBiz implements IReportBiz {
         }else{
             this.createCellDefinitionForOutbound(cellDefinitionList);
         }
+        info.forEach(obj -> {
+            if(obj instanceof ReportBase){
+                ((ReportBase) obj).setGoodsType(GoodsTypeEnum.queryNameByCode(((ReportBase) obj).getGoodsType()).getCode());
+                ((ReportBase) obj).setStockType(StockTypeEnum.queryNameByCode(((ReportBase) obj).getStockType()).getCode());
+            }
+        });
         return ExportExcel.generateExcel(info, cellDefinitionList, fileName);
     }
 
@@ -993,4 +997,5 @@ public class ReportBiz implements IReportBiz {
         cellDefinitionList.add(waybillNumber);
         cellDefinitionList.add(outboundSupplierAmount);
     }
+
 }
