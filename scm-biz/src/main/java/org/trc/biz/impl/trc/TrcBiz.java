@@ -2556,7 +2556,7 @@ public class TrcBiz implements ITrcBiz {
 		returnOrderCreateRequest.setReceiverNumber(warehouseInfo.getWarehouseContactNumber());
 		returnOrderCreateRequest.setReceiverProvince(warehouseInfo.getProvince());
 		returnOrderCreateRequest.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-		returnOrderCreateRequest.setOperator("system");
+		returnOrderCreateRequest.setOperator("admin");
 //		returnOrderCreateRequest.setRemark(afterSaleOrderAddDO.getMemo());
 		returnOrderCreateRequest.setChannelCode(shopOrder.getChannelCode());
 		returnOrderCreateRequest.setSellCode(shopOrder.getSellCode());
@@ -2758,7 +2758,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleWarehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
 		afterSaleWarehouseNotice.setReceiverCity(warehouseInfo.getCity());
 		afterSaleWarehouseNotice.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-		afterSaleWarehouseNotice.setOperator("system");
+		afterSaleWarehouseNotice.setOperator("admin");
 		afterSaleWarehouseNotice.setRemark(afterSaleOrderDO.getMemo());
 		//afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleWarehouseNotice.setCreateTime(new Date());
@@ -2915,6 +2915,8 @@ public class TrcBiz implements ITrcBiz {
 		//调用子系统接口 取消售后单  //取消成功
 		ScmCancelAfterSaleOrderRequest scmCancelAfterSaleOrderRequest=new ScmCancelAfterSaleOrderRequest();
 		scmCancelAfterSaleOrderRequest.setAfterSaleCode(afterSaleCode);
+        scmCancelAfterSaleOrderRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
+
 		AppResult<ScmCancelAfterSaleOrderResponse> response=warehouseApiService.returnInOrderCancel(scmCancelAfterSaleOrderRequest);
 		if(StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			//是否取消成功: 1-取消成功, 2-取消失败
