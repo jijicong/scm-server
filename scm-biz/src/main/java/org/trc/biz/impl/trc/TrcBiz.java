@@ -2329,7 +2329,7 @@ public class TrcBiz implements ITrcBiz {
 		}
 
 		data.put("afterSaleCode", afterSaleCode);
-		return new ResponseAck("200","售后单接受成功",data);
+		return new ResponseAck("200","售后单接收成功",data);
 
 	}
 
@@ -2445,9 +2445,15 @@ public class TrcBiz implements ITrcBiz {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_FAIL.getCode());
 			resultmap.put("msg", map.get("msg"));
 		}else {
-			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_3.getCode());
+			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_IS_CANCELING.getCode());
 		}
-		
+
+        afterSaleOrderService.insert(afterSaleOrder);
+        //日志
+        logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
+                "admin", "创建", "", null);
+
+
 		resultmap.put("res", flg);
 		resultmap.put("afterSaleCode", afterSaleCode);
 		return resultmap;
@@ -2516,7 +2522,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrderService.insert(afterSaleOrder);
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
 		//通知wms，新增退货入库单
-		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo);
+		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
 		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
 		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			AssertUtil.notNull(null, response.getDatabuffer());
@@ -2524,14 +2530,14 @@ public class TrcBiz implements ITrcBiz {
 		
 		//日志
 		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 
-				null, "创建", "", null);
+				"admin", "创建", "", null);
 		
 		return afterSaleCode;
 	}
 	
 	private ScmReturnOrderCreateRequest getReturnInOrder(String afterSaleCode, String warehouseNoticeCode,
 			ShopOrder shopOrder, TairanAfterSaleOrderDO afterSaleOrderDO, PlatformOrder platformOrder,
-			WarehouseInfo warehouseInfo) {
+			WarehouseInfo warehouseInfo,int returnScene) {
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=new ScmReturnOrderCreateRequest();
 		returnOrderCreateRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
 		returnOrderCreateRequest.setAfterSaleCode(afterSaleCode);
@@ -2550,7 +2556,7 @@ public class TrcBiz implements ITrcBiz {
 		returnOrderCreateRequest.setReceiverNumber(warehouseInfo.getWarehouseContactNumber());
 		returnOrderCreateRequest.setReceiverProvince(warehouseInfo.getProvince());
 		returnOrderCreateRequest.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-//		returnOrderCreateRequest.setOperator(aclUserAccreditInfo.getName());
+		returnOrderCreateRequest.setOperator("系统");
 //		returnOrderCreateRequest.setRemark(afterSaleOrderAddDO.getMemo());
 		returnOrderCreateRequest.setChannelCode(shopOrder.getChannelCode());
 		returnOrderCreateRequest.setSellCode(shopOrder.getSellCode());
@@ -2559,7 +2565,7 @@ public class TrcBiz implements ITrcBiz {
 		returnOrderCreateRequest.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
 		returnOrderCreateRequest.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
 		returnOrderCreateRequest.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
-		returnOrderCreateRequest.setReturnScene(returnSceneEnum.STATUS_0.getCode());
+		returnOrderCreateRequest.setReturnScene(returnScene);
 		
 		List<ScmReturnInOrderDetail> list=new ArrayList<>();
 		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:afterSaleOrderDO.getAfterSaleOrderDetailList()) {
@@ -2752,7 +2758,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleWarehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
 		afterSaleWarehouseNotice.setReceiverCity(warehouseInfo.getCity());
 		afterSaleWarehouseNotice.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
-		//afterSaleWarehouseNotice.setOperator(aclUserAccreditInfo.getName());
+		afterSaleWarehouseNotice.setOperator("系统");
 		afterSaleWarehouseNotice.setRemark(afterSaleOrderDO.getMemo());
 		//afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
 		afterSaleWarehouseNotice.setCreateTime(new Date());
@@ -2909,6 +2915,8 @@ public class TrcBiz implements ITrcBiz {
 		//调用子系统接口 取消售后单  //取消成功
 		ScmCancelAfterSaleOrderRequest scmCancelAfterSaleOrderRequest=new ScmCancelAfterSaleOrderRequest();
 		scmCancelAfterSaleOrderRequest.setAfterSaleCode(afterSaleCode);
+        scmCancelAfterSaleOrderRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
+
 		AppResult<ScmCancelAfterSaleOrderResponse> response=warehouseApiService.returnInOrderCancel(scmCancelAfterSaleOrderRequest);
 		if(StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			//是否取消成功: 1-取消成功, 2-取消失败
@@ -2930,7 +2938,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm)  {
+    public void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception {
 	    AssertUtil.notNull(afterSaleWaybillForm,"提交的物流信息为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporationCode(),"物流公司编码不能为空!");
 	    AssertUtil.notBlank(afterSaleWaybillForm.getLogisticsCorporation(),"物流公司名称不能为空!");
@@ -2978,7 +2986,13 @@ public class TrcBiz implements ITrcBiz {
         logisticsRequest.setLogisticsCorporationCode(afterSaleOrder.getLogisticsCorporationCode());
         logisticsRequest.setLogisticsCorporation(afterSaleOrder.getLogisticsCorporation());
         logisticsRequest.setWaybillNumber(afterSaleOrder.getWaybillNumber());
-        warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
+        AppResult appResult = warehouseApiService.submitAfterSaleLogistics(logisticsRequest);
+        if (!StringUtils.equals(appResult.getAppcode(),ResponseAck.SUCCESS_CODE)){
+           throw new AfterSaleException(ExceptionEnum.SYSTEM_EXCEPTION,appResult.getDatabuffer());
+        }else {
+            //记录日志
+            logInfoService.recordLog(afterSaleOrder,afterSaleOrder.getId(),"admin",LogOperationEnum.UPDATE.getMessage(),"接收物流单号","");
+        }
     }
 
 
