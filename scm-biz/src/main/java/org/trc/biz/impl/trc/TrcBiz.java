@@ -2516,7 +2516,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrderService.insert(afterSaleOrder);
 		afterSaleWarehouseNoticeService.insert(afterSaleWarehouseNotice);
 		//通知wms，新增退货入库单
-		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo);
+		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
 		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
 		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			AssertUtil.notNull(null, response.getDatabuffer());
@@ -2531,7 +2531,7 @@ public class TrcBiz implements ITrcBiz {
 	
 	private ScmReturnOrderCreateRequest getReturnInOrder(String afterSaleCode, String warehouseNoticeCode,
 			ShopOrder shopOrder, TairanAfterSaleOrderDO afterSaleOrderDO, PlatformOrder platformOrder,
-			WarehouseInfo warehouseInfo) {
+			WarehouseInfo warehouseInfo,int returnScene) {
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=new ScmReturnOrderCreateRequest();
 		returnOrderCreateRequest.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
 		returnOrderCreateRequest.setAfterSaleCode(afterSaleCode);
@@ -2559,7 +2559,7 @@ public class TrcBiz implements ITrcBiz {
 		returnOrderCreateRequest.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
 		returnOrderCreateRequest.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
 		returnOrderCreateRequest.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
-		returnOrderCreateRequest.setReturnScene(returnSceneEnum.STATUS_0.getCode());
+		returnOrderCreateRequest.setReturnScene(returnScene);
 		
 		List<ScmReturnInOrderDetail> list=new ArrayList<>();
 		for(TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO:afterSaleOrderDO.getAfterSaleOrderDetailList()) {
