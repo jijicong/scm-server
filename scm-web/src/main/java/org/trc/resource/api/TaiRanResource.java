@@ -362,7 +362,14 @@ public class TaiRanResource {
     @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
     @Produces("application/json;charset=utf-8")
     public ResponseAck afterSaleCreate(String afterSaleOrder) throws Exception{
-        TairanAfterSaleOrderDO afterSaleOrderDO=JSONObject.parseObject(afterSaleOrder,TairanAfterSaleOrderDO.class);
+        AssertUtil.notBlank(afterSaleOrder, "请求参数不能为空");
+        TairanAfterSaleOrderDO afterSaleOrderDO=null;
+        try{
+             afterSaleOrderDO=JSONObject.parseObject(afterSaleOrder,TairanAfterSaleOrderDO.class);
+        }catch(Exception e){
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", afterSaleOrder), "");
+        }
     	return trcBiz.afterSaleCreate(afterSaleOrderDO);
     }
     
