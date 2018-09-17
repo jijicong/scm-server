@@ -758,6 +758,11 @@ public class ReportBiz implements IReportBiz {
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
                     balanceTotalQuantity = inventory.getBalanceTotalQuantity();
+
+                    reportInventory.setGoodsType(inventory.getGoodsType());
+                    reportInventory.setSpecInfo(inventory.getSpecInfo());
+                    reportInventory.setBarCode(inventory.getBarCode());
+                    reportInventory.setCategoryId(inventory.getCategoryId());
                 }
             }
             reportInventory.setOutboundQuantity(outboundQuantity);
@@ -776,10 +781,6 @@ public class ReportBiz implements IReportBiz {
             reportInventory.setOtherIn(otherIn);
             reportInventory.setOtherOut(otherOut);
 
-            reportInventory.setGoodsType(reportInventorys.get(0).getGoodsType());
-            reportInventory.setSpecInfo(reportInventorys.get(0).getSpecInfo());
-            reportInventory.setBarCode(reportInventorys.get(0).getBarCode());
-            reportInventory.setCategoryId(reportInventorys.get(0).getCategoryId());
             if (StringUtils.equals(form.getStockType(), StockTypeEnum.QUALITY.getCode())) {
                 reportInventory.setStockType(StockTypeEnum.QUALITY.getCode());
             } else {

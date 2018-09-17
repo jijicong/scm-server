@@ -52,12 +52,12 @@ public class ReportTest {
     @Test
     public void getReportEntryDetailListTest(){
         ReportInventoryForm form = new ReportInventoryForm();
-        form.setReportType("2");
-        form.setStartDate("2018-09-12");
+        form.setReportType("1");
+        form.setDate("2018-08-01");
         form.setEndDate("2018-09-13");
-        form.setStockType("2");
+        form.setStockType("1");
         form.setWarehouseCode("CK00238");
-        //form.setSkuName("床上用品尺寸");
+        form.setSkuName("三件套");
         form.setBarCode("38");
         //form.setSkuCode("SP0201708140000159");
         Object reportPageList = reportBiz.getReportDetailPageList(form, new Pagenation(), false);

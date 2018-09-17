@@ -44,7 +44,7 @@
             </if>
             <if test="skuCodes != null and skuCodes.size > 0">
                 and sku_code in
-                <foreach collection="item" item="skuCode" open="(" close=")" separator=",">
+                <foreach collection="skuCodes" item="item" open="(" close=")" separator=",">
                   #{item}
                 </foreach>
             </if>
