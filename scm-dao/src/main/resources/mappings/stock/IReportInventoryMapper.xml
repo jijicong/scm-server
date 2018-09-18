@@ -36,7 +36,7 @@
             <if test="dto.date != null and dto.date != ''">
                 and DATE_FORMAT( `periods`, '%Y%m' ) = DATE_FORMAT( #{dto.date}, '%Y%m' )
             </if>
-            <if test="dto.startDate != null and dto.endDate != null">
+            <if test="dto.startDate != '' and dto.endDate != '' ">
                 and periods BETWEEN #{dto.startDate} AND #{dto.endDate}
             </if>
             <if test="dto.skuCode != null and dto.skuCode != ''">
