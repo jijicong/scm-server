@@ -33,14 +33,14 @@ public interface IReportBiz {
      *
      * @return
      */
-    Response downloadAllForWarehouse(ReportInventoryForm form);
+    Response downloadAllForWarehouse(ReportInventoryForm form)throws Exception;
 
     /**
      * 下载具体仓库全部报表
      *
      * @return
      */
-    Response downloadCurrentForWarehouse(ReportInventoryForm form);
+    Response downloadCurrentForWarehouse(ReportInventoryForm form, boolean isOtherReport);
 
     /**
      * 特殊查询报表列表

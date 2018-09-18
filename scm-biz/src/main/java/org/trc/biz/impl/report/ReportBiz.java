@@ -45,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -161,7 +162,7 @@ public class ReportBiz implements IReportBiz {
     }
 
     @Override
-    public Response downloadAllForWarehouse(ReportInventoryForm form) {
+    public Response downloadAllForWarehouse(ReportInventoryForm form)throws Exception {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
         String reportDate = DateUtils.getYM(date) + "";
@@ -219,19 +220,18 @@ public class ReportBiz implements IReportBiz {
                 SupplyConstants.Symbol.FILE_NAME_SPLIT, ZIP);
 
         logger.info(String.format("仓库编码为%s,日期为%s的全报表下载打包完成!", warehouseCode, date));
-        return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + zipName).type(MediaType.APPLICATION_OCTET_STREAM)
+        return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(zipName,"UTF-8")).type(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Cache-Control", "no-cache").build();
     }
 
     @Override
-    public Response downloadCurrentForWarehouse(ReportInventoryForm form) {
+    public Response downloadCurrentForWarehouse(ReportInventoryForm form, boolean isOtherReport) {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
         String reportDate = DateUtils.getYM(date) + "";
         String reportType = form.getReportType();
         String stockType = form.getStockType();
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
-        AssertUtil.notBlank(date, "查询周期不能为空");
         AssertUtil.notBlank(reportType, "报表类型不能为空");
         AssertUtil.notBlank(stockType, "库存类型不能为空");
 
@@ -267,12 +267,18 @@ public class ReportBiz implements IReportBiz {
             }
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             hssfWorkbook.write(stream);
-            String fileName = sheetName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+
+            String fileName = "";
+            if(isOtherReport){
+                fileName = "库存报表导出" + LocalDate.now().toString() + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+            }else{
+                fileName = sheetName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+            }
 
             logger.info(String.format("下载仓库编码为%s,日期为%s,报表类型为%s,库存类型为%s的报表完成!",
                     warehouseCode, date, form.getReportType(), form.getStockType()));
 
-            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(fileName,"UTF-8")).type(MediaType.APPLICATION_OCTET_STREAM)
                     .header("Cache-Control", "no-cache").build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -972,11 +978,11 @@ public class ReportBiz implements IReportBiz {
             if (obj instanceof ReportBase) {
                 if (((ReportBase) obj).getGoodsType() != null) {
                     ((ReportBase) obj).setGoodsType(GoodsTypeEnum.queryNameByCode(((ReportBase) obj).
-                            getGoodsType()).getCode());
+                            getGoodsType()).getName());
                 }
                 if (((ReportBase) obj).getStockType() != null) {
                     ((ReportBase) obj).setStockType(StockTypeEnum.queryNameByCode(((ReportBase) obj).
-                            getStockType()).getCode());
+                            getStockType()).getName());
                 }
             }
         });
