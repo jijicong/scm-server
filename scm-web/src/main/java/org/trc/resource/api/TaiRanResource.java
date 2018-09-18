@@ -412,7 +412,15 @@ public class TaiRanResource {
     @Path(SupplyConstants.TaiRan.CANCEL_AFTER_SALE_ORDER)
     @Produces("application/json;charset=utf-8")
     public ResponseAck<Map<String, Object>> cancelAfterSaleOrder(String afterSaleCode) {
-    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接收成功", trcBiz.cancelAfterSaleOrder(afterSaleCode));
+        Map map=null;
+        try{
+             map=JSONObject.parseObject(afterSaleCode,Map.class);
+        }catch(Exception e){
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", afterSaleCode), "");
+        }
+
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接收成功", trcBiz.cancelAfterSaleOrder((String) map.get("afterSaleCode")));
     }
 
     /**

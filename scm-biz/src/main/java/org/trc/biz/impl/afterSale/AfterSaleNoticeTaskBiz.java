@@ -5,8 +5,11 @@ import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.afterSale.IAfterSaleNoticeTaskBiz;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.domain.afterSale.AfterSaleOrder;
@@ -22,6 +25,7 @@ import org.trc.service.ITrcService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
@@ -47,8 +51,15 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
     @Autowired
     private TrcConfig trcConfig;
 
+    @Autowired
+    private IRealIpService iRealIpService;
+
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void cancelSendOutGoods() {
+        if (!iRealIpService.isRealTimerService()){
+            return;
+        }
         //1.售后单状态为取消中,售后类型为取消发货的售后单
         Example example = new Example(AfterSaleOrder.class);
         Example.Criteria criteria = example.createCriteria();
@@ -79,7 +90,7 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
                     wmsFromList.add(saleNoticeWmsFrom);
                 }
                 //3.请求仓库
-                if (AssertUtil.collectionIsEmpty(wmsFromList)) {
+                if (!AssertUtil.collectionIsEmpty(wmsFromList)) {
                     List<AfterSaleNoticeWmsResultVO> saleNoticeWmsResultVOList = afterSaleOrderService.deliveryCancelResult(wmsFromList);
                     //更新对应的售后单状态并通知渠道
                     for (AfterSaleOrder afterSaleOrder : afterSaleOrderList) {
@@ -111,13 +122,15 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
                             //记录日志
                             recordLog(afterSaleCodeMap, afterSaleOrderList, saleNoticeWmsResultVOList);
                             //推送取消发货通知
-                            pushAfterSaleState(saleNoticeWmsResultVOList);
+//                            pushAfterSaleState(saleNoticeWmsResultVOList);
                         }
                     } catch (Exception e) {
-                        logger.error("更新数据库异常");
+                        logger.error("更新数据库异常",e);
                     }
                 }
             }
+        }else {
+            logger.info("没有查询到取消中的售后单!");
         }
     }
 
@@ -125,7 +138,8 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
         for (AfterSaleNoticeWmsResultVO saleNoticeWmsResultVO : saleNoticeWmsResultVOList) {
             if (!StringUtils.equals(saleNoticeWmsResultVO.getFlg(), "2")) {
                 TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
-                CancelSendNoticeTrcForm sendNoticeTrcForm = (CancelSendNoticeTrcForm) trcParam;
+                CancelSendNoticeTrcForm sendNoticeTrcForm = new CancelSendNoticeTrcForm();
+                BeanUtils.copyProperties(trcParam,sendNoticeTrcForm);
                 sendNoticeTrcForm.setAfterSaleCode(saleNoticeWmsResultVO.getAfterSaleCode());
                 if (StringUtils.equals(saleNoticeWmsResultVO.getFlg(), "1")) {
                     sendNoticeTrcForm.setAfterSaleOrderState("1");

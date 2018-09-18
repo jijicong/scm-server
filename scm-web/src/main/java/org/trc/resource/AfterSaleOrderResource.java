@@ -1,8 +1,10 @@
 package org.trc.resource;
 
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.trc.biz.afterSale.IAfterSaleNoticeTaskBiz;
 import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.afterSale.AfterSaleOrder;
@@ -27,6 +29,8 @@ public class AfterSaleOrderResource {
 
 	@Resource
 	IAfterSaleOrderBiz iAfterSaleOrderBiz;
+	@Autowired
+	IAfterSaleNoticeTaskBiz afterSaleNoticeTaskBiz;
 
 	/**
 	 * 根据订单号 查询售后单信息
@@ -161,7 +165,14 @@ public class AfterSaleOrderResource {
 	}
 
 
-
+	@GET
+	@Path("/afterSaleTask")
+	@ApiOperation(value = "售后单定时任务触发", response = AfterSaleDetailVO.class)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response afterSaleOrderTask(){
+		afterSaleNoticeTaskBiz.cancelSendOutGoods();
+		return ResultUtil.createSuccessResult("售后单定时任务触发成功","" );
+	}
 
 
 
