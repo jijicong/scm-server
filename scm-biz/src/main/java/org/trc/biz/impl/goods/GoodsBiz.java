@@ -926,7 +926,8 @@ public class GoodsBiz implements IGoodsBiz {
            if (StringUtils.equals(orginItems.getName(), items.getName()) && StringUtils.equals(orginItems.getBrandId().toString(), items.getBrandId().toString())
                    && StringUtils.equals(orginItems.getTradeType(), items.getTradeType()) && StringUtils.equals(orginItems.getItemNo(), items.getItemNo())
                    && StringUtils.equals(orginItems.getProducer(), items.getProducer())   && StringUtils.equals(orginItems.getRemark().trim(), items.getRemark().trim())
-                   && StringUtils.equals(orginItems.getIsQuality(), items.getIsQuality()) && StringUtils.equals(orginItems.getQualityDay().toString(),items.getQualityDay()==null?"0":items.getQualityDay().toString())) {
+                   && StringUtils.equals(orginItems.getIsQuality(), items.getIsQuality()) && StringUtils.equals(orginItems.getQualityDay().toString(),items.getQualityDay()==null?"0":items.getQualityDay().toString())
+                   && StringUtils.equals(orginItems.getItemType(),items.getItemType())) {
                logMsg = "";
            } else {
                logMsg = logMsg + "SPU信息：";
@@ -959,6 +960,13 @@ public class GoodsBiz implements IGoodsBiz {
                }
                if (!StringUtils.equals(orginItems.getProducer(), items.getProducer())) {
                    logMsg = logMsg + "生厂商由\"" + orginItems.getProducer() + "\"改为\"" + items.getProducer() + "\";";
+               }
+               if (!StringUtils.equals(orginItems.getItemType(), items.getItemType())) {
+                   if (StringUtils.equals(orginItems.getItemType(),ZeroToNineEnum.ZERO.getCode())){
+                       logMsg = logMsg + "商品类别由\"" + ItemTypeEnum.XIAOTAI.getName() + "\"改为\"" + ItemTypeEnum.NON_XIAOTAI.getName() + "\";";
+                   }else {
+                       logMsg = logMsg + "商品类别由\"" + ItemTypeEnum.NON_XIAOTAI + "\"改为\"" + ItemTypeEnum.XIAOTAI.getName() + "\";";
+                   }
                }
                if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) || StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())){//排除都为否的情形
                    if (StringUtils.equals(orginItems.getIsQuality(), ZeroToNineEnum.ONE.getCode()) && StringUtils.equals(items.getIsQuality(), ZeroToNineEnum.ONE.getCode())) {
@@ -1508,6 +1516,7 @@ public class GoodsBiz implements IGoodsBiz {
         ParamsUtil.setBaseDO(items);
         checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
         checkIsQuality(items);
+        AssertUtil.notNull(items.getItemType(),"商品类别不能为空");
         int count = itemsService.insert(items);
         if (count == 0) {
             String msg = String.format("保商品基础信息%s到数据库失败", JSON.toJSONString(items));
@@ -1766,6 +1775,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (items1.getBrandId() != items.getBrandId()) {
             map.put("brandId", items.getBrandId());
         }
+        AssertUtil.notNull(items.getItemType(),"商品类别不能为空");
         int count = itemsService.updateByPrimaryKeySelective(items);
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改商品基础信息", JSON.toJSONString(items), "数据库操作失败").toString();

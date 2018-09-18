@@ -15,4 +15,6 @@ public interface ISellChannelService extends IBaseService<SellChannel,Long>{
      * @return
      */
     List<SellChannel> queryAllSellChannel();
+
+    SellChannel selectSellByCode(String sellCode);
 }

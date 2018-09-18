@@ -16,10 +16,12 @@ import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.stock.JdStockInDetail;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
+import org.trc.enums.report.StockOperationTypeEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
@@ -37,6 +39,7 @@ import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
+import org.trc.service.stock.IJdStockInDetailService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
@@ -87,6 +90,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IRealIpService realIpService;
     @Autowired
     private IWarehouseMockService warehouseMockService;
+    @Autowired
+    private IJdStockInDetailService jdStockInDetailService;
     
 
     @Override
@@ -765,6 +770,13 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                                 }
                                 //更新状态
                                 judgeWarehouseNoticeDetailState(stockMap, detail, logMessage, exceptionDetail);
+
+                                //记录库存变动明细
+                                try {
+                                    insertStockDetail(detail, allocateInOrder, stockMap);
+                                } catch (Exception e) {
+                                    logger.error("JD调拨入库，记录库存变动明细失败， 入库单号:{}, e:{}", allocateInOrder.getAllocateInOrderCode(), e);
+                                }
                             }
 
                             allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
@@ -805,6 +817,29 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             }
         }
     }
+
+    private void insertStockDetail(AllocateSkuDetail detail, AllocateInOrder allocateInOrder, Map<String,Long> stockMap) {
+        JdStockInDetail jdStockInDetail = new JdStockInDetail();
+        jdStockInDetail.setWarehouseCode(allocateInOrder.getInWarehouseCode());
+        jdStockInDetail.setStockType(detail.getInventoryType());
+        jdStockInDetail.setOperationType(StockOperationTypeEnum.ALLALLOCATE_IN.getCode());
+        jdStockInDetail.setSupplierCode(allocateInOrder.getSupplierCode());
+        jdStockInDetail.setOrderCode(allocateInOrder.getAllocateInOrderCode());
+        jdStockInDetail.setWarehouseOrderCode("");
+        jdStockInDetail.setSkuCode(detail.getSkuCode());
+        jdStockInDetail.setBarCode(detail.getBarCode());
+        jdStockInDetail.setGoodsType("");
+        jdStockInDetail.setSpecInfo(detail.getSpecNatureInfo());
+        jdStockInDetail.setPlannedQuantity(detail.getPlanAllocateNum());
+        jdStockInDetail.setQuantity(stockMap.get("normalQ") + stockMap.get("defectiveQ"));
+        jdStockInDetail.setNormalQuantity(stockMap.get("normalQ"));
+        jdStockInDetail.setDefectiveQuantity(stockMap.get("defectiveQ"));
+        int insert = jdStockInDetailService.insert(jdStockInDetail);
+        if(insert == 0){
+            logger.error("JD调拨入库，记录库存变动明细失败， 入库单号:{}", allocateInOrder.getAllocateInOrderCode());
+        }
+    }
+
 
     //获取状态
     private String getAllocateInOrderStatusByDetail(List<AllocateSkuDetail> allocateSkuDetails){

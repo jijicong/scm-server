@@ -68,8 +68,8 @@ public class scmOrderTest extends BaseTest {
         item.setCustomsPrice(new BigDecimal(22));
         item.setNum(1);
         item.setSendNum(0);
-        item.setIsOversold("0");
-        item.setShippingType("express");
+        //item.setIsOversold("0");
+        //item.setShippingType("express");
         item.setTotalFee(new BigDecimal(22));
         item.setPayment(new BigDecimal(22));
         item.setTotalWeight(new BigDecimal(1));
@@ -77,9 +77,9 @@ public class scmOrderTest extends BaseTest {
         item.setPicPath("https://image.tairanmall.com/FmtfqBT8wXl51s_SfWJSKxrI1vib");
         item.setOuterSkuId("SP0201806120002423");
         item.setSubStock("1");
-        item.setDlytmplId(7);
+        //item.setDlytmplId(7);
         item.setSupplierName("泰然城");
-        item.setObjType("item");
+        //item.setObjType("item");
         list.add(item);
 
 
