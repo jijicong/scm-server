@@ -219,6 +219,6 @@ public interface ITrcBiz {
      * @return
      * @throws Exception
      */
-    void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm);
+    void submitWaybill(AfterSaleWaybillForm afterSaleWaybillForm) throws Exception;
 
 }

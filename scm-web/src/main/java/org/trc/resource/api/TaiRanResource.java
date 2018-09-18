@@ -22,9 +22,11 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
 import org.trc.form.AfterSaleOrderStatusResponse;
 import org.trc.form.afterSale.AfterSaleWaybillForm;
+import org.trc.form.afterSale.TaiRanAfterSaleOrderDetail;
 import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
@@ -44,7 +46,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -368,8 +372,37 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck afterSaleCreate(@BeanParam TairanAfterSaleOrderDO afterSaleOrder) throws Exception{
-    	return trcBiz.afterSaleCreate(afterSaleOrder);
+    public ResponseAck afterSaleCreate(String afterSaleOrder) throws Exception{
+        AssertUtil.notBlank(afterSaleOrder, "请求参数不能为空");
+        TairanAfterSaleOrderDO afterSaleOrderDO=null;
+        try{
+             afterSaleOrderDO=JSONObject.parseObject(afterSaleOrder,TairanAfterSaleOrderDO.class);
+        }catch(Exception e){
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", afterSaleOrder), "");
+        }
+    	return trcBiz.afterSaleCreate(afterSaleOrderDO);
+
+
+        //测试数据
+//        TairanAfterSaleOrderDO as=new TairanAfterSaleOrderDO();
+//        as.setRequestNo(new Date().getTime()+"");
+//        as.setShopOrderCode("7774561469");
+//        as.setReturnScene(1);
+//        as.setAfterSaleType(1);
+//        as.setReturnWarehouseCode("CK00273");
+//
+//        List<TaiRanAfterSaleOrderDetail> list=new ArrayList<>();
+//        TaiRanAfterSaleOrderDetail detail=new TaiRanAfterSaleOrderDetail();
+//        detail.setSkuCode("SP0201808070000833");
+//        detail.setRefundAmont(new BigDecimal(1));
+//        list.add(detail);
+//
+//        as.setAfterSaleOrderDetailList(list);
+//
+//        trcBiz.afterSaleCreate(as);
+//        return new ResponseAck("200","24","234");
+
     }
 
     /**
@@ -378,8 +411,8 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.CANCEL_AFTER_SALE_ORDER)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Map<String, Object>> cancelAfterSaleOrder(@QueryParam("afterSaleCode") String afterSaleCode) {
-    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接口成功", trcBiz.cancelAfterSaleOrder(afterSaleCode));
+    public ResponseAck<Map<String, Object>> cancelAfterSaleOrder(String afterSaleCode) {
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接收成功", trcBiz.cancelAfterSaleOrder(afterSaleCode));
     }
 
     /**
@@ -388,7 +421,7 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.SUBMIT_WAYBILL)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> submitWaybill(String waybillMessage) {
+    public ResponseAck<String> submitWaybill(String waybillMessage)  throws Exception{
         AssertUtil.notBlank(waybillMessage, "请求参数不能为空");
         try {
             AfterSaleWaybillForm afterSaleWaybillForm = JSONObject.parseObject(waybillMessage,AfterSaleWaybillForm.class);
