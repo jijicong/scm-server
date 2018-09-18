@@ -229,7 +229,6 @@ public class ReportBiz implements IReportBiz {
         String reportType = form.getReportType();
         String stockType = form.getStockType();
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
-        AssertUtil.notBlank(date, "查询周期不能为空");
         AssertUtil.notBlank(reportType, "报表类型不能为空");
         AssertUtil.notBlank(stockType, "库存类型不能为空");
 
