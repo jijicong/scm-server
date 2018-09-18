@@ -46,7 +46,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -132,26 +135,26 @@ public class ReportBiz implements IReportBiz {
      *
      * @param form
      * @param page
-     * @param b    是否分页
+     * @param flag    是否分页
      * @return
      */
     @Override
-    public Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean b) {
+    public Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean flag) {
 
         //总库存查询
         if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
-            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, b);
+            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, flag);
         }
         //入库明细查询
         else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
-            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, b);
+            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, flag);
         }
         //出库明细查询
         else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.THREE.getCode())) {
-            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, b);
+            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, flag);
         }
 
-        if (b) {
+        if (flag) {
             return new Pagenation<>();
         } else {
             return new ArrayList<>();
@@ -398,35 +401,18 @@ public class ReportBiz implements IReportBiz {
      *
      * @param form
      * @param page
-     * @param b    是否分页
+     * @param flag    是否分页
      * @return
      */
     @Override
-    public Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean b) {
+    public Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean flag) {
 
         if (StringUtils.isBlank(form.getDate()) && (StringUtils.isBlank(form.getStartDate()) && StringUtils.isBlank(form.getEndDate()))
                 && !StringUtils.isBlank(form.getDate()) && (!StringUtils.isBlank(form.getStartDate()) && !StringUtils.isBlank(form.getEndDate()))) {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "参数校验异常");
         }
 
-        //总库存查询
-        if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
-            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, b);
-        }
-        //入库明细查询
-        else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
-            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, b);
-        }
-        //出库明细查询
-        else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.THREE.getCode())) {
-            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, b);
-        }
-
-        if (b) {
-            return new Pagenation<>();
-        } else {
-            return new ArrayList<>();
-        }
+        return getReportPageList(form, page, flag);
     }
 
     /**
@@ -439,7 +425,18 @@ public class ReportBiz implements IReportBiz {
         return reportInventoryService.selectWarehouseInfoList();
     }
 
-    private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
+    /**
+     *
+     * @param form
+     * @param page
+     * @param flag 是否分页
+     * @return
+     */
+    private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean flag) {
+
+        //校验时间范围
+        checkParam(form);
+
         Example example = new Example(ReportOutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
 
@@ -466,7 +463,7 @@ public class ReportBiz implements IReportBiz {
 
         example.setOrderByClause("outbound_time, outbound_order_code DESC");
 
-        if (b) {
+        if (flag) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
 
             if (CollectionUtils.isEmpty(pagination.getResult())) {
@@ -563,7 +560,18 @@ public class ReportBiz implements IReportBiz {
         }
     }
 
-    private Object getReportEntryDetailList(ReportInventoryForm form, Pagenation<ReportEntryDetail> page, boolean b) {
+    /**
+     *
+     * @param form
+     * @param page
+     * @param flag 是否分页
+     * @return
+     */
+    private Object getReportEntryDetailList(ReportInventoryForm form, Pagenation<ReportEntryDetail> page, boolean flag) {
+
+        //校验时间范围
+        checkParam(form);
+
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
 
@@ -586,7 +594,7 @@ public class ReportBiz implements IReportBiz {
 
         example.setOrderByClause("entry_time, order_code DESC");
 
-        if (b) {
+        if (flag) {
             Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
 
             if (CollectionUtils.isEmpty(pagination.getResult())) {
@@ -663,8 +671,17 @@ public class ReportBiz implements IReportBiz {
 
     }
 
+    /**
+     *
+     * @param form
+     * @param page
+     * @param flag 是否分页
+     * @return
+     */
+    private Object getReportInventoryList(ReportInventoryForm form, Pagenation<ReportInventory> page, boolean flag) {
 
-    private Object getReportInventoryList(ReportInventoryForm form, Pagenation<ReportInventory> page, boolean b) {
+        //校验时间范围
+        checkParam(form);
 
         List<String> skuCodes = new ArrayList<>();
         if (StringUtils.isNotBlank(form.getSkuName())) {
@@ -678,7 +695,7 @@ public class ReportBiz implements IReportBiz {
             }
         }
 
-        if (b) {
+        if (flag) {
             //分组查询数据
             Page pages = PageHelper.startPage(page.getPageNo(), page.getPageSize());
             List<ReportInventory> reportInventoryList = reportInventoryService.selectReportInventoryLimit(form, skuCodes);
@@ -706,6 +723,17 @@ public class ReportBiz implements IReportBiz {
             return statisticsDate;
         }
 
+    }
+
+    private void checkParam(ReportInventoryForm form) {
+        if(StringUtils.isNotBlank(form.getStartDate()) && StringUtils.isNotBlank(form.getEndDate())){
+            LocalDate startDate = LocalDate.parse(form.getStartDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            LocalDate endDate = LocalDate.parse(form.getEndDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            Period between = Period.between(startDate, endDate);
+            if(between.getDays() > 13){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "日期间隔不能大于两周");
+            }
+        }
     }
 
     private List<ReportInventory> getStatisticsDate(List<ReportInventory> result, ReportInventoryForm form) {
