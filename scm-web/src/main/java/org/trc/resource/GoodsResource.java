@@ -1,5 +1,7 @@
 package org.trc.resource;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ import javax.ws.rs.core.Response;
 /**
  * Created by hzwdx on 2017/5/24.
  */
+@Api(value = "商品管理")
 @Component
 @Path(SupplyConstants.Goods.ROOT)
 public class GoodsResource {
@@ -38,6 +41,7 @@ public class GoodsResource {
     @Autowired
     private IGoodsBiz goodsBiz;
 
+    @ApiOperation(value = "自采商品管理分页查询", response = Items.class)
     @GET
     @Path(SupplyConstants.Goods.GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
@@ -46,6 +50,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessPageResult(goodsBiz.itemsPage(form, page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
+    @ApiOperation("商品查询分页查询")
     @GET
     @Path(SupplyConstants.Goods.GOODS_SKU_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
@@ -54,6 +59,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessPageResult(goodsBiz.itemsSkusPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
+    @ApiOperation("新增自采商品")
     @POST
     @Path(SupplyConstants.Goods.GOODS)
     @Produces(MediaType.APPLICATION_JSON)
@@ -65,6 +71,7 @@ public class GoodsResource {
     }
 
     //V3.1增加数据权限
+    @ApiOperation("更新自采商品")
     @PUT
     @Path(SupplyConstants.Goods.GOODS + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -74,6 +81,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("更新商品成功", "");
     }
 
+    @ApiOperation("自采商品起停用")
     //V3.1增加数据权限
     @PUT
     @Path(SupplyConstants.Goods.IS_VALID + "/{id}")
@@ -88,6 +96,7 @@ public class GoodsResource {
     }
 
     //V3.1增加数据权限
+    @ApiOperation("自采商品SKU起停用")
     @PUT
     @Path(SupplyConstants.Goods.SKU_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -100,6 +109,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
+    @ApiOperation("查询商品信息")
     @GET
     @Path(SupplyConstants.Goods.GOODS_SPU_CODE+"/{spuCode}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -107,6 +117,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode, skuCode, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
+    @ApiOperation("查询自采商品分类属性")
     @GET
     @Path(SupplyConstants.Goods.ITEMS_CATEGORY_PROPERTY+"/{spuCode}/{categoryId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -114,6 +125,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("查询商品分类属性成功", goodsBiz.queryItemsCategoryProperty(spuCode, categoryId));
     }
 
+    @ApiOperation("代发商品管理分页查询")
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
@@ -123,6 +135,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage(form, page,aclUserAccreditInfo));
     }
 
+    @ApiOperation("代发供应商代发商品分页查询")
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE_2)
     @Produces(MediaType.APPLICATION_JSON)
@@ -131,6 +144,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage2(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
+    @ApiOperation("查询代发商品列表")
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU_LIST)
     @Produces(MediaType.APPLICATION_JSON)
@@ -138,6 +152,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("查询代发商品列表",goodsBiz.queryExternalItems(form));
     }
 
+    @ApiOperation("新增代发商品")
     @POST
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU)
     @Produces(MediaType.APPLICATION_JSON)
@@ -147,6 +162,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("新增代发商品成功", "");
     }
 
+    @ApiOperation("代发商品起停用")
     @PUT
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM__VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -159,6 +175,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
+    @ApiOperation("更新代发商品")
     @PUT
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -168,6 +185,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("更新代发商品成功", "");
     }
 
+    @ApiOperation("检查属性启停用状态")
     @GET
     @Path(SupplyConstants.Goods.CHECK_PROPERTY_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
@@ -176,6 +194,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("检查属性启停用状态成功","");
     }
 
+    @ApiOperation("查询供应商列表")
     @GET
     @Path(SupplyConstants.Goods.SUPPLIERS_LIST)
     @Produces(MediaType.APPLICATION_JSON)
@@ -184,6 +203,7 @@ public class GoodsResource {
 
     }
 
+    @ApiOperation("检查条形码是否可用")
     @POST
     @Path(SupplyConstants.Goods.CHECK_BARCODE_ONLY)
     @Produces(MediaType.APPLICATION_JSON)
@@ -197,6 +217,7 @@ public class GoodsResource {
         }
     }
 
+    @ApiOperation("条形码校验")
     @POST
     @Path(SupplyConstants.Goods.SKU_INFO_BAR)
     @Produces(MediaType.APPLICATION_JSON)
@@ -206,6 +227,7 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("条形码可用", "");
     }
 
+    @ApiOperation("导出代发商品")
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_EXPORT)
     @Consumes("text/plain;charset=utf-8")
@@ -214,6 +236,7 @@ public class GoodsResource {
         return goodsBiz.exportExternalGoods(queryModel, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
+    @ApiOperation("导出自采商品")
     @GET
     @Path(SupplyConstants.Goods.ITEMS_EXPORT)
     @Consumes("text/plain;charset=utf-8")
