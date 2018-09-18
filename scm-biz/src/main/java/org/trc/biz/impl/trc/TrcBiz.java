@@ -2965,8 +2965,10 @@ public class TrcBiz implements ITrcBiz {
         afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
         //售后单类型为退货的
         afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
+        //售后状态为待客户发货的
+        afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
         afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
-        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
+        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询待客户发货的售后单信息为空!");
         //更新售后单
         afterSaleOrder.setLogisticsCorporationCode(afterSaleWaybillForm.getLogisticsCorporationCode());
         afterSaleOrder.setLogisticsCorporation(afterSaleWaybillForm.getLogisticsCorporation());
