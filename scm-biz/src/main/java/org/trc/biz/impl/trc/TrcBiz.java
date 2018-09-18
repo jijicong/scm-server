@@ -2304,7 +2304,7 @@ public class TrcBiz implements ITrcBiz {
 		//线上退货
 		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
 			//判断该订单能否退货
-			boolean canReturn=judgeCanReturn(shopOrderCode,details.get(0));
+			boolean canReturn=judgeCanReturn(shopOrderCode,details.get(0),shopOrder);
 			if(canReturn) {
 				 afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
 			}else {
@@ -2315,7 +2315,7 @@ public class TrcBiz implements ITrcBiz {
 		//线上取消发货
 		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.CANCEL_DELIVER.getCode()) {
 			//判断该订单能否取消发货   确认是等待供应商发货还是 等待仓库发货
-			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
+			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0),shopOrder);
 			if(canCancel) {
 				//创建售后单（待客户发货）  取消失败返回null
 				Map<String,Object> result=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
@@ -2391,9 +2391,10 @@ public class TrcBiz implements ITrcBiz {
 		
 	}
 
-	private boolean judgeCanCancel(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+	private boolean judgeCanCancel(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail,ShopOrder shopOrder) {
 		OrderItem orderItemSelect=new OrderItem();
 		orderItemSelect.setShopOrderCode(shopOrderCode);
+        orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 		AssertUtil.notBlank(taiRanAfterSaleOrderDetail.getSkuCode(), "skuCode不能为空!");
 		orderItemSelect.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
 		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
@@ -2404,9 +2405,10 @@ public class TrcBiz implements ITrcBiz {
 		return false;
 	}
 
-	private boolean judgeCanReturn(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+	private boolean judgeCanReturn(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail,ShopOrder shopOrder) {
 		OrderItem orderItemSelect=new OrderItem();
 		orderItemSelect.setShopOrderCode(shopOrderCode);
+        orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 		AssertUtil.notBlank(taiRanAfterSaleOrderDetail.getSkuCode(), "skuCode不能为空!");
 		orderItemSelect.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
 		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
