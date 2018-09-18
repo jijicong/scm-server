@@ -122,6 +122,8 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
                     }
                 }
             }
+        }else {
+            logger.info("没有查询到取消中的售后单!");
         }
     }
 
