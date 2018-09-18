@@ -2526,7 +2526,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
                                 importOrderInfo.getFlag()){
                             importOrderInfo.setFlag(false);
                             setImportOrderErrorMsg(importOrderInfo, String.format("同一订单中的商品%s库存不足", sb.substring(0, sb.length() - 1)));
-                            sb.append(importOrderInfo.getSkuCode());
+                            //sb.append(importOrderInfo.getSkuCode());
                             break;
                         }
                     }
