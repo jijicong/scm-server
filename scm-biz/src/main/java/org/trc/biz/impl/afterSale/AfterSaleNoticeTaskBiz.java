@@ -25,6 +25,7 @@ import org.trc.service.ITrcService;
 import org.trc.service.afterSale.IAfterSaleOrderDetailService;
 import org.trc.service.afterSale.IAfterSaleOrderService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
@@ -50,9 +51,15 @@ public class AfterSaleNoticeTaskBiz implements IAfterSaleNoticeTaskBiz {
     @Autowired
     private TrcConfig trcConfig;
 
+    @Autowired
+    private IRealIpService iRealIpService;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void cancelSendOutGoods() {
+        if (!iRealIpService.isRealTimerService()){
+            return;
+        }
         //1.售后单状态为取消中,售后类型为取消发货的售后单
         Example example = new Example(AfterSaleOrder.class);
         Example.Criteria criteria = example.createCriteria();
