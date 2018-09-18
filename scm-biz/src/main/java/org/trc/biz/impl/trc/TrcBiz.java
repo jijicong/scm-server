@@ -2292,6 +2292,8 @@ public class TrcBiz implements ITrcBiz {
 		
 		ShopOrder shopOrderselect=new ShopOrder();
 		shopOrderselect.setShopOrderCode(shopOrderCode);
+        shopOrderselect.setChannelCode(afterSaleOrderDO.getChannelCode() );
+        shopOrderselect.setSellCode(afterSaleOrderDO.getSellCode());
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
 		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
 		String afterSaleCode=null;
@@ -2302,7 +2304,7 @@ public class TrcBiz implements ITrcBiz {
 		//线上退货
 		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
 			//判断该订单能否退货
-			boolean canReturn=judgeCanReturn(shopOrderCode,details.get(0));
+			boolean canReturn=judgeCanReturn(shopOrderCode,details.get(0),shopOrder);
 			if(canReturn) {
 				 afterSaleCode=ReturnGoods(afterSaleOrderDO,shopOrder,returnScene);
 			}else {
@@ -2313,7 +2315,7 @@ public class TrcBiz implements ITrcBiz {
 		//线上取消发货
 		if(returnScene==returnSceneEnum.STATUS_1.getCode() && afterSaleType==AfterSaleTypeEnum.CANCEL_DELIVER.getCode()) {
 			//判断该订单能否取消发货   确认是等待供应商发货还是 等待仓库发货
-			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0));
+			boolean canCancel=judgeCanCancel(shopOrderCode,details.get(0),shopOrder);
 			if(canCancel) {
 				//创建售后单（待客户发货）  取消失败返回null
 				Map<String,Object> result=onlineCancel(afterSaleOrderDO,shopOrder,returnScene);
@@ -2389,9 +2391,10 @@ public class TrcBiz implements ITrcBiz {
 		
 	}
 
-	private boolean judgeCanCancel(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+	private boolean judgeCanCancel(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail,ShopOrder shopOrder) {
 		OrderItem orderItemSelect=new OrderItem();
 		orderItemSelect.setShopOrderCode(shopOrderCode);
+        orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 		AssertUtil.notBlank(taiRanAfterSaleOrderDetail.getSkuCode(), "skuCode不能为空!");
 		orderItemSelect.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
 		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
@@ -2402,9 +2405,10 @@ public class TrcBiz implements ITrcBiz {
 		return false;
 	}
 
-	private boolean judgeCanReturn(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail) {
+	private boolean judgeCanReturn(String shopOrderCode, TaiRanAfterSaleOrderDetail taiRanAfterSaleOrderDetail,ShopOrder shopOrder) {
 		OrderItem orderItemSelect=new OrderItem();
 		orderItemSelect.setShopOrderCode(shopOrderCode);
+        orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 		AssertUtil.notBlank(taiRanAfterSaleOrderDetail.getSkuCode(), "skuCode不能为空!");
 		orderItemSelect.setSkuCode(taiRanAfterSaleOrderDetail.getSkuCode());
 		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
@@ -2422,7 +2426,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
@@ -2443,6 +2447,7 @@ public class TrcBiz implements ITrcBiz {
 		TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0);
 		OrderItem orderItemSelect=new OrderItem();
 		orderItemSelect.setShopOrderCode(shopOrderCode);
+        orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 		AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
 		orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
@@ -2492,7 +2497,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
@@ -2522,6 +2527,7 @@ public class TrcBiz implements ITrcBiz {
 
 			OrderItem orderItemSelect=new OrderItem();
 			orderItemSelect.setShopOrderCode(shopOrderCode);
+            orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 			AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
 			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
@@ -2832,6 +2838,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());
+        afterSaleOrder.setRequestNo(afterSaleOrderDO.getRequestNo());
 		//实体店退货
 		if(returnScene==returnSceneEnum.STATUS_0.getCode()) {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_2.getCode());
@@ -2882,14 +2889,13 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setReturnAddress(warehouseInfo.getAddress());
 		afterSaleOrder.setReturnWarehouseName(warehouseInfo.getWarehouseName());
 		afterSaleOrder.setMemo(afterSaleOrderDO.getMemo());
-//		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
-//		afterSaleOrder.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
-//		afterSaleOrder.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
 		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.CANCEL_DELIVER.getCode());
 		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_0.getCode());
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());
 		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
+        afterSaleOrder.setReturnScene(returnScene);
+        afterSaleOrder.setRequestNo(afterSaleOrderDO.getRequestNo());
 		return afterSaleOrder;
 	}
 	
@@ -2945,7 +2951,7 @@ public class TrcBiz implements ITrcBiz {
 			}
             //日志
             logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
-                    "admin", scmCancelAfterSaleOrderResponse.getMessage(), "", null);
+                    "admin", "取消售后单", "", null);
 
 		}
 		return data;
