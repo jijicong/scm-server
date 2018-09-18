@@ -2345,6 +2345,12 @@ public class TrcBiz implements ITrcBiz {
 		String returnWarehouseCode=afterSaleOrderDO.getReturnWarehouseCode();
 		AssertUtil.notBlank(returnWarehouseCode, "入库仓库仓库编码不能为空 !");
 
+		String channelCode=afterSaleOrderDO.getChannelCode();
+        AssertUtil.notBlank(channelCode, "渠道编码不能为空 !");
+
+		String sellCode=afterSaleOrderDO.getSellCode();
+        AssertUtil.notBlank(sellCode, "销售渠道不能为空 !");
+
         //退货场景：0实体店退货，1线上商城退货
         int returnScene=afterSaleOrderDO.getReturnScene();
         AssertUtil.isTrue((returnScene==0 ||returnScene==1),"returnScene只能传0或者1");
@@ -2416,7 +2422,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
