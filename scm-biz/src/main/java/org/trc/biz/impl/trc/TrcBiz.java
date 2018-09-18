@@ -2292,6 +2292,8 @@ public class TrcBiz implements ITrcBiz {
 		
 		ShopOrder shopOrderselect=new ShopOrder();
 		shopOrderselect.setShopOrderCode(shopOrderCode);
+        shopOrderselect.setChannelCode(afterSaleOrderDO.getChannelCode() );
+        shopOrderselect.setSellCode(afterSaleOrderDO.getSellCode());
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
 		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
 		String afterSaleCode=null;
@@ -2832,6 +2834,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());
+        afterSaleOrder.setRequestNo(afterSaleOrderDO.getRequestNo());
 		//实体店退货
 		if(returnScene==returnSceneEnum.STATUS_0.getCode()) {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_2.getCode());
@@ -2882,14 +2885,13 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setReturnAddress(warehouseInfo.getAddress());
 		afterSaleOrder.setReturnWarehouseName(warehouseInfo.getWarehouseName());
 		afterSaleOrder.setMemo(afterSaleOrderDO.getMemo());
-//		afterSaleOrder.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
-//		afterSaleOrder.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
-//		afterSaleOrder.setWaybillNumber(afterSaleOrderDO.getWaybillNumber());
 		afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.CANCEL_DELIVER.getCode());
 		afterSaleOrder.setLaunchType(launchTypeEnum.STATUS_0.getCode());
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());
 		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
+        afterSaleOrder.setReturnScene(returnScene);
+        afterSaleOrder.setRequestNo(afterSaleOrderDO.getRequestNo());
 		return afterSaleOrder;
 	}
 	
@@ -2945,7 +2947,7 @@ public class TrcBiz implements ITrcBiz {
 			}
             //日志
             logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(),
-                    "admin", scmCancelAfterSaleOrderResponse.getMessage(), "", null);
+                    "admin", "取消售后单", "", null);
 
 		}
 		return data;
