@@ -2426,7 +2426,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
@@ -2447,6 +2447,7 @@ public class TrcBiz implements ITrcBiz {
 		TaiRanAfterSaleOrderDetail afterSaleOrderDetailDO=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0);
 		OrderItem orderItemSelect=new OrderItem();
 		orderItemSelect.setShopOrderCode(shopOrderCode);
+        orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 		AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
 		orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 		OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
@@ -2496,7 +2497,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
@@ -2526,6 +2527,7 @@ public class TrcBiz implements ITrcBiz {
 
 			OrderItem orderItemSelect=new OrderItem();
 			orderItemSelect.setShopOrderCode(shopOrderCode);
+            orderItemSelect.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
 			AssertUtil.notBlank(afterSaleOrderDetailDO.getSkuCode(), "子订单的sku不能为空!");
 			orderItemSelect.setSkuCode(afterSaleOrderDetailDO.getSkuCode());
 			OrderItem orderItem=orderItemService.selectOne(orderItemSelect);
