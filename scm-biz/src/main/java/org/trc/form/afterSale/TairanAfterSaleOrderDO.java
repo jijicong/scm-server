@@ -77,4 +77,16 @@ public class TairanAfterSaleOrderDO {
 	@QueryParam("afterSaleOrderDetailList")
 	private List<TaiRanAfterSaleOrderDetail> afterSaleOrderDetailList;
 
+    /**
+     * 渠道编码
+     */
+    @QueryParam("channelCode")
+    private String channelCode;
+
+    /**
+     * 销售渠道
+     */
+    @QueryParam("sellCode")
+    private String sellCode;
+
 }

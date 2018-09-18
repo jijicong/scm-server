@@ -2355,7 +2355,8 @@ public class TrcBiz implements ITrcBiz {
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
 		if(details.size()>1) {
-			AssertUtil.notNull(null, "售后单详情只能包含一个sku!");
+			AssertUtil.notNull(null, "售后单详情只能包含一个s" +
+                    "ku!");
 		}
 		
 		String skuCode=afterSaleOrderDO.getAfterSaleOrderDetailList().get(0).getSkuCode();
@@ -2485,7 +2486,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
+		//platformOrderSelect.setChannelCode(shopOrder.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
