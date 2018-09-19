@@ -2973,10 +2973,9 @@ public class TrcBiz implements ITrcBiz {
         afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
         //售后单类型为退货的
         afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
-        //售后状态为待客户发货的
-        afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
         afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
-        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询待客户发货的售后单信息为空!");
+        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
+        AssertUtil.isTrue(afterSaleOrder.getStatus() == 0, "状态非待客户发货");
         //更新售后单
         afterSaleOrder.setLogisticsCorporationCode(afterSaleWaybillForm.getLogisticsCorporationCode());
         afterSaleOrder.setLogisticsCorporation(afterSaleWaybillForm.getLogisticsCorporation());
@@ -3018,7 +3017,7 @@ public class TrcBiz implements ITrcBiz {
            throw new AfterSaleException(ExceptionEnum.SYSTEM_EXCEPTION,appResult.getDatabuffer());
         }else {
             //记录日志
-            logInfoService.recordLog(afterSaleOrder,afterSaleOrder.getId(),"admin",LogOperationEnum.UPDATE.getMessage(),"接收物流单号","");
+            logInfoService.recordLog(afterSaleOrder,afterSaleOrder.getId(),"admin",LogOperationEnum.UPDATE_LOGISTICS_NUM.getMessage(),afterSaleOrder.getLogisticsCorporation()+":"+afterSaleOrder.getWaybillNumber(),"");
         }
     }
 
