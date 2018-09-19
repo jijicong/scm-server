@@ -1,5 +1,6 @@
 package org.trc.domain.goods;
 
+import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.Length;
 import org.trc.domain.util.ScmDO;
 
@@ -13,31 +14,46 @@ import javax.ws.rs.PathParam;
 public class ItemNaturePropery extends ScmDO{
     private static final long serialVersionUID = 7225076807216077978L;
 
+    @ApiParam(value = "主键ID")
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @ApiParam(value = "商品ID")
     @FormParam("itemId")
     private Long itemId;
+    @ApiParam(value = "商品SPU编号")
     @FormParam("spuCode")
     @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
+    @ApiParam(value = "属性ID")
     @FormParam("propertyId")
     private Long propertyId;
+    @ApiParam(value = "属性名称")
     @Transient
     private String propertyName;
+    @ApiParam(value = "属性值ID")
     @FormParam("propertyValueId")
     private Long propertyValueId;
-    @FormParam("isValid")
+    @ApiParam(value = "是否有效:0-否,1-是")
+    @FormParam("是否有效:0-否,1-是")
     @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
     private String isValid; //是否有效:0-否,1-是
 
+    @ApiParam(value = "属性值")
     @Transient
     private String propertyValue;
 
     /**
      * 自然属性信息
      */
+    @ApiParam(value = "[\n" +
+            "    {\n" +
+            "        \"propertyId\":\"属性ID\",\n" +
+            "        \"propertyValue\":\"属性名称\"\n" +
+            "        \"propertyValueId\":\"属性值ID\",\n" +
+            "    }\n" +
+            "]")
     @FormParam("naturePropertys")
     @Transient
     private String naturePropertys;
