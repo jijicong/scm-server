@@ -375,26 +375,6 @@ public class TaiRanResource {
         }
     	return trcBiz.afterSaleCreate(afterSaleOrderDO);
 
-
-        //测试数据
-//        TairanAfterSaleOrderDO as=new TairanAfterSaleOrderDO();
-//        as.setRequestNo(new Date().getTime()+"");
-//        as.setShopOrderCode("7774561469");
-//        as.setReturnScene(1);
-//        as.setAfterSaleType(1);
-//        as.setReturnWarehouseCode("CK00273");
-//
-//        List<TaiRanAfterSaleOrderDetail> list=new ArrayList<>();
-//        TaiRanAfterSaleOrderDetail detail=new TaiRanAfterSaleOrderDetail();
-//        detail.setSkuCode("SP0201808070000833");
-//        detail.setRefundAmont(new BigDecimal(1));
-//        list.add(detail);
-//
-//        as.setAfterSaleOrderDetailList(list);
-//
-//        trcBiz.afterSaleCreate(as);
-//        return new ResponseAck("200","24","234");
-
     }
     
     /**
