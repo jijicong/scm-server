@@ -840,6 +840,7 @@ public class ReportBiz implements IReportBiz {
             long entryTotalQuantity = 0;    //本期入库总数量
             long outboundTotalQuantity = 0; //本期出库总数量
             long balanceTotalQuantity = 0; //期末结存数量
+            long initialQuantity = 0;
 
             for (ReportInventory inventory : reportInventorys) {
                 if (StringUtils.equals(reportInventory.getWarehouseCode(), inventory.getWarehouseCode())
@@ -859,6 +860,9 @@ public class ReportBiz implements IReportBiz {
                     normalToDefective += inventory.getNormalToDefective();
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
+
+                    initialQuantity = inventory.getInitialQuantity();
+                    //默认最后一天的期末数量
                     balanceTotalQuantity = inventory.getBalanceTotalQuantity();
 
                     reportInventory.setGoodsType(inventory.getGoodsType());
@@ -888,8 +892,9 @@ public class ReportBiz implements IReportBiz {
             } else {
                 reportInventory.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
             }
+
             //默认第一天的期初数量
-            reportInventory.setInitialQuantity(reportInventorys.get(0).getInitialQuantity());
+            reportInventory.setInitialQuantity(initialQuantity);
             //默认最后一天的期末数量
             reportInventory.setBalanceTotalQuantity(balanceTotalQuantity);
 
