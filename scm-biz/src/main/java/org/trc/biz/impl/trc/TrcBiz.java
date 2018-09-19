@@ -2426,7 +2426,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
+//		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
@@ -2497,7 +2497,7 @@ public class TrcBiz implements ITrcBiz {
 		
 		PlatformOrder platformOrderSelect=new PlatformOrder();
 		platformOrderSelect.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
+//		platformOrderSelect.setChannelCode(afterSaleOrderDO.getChannelCode());
 		PlatformOrder platformOrder=platformOrderService.selectOne(platformOrderSelect);
 		AssertUtil.notNull(platformOrder, "根据该平台订单编码"+shopOrder.getPlatformOrderCode()+"查询到的平台订单信息为空!");
 		
@@ -2779,7 +2779,7 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleWarehouseNotice.setSkuNum(afterSaleOrderDO.getAfterSaleOrderDetailList().size());
 		afterSaleWarehouseNotice.setOperator("系统");
 		afterSaleWarehouseNotice.setRemark(afterSaleOrderDO.getMemo());
-		//afterSaleWarehouseNotice.setCreateOperator(aclUserAccreditInfo.getUserId());
+		afterSaleWarehouseNotice.setCreateOperator("系统");
 		afterSaleWarehouseNotice.setCreateTime(new Date());
 		afterSaleWarehouseNotice.setLogisticsCorporation(afterSaleOrderDO.getLogisticsCorporation());
 		afterSaleWarehouseNotice.setLogisticsCorporationCode(afterSaleOrderDO.getLogisticsCorporationCode());
@@ -2839,6 +2839,8 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setCreateTime(new Date());
 		afterSaleOrder.setUpdateTime(new Date());
         afterSaleOrder.setRequestNo(afterSaleOrderDO.getRequestNo());
+        afterSaleOrder.setCreateOperator("系统" );
+        afterSaleOrder.setUpdateOperator("系统");
 		//实体店退货
 		if(returnScene==returnSceneEnum.STATUS_0.getCode()) {
 			afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_2.getCode());
@@ -2896,6 +2898,8 @@ public class TrcBiz implements ITrcBiz {
 		afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
         afterSaleOrder.setReturnScene(returnScene);
         afterSaleOrder.setRequestNo(afterSaleOrderDO.getRequestNo());
+        afterSaleOrder.setUpdateOperator("系统");
+        afterSaleOrder.setCreateOperator("系统");
 		return afterSaleOrder;
 	}
 	
