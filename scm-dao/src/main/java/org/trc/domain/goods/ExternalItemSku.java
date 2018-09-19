@@ -1,5 +1,6 @@
 package org.trc.domain.goods;
 
+import io.swagger.annotations.ApiParam;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
@@ -23,40 +24,48 @@ public class ExternalItemSku implements Serializable{
 
     private static final long serialVersionUID = 1795135627029382258L;
     // 主键
+    @ApiParam(value = "主键ID")
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // 供应商id
+    @ApiParam(value = "供应商id")
     @FormParam("supplierId")
     private Long supplierId;
 
+    @ApiParam(value = "供应商编号")
     // 供应链编号
     @FormParam("supplierCode")
     @Length(max = 32, message = "供应商编号长度不能超过32个")
     private String supplierCode;
 
+    @ApiParam(value = "供应商名称")
     // 供应链名称
     @FormParam("supplierName")
     @Length(max = 64, message = "供应商名称长度不能超过64个")
     private String supplierName;
 
+    @ApiParam(value = "商品SKU编号")
     // 商品SKU编号
     @FormParam("skuCode")
     @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
 
+    @ApiParam(value = "供应商商品sku编号")
     // 供应商商品sku编号
     @FormParam("supplierSkuCode")
     @Length(max = 32, message = "供应商商品sku编号长度不能超过32个")
     private String supplierSkuCode;
 
+    @ApiParam(value = "商品名称")
     // 商品名称
     @FormParam("itemName")
     @Length(max = 128, message = "商品名称长度不能超过128个")
     private String itemName;
 
+    @ApiParam(value = "条形码")
     // 条形码
     @FormParam("barCode")
     @Length(max = 64, message = "条形码长度不能超过64个")
@@ -65,121 +74,147 @@ public class ExternalItemSku implements Serializable{
     @Transient
     private String barCode2;
 
+    @ApiParam(value = "供货价")
     // 供货价,单位/分
     @JsonSerialize(using = MoneySerializer.class)
     private Long supplyPrice;
 
+    @ApiParam(value = "供应商售价")
     // 供应商售价,单位/分
     @JsonSerialize(using = MoneySerializer.class)
     private Long supplierPrice;
 
+    @ApiParam(value = "市场参考价")
     // 市场参考价,单位/分
     @JsonSerialize(using = MoneySerializer.class)
     private Long marketReferencePrice;
 
+    @ApiParam(value = "仓库")
     // 仓库
     @FormParam("warehouse")
     @Length(max = 32, message = "仓库长度不能超过32个")
     private String warehouse;
 
+    @ApiParam(value = "商品副标题")
     // 商品副标题
     @FormParam("subtitle")
     @Length(max = 64, message = "商品副标题长度不能超过64个")
     private String subtitle;
 
+    @ApiParam(value = "品牌")
     // 品牌
     @FormParam("brand")
     @Length(max = 32, message = "品牌长度不能超过32个")
     private String brand;
 
     // 分类
+    @ApiParam(value = "分类名称")
     @FormParam("category")
     @Length(max = 32, message = "分类名称长度不能超过32个")
     private String category;
 
     // 分类名称
+    @ApiParam(value = "分类编码")
     @FormParam("categoryCode")
     @Length(max = 64, message = "分类编码长度不能超过64个")
     private String categoryCode;
 
     // 重量,单位/克
+    @ApiParam(value = "重量")
     @FormParam("weight")
     @JsonSerialize(using = WeightSerializer.class)
     private Long weight;
 
     // 产地
+    @ApiParam(value = "产地")
     @FormParam("producingArea")
     @Length(max = 32, message = "产地长度不能超过32个")
     private String producingArea;
 
     // 发货地
+    @ApiParam(value = "发货地")
     @FormParam("placeOfDelivery")
     @Length(max = 64, message = "发货地长度不能超过64个")
     private String placeOfDelivery;
 
     // 商品类型
+    @ApiParam(value = "商品类型")
     @FormParam("itemType")
     @Length(max = 16, message = "商品类型长度不能超过16个")
     private String itemType;
 
     // 1-普通商品 2-跨境直邮 3-跨境保税
+    @ApiParam(value = "1-普通商品 2-跨境直邮 3-跨境保税")
     @FormParam("tariff")
     private Double tariff;
 
     // 商品主图
+    @ApiParam(value = "商品主图")
     @FormParam("mainPictrue")
     @Length(max = 256, message = "商品主图长度不能超过256个")
     private String mainPictrue;
 
     // 详情图
+    @ApiParam(value = "详情图")
     @FormParam("detailPictrues")
     private String detailPictrues;
 
     // 商品主图(七牛存储路径)
+    @ApiParam(value = " 商品主图(七牛存储路径)")
     @FormParam("mainPictrue")
     @Length(max = 256, message = "商品主图长度不能超过256个")
     private String mainPictrue2;
 
     //详情图(七牛存储路径)
+    @ApiParam(value = "详情图(七牛存储路径)")
     @FormParam("detailPictrues")
     private String detailPictrues2;
 
     // 详情
+    @ApiParam(value = "aaa")
     @FormParam("detail")
     @Length(max = 1024, message = "详情长度不能超过1024个")
     private String detail;
 
     // 属性
+    @ApiParam(value = "属性")
     @FormParam("properties")
     @Length(max = 512, message = "属性长度不能超过512个")
     private String properties;
 
     // 库存
+    @ApiParam(value = "库存")
     @FormParam("stock")
     private Long stock;
 
     // 是否有效:0-无效,1-有效
+    @ApiParam(value = "是否有效:0-无效,1-有效")
     @FormParam("isValid")
     @Length(max = 2, message = "是否有效长度不能超过2个")
     private String isValid;
 
     // 是否删除:0-否,1-是
+    @ApiParam(value = "是否删除:0-否,1-是")
     @Length(max = 2, message = "是否删除长度不能超过2个")
     private String isDeleted;
 
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
+    @ApiParam(value = "aaa")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
 
     // 最后更新时间,格式yyyy-mm-dd hh:mi:ss
+    @ApiParam(value = "aaa")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
     // 上下架状态
+    @ApiParam(value = "上下架状态:0-下架,1-上架")
     @FormParam("state")
     private String state;
 
     //京东图片url
+    @ApiParam(value = "京东图片url")
     @Transient
     private String jdPictureUrl;
 
@@ -190,9 +225,11 @@ public class ExternalItemSku implements Serializable{
 
 
     // 上一次同步时间,格式yyyy-mm-dd hh:mi:ss
+    @ApiParam(value = "aaa")
     @FormParam("notifyTime")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date notifyTime;
+    @ApiParam(value = "aaa")
     @FormParam("minBuyCount")
     private Integer minBuyCount;
 

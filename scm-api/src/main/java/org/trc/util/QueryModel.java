@@ -1,13 +1,12 @@
 package org.trc.util;
 
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;
-
-import io.swagger.annotations.ApiParam;
 
 import javax.ws.rs.QueryParam;
 import java.io.Serializable;
@@ -43,11 +42,13 @@ public class QueryModel implements Serializable{
     /**
      排序字段，多个用逗号","分割
      */
+    @ApiParam(value = "排序字段，多个用逗号\",\"分割")
     @QueryParam("orderBy")
     protected String orderBy = null;
     /**
      排序方向，多个用逗号","分割。个数和顺序与排序字段orderBy个数和顺序对应
      */
+    @ApiParam(value = "排序方向，多个用逗号\",\"分割。个数和顺序与排序字段orderBy个数和顺序对应")
     @QueryParam("order")
     protected String order = null;
 
