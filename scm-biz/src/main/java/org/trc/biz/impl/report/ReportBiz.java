@@ -1044,7 +1044,7 @@ public class ReportBiz implements IReportBiz {
     private void createCellDefinitionForEntry(List<CellDefinition> cellDefinitionList) {
         CellDefinition warehouseName = new CellDefinition("warehouseName", "入库仓库名称", CellDefinition.TEXT, null, 15000);
         CellDefinition stockType = new CellDefinition("stockType", "库存类型", CellDefinition.TEXT, null, 4000);
-        CellDefinition entryTime = new CellDefinition("entryTime", "入库时间", CellDefinition.TEXT, null, 10000);
+        CellDefinition entryTimeValue = new CellDefinition("entryTimeValue", "入库时间", CellDefinition.TEXT, null, 10000);
         CellDefinition operationType = new CellDefinition("operationType", "入库类型", CellDefinition.TEXT, null, 6000);
         CellDefinition orderCode = new CellDefinition("orderCode", "入库单编号", CellDefinition.TEXT, null, 6000);
         CellDefinition warehouseOrderCode = new CellDefinition("warehouseOrderCode", "仓库反馈入库单编号", CellDefinition.TEXT, null, 6000);
@@ -1064,7 +1064,7 @@ public class ReportBiz implements IReportBiz {
 
         cellDefinitionList.add(warehouseName);
         cellDefinitionList.add(stockType);
-        cellDefinitionList.add(entryTime);
+        cellDefinitionList.add(entryTimeValue);
         cellDefinitionList.add(operationType);
         cellDefinitionList.add(orderCode);
         cellDefinitionList.add(warehouseOrderCode);
@@ -1086,7 +1086,7 @@ public class ReportBiz implements IReportBiz {
     private void createCellDefinitionForOutbound(List<CellDefinition> cellDefinitionList) {
         CellDefinition warehouseName = new CellDefinition("warehouseName", "出库仓库名称", CellDefinition.TEXT, null, 15000);
         CellDefinition stockType = new CellDefinition("stockType", "库存类型", CellDefinition.TEXT, null, 4000);
-        CellDefinition outboundTime = new CellDefinition("outboundTime", "出库时间", CellDefinition.TEXT, null, 4000);
+        CellDefinition outboundTimeValue = new CellDefinition("outboundTimeValue", "出库时间", CellDefinition.TEXT, null, 4000);
         CellDefinition operationType = new CellDefinition("operationType", "出库类型", CellDefinition.TEXT, null, 4000);
         CellDefinition outboundOrderCode = new CellDefinition("outboundOrderCode", "出库单编号", CellDefinition.TEXT, null, 4000);
         CellDefinition warehouseOutboundOrderCode = new CellDefinition("warehouseOutboundOrderCode", "仓库反馈出库单号", CellDefinition.TEXT, null, 4000);
@@ -1114,7 +1114,8 @@ public class ReportBiz implements IReportBiz {
 
         cellDefinitionList.add(warehouseName);
         cellDefinitionList.add(stockType);
-        cellDefinitionList.add(outboundTime);
+        cellDefinitionList.add(stockType);
+        cellDefinitionList.add(outboundTimeValue);
         cellDefinitionList.add(operationType);
         cellDefinitionList.add(outboundOrderCode);
         cellDefinitionList.add(warehouseOutboundOrderCode);
