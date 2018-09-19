@@ -451,7 +451,7 @@ public class ReportBiz implements IReportBiz {
         if (StringUtils.isNotBlank(form.getDate())) {
             criteria.andCondition("DATE_FORMAT( `outbound_time`, '%Y%m' ) = DATE_FORMAT( '" + form.getDate() + "' , '%Y%m' )");
         } else {
-            criteria.andBetween("outboundTime", form.getStartDate(), form.getEndDate());
+            criteria.andBetween("outboundTime", form.getStartDate(), form.getEndDate() + " 23:59:59");
         }
 
         if (StringUtils.isNotBlank(form.getOutboundOrderCode())) {
@@ -587,7 +587,7 @@ public class ReportBiz implements IReportBiz {
         if (StringUtils.isNotBlank(form.getDate())) {
             criteria.andCondition("DATE_FORMAT( `entry_time`, '%Y%m' ) = DATE_FORMAT( '" + form.getDate() + "' , '%Y%m' )");
         } else {
-            criteria.andBetween("entryTime", form.getStartDate(), form.getEndDate());
+            criteria.andBetween("entryTime", form.getStartDate(), form.getEndDate() + " 23:59:59");
         }
 
         if (StringUtils.isNotBlank(form.getPurchaseOrderCode())) {
