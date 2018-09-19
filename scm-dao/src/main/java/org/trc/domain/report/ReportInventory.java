@@ -3,6 +3,7 @@ package org.trc.domain.report;
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
+import org.trc.custom.CustomLongSerializer;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -55,6 +56,7 @@ public class ReportInventory extends ReportBase implements Serializable {
      */
     @Column(name = "initial_quantity")
     @ApiModelProperty(value = "期初数量")
+    @JsonSerialize(using = CustomLongSerializer.class)
     private Long initialQuantity;
 
     /**
@@ -181,6 +183,7 @@ public class ReportInventory extends ReportBase implements Serializable {
      */
     @Column(name = "balance_total_quantity")
     @ApiModelProperty(value = "期末结存数量")
+    @JsonSerialize(using = CustomLongSerializer.class)
     private Long balanceTotalQuantity;
 
     /**
