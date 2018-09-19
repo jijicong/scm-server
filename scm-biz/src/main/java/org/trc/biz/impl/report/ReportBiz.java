@@ -560,9 +560,11 @@ public class ReportBiz implements IReportBiz {
             }
 
             //销售渠道
-            SellChannel sellChannel = sellChannelService.selectSellByCode(reportOutboundDetail.getSellCode());
-            if (sellChannel != null) {
-                reportOutboundDetail.setSellName(sellChannel.getSellName());
+            if(StringUtils.isNotBlank(reportOutboundDetail.getSellCode())){
+                SellChannel sellChannel = sellChannelService.selectSellByCode(reportOutboundDetail.getSellCode());
+                if (sellChannel != null) {
+                    reportOutboundDetail.setSellName(sellChannel.getSellName());
+                }
             }
         }
     }
@@ -976,11 +978,11 @@ public class ReportBiz implements IReportBiz {
         }
         info.forEach(obj -> {
             if (obj instanceof ReportBase) {
-                if (((ReportBase) obj).getGoodsType() != null) {
+                if (StringUtils.isNotBlank(((ReportBase) obj).getGoodsType())) {
                     ((ReportBase) obj).setGoodsType(GoodsTypeEnum.queryNameByCode(((ReportBase) obj).
                             getGoodsType()).getName());
                 }
-                if (((ReportBase) obj).getStockType() != null) {
+                if (StringUtils.isNotBlank(((ReportBase) obj).getStockType())) {
                     ((ReportBase) obj).setStockType(StockTypeEnum.queryNameByCode(((ReportBase) obj).
                             getStockType()).getName());
                 }
