@@ -33,7 +33,7 @@ public class ReportInventoryForm implements Serializable {
     @QueryParam("warehouseCode")
     private String warehouseCode;
 
-    @QueryParam("开始日期")
+    @QueryParam("startDate")
     @ApiParam(value = "仓库CODE")
     private String startDate;
 

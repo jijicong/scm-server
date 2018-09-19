@@ -84,7 +84,7 @@ public class ReportResource {
     @Path("/downloadAllForWarehouse")
     @ApiOperation(value = "下载具体仓库全部报表")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response downloadAllForWarehouse(@BeanParam ReportInventoryForm form) {
+    public Response downloadAllForWarehouse(@BeanParam ReportInventoryForm form) throws Exception{
         return reportBiz.downloadAllForWarehouse(form);
     }
 
@@ -96,7 +96,7 @@ public class ReportResource {
     @ApiOperation(value = "下载具体仓库当前报表")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadCurrentForWarehouse(@BeanParam ReportInventoryForm form) {
-        return reportBiz.downloadCurrentForWarehouse(form);
+        return reportBiz.downloadCurrentForWarehouse(form, false);
     }
 
     /**
@@ -111,6 +111,6 @@ public class ReportResource {
                 && !StringUtils.isBlank(form.getDate()) && (!StringUtils.isBlank(form.getStartDate()) && !StringUtils.isBlank(form.getEndDate()))) {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "参数校验异常");
         }
-        return reportBiz.downloadCurrentForWarehouse(form);
+        return reportBiz.downloadCurrentForWarehouse(form, true);
     }
 }

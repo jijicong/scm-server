@@ -1,5 +1,6 @@
 package org.trc.domain.goods;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
@@ -17,38 +18,50 @@ import java.util.List;
 public class Skus extends ScmDO {
 
     private static final long serialVersionUID = 2671659563299088628L;
+    @ApiModelProperty("主键ID")
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @ApiModelProperty("sku编码")
     @PathParam("skuCode")
     private String skuCode;
+    @ApiModelProperty("商品ID")
     @FormParam("itemId")
     private Long itemId;
+    @ApiModelProperty("商品SPU编号")
     @FormParam("spuCode")
     @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
+    @ApiModelProperty("属性值id")
     @FormParam("propertyValueId")
     @Length(max = 64, message = "属性值id长度不能超过64个")
     private String propertyValueId;
+    @ApiModelProperty("属性值")
     @FormParam("propertyValue")
     @Length(max = 128, message = "属性值长度不能超过128个")
     private String propertyValue;
+    @ApiModelProperty("条形码")
     @FormParam("barCode")
     @Length(max = 512, message = "条形码长度不能超过256个")
     private String barCode;
+    @ApiModelProperty("市场参考价")
     @FormParam("marketPrice")
     private Long marketPrice;
+    @ApiModelProperty("重量")
     @FormParam("weight")
     private Long weight;
+    @ApiModelProperty("市场参考价2")
     @FormParam("marketPrice2")
     @Transient
     private BigDecimal marketPrice2;
+    @ApiModelProperty("重量2")
     @FormParam("weight2")
     @Transient
     private BigDecimal weight2;
     @FormParam("predictChannelPrice")
     private Long predictChannelPrice;
+    @ApiModelProperty("商品SKU图片")
     @FormParam("picture")
     @Length(max = 1024, message = "商品SKU图片长度不能超过1024个")
     private String picture;
@@ -67,12 +80,14 @@ public class Skus extends ScmDO {
     @FormParam("channel7PreSellPrices")
     private Long channel7PreSellPrices;
 
+    @ApiModelProperty("是否有效:0-否,1-是")
     @FormParam("isValid")
     @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
     private String isValid; //是否有效:0-否,1-是
     /**
      * sku信息
      */
+    @ApiModelProperty("sku信息")
     @FormParam("skusInfo")
     @Transient
     @NotEmpty
@@ -81,53 +96,62 @@ public class Skus extends ScmDO {
     /**
      * 采购属性组合名称
      */
+    @ApiModelProperty(" 采购属性组合名称")
     @Transient
     private String propertyCombineName;
 
     /**
      * 可用库存
      */
+    @ApiModelProperty("可用库存")
     @Transient
     private Long availableInventory;
     /**
      * 真实库存
      */
+    @ApiModelProperty("真实库存")
     @Transient
     private Long realInventory;
     /**
      * 残次品库存
      */
+    @ApiModelProperty("残次品库存")
     @Transient
     private Long defectiveInventory;
 
     /**
      * 商品名称
      */
+    @ApiModelProperty("商品名称")
     @Transient
     private String itemsName;
     /**
      * 分类名称
      */
+    @ApiModelProperty("分类名称")
     @Transient
     private String categoryName;
     /**
      * 品牌名称
      */
+    @ApiModelProperty("品牌名称")
     @Transient
     private String brandName;
     /**
      * 仓库名称
      */
+    @ApiModelProperty("仓库名称")
     @Transient
     private String warehouse;
 
     /**
      * 库存
      */
+    @ApiModelProperty("库存")
     @Transient
     private Long stock;
-    
-    
+
+    @ApiModelProperty("商品SKU名称")
     @FormParam("skuName")
     @Length(max = 256, message = "商品SKU名字不能超过256个")
     private String skuName;
@@ -135,37 +159,45 @@ public class Skus extends ScmDO {
     /**
      * 商品主图，来自spu
      */
+    @ApiModelProperty("商品主图")
     @Transient
     private String mainPicture;
     
     /**
      * sku名称，与skuName相同，提供给泰然城时用
      */
+    @ApiModelProperty("sku名称，与skuName相同，提供给泰然城时用")
     @Transient
     private String name;
     
     /**
      * sku规格信息
-     */   
+     */
+    @ApiModelProperty("sku规格信息")
     @FormParam("specInfo")
     private String specInfo;
-
 
     @Transient
     private List<RequestSkuStock> requestSkuStockList;
 
     //sku关联状态: 1-已关联,0-未关联
+    @ApiModelProperty("sku关联状态: 1-已关联,0-未关联")
     @Transient
     private String skuRelationStatus;
 
+    @ApiModelProperty("分类编码")
     @Transient
     private String categoryCode;
+    @ApiModelProperty("品牌编码")
     @Transient
     private String brandCode;
+    @ApiModelProperty("分类ID")
     @Transient
     private Long categoryId;
+    @ApiModelProperty("品牌ID")
     @Transient
     private Long brandId;
+    @ApiModelProperty("库存列表")
     @Transient
     private List<SkuStock> stockList;
 
