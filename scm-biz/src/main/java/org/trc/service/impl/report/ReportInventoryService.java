@@ -157,6 +157,7 @@ public class ReportInventoryService extends BaseService<ReportInventory, Long> i
         if(StringUtils.isNotBlank(dto.getBarCode())){
             barCodes = Arrays.asList(dto.getBarCode().split(","));
         }
+
         return reportInventoryMapper.selectReportInventoryLimit(dto, skuCodes, barCodes);
     }
 
