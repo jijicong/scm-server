@@ -985,6 +985,12 @@ public class ReportBiz implements IReportBiz {
                             getStockType()).getName());
                 }
             }
+            if(obj instanceof ReportEntryDetail){
+                ((ReportEntryDetail) obj).setEntryTimeValue(DateUtils.formatDateTime(((ReportEntryDetail) obj).getEntryTime()));
+            }
+            if(obj instanceof ReportOutboundDetail){
+                ((ReportOutboundDetail) obj).setOutboundTimeValue(DateUtils.formatDateTime(((ReportOutboundDetail) obj).getOutboundTime()));
+            }
         });
         return ExportExcel.generateExcel(info, cellDefinitionList, fileName);
     }
