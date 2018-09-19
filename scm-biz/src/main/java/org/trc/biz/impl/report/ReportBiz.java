@@ -341,9 +341,9 @@ public class ReportBiz implements IReportBiz {
         fileName = String.format("【%s】残品总库存%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail2 = new ReportExcelDetail();
         hssfWorkbook = this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail2.setStream(stream);
+        ByteArrayOutputStream stream2 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream2);
+        reportExcelDetail2.setStream(stream2);
         reportExcelDetail2.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail2);
 
@@ -353,10 +353,10 @@ public class ReportBiz implements IReportBiz {
         List<ReportEntryDetail> reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品入库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail3 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail3.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode());
+        ByteArrayOutputStream stream3 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream3);
+        reportExcelDetail3.setStream(stream3);
         reportExcelDetail3.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail3);
 
@@ -366,10 +366,10 @@ public class ReportBiz implements IReportBiz {
         reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品入库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail4 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail4.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode());
+        ByteArrayOutputStream stream4 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream4);
+        reportExcelDetail4.setStream(stream4);
         reportExcelDetail4.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail4);
 
@@ -379,10 +379,10 @@ public class ReportBiz implements IReportBiz {
         List<ReportOutboundDetail> reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品出库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail5 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail5.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode());
+        ByteArrayOutputStream stream5 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream5);
+        reportExcelDetail5.setStream(stream5);
         reportExcelDetail5.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail5);
 
@@ -392,10 +392,10 @@ public class ReportBiz implements IReportBiz {
         reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品出库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail6 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail6.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode());
+        ByteArrayOutputStream stream6 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream6);
+        reportExcelDetail6.setStream(stream6);
         reportExcelDetail6.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail6);
 
@@ -840,6 +840,7 @@ public class ReportBiz implements IReportBiz {
             long entryTotalQuantity = 0;    //本期入库总数量
             long outboundTotalQuantity = 0; //本期出库总数量
             long balanceTotalQuantity = 0; //期末结存数量
+            long initialQuantity = 0;
 
             for (ReportInventory inventory : reportInventorys) {
                 if (StringUtils.equals(reportInventory.getWarehouseCode(), inventory.getWarehouseCode())
@@ -859,6 +860,9 @@ public class ReportBiz implements IReportBiz {
                     normalToDefective += inventory.getNormalToDefective();
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
+
+                    initialQuantity = inventory.getInitialQuantity();
+                    //默认最后一天的期末数量
                     balanceTotalQuantity = inventory.getBalanceTotalQuantity();
 
                     reportInventory.setGoodsType(inventory.getGoodsType());
@@ -888,8 +892,9 @@ public class ReportBiz implements IReportBiz {
             } else {
                 reportInventory.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
             }
+
             //默认第一天的期初数量
-            reportInventory.setInitialQuantity(reportInventorys.get(0).getInitialQuantity());
+            reportInventory.setInitialQuantity(initialQuantity);
             //默认最后一天的期末数量
             reportInventory.setBalanceTotalQuantity(balanceTotalQuantity);
 
