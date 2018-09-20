@@ -658,6 +658,7 @@ public class ReportBiz implements IReportBiz {
                 //采购入库
                 if (StringUtils.equals(reportEntryDetail.getOperationType(), StockOperationTypeEnum.PURCHASE.getCode())) {
                     if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
+                        reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
                         reportEntryDetail.setPrice(new BigDecimal(0));
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
@@ -667,6 +668,7 @@ public class ReportBiz implements IReportBiz {
                             details.add(reportEntryDetail);
                         }
                     } else {
+                        reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
                         reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
