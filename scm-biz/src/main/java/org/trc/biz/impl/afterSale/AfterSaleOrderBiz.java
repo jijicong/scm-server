@@ -40,7 +40,6 @@ import org.trc.form.returnIn.ReturnInWmsResponseForm;
 import org.trc.form.warehouse.ScmReturnInOrderDetail;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
-import org.trc.form.warehouse.entryReturnOrder.ScmCancelAfterSaleOrderResponse;
 import org.trc.service.ITrcService;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.System.ISellChannelService;
@@ -1007,6 +1006,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		warehouseNotice.setRecordPic(req.getRecordPicture());
 		warehouseNotice.setConfirmRemark(req.getConfirmRemark());
 		warehouseNotice.setWarehouseTime(req.getWarehouseTime());
+		warehouseNotice.setOperator(req.getOperator());
 		afterSaleWarehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 		/**
 		 * 更新售后单状态及明细
