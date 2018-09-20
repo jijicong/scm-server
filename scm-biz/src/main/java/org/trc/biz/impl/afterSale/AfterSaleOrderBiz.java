@@ -1,5 +1,8 @@
 package org.trc.biz.impl.afterSale;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -135,7 +138,7 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		OrderItem selectOrderItem = new OrderItem();
 		selectOrderItem.setScmShopOrderCode(scmShopOrderCode);
 		List<OrderItem> orderItemList=orderItemService.select(selectOrderItem);
-		AssertUtil.notNull(orderItemList, "没有该订单的数据!");
+		AssertUtil.notEmpty(orderItemList, "没有该订单的数据!");
 		
 		//过滤代发商品
 		List<OrderItem> orderItems=filterSP1(orderItemList);
@@ -143,10 +146,10 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(scmShopOrderCode);
 		List<OutboundOrder> outboundOrderList=outBoundOrderService.select(selectOutboundOrder);
-		AssertUtil.notNull(outboundOrderList, "没有该订单的发货单!");
+		AssertUtil.notEmpty(outboundOrderList, "没有该订单的发货单!");
 		
 		List<OutboundDetail> list=getOutboundDetailList(outboundOrderList);
-		AssertUtil.notNull(list, "没有该订单的发货单详情!");
+		AssertUtil.notEmpty(list, "没有该订单的发货单详情!");
 		
 		List<AfterSaleOrderItemVO> afterSaleOrderItemVOList=new ArrayList<>();
 		for(OrderItem orderItem:orderItems) {
@@ -289,9 +292,11 @@ public class AfterSaleOrderBiz implements IAfterSaleOrderBiz{
 		//通知wms，新增退货入库单
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderAddDO,aclUserAccreditInfo,platformOrder,warehouseInfo);
 		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
-		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
-			AssertUtil.notNull(null, response.getDatabuffer());
-		}
+		AssertUtil.isTrue(StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE), response.getDatabuffer());
+		JSONObject result=JSONArray.parseObject(response.getResult().toString());
+		String flg=result.getString("flag");
+        // 1成功 2失败
+		AssertUtil.isTrue(flg.equals("1"),result.get("message").toString());
 		//通知泰然城退货入库单收货结果
 		try{
 			createAfterSaleNoticeTrc(afterSaleOrder,details);
