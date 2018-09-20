@@ -2982,7 +2982,7 @@ public class TrcBiz implements ITrcBiz {
         afterSaleOrder.setWaybillNumber(afterSaleWaybillForm.getWaybillNumber());
         //修改状态
         afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
-
+        afterSaleOrder.setUpdateTime(Calendar.getInstance().getTime());
         int count =  afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
 
         if(count == 0){
