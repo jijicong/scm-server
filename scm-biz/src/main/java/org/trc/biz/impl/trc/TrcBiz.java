@@ -2671,10 +2671,10 @@ public class TrcBiz implements ITrcBiz {
 		OutboundOrder selectOutboundOrder=new OutboundOrder();
 		selectOutboundOrder.setScmShopOrderCode(orderItem.getScmShopOrderCode());
 		List<OutboundOrder> outboundOrderList=outBoundOrderService.select(selectOutboundOrder);
-		AssertUtil.notNull(outboundOrderList, "没有该订单的发货单!");
+		AssertUtil.notEmpty(outboundOrderList, "没有该订单的发货单!");
 		
 		List<OutboundDetail> list=getOutboundDetailList(outboundOrderList);
-		AssertUtil.notNull(list, "没有该订单的发货单详情!");
+		AssertUtil.notEmpty(list, "没有该订单的发货单详情!");
 		//实际发货的数量-退货数量
 		int realSendNum=(int) getRealSendNum(list,orderItem.getSkuCode());
 		//全部发货、部分发货的SKU   可退货数量=正向订单出库数量-已退货入库数量    其他状态可退都为0
@@ -2926,9 +2926,7 @@ public class TrcBiz implements ITrcBiz {
 		select.setAfterSaleCode(afterSaleCode);
 		AfterSaleOrder afterSaleOrder=afterSaleOrderService.selectOne(select);
 		AssertUtil.notNull(afterSaleOrder, "根据售后单号"+afterSaleOrder+"查询到的售后单为空!");
-		if(!(afterSaleOrder.getStatus()==AfterSaleOrderStatusEnum.STATUS_0.getCode())) {
-			AssertUtil.notNull(null,"只有待客户发货状态才能取消!");
-		}
+		AssertUtil.isTrue(afterSaleOrder.getStatus()==AfterSaleOrderStatusEnum.STATUS_0.getCode(),"只有待客户发货状态才能取消!");
 
 		AfterSaleWarehouseNotice selectWarehouseNotice=new AfterSaleWarehouseNotice();
 		selectWarehouseNotice.setAfterSaleCode(afterSaleCode);
@@ -2975,17 +2973,16 @@ public class TrcBiz implements ITrcBiz {
         afterSaleOrder.setAfterSaleCode(afterSaleWaybillForm.getAfterSaleCode());
         //售后单类型为退货的
         afterSaleOrder.setAfterSaleType(AfterSaleTypeEnum.RETURN_GOODS.getCode());
-        //售后状态为待客户发货的
-        afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_0.getCode());
         afterSaleOrder = afterSaleOrderService.selectOne(afterSaleOrder);
-        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询待客户发货的售后单信息为空!");
+        AssertUtil.notNull(afterSaleOrder,"根据售后单号:"+afterSaleWaybillForm.getAfterSaleCode()+"查询售后单信息为空!");
+        AssertUtil.isTrue(afterSaleOrder.getStatus() == 0, "状态非待客户发货");
         //更新售后单
         afterSaleOrder.setLogisticsCorporationCode(afterSaleWaybillForm.getLogisticsCorporationCode());
         afterSaleOrder.setLogisticsCorporation(afterSaleWaybillForm.getLogisticsCorporation());
         afterSaleOrder.setWaybillNumber(afterSaleWaybillForm.getWaybillNumber());
         //修改状态
         afterSaleOrder.setStatus(AfterSaleOrderStatusEnum.STATUS_1.getCode());
-
+        afterSaleOrder.setUpdateTime(Calendar.getInstance().getTime());
         int count =  afterSaleOrderService.updateByPrimaryKeySelective(afterSaleOrder);
 
         if(count == 0){
@@ -3020,7 +3017,7 @@ public class TrcBiz implements ITrcBiz {
            throw new AfterSaleException(ExceptionEnum.SYSTEM_EXCEPTION,appResult.getDatabuffer());
         }else {
             //记录日志
-            logInfoService.recordLog(afterSaleOrder,afterSaleOrder.getId(),"admin",LogOperationEnum.UPDATE.getMessage(),"接收物流单号","");
+            logInfoService.recordLog(afterSaleOrder,afterSaleOrder.getId(),"admin",LogOperationEnum.UPDATE_LOGISTICS_NUM.getMessage(),afterSaleOrder.getLogisticsCorporation()+":"+afterSaleOrder.getWaybillNumber(),"");
         }
     }
 
