@@ -36,15 +36,17 @@
             <if test="dto.date != null and dto.date != ''">
                 and DATE_FORMAT( `periods`, '%Y%m' ) = DATE_FORMAT( #{dto.date}, '%Y%m' )
             </if>
-            <if test="dto.startDate != null and dto.endDate != null">
-                and periods BETWEEN #{dto.startDate} AND #{dto.endDate}
+            <if test="dto.startDate != null and dto.startDate != ''">
+                <if test="dto.endDate != null and dto.endDate != ''">
+                    and periods BETWEEN #{dto.startDate} AND #{dto.endDate}
+                </if>
             </if>
             <if test="dto.skuCode != null and dto.skuCode != ''">
                 and sku_code in (#{dto.skuCode})
             </if>
             <if test="skuCodes != null and skuCodes.size > 0">
                 and sku_code in
-                <foreach collection="item" item="skuCode" open="(" close=")" separator=",">
+                <foreach collection="skuCodes" item="item" open="(" close=")" separator=",">
                   #{item}
                 </foreach>
             </if>

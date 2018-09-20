@@ -2,7 +2,6 @@ package org.trc.biz.impl.report;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.util.IOUtils;
@@ -17,7 +16,6 @@ import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.*;
-import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.CommonExceptionEnum;
@@ -45,12 +43,13 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -136,26 +135,26 @@ public class ReportBiz implements IReportBiz {
      *
      * @param form
      * @param page
-     * @param b    是否分页
+     * @param flag 是否分页
      * @return
      */
     @Override
-    public Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean b) {
+    public Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean flag) {
 
         //总库存查询
         if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
-            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, b);
+            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, flag);
         }
         //入库明细查询
         else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
-            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, b);
+            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, flag);
         }
         //出库明细查询
         else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.THREE.getCode())) {
-            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, b);
+            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, flag);
         }
 
-        if (b) {
+        if (flag) {
             return new Pagenation<>();
         } else {
             return new ArrayList<>();
@@ -163,7 +162,7 @@ public class ReportBiz implements IReportBiz {
     }
 
     @Override
-    public Response downloadAllForWarehouse(ReportInventoryForm form) {
+    public Response downloadAllForWarehouse(ReportInventoryForm form)throws Exception {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
         String reportDate = DateUtils.getYM(date) + "";
@@ -191,12 +190,11 @@ public class ReportBiz implements IReportBiz {
             zipOutputStream.setMethod(ZipOutputStream.DEFLATED);
             //获取信息
             List<ReportExcelDetail> reportExcelDetails = this.getReportExcelDetail(form, warehouseName, reportDate);
-            String fileName = "【" + warehouseName + "】" + "库存报表" + reportDate + SupplyConstants.Symbol.FILE_NAME_SPLIT + ZIP;
-            zipOutputStream.putNextEntry(new ZipEntry(fileName));
-            dataOutputStream = new DataOutputStream(zipOutputStream);
             //循环将文件写入压缩流
             for (ReportExcelDetail reportExcelDetail : reportExcelDetails) {
-                byte[] bytes = reportExcelDetail.getSheet().getBytes();
+                zipOutputStream.putNextEntry(new ZipEntry(reportExcelDetail.getFileName() + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS));
+                dataOutputStream = new DataOutputStream(zipOutputStream);
+                byte[] bytes = reportExcelDetail.getStream().toByteArray();
                 InputStream inputStream = new ByteArrayInputStream(bytes);
                 IOUtils.copy(inputStream, dataOutputStream);
             }
@@ -222,19 +220,18 @@ public class ReportBiz implements IReportBiz {
                 SupplyConstants.Symbol.FILE_NAME_SPLIT, ZIP);
 
         logger.info(String.format("仓库编码为%s,日期为%s的全报表下载打包完成!", warehouseCode, date));
-        return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + zipName).type(MediaType.APPLICATION_OCTET_STREAM)
+        return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(zipName,"UTF-8")).type(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Cache-Control", "no-cache").build();
     }
 
     @Override
-    public Response downloadCurrentForWarehouse(ReportInventoryForm form) {
+    public Response downloadCurrentForWarehouse(ReportInventoryForm form, boolean isOtherReport) {
         String warehouseCode = form.getWarehouseCode();
         String date = form.getDate();
         String reportDate = DateUtils.getYM(date) + "";
         String reportType = form.getReportType();
         String stockType = form.getStockType();
         AssertUtil.notBlank(warehouseCode, "仓库编码不能为空");
-        AssertUtil.notBlank(date, "查询周期不能为空");
         AssertUtil.notBlank(reportType, "报表类型不能为空");
         AssertUtil.notBlank(stockType, "库存类型不能为空");
 
@@ -270,12 +267,18 @@ public class ReportBiz implements IReportBiz {
             }
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             hssfWorkbook.write(stream);
-            String fileName = sheetName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+
+            String fileName = "";
+            if(isOtherReport){
+                fileName = "库存报表导出" + LocalDate.now().toString() + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+            }else{
+                fileName = sheetName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+            }
 
             logger.info(String.format("下载仓库编码为%s,日期为%s,报表类型为%s,库存类型为%s的报表完成!",
                     warehouseCode, date, form.getReportType(), form.getStockType()));
 
-            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(fileName,"UTF-8")).type(MediaType.APPLICATION_OCTET_STREAM)
                     .header("Cache-Control", "no-cache").build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -314,18 +317,20 @@ public class ReportBiz implements IReportBiz {
      * @param warehouseName
      * @return
      */
-    private List<ReportExcelDetail> getReportExcelDetail(ReportInventoryForm form, String warehouseName, String reportDate) {
+    private List<ReportExcelDetail> getReportExcelDetail(ReportInventoryForm form, String warehouseName, String reportDate) throws Exception {
         List<ReportExcelDetail> reportExcelDetails = new ArrayList<>();
         String date = form.getDate();
-
-        ReportExcelDetail reportExcelDetail = new ReportExcelDetail();
 
         //正品总库存
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         List<ReportInventory> reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
         String fileName = String.format("【%s】正品总库存%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
+        ReportExcelDetail reportExcelDetail = new ReportExcelDetail();
+        HSSFWorkbook hssfWorkbook = this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode());
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        reportExcelDetail.setStream(stream);
         reportExcelDetail.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail);
 
@@ -334,45 +339,65 @@ public class ReportBiz implements IReportBiz {
         form.setReportType(ZeroToNineEnum.ONE.getCode());
         reportInventoryList = (List<ReportInventory>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品总库存%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail2 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode());
+        ByteArrayOutputStream stream2 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream2);
+        reportExcelDetail2.setStream(stream2);
+        reportExcelDetail2.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail2);
 
         //正品入库明细
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
         List<ReportEntryDetail> reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品入库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail3 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode());
+        ByteArrayOutputStream stream3 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream3);
+        reportExcelDetail3.setStream(stream3);
+        reportExcelDetail3.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail3);
 
         //残品入库明细
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.TWO.getCode());
         reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品入库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail4 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode());
+        ByteArrayOutputStream stream4 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream4);
+        reportExcelDetail4.setStream(stream4);
+        reportExcelDetail4.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail4);
 
         //正品出库明细
         form.setStockType(StockTypeEnum.QUALITY.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
         List<ReportOutboundDetail> reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品出库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail5 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode());
+        ByteArrayOutputStream stream5 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream5);
+        reportExcelDetail5.setStream(stream5);
+        reportExcelDetail5.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail5);
 
         //残品出库明细
         form.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
         form.setReportType(ZeroToNineEnum.THREE.getCode());
         reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品出库明细%s", warehouseName, reportDate);
-        reportExcelDetail.setSheet(this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode()));
-        reportExcelDetail.setFileName(fileName);
-        reportExcelDetails.add(reportExcelDetail);
+        ReportExcelDetail reportExcelDetail6 = new ReportExcelDetail();
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode());
+        ByteArrayOutputStream stream6 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream6);
+        reportExcelDetail6.setStream(stream6);
+        reportExcelDetail6.setFileName(fileName);
+        reportExcelDetails.add(reportExcelDetail6);
 
         return reportExcelDetails;
     }
@@ -382,35 +407,18 @@ public class ReportBiz implements IReportBiz {
      *
      * @param form
      * @param page
-     * @param b    是否分页
+     * @param flag 是否分页
      * @return
      */
     @Override
-    public Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean b) {
+    public Object getReportDetailPageList(ReportInventoryForm form, Pagenation page, boolean flag) {
 
         if (StringUtils.isBlank(form.getDate()) && (StringUtils.isBlank(form.getStartDate()) && StringUtils.isBlank(form.getEndDate()))
                 && !StringUtils.isBlank(form.getDate()) && (!StringUtils.isBlank(form.getStartDate()) && !StringUtils.isBlank(form.getEndDate()))) {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "参数校验异常");
         }
 
-        //总库存查询
-        if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
-            return getReportInventoryList(form, (Pagenation<ReportInventory>) page, b);
-        }
-        //入库明细查询
-        else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.TWO.getCode())) {
-            return getReportEntryDetailList(form, (Pagenation<ReportEntryDetail>) page, b);
-        }
-        //出库明细查询
-        else if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.THREE.getCode())) {
-            return getReportOutboundDetailList(form, (Pagenation<ReportOutboundDetail>) page, b);
-        }
-
-        if (b) {
-            return new Pagenation<>();
-        } else {
-            return new ArrayList<>();
-        }
+        return getReportPageList(form, page, flag);
     }
 
     /**
@@ -423,8 +431,18 @@ public class ReportBiz implements IReportBiz {
         return reportInventoryService.selectWarehouseInfoList();
     }
 
-    private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean b) {
-        Example example = new Example(ReportEntryDetail.class);
+    /**
+     * @param form
+     * @param page
+     * @param flag 是否分页
+     * @return
+     */
+    private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean flag) {
+
+        //校验时间范围
+        checkParam(form);
+
+        Example example = new Example(ReportOutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
 
         //设置查询条件
@@ -433,7 +451,7 @@ public class ReportBiz implements IReportBiz {
         if (StringUtils.isNotBlank(form.getDate())) {
             criteria.andCondition("DATE_FORMAT( `outbound_time`, '%Y%m' ) = DATE_FORMAT( '" + form.getDate() + "' , '%Y%m' )");
         } else {
-            criteria.andBetween("outboundTime", form.getStartDate(), form.getEndDate());
+            criteria.andBetween("outboundTime", form.getStartDate(), form.getEndDate() + " 23:59:59");
         }
 
         if (StringUtils.isNotBlank(form.getOutboundOrderCode())) {
@@ -448,9 +466,11 @@ public class ReportBiz implements IReportBiz {
             criteria.andEqualTo("sellChannelCode", form.getSellChannelCode());
         }
 
+        criteria.andEqualTo("stockType", form.getStockType());
+
         example.setOrderByClause("outbound_time, outbound_order_code DESC");
 
-        if (b) {
+        if (flag) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
 
             if (CollectionUtils.isEmpty(pagination.getResult())) {
@@ -540,14 +560,26 @@ public class ReportBiz implements IReportBiz {
             }
 
             //销售渠道
-            SellChannel sellChannel = sellChannelService.selectSellByCode(reportOutboundDetail.getSellCode());
-            if (sellChannel != null) {
-                reportOutboundDetail.setSellName(sellChannel.getSellName());
+            if(StringUtils.isNotBlank(reportOutboundDetail.getSellCode())){
+                SellChannel sellChannel = sellChannelService.selectSellByCode(reportOutboundDetail.getSellCode());
+                if (sellChannel != null) {
+                    reportOutboundDetail.setSellName(sellChannel.getSellName());
+                }
             }
         }
     }
 
-    private Object getReportEntryDetailList(ReportInventoryForm form, Pagenation<ReportEntryDetail> page, boolean b) {
+    /**
+     * @param form
+     * @param page
+     * @param flag 是否分页
+     * @return
+     */
+    private Object getReportEntryDetailList(ReportInventoryForm form, Pagenation<ReportEntryDetail> page, boolean flag) {
+
+        //校验时间范围
+        checkParam(form);
+
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
 
@@ -557,7 +589,7 @@ public class ReportBiz implements IReportBiz {
         if (StringUtils.isNotBlank(form.getDate())) {
             criteria.andCondition("DATE_FORMAT( `entry_time`, '%Y%m' ) = DATE_FORMAT( '" + form.getDate() + "' , '%Y%m' )");
         } else {
-            criteria.andBetween("entryTime", form.getStartDate(), form.getEndDate());
+            criteria.andBetween("entryTime", form.getStartDate(), form.getEndDate() + " 23:59:59");
         }
 
         if (StringUtils.isNotBlank(form.getPurchaseOrderCode())) {
@@ -570,17 +602,17 @@ public class ReportBiz implements IReportBiz {
 
         example.setOrderByClause("entry_time, order_code DESC");
 
-        if (b) {
-            Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
+        List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
+        if (flag) {
 
-            if (CollectionUtils.isEmpty(pagination.getResult())) {
+            if (CollectionUtils.isEmpty(result)) {
                 return new Pagenation<>();
             }
 
-            setEntryResultDetail(pagination.getResult(), form);
-            return pagination;
+            List<ReportEntryDetail> filtrationList = setEntryResultDetail(result, form);
+            return pagingResult(result, filtrationList, page);
+
         } else {
-            List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
 
             if (CollectionUtils.isEmpty(result)) {
                 return new ArrayList<>();
@@ -591,26 +623,77 @@ public class ReportBiz implements IReportBiz {
 
     }
 
-    private void setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
-
-        for (ReportEntryDetail reportEntryDetail : result) {
-            //采购入库
-            if (StringUtils.equals(reportEntryDetail.getOperationType(), StockOperationTypeEnum.PURCHASE.getCode())) {
-                if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
-                    reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
-                    reportEntryDetail.setEntryQuantity(0L);
-                    reportEntryDetail.setPrice(new BigDecimal(0));
-                    reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
-                    reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
-                    reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
-                } else {
-                    reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
-                    reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
-                    reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
+    private Pagenation<ReportEntryDetail> pagingResult(List<ReportEntryDetail> result, List<ReportEntryDetail> filtrationList, Pagenation<ReportEntryDetail> page) {
+        if (!CollectionUtils.isEmpty(filtrationList)) {
+            Iterator<ReportEntryDetail> iterator = result.iterator();
+            while (iterator.hasNext()){
+                ReportEntryDetail reportEntryDetail = iterator.next();
+                for(ReportEntryDetail list : filtrationList){
+                    if(StringUtils.equals(list.getSkuCode(), reportEntryDetail.getSkuCode())
+                            && StringUtils.equals(list.getOrderCode(), reportEntryDetail.getOrderCode())){
+                        iterator.remove();
+                    }
                 }
-                //供应商名称
-                Supplier supplier = supplierService.selectSupplierByCode(reportEntryDetail.getSupplierCode());
-                reportEntryDetail.setSupplierName(supplier.getSupplierName());
+            }
+            Map<String, Object> pagingResultMap = PagingResultMap.getPagingResultMap(result, page.getPageNo(), page.getPageSize());
+            page.setResult((List<ReportEntryDetail>) pagingResultMap.get("result"));
+            page.setTotalCount(Long.valueOf(pagingResultMap.get("totalRowNum").toString()));
+            return page;
+        } else {
+            Map<String, Object> pagingResultMap = PagingResultMap.getPagingResultMap(result, page.getPageNo(), page.getPageSize());
+            page.setResult((List<ReportEntryDetail>) pagingResultMap.get("result"));
+            page.setTotalCount(Long.valueOf(pagingResultMap.get("totalRowNum").toString()));
+            return page;
+        }
+    }
+
+    private List<ReportEntryDetail> setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
+        List<ReportEntryDetail> details = new ArrayList<>();
+        for (ReportEntryDetail reportEntryDetail : result) {
+
+            //查询库存类型与实际单据入库类型不一致，初始化数据
+            if (!StringUtils.equals(form.getStockType(), reportEntryDetail.getStockType())) {
+                reportEntryDetail.setEntryQuantity(0L);
+
+                //采购入库
+                if (StringUtils.equals(reportEntryDetail.getOperationType(), StockOperationTypeEnum.PURCHASE.getCode())) {
+                    if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
+                        reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
+                        reportEntryDetail.setPrice(new BigDecimal(0));
+                        reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
+                        reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
+                        reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
+                        //计划入库和实际入库都为0，不生成报表记录
+                        if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
+                            details.add(reportEntryDetail);
+                        }
+                    } else {
+                        reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
+                        reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
+                        reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
+                        reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
+                    }
+                } else {
+                    if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
+                        reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
+                        reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
+                        reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
+                        reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
+                        //计划入库和实际入库都为0，不生成报表记录
+                        if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
+                            details.add(reportEntryDetail);
+                        }
+                    } else {
+                        reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
+                        reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
+                        reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
+                        reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
+                        //计划入库和实际入库都为0，不生成报表记录
+                        if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
+                            details.add(reportEntryDetail);
+                        }
+                    }
+                }
             } else {
                 if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
                     reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
@@ -618,6 +701,7 @@ public class ReportBiz implements IReportBiz {
                     reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
                     reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
                 } else {
+                    reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
                     reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
                     reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                     reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
@@ -644,11 +728,19 @@ public class ReportBiz implements IReportBiz {
                 }
             }
         }
-
+        return details;
     }
 
+    /**
+     * @param form
+     * @param page
+     * @param flag 是否分页
+     * @return
+     */
+    private Object getReportInventoryList(ReportInventoryForm form, Pagenation<ReportInventory> page, boolean flag) {
 
-    private Object getReportInventoryList(ReportInventoryForm form, Pagenation<ReportInventory> page, boolean b) {
+        //校验时间范围
+        checkParam(form);
 
         List<String> skuCodes = new ArrayList<>();
         if (StringUtils.isNotBlank(form.getSkuName())) {
@@ -662,10 +754,11 @@ public class ReportBiz implements IReportBiz {
             }
         }
 
-        if (b) {
+        if (flag) {
             //分组查询数据
             Page pages = PageHelper.startPage(page.getPageNo(), page.getPageSize());
-            List<ReportInventory> reportInventoryList = reportInventoryService.selectReportInventoryLimit(form, skuCodes);
+            reportInventoryService.selectReportInventoryLimit(form, skuCodes);
+
             page.setTotalCount(pages.getTotal());
 
             if (CollectionUtils.isEmpty(pages.getResult())) {
@@ -690,6 +783,17 @@ public class ReportBiz implements IReportBiz {
             return statisticsDate;
         }
 
+    }
+
+    private void checkParam(ReportInventoryForm form) {
+        if (StringUtils.isNotBlank(form.getStartDate()) && StringUtils.isNotBlank(form.getEndDate())) {
+            LocalDate startDate = LocalDate.parse(form.getStartDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            LocalDate endDate = LocalDate.parse(form.getEndDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            Period between = Period.between(startDate, endDate);
+            if (between.getDays() > 13) {
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "日期间隔不能大于两周");
+            }
+        }
     }
 
     private List<ReportInventory> getStatisticsDate(List<ReportInventory> result, ReportInventoryForm form) {
@@ -738,6 +842,7 @@ public class ReportBiz implements IReportBiz {
             long entryTotalQuantity = 0;    //本期入库总数量
             long outboundTotalQuantity = 0; //本期出库总数量
             long balanceTotalQuantity = 0; //期末结存数量
+            long initialQuantity = 0;
 
             for (ReportInventory inventory : reportInventorys) {
                 if (StringUtils.equals(reportInventory.getWarehouseCode(), inventory.getWarehouseCode())
@@ -757,7 +862,15 @@ public class ReportBiz implements IReportBiz {
                     normalToDefective += inventory.getNormalToDefective();
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
+
+                    initialQuantity = inventory.getInitialQuantity();
+                    //默认最后一天的期末数量
                     balanceTotalQuantity = inventory.getBalanceTotalQuantity();
+
+                    reportInventory.setGoodsType(inventory.getGoodsType());
+                    reportInventory.setSpecInfo(inventory.getSpecInfo());
+                    reportInventory.setBarCode(inventory.getBarCode());
+                    reportInventory.setCategoryId(inventory.getCategoryId());
                 }
             }
             reportInventory.setOutboundQuantity(outboundQuantity);
@@ -776,22 +889,19 @@ public class ReportBiz implements IReportBiz {
             reportInventory.setOtherIn(otherIn);
             reportInventory.setOtherOut(otherOut);
 
-            reportInventory.setGoodsType(reportInventorys.get(0).getGoodsType());
-            reportInventory.setSpecInfo(reportInventorys.get(0).getSpecInfo());
-            reportInventory.setBarCode(reportInventorys.get(0).getBarCode());
-            reportInventory.setCategoryId(reportInventorys.get(0).getCategoryId());
             if (StringUtils.equals(form.getStockType(), StockTypeEnum.QUALITY.getCode())) {
                 reportInventory.setStockType(StockTypeEnum.QUALITY.getCode());
             } else {
                 reportInventory.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
             }
+
             //默认第一天的期初数量
-            reportInventory.setInitialQuantity(reportInventorys.get(0).getInitialQuantity());
+            reportInventory.setInitialQuantity(initialQuantity);
             //默认最后一天的期末数量
             reportInventory.setBalanceTotalQuantity(balanceTotalQuantity);
 
             reportInventory.setEntryTotalQuantity(salesReturnQuantity + purchaseQuantity + allocateInQuantity + inventoryProfitQuantity);
-            reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity);
+            reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity + allocateOutQuantity);
         }
 
         return result;
@@ -874,15 +984,21 @@ public class ReportBiz implements IReportBiz {
             this.createCellDefinitionForOutbound(cellDefinitionList);
         }
         info.forEach(obj -> {
-            if(obj instanceof ReportBase){
-                if(((ReportBase) obj).getGoodsType() != null){
+            if (obj instanceof ReportBase) {
+                if (StringUtils.isNotBlank(((ReportBase) obj).getGoodsType())) {
                     ((ReportBase) obj).setGoodsType(GoodsTypeEnum.queryNameByCode(((ReportBase) obj).
-                            getGoodsType()).getCode());
+                            getGoodsType()).getName());
                 }
-                if(((ReportBase) obj).getStockType() != null){
+                if (StringUtils.isNotBlank(((ReportBase) obj).getStockType())) {
                     ((ReportBase) obj).setStockType(StockTypeEnum.queryNameByCode(((ReportBase) obj).
-                            getStockType()).getCode());
+                            getStockType()).getName());
                 }
+            }
+            if(obj instanceof ReportEntryDetail){
+                ((ReportEntryDetail) obj).setEntryTimeValue(DateUtils.formatDateTime(((ReportEntryDetail) obj).getEntryTime()));
+            }
+            if(obj instanceof ReportOutboundDetail){
+                ((ReportOutboundDetail) obj).setOutboundTimeValue(DateUtils.formatDateTime(((ReportOutboundDetail) obj).getOutboundTime()));
             }
         });
         return ExportExcel.generateExcel(info, cellDefinitionList, fileName);
@@ -937,7 +1053,7 @@ public class ReportBiz implements IReportBiz {
     private void createCellDefinitionForEntry(List<CellDefinition> cellDefinitionList) {
         CellDefinition warehouseName = new CellDefinition("warehouseName", "入库仓库名称", CellDefinition.TEXT, null, 15000);
         CellDefinition stockType = new CellDefinition("stockType", "库存类型", CellDefinition.TEXT, null, 4000);
-        CellDefinition entryTime = new CellDefinition("entryTime", "入库时间", CellDefinition.TEXT, null, 10000);
+        CellDefinition entryTimeValue = new CellDefinition("entryTimeValue", "入库时间", CellDefinition.TEXT, null, 10000);
         CellDefinition operationType = new CellDefinition("operationType", "入库类型", CellDefinition.TEXT, null, 6000);
         CellDefinition orderCode = new CellDefinition("orderCode", "入库单编号", CellDefinition.TEXT, null, 6000);
         CellDefinition warehouseOrderCode = new CellDefinition("warehouseOrderCode", "仓库反馈入库单编号", CellDefinition.TEXT, null, 6000);
@@ -957,7 +1073,7 @@ public class ReportBiz implements IReportBiz {
 
         cellDefinitionList.add(warehouseName);
         cellDefinitionList.add(stockType);
-        cellDefinitionList.add(entryTime);
+        cellDefinitionList.add(entryTimeValue);
         cellDefinitionList.add(operationType);
         cellDefinitionList.add(orderCode);
         cellDefinitionList.add(warehouseOrderCode);
@@ -979,7 +1095,7 @@ public class ReportBiz implements IReportBiz {
     private void createCellDefinitionForOutbound(List<CellDefinition> cellDefinitionList) {
         CellDefinition warehouseName = new CellDefinition("warehouseName", "出库仓库名称", CellDefinition.TEXT, null, 15000);
         CellDefinition stockType = new CellDefinition("stockType", "库存类型", CellDefinition.TEXT, null, 4000);
-        CellDefinition outboundTime = new CellDefinition("outboundTime", "出库时间", CellDefinition.TEXT, null, 4000);
+        CellDefinition outboundTimeValue = new CellDefinition("outboundTimeValue", "出库时间", CellDefinition.TEXT, null, 4000);
         CellDefinition operationType = new CellDefinition("operationType", "出库类型", CellDefinition.TEXT, null, 4000);
         CellDefinition outboundOrderCode = new CellDefinition("outboundOrderCode", "出库单编号", CellDefinition.TEXT, null, 4000);
         CellDefinition warehouseOutboundOrderCode = new CellDefinition("warehouseOutboundOrderCode", "仓库反馈出库单号", CellDefinition.TEXT, null, 4000);
@@ -1007,7 +1123,8 @@ public class ReportBiz implements IReportBiz {
 
         cellDefinitionList.add(warehouseName);
         cellDefinitionList.add(stockType);
-        cellDefinitionList.add(outboundTime);
+        cellDefinitionList.add(stockType);
+        cellDefinitionList.add(outboundTimeValue);
         cellDefinitionList.add(operationType);
         cellDefinitionList.add(outboundOrderCode);
         cellDefinitionList.add(warehouseOutboundOrderCode);

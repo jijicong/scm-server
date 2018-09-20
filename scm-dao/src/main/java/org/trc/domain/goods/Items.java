@@ -1,5 +1,6 @@
 package org.trc.domain.goods;
 
+import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
@@ -9,88 +10,104 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.List;
-
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.domain.BaseDO;
 //@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class Items extends BaseDO{
 
     private static final long serialVersionUID = -8948886744275187652L;
+    @ApiParam(value = "主键ID")
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @ApiParam(value = "商品SPU编号")
     @FormParam("spuCode")
     @Length(max = 64, message = "商品SPU编号长度不能超过64个")
     private String spuCode;
+    @ApiParam(value = "商品名称")
     @FormParam("name")
     @NotEmpty(message = "商品名称不能为空!")
     @Length(max = 200, message = "商品名称长度不能超过200个")
     private String name;
+    @ApiParam(value = "分类ID")
     @FormParam("categoryId")
     @NotNull(message = "分类不能为空")
     private Long categoryId;
+    @ApiParam(value = "分类名称")
     @Transient
     private String categoryName;//分类名称
+    @ApiParam(value = "品牌ID")
     @FormParam("brandId")
     @NotNull(message = "品牌不能为空")
     private Long brandId;
+    @ApiParam(value = "品牌名称")
     @Transient
     private String brandName;//供应商名称
+    @ApiParam(value = "贸易类型")
     @FormParam("tradeType")
     @NotEmpty(message = "贸易类型不能为空")
     @Length(max = 32, message = "贸易类型长度不能超过32个")
     private String tradeType;
+    @ApiParam(value = "商品货号")
     @FormParam("itemNo")
     @Length(max = 32, message = "商品货号长度不能超过32个")
     private String itemNo;
+    @ApiParam(value = "商品重量")
     @FormParam("weight")
     private Long weight;
+    @ApiParam(value = "生产商")
     @FormParam("producer")
     @Length(max = 128, message = "生产商长度不能超过32个")
     private String producer;
+    @ApiParam(value = "参考市场价")
     @FormParam("marketPrice")
     private Long marketPrice;
+    @ApiParam(value = "商品图片路径")
     @FormParam("pictrue")
     @Length(max = 256, message = "商品图片路径长度不能超过256个")
     private String pictrue;
+    @ApiParam(value = "备注")
     @FormParam("remark")
     @Length(max = 512, message = "备注长度不能超过512个")
     private String remark;
+    @ApiParam(value = "属性")
     @FormParam("properties")
     @Length(max = 512, message = "属性量长度不能超过512个")
     private String properties;
 
+    @ApiParam(value = "是否具有质保管理")
     @FormParam("isQuality")
     @NotNull(message = "是否具有质保管理不能为空")
     private String isQuality;
 
+    @ApiParam(value = "保质期")
     @FormParam("qualityDay")
     private Long qualityDay;
 
     /**
      * SKU列表
      */
+    @ApiParam(value = "保质期")
     @Transient
     private List<Skus> records;
 
+    @ApiParam(value = "保质期")
     @Transient
     private String categoryCode;
+    @ApiParam(value = "保质期")
     @Transient
     private String brandCode;
 
     /**
      * SPU商品主图
      */
+    @ApiParam(value = "SPU商品主图")
     @FormParam("mainPicture")
     private String mainPicture;
 
+    @ApiParam(value = "商品类别：0-小泰良品，1-非小泰良品")
     @FormParam("itemType")
     private String itemType;//V3.3-商品类别：0-小泰良品，1-非小泰良品
 
