@@ -46,6 +46,7 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -960,6 +961,8 @@ public class ReportBiz implements IReportBiz {
                     reportInventory.setWarehouseName(warehouseInfo.getWarehouseName());
                 }
             }
+            //按仓库名称首字母升序
+            Collections.sort(warehouseCodes, (ReportInventory r1, ReportInventory r2) -> Collator.getInstance(Locale.CHINESE).compare(r1.getWarehouseName(), r2.getWarehouseName()));
         }
     }
 
