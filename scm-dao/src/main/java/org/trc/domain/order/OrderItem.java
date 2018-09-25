@@ -241,7 +241,6 @@ public class OrderItem implements Serializable {
     @ApiModelProperty(value="商品税费,单位/元")
     private BigDecimal priceTax;
     // 订单应用促销标签
-    @ApiModelProperty(value="订单应用促销标签")
     /*@Length(max = 32)
     private String promotionTags;
     // 订单商品类型
