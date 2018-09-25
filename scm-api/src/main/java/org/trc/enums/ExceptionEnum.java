@@ -22,6 +22,7 @@ public enum ExceptionEnum{
      * 数据库:3000开头
      * 系统异常:4000开头
      * 调拨单异常:501开头
+     * 售后管理:1100开头
      */
     CONFIG_DICT_QUERY_EXCEPTION("100101","数据字典查询异常"),
     CONFIG_DICT_SAVE_EXCEPTION("100102","数据字典保存异常"),
@@ -191,7 +192,8 @@ public enum ExceptionEnum{
 
     DOWNLOAD_ERROR_ORDER_EXCEPTION("1000110","下载错误导入订单异常"),
 
-
+    AFTER_SALE_ORDER_UPDATE_EXCEPTION("1100101","售后单更新异常"),
+    AFTER_SALE_ORDER_QUERY_EXCEPTION("1100102","售后单查询异常"),
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),

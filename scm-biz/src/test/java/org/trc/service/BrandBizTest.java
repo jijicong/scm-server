@@ -1,6 +1,5 @@
 package org.trc.service;
 
-import com.alibaba.fastjson.JSONObject;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.transport.TransportClient;
 import org.junit.Test;

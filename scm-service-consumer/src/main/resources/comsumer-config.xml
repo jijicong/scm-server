@@ -59,6 +59,12 @@
         
         <property name="entryReturnOrderCreateUrl" value="${wms.entryReturnOrder.create.url}"/>
         <property name="entryReturnDetailUrl" value="${wms.entryReturnOrder.detail.url}"/>
+        
+        <property name="returnOrderCreateUrl" value="${wms.returnOrder.create.url}"/>
+        <property name="afterSaleOrderCancelUrl" value="${wms.afterSaleOrder.cancel.url}"/>
+        <property name="returnInOrderCancelUrl" value="${wms.afterSaleOrder.returnInOrderCancel.url}"/>
+        <property name="submitAfterSaleLogisticsUrl" value="${wms.afterSaleOrder.submitAfterSaleLogistics.url}" />
+
     </bean>
 
     <!--泰然城接口调用地址-->
@@ -73,7 +79,10 @@
         <property name="externalItemSkuUpdateUrl" value="${trc.externalItemSku.update.information.url}"/>
         <property name="logisticsNotifyUrl" value="${trc.send.logistic.url}"/>
         <property name="orderSubmitNotifyUrl" value="${trc.orderSubmit.notify.url}"/>
+        <property name="returnInResultNotifyUrl" value="${trc.returnInResult.notify.url}"/>
         <property name="noticeChannal" value="${notice.channal}"/>
+        <property name="createAfterSaleNoticeUrl" value="${trc.createAfterSale.notify.url}"/>
+        <property name="cancelSendNoticeUrl" value="${trc.cancelSend.notify.url}"/>
     </bean>
 
     <!--奇门接口调用地址-->

@@ -81,6 +81,17 @@ public class SupplyConstants {
         public static final String JD_SKUSTOCK = "jdSkuStockQuery";//获取京东sku库存
 
         public static final String SUPPLIER_LIST = "supplierList";//供应商分页查询
+
+        public static final String RETURN_WAREHOUSE= "returnWarehouseQuery";//供应商分页查询
+        
+        public static final String AFTER_SALE_CREATE= "afterSaleCreate";//创建售后单接口
+        
+        public static final String CANCEL_AFTER_SALE_ORDER= "cancelAfterSaleOrder";//取消售后单接口
+        
+        public static final String SUBMIT_WAYBILL= "submitWaybill";//提交物流单号接口
+
+        public static final String AFTER_SALE_ORDER_STATUS= "afterSaleOrderStatus";//售后单状态查询接口
+
     }
 
     /**
@@ -886,7 +897,17 @@ public class SupplyConstants {
         public static final String SYSTEM_ORDER_CODE = "ZY";
         //导入订单长度
         public static final Integer SYSTEM_ORDER_LENGTH = 8;
+        
+        //售后单编码长度
+        public static final Integer AFTER_SALE_LENGTH=5;
+        //售后单编码前缀
+        public static final String AFTER_SALE_CODE="AS";
 
+        //退货入库单编码长度
+        public static final Integer WAREHOUSE_NOTICE_LENGTH=5;
+        //退货入库单编码前缀
+        public static final String WAREHOUSE_NOTICE_CODE="THRKTZ";
+        
         //序列号查询路径
         public static final String SERIAL = "serial";
     }
@@ -993,6 +1014,8 @@ public class SupplyConstants {
         public static final String SELECT_WAREHOUSE_NAME_NOT_LOCATION = "selectWarehouseNameNotLocation";
 
         public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
+
+        public static final String SELECT_RETURN_WAREHOUSE_NAME = "selectReturnWarehouseName";
 
         public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
 
@@ -1432,4 +1455,26 @@ public class SupplyConstants {
         //商品组新增
         public final static String ITEM_GROUP_ISVALID = "isValid";
     }
+    
+    /**
+     * 售后单
+     * @author hzwjie
+     *
+     */
+    public static final class AfterSaleOrder {
+    	
+    	public final static String AFTER_SALE_ORDER = "afterSaleOrder";
+    	
+    	public final static String AFTER_SALE_ORDER_DETAIL = "afterSaleOrderDetail";
+        public final static String AFTER_SALE_ORDER_DETAIL_QUERY = "orderDetail";
+    	
+    	//新增售后单
+    	public final static String ADD = "add";
+    	//根据订单号查询子订单
+    	public final static String SELECT_ORDER_ITEM="selectOrderItem";
+
+        //售后单卡片
+        public final static String AFTER_SALE_TAB="afterSaleOrderTab";
+    }
+    
 }

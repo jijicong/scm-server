@@ -76,7 +76,8 @@ public enum WarehouseTypeEnum {
 		}
 		return array;
 	}
-
+	
+	
 	public String getName() {
 		return name;
 	}

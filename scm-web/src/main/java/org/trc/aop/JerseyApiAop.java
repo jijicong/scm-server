@@ -3,15 +3,12 @@ package org.trc.aop;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.trc.util.*;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -19,8 +16,8 @@ import java.util.Date;
 /**
  * Created by hzwdx on 2017/4/22.
  */
-@Component
-@Aspect
+//@Component
+//@Aspect
 public class JerseyApiAop {
 
     private Logger  log = LoggerFactory.getLogger(JerseyApiAop.class);
@@ -31,7 +28,7 @@ public class JerseyApiAop {
     @Autowired
     private BeanValidator beanValidator;
 
-    @Pointcut(value = "execution(* org.trc.resource.api.*.*(..))")
+    //@Pointcut(value = "execution(* org.trc.resource.api.*.*(..))")
     public void jerseyApi() {
     }
 
@@ -44,7 +41,7 @@ public class JerseyApiAop {
         return resultObj;
     }*/
 
-    @Around("jerseyApi()")
+    //@Around("jerseyApi()")
     public Object invoke(ProceedingJoinPoint point) throws Throwable {
         Class<?> targetClass = point.getTarget().getClass();//被代理的类
         MethodSignature signature = (MethodSignature) point.getSignature();

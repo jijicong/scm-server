@@ -25,6 +25,12 @@ public class TrcConfig {
     private String logisticsNotifyUrl;
     //订单下单结果同步URL
     private String orderSubmitNotifyUrl;
+    //推送入库结果通知URL
+    private String returnInResultNotifyUrl;
+    //发送创建通知URL
+    private String createAfterSaleNoticeUrl;
+    //取消发货通知URL
+    private String cancelSendNoticeUrl;
     //是否通知渠道,0-不通知,1-通知
     private String noticeChannal;
 
@@ -114,5 +120,29 @@ public class TrcConfig {
 
     public void setNoticeChannal(String noticeChannal) {
         this.noticeChannal = noticeChannal;
+    }
+
+    public String getReturnInResultNotifyUrl() {
+        return returnInResultNotifyUrl;
+    }
+
+    public void setReturnInResultNotifyUrl(String returnInResultNotifyUrl) {
+        this.returnInResultNotifyUrl = returnInResultNotifyUrl;
+    }
+
+    public String getCreateAfterSaleNoticeUrl() {
+        return createAfterSaleNoticeUrl;
+    }
+
+    public void setCreateAfterSaleNoticeUrl(String createAfterSaleNoticeUrl) {
+        this.createAfterSaleNoticeUrl = createAfterSaleNoticeUrl;
+    }
+
+    public String getCancelSendNoticeUrl() {
+        return cancelSendNoticeUrl;
+    }
+
+    public void setCancelSendNoticeUrl(String cancelSendNoticeUrl) {
+        this.cancelSendNoticeUrl = cancelSendNoticeUrl;
     }
 }
