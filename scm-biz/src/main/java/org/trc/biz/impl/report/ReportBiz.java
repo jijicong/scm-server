@@ -831,6 +831,8 @@ public class ReportBiz implements IReportBiz {
 
         for (ReportInventory reportInventory : result) {
 
+            List<ReportInventory> initialQuantityList = new ArrayList<>();
+
             long outboundQuantity = 0;  //销售出库数量
             BigDecimal outboundTotalAmount = new BigDecimal(0); //销售出库实付总金额（元）
             BigDecimal purchaseTotalAmount = new BigDecimal(0); //含税采购总金额（元）
@@ -871,9 +873,8 @@ public class ReportBiz implements IReportBiz {
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
 
-                    initialQuantity = inventory.getInitialQuantity();
-                    //默认最后一天的期末数量
-                    balanceTotalQuantity = inventory.getBalanceTotalQuantity();
+                    //期初数量,期末数量
+                    initialQuantityList.add(inventory);
 
                     reportInventory.setGoodsType(inventory.getGoodsType());
                     reportInventory.setSpecInfo(inventory.getSpecInfo());
@@ -904,9 +905,9 @@ public class ReportBiz implements IReportBiz {
             }
 
             //默认第一天的期初数量
-            reportInventory.setInitialQuantity(initialQuantity);
+            reportInventory.setInitialQuantity(initialQuantityList.get(0).getInitialQuantity());
             //默认最后一天的期末数量
-            reportInventory.setBalanceTotalQuantity(balanceTotalQuantity);
+            reportInventory.setBalanceTotalQuantity(initialQuantityList.get(initialQuantityList.size() - 1).getBalanceTotalQuantity());
 
             reportInventory.setEntryTotalQuantity(salesReturnQuantity + purchaseQuantity + allocateInQuantity + inventoryProfitQuantity);
             reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity + allocateOutQuantity);
