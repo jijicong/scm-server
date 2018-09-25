@@ -43,6 +43,8 @@ public class WarehouseInfoResult implements Serializable {
     //更新时间
     private String updateTime;
 
+    private Integer isSupportReturn;
+
     //是否删除 0--未删除 1--已删除
     private Integer isDelete;
 
@@ -216,5 +218,13 @@ public class WarehouseInfoResult implements Serializable {
 
     public void setOperationalType(String operationalType) {
         this.operationalType = operationalType;
+    }
+
+    public Integer getIsSupportReturn() {
+        return isSupportReturn;
+    }
+
+    public void setIsSupportReturn(Integer isSupportReturn) {
+        this.isSupportReturn = isSupportReturn;
     }
 }

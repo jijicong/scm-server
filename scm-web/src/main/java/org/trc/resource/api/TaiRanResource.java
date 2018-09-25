@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.afterSale.IAfterSaleOrderBiz;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.order.IScmOrderBiz;
@@ -21,6 +23,9 @@ import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.OrderTypeEnum;
+import org.trc.form.AfterSaleOrderStatusResponse;
+import org.trc.form.afterSale.AfterSaleWaybillForm;
+import org.trc.form.afterSale.TairanAfterSaleOrderDO;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.order.SkuWarehouseDO;
@@ -59,6 +64,8 @@ public class TaiRanResource {
     private ITrcBiz trcBiz;
     @Resource
     private IScmOrderBiz scmOrderBiz;
+    @Autowired
+    private IAfterSaleOrderBiz afterSaleOrderBiz;
 
 
     /**
@@ -343,6 +350,87 @@ public class TaiRanResource {
     }
 
 
+    /**
+     * 查询退货仓库列表
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.TaiRan.RETURN_WAREHOUSE)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<List<SupplyConstants.WarehouseInfo>> returnWarehouseQuery() throws Exception {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "查询退货仓库成功", trcBiz.returnWarehouseQuery());
+    }
+    
+    /**
+     * 创建售后单接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.AFTER_SALE_CREATE)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck afterSaleCreate(String afterSaleOrder) throws Exception{
+        AssertUtil.notBlank(afterSaleOrder, "请求参数不能为空");
+        TairanAfterSaleOrderDO afterSaleOrderDO=null;
+        try{
+             afterSaleOrderDO=JSONObject.parseObject(afterSaleOrder,TairanAfterSaleOrderDO.class);
+        }catch(Exception e){
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", afterSaleOrder), "");
+        }
+    	return trcBiz.afterSaleCreate(afterSaleOrderDO);
+
+    }
+
+    /**
+     * 取消售后单接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.CANCEL_AFTER_SALE_ORDER)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<Map<String, Object>> cancelAfterSaleOrder(String afterSaleCode) {
+        Map map=null;
+        try{
+             map=JSONObject.parseObject(afterSaleCode,Map.class);
+        }catch(Exception e){
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", afterSaleCode), "");
+        }
+
+    	 return new ResponseAck(ResponseAck.SUCCESS_CODE, "取消售后单接收成功", trcBiz.cancelAfterSaleOrder((String) map.get("afterSaleCode")));
+    }
+
+    /**
+     * 提交物流单号接口
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.SUBMIT_WAYBILL)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<String> submitWaybill(String waybillMessage)  throws Exception{
+        AssertUtil.notBlank(waybillMessage, "请求参数不能为空");
+        try {
+            AfterSaleWaybillForm afterSaleWaybillForm = JSONObject.parseObject(waybillMessage,AfterSaleWaybillForm.class);
+            trcBiz.submitWaybill(afterSaleWaybillForm);
+        } catch (JSONException e) {
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", waybillMessage), "");
+        }
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "物流信息接收成功", "");
+    }
+
+
+    @GET
+    @Path(SupplyConstants.TaiRan.AFTER_SALE_ORDER_STATUS)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<AfterSaleOrderStatusResponse> afterSaleOrderStatus(@QueryParam("afterSaleCode") String afterSaleCode){
+        try {
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "售后单状态查询成功", afterSaleOrderBiz.afterSaleOrderStatus(afterSaleCode));
+        } catch (Exception e) {
+            logger.error("售后单状态查询异常", e);
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("售后单%s状态查询异常,%s", afterSaleCode, e.getMessage()), "");
+        }
+
+    }
 
 }
 

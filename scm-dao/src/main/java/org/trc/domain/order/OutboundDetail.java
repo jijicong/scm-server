@@ -4,12 +4,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -67,8 +62,23 @@ public class OutboundDetail implements Serializable {
 
     @Column(name = "warehouse_item_id")
     private String warehouseItemId;
+    
+    /**
+     * 用户取消标识
+     */
+    @Column(name = "cancel_flg")
+    private String cancelFlg;
 
-    public List<OutboundDetailLogistics> getOutboundDetailLogisticsList() {
+    
+    public String getCancelFlg() {
+		return cancelFlg;
+	}
+
+	public void setCancelFlg(String cancelFlg) {
+		this.cancelFlg = cancelFlg;
+	}
+
+	public List<OutboundDetailLogistics> getOutboundDetailLogisticsList() {
         return outboundDetailLogisticsList;
     }
 
