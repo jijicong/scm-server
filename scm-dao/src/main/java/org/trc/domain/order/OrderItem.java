@@ -113,6 +113,7 @@ public class OrderItem implements Serializable {
     // 商品sku库存id
     /*private Long skuStockId;*/
     // 商品货号
+    @ApiModelProperty(value="商品货号")
     @NotEmpty
     @Length(max = 32)
     private String itemNo;
@@ -218,13 +219,14 @@ public class OrderItem implements Serializable {
     // 商家三级类目签约佣金比例
     private BigDecimal catServiceRate;*/
     // 商品图片绝对路径
- 	@ApiModelProperty(value="商品图片绝对路径")
+    @ApiModelProperty(value="商品图片绝对路径")
     @Length(max = 255)
     private String picPath;
     // 商家外部编码
     /*@Length(max = 64)
     private String outerIid;*/
     // 商家外部sku码
+    @ApiModelProperty(value="商家外部sku码")
     @Length(max = 64)
     private String outerSkuId;
     // 是否支持下单减库存
@@ -234,6 +236,7 @@ public class OrderItem implements Serializable {
     // 配送模板id
     //private Integer dlytmplId;
     // 供应商名称
+    @ApiModelProperty(value="供应商名称")
     @Length(max = 80)
     private String supplierName;
     // 商品税费,单位/元
@@ -257,6 +260,7 @@ public class OrderItem implements Serializable {
     @Length(max = 255)
     private String params;*/
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
+    @ApiModelProperty(value="创建时间,格式yyyy-mm-dd hh:mi:ss")
     @NotEmpty
     private Date createTime;
     // 支付时间
@@ -266,12 +270,14 @@ public class OrderItem implements Serializable {
     // 发货时间
     /*private Date consignTime;*/
     // 修改时间
+    @ApiModelProperty(value="修改时间")
     private Date updateTime;
     // 超时确认时间
     /*private Date timeoutActionTime;
     // 关闭时间
     private Date endTime;*/
     // 商品规格描述
+    @ApiModelProperty(value="商品规格描述")
     private String specNatureInfo;
     //供应商订单状态：1-待发送供应商,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
     @ApiModelProperty(value="供应商订单状态：1-待发送供应商,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消")
