@@ -16,6 +16,7 @@ import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.*;
+import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.CommonExceptionEnum;
@@ -707,6 +708,12 @@ public class ReportBiz implements IReportBiz {
                     reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                     reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
                 }
+            }
+
+            //供应商名称
+            if(StringUtils.isNotBlank(reportEntryDetail.getSupplierCode())){
+                Supplier supplier = supplierService.selectSupplierByCode(reportEntryDetail.getSupplierCode());
+                reportEntryDetail.setSupplierName(supplier == null ? "" : supplier.getSupplierName());
             }
 
             //仓库名称
