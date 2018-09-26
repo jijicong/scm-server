@@ -442,10 +442,6 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		jdStockOutDetail.setPlannedQuantity(detail.getOutboundQuantity());
 		jdStockOutDetail.setQuantity(actualQty);
 		jdStockOutDetail.setOutboundSupplierAmount(detail.getTotalAmount());
-		jdStockOutDetail.setWaybillNumber("");
-		jdStockOutDetail.setReceiver(notice.getReceiver());
-		jdStockOutDetail.setMobile(notice.getReceiverNumber());
-		jdStockOutDetail.setAddress(notice.getReceiverProvince() + notice.getReceiverCity() + notice.getReceiverArea() + notice.getReceiverAddress());
 		jdStockOutDetail.setTaxRate(detail.getTaxRate());
 
 		jdStockOutDetailService.insert(jdStockOutDetail);
