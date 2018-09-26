@@ -922,7 +922,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     private void insertStockDetail(Long itemNum, AllocateOutOrder allocateOutOrder, AllocateSkuDetail detail) {
 
-        logger.info("JD调拨出库记录库存变动明， 订单编号:{}", allocateOutOrder.getAllocateOutOrderCode());
+        logger.info("JD调拨出库记录库存变动明， 订单编号:{}, skuCode:{}, 出库数量:{}", allocateOutOrder.getAllocateOutOrderCode(), detail.getSkuCode(), itemNum);
 
         JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
 
