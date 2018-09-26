@@ -1,6 +1,7 @@
 package org.trc.biz.impl.purchase;
 
 import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -71,13 +72,14 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
 
     /*
-    采购单审核表 与 采购单表 左关联
+     *采购单审核表 与 采购单表 左关联
      */
     @Override
     @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
-    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, 
+    		Pagenation<PurchaseOrderAddAudit> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
 
-        PageHelper.startPage(page.getPageNo(), page.getPageSize());
+    	Page<PurchaseOrderAddAudit> pageHelper = PageHelper.startPage(page.getPageNo(), page.getPageSize());
         String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         Map<String, Object> map = new HashMap<>();
         map.put("supplierName", form.getSupplierName());
@@ -131,7 +133,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         _renderPurchaseOrders(pageDateList);
         page.setResult(pageDateList);
 //        int count = purchaseOrderAuditService.selectCountAuditPurchaseOrder(map);
-        page.setTotalCount(pageDateList.size());
+        page.setTotalCount(pageHelper.getTotal());
         return page;
 
     }
