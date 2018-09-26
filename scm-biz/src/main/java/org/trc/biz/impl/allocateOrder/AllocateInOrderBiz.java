@@ -833,7 +833,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         jdStockInDetail.setBarCode(detail.getBarCode());
         jdStockInDetail.setGoodsType("");
         jdStockInDetail.setSpecInfo(detail.getSpecNatureInfo());
-        jdStockInDetail.setPlannedQuantity(detail.getPlanAllocateNum());
+        jdStockInDetail.setPlannedQuantity(detail.getRealOutNum());
         jdStockInDetail.setQuantity(stockMap.get("normalQ") + stockMap.get("defectiveQ"));
         jdStockInDetail.setNormalQuantity(stockMap.get("normalQ"));
         jdStockInDetail.setDefectiveQuantity(stockMap.get("defectiveQ"));
