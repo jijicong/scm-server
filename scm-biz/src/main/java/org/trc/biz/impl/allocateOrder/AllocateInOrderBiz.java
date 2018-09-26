@@ -774,7 +774,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                                 try {
                                     insertStockDetail(detail, allocateInOrder, stockMap);
                                 } catch (Exception e) {
-                                    logger.error("JD调拨入库，记录库存变动明细失败， 入库单号:{}, e:{}", allocateInOrder.getAllocateInOrderCode(), e);
+                                    logger.error("JD调拨入库，记录库存变动明细失败， 入库单号:{}, e:", allocateInOrder.getAllocateInOrderCode(), e);
                                 }
                             }
 
@@ -818,6 +818,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     }
 
     private void insertStockDetail(AllocateSkuDetail detail, AllocateInOrder allocateInOrder, Map<String,Long> stockMap) {
+
+        logger.info("JD调拨入库记录库存变动明， 订单编号:{}，变动详情:{}", allocateInOrder.getInWarehouseCode(), JSON.toJSONString(stockMap));
+
         JdStockInDetail jdStockInDetail = new JdStockInDetail();
         jdStockInDetail.setWarehouseCode(allocateInOrder.getInWarehouseCode());
         jdStockInDetail.setStockType(detail.getInventoryType());

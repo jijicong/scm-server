@@ -1,5 +1,6 @@
 package org.trc.service.impl.outbound;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -165,6 +166,12 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
 
                     //更新发货单状态
                     this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
+
+                    try {
+                        insertStockDetail(list, outboundOrder);
+                    } catch (Exception e) {
+                        logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{}, e:", outboundOrder.getOutboundOrderCode(), e);
+                    }
 
                     //更新库存
                     if(list.size() > 0){
@@ -373,12 +380,6 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                             requsetUpdateStock.setSkuCode(outboundDetail.getSkuCode());
                             requsetUpdateStock.setWarehouseCode(warehouseCode);
                             updateStockList.add(requsetUpdateStock);
-
-                            try {
-                                insertStockDetail(requsetUpdateStock, outboundOrder, outboundDetail);
-                            } catch (Exception e) {
-                                logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{}, e:{}", outboundOrder.getOutboundOrderCode(), e);
-                            }
                         }
                     }
                 }
@@ -420,37 +421,53 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         return updateStockList;
     }
 
-    private void insertStockDetail(RequsetUpdateStock requsetUpdateStock, OutboundOrder outboundOrder, OutboundDetail outboundDetail) {
-        JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
-        jdStockOutDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
-        jdStockOutDetail.setWarehouseCode(outboundOrder.getWarehouseCode());
-        jdStockOutDetail.setStockType(QualityTypeEnum.QUALITY.getCode());
-        jdStockOutDetail.setOperationType(StockOperationTypeEnum.SALES_OF_OUTBOUND.getCode());
-        jdStockOutDetail.setWarehouseOutboundOrderCode(outboundOrder.getWmsOrderCode());
-        jdStockOutDetail.setPlatformOrderCode(outboundOrder.getPlatformOrderCode());
-        jdStockOutDetail.setSellChannelCode(outboundOrder.getScmShopOrderCode());
-        jdStockOutDetail.setSellCode(outboundOrder.getSellCode());
-        jdStockOutDetail.setGoodsOrderCode("");
-        jdStockOutDetail.setChannelCode(outboundOrder.getChannelCode());
-        jdStockOutDetail.setSkuCode(outboundDetail.getSkuCode());
-        jdStockOutDetail.setSpecInfo(outboundDetail.getSpecNatureInfo());
-        jdStockOutDetail.setPayment(new BigDecimal(outboundDetail.getActualAmount()/100).setScale(3));
-        jdStockOutDetail.setPlannedQuantity(outboundDetail.getShouldSentItemNum());
-        jdStockOutDetail.setQuantity(Long.valueOf(requsetUpdateStock.getStockType().get("real_inventory")));
-        jdStockOutDetail.setWaybillNumber(outboundOrder.getWaybillNumber());
-        jdStockOutDetail.setReceiver(outboundOrder.getReceiverName());
-        jdStockOutDetail.setMobile(outboundOrder.getReceiverPhone());
-        jdStockOutDetail.setAddress(outboundOrder.getReceiverProvince() + outboundOrder.getReceiverCity() + outboundOrder.getReceiverDistrict() + outboundOrder.getReceiverAddress());
+    private void insertStockDetail(List<RequsetUpdateStock> requsetUpdateStock, OutboundOrder outboundOrder) {
 
-        Skus skus = new Skus();
-        skus.setSkuCode(outboundDetail.getSkuCode());
-        Skus sku = SkusService.selectOne(skus);
+        logger.info("JD订单出库记录库存变动明， 订单编号:{}，变动详情:{}", outboundOrder.getOutboundOrderCode(), JSON.toJSONString(requsetUpdateStock));
 
-        jdStockOutDetail.setBarCode(sku.getBarCode());
-        jdStockOutDetail.setGoodsType("");
-        int insert = jdStockOutDetailService.insert(jdStockOutDetail);
-        if(insert == 0){
-            logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{}", outboundOrder.getOutboundOrderCode());
+        //获取发货详情
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
+        List<OutboundDetail> details = outboundDetailService.select(outboundDetail);
+        for(RequsetUpdateStock stock : requsetUpdateStock){
+            for(OutboundDetail detail : details){
+                if(StringUtils.equals(stock.getSkuCode(), detail.getSkuCode())){
+                    JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
+                    jdStockOutDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
+                    jdStockOutDetail.setWarehouseCode(outboundOrder.getWarehouseCode());
+                    jdStockOutDetail.setStockType(QualityTypeEnum.QUALITY.getCode());
+                    jdStockOutDetail.setOperationType(StockOperationTypeEnum.SALES_OF_OUTBOUND.getCode());
+                    jdStockOutDetail.setWarehouseOutboundOrderCode(outboundOrder.getWmsOrderCode());
+                    jdStockOutDetail.setPlatformOrderCode(outboundOrder.getPlatformOrderCode());
+                    jdStockOutDetail.setSellChannelCode(outboundOrder.getScmShopOrderCode());
+                    jdStockOutDetail.setSellCode(outboundOrder.getSellCode());
+                    jdStockOutDetail.setGoodsOrderCode("");
+                    jdStockOutDetail.setChannelCode(outboundOrder.getChannelCode());
+                    jdStockOutDetail.setSkuCode(detail.getSkuCode());
+                    jdStockOutDetail.setSpecInfo(detail.getSpecNatureInfo());
+                    jdStockOutDetail.setPayment(new BigDecimal(detail.getActualAmount()/100).setScale(3));
+                    jdStockOutDetail.setPlannedQuantity(detail.getShouldSentItemNum());
+                    if(StringUtils.isNotBlank(stock.getStockType().get("real_inventory"))){
+                        jdStockOutDetail.setQuantity(Long.valueOf(stock.getStockType().get("real_inventory")));
+                    }
+                    jdStockOutDetail.setWaybillNumber(outboundOrder.getWaybillNumber());
+                    jdStockOutDetail.setReceiver(outboundOrder.getReceiverName());
+                    jdStockOutDetail.setMobile(outboundOrder.getReceiverPhone());
+                    jdStockOutDetail.setAddress(outboundOrder.getReceiverProvince() + outboundOrder.getReceiverCity() + outboundOrder.getReceiverDistrict() + outboundOrder.getReceiverAddress());
+
+                    Skus skus = new Skus();
+                    skus.setSkuCode(detail.getSkuCode());
+                    Skus sku = SkusService.selectOne(skus);
+
+                    jdStockOutDetail.setBarCode(sku.getBarCode());
+                    jdStockOutDetail.setGoodsType("");
+                    int insert = jdStockOutDetailService.insert(jdStockOutDetail);
+                    if(insert == 0){
+                        logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{}", outboundOrder.getOutboundOrderCode());
+                    }
+                    break;
+                }
+            }
         }
     }
 
