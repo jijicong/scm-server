@@ -866,7 +866,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                     try {
                         insertStockDetail(itemNum, allocateOutOrder, detail);
                     } catch (Exception e) {
-                        logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{},e:{}", allocateOutOrder.getAllocateOutOrderCode(), e);
+                        logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{},e:", allocateOutOrder.getAllocateOutOrderCode(), e);
                     }
                 }
             }
@@ -921,6 +921,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     private void insertStockDetail(Long itemNum, AllocateOutOrder allocateOutOrder, AllocateSkuDetail detail) {
+
+        logger.info("JD调拨出库记录库存变动明， 订单编号:{}", allocateOutOrder.getAllocateOutOrderCode());
+
         JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
 
         jdStockOutDetail.setOutboundOrderCode(allocateOutOrder.getAllocateOutOrderCode());
