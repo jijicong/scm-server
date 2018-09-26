@@ -906,6 +906,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             WarehouseInfo warehouseInfo = new WarehouseInfo();
             warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
             warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+
+            //通知收货
+            if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+                this.noticeReceive(allocateOrder.getAllocateOrderCode());
+            }
+
             logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
                     LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
 
