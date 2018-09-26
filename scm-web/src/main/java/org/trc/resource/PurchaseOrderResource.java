@@ -1,6 +1,9 @@
 package org.trc.resource;
 
 import com.alibaba.druid.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
@@ -8,12 +11,17 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
+import org.trc.enums.DistributeLockEnum;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.PurchaseOrderStatusEnum;
+import org.trc.exception.PurchaseOrderException;
+import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
+import org.trc.util.lock.RedisLock;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -28,9 +36,13 @@ import javax.ws.rs.core.Response;
 @Component
 @Path(SupplyConstants.PurchaseOrder.ROOT)
 public class PurchaseOrderResource {
+    private Logger logger = LoggerFactory.getLogger(PurchaseOrderResource.class);
 
     @Resource
     private IPurchaseOrderBiz purchaseOrderBiz;
+
+    @Autowired
+    private RedisLock redisLock;
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_PAGE)
@@ -51,7 +63,29 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response savePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        String identifier = "";
+        String purchaseOrderCode = purchaseOrder.getPurchaseOrderCode();
+        identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_ORDER.getCode() +purchaseOrderCode, 0, 10000);
+        if (org.apache.commons.lang3.StringUtils.isBlank(identifier)) {
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "请不要重复操作!");
+        }
+        try {
+            purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }finally {
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_ORDER.getCode()+purchaseOrderCode,identifier)){
+                    logger.info("purchaseOrderCode:{} 保存采购单，解锁成功，identifier:{}", purchaseOrderCode, identifier);
+                }else {
+                    logger.info("purchaseOrderCode:{} 保存采购单，解锁失败，identifier:{}", purchaseOrderCode, identifier);
+                }
+
+            }catch (Exception e){
+                logger.error("purchaseOrderCode:{} 保存采购单，解锁失败，identifier:{}, err:",
+                        purchaseOrderCode, identifier, e);
+                e.printStackTrace();
+            }
+        }
+
         return ResultUtil.createSuccessResult("保存采购订单成功","");
 
     }
@@ -59,7 +93,29 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)//因为aop只拦截了save***开始的方法，注入创建人，因此这里的提交审核，也为save开始
     public Response saveCommitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) {
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        String identifier = "";
+        String purchaseOrderCode = purchaseOrder.getPurchaseOrderCode();
+        identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_ORDER.getCode() +purchaseOrderCode, 0, 10000);
+        if (org.apache.commons.lang3.StringUtils.isBlank(identifier)) {
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "请不要重复操作!");
+        }
+        try {
+            purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }finally {
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_ORDER.getCode()+purchaseOrderCode,identifier)){
+                    logger.info("purchaseOrderCode:{} 保存审核采购单，解锁成功，identifier:{}", purchaseOrderCode, identifier);
+                }else {
+                    logger.info("purchaseOrderCode:{} 保存审核采购单，解锁失败，identifier:{}", purchaseOrderCode, identifier);
+                }
+
+            }catch (Exception e){
+                logger.error("purchaseOrderCode:{} 保存采购单，解锁失败，identifier:{}, err:",
+                        purchaseOrderCode, identifier, e);
+                e.printStackTrace();
+            }
+        }
+
         return ResultUtil.createSuccessResult("提交审核采购单成功","");
     }
     @GET
@@ -96,7 +152,28 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        String identifier = "";
+        String purchaseOrderCode = purchaseOrderAddData.getPurchaseOrderCode();
+        identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_ORDER.getCode() +purchaseOrderCode, 0, 10000);
+        if (org.apache.commons.lang3.StringUtils.isBlank(identifier)) {
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, "请不要重复操作!");
+        }
+        try {
+            purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }finally {
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_ORDER.getCode()+purchaseOrderCode,identifier)){
+                    logger.info("purchaseOrderCode:{} 更新采购单，解锁成功，identifier:{}", purchaseOrderCode, identifier);
+                }else {
+                    logger.info("purchaseOrderCode:{} 更新采购单，解锁失败，identifier:{}", purchaseOrderCode, identifier);
+                }
+            }catch (Exception e){
+                logger.error("purchaseOrderCode:{} 更新采购单，解锁失败，identifier:{}, err:",
+                        purchaseOrderCode, identifier, e);
+                e.printStackTrace();
+            }
+        }
+
         return  ResultUtil.createSuccessResult("修改采购订单信息成功","");
 
     }
@@ -104,9 +181,30 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT+"/{id}")//提交审核修改
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePurchaseOrderAudit(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) {
+        String identifier = "";
+        String purchaseOrderCode = purchaseOrderAddData.getPurchaseOrderCode();
+        identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_ORDER.getCode() +purchaseOrderCode, 0, 10000);
+        if (org.apache.commons.lang3.StringUtils.isBlank(identifier)) {
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, "请不要重复操作!");
+        }
+        try {
+            purchaseOrderAddData.setStatus(PurchaseOrderStatusEnum.AUDIT.getCode());
+            purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }finally {
+            try {
+                if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_ORDER.getCode()+purchaseOrderCode,identifier)){
+                    logger.info("purchaseOrderCode:{} 更新审核采购单，解锁成功，identifier:{}", purchaseOrderCode, identifier);
+                }else {
+                    logger.info("purchaseOrderCode:{} 更新审核采购单，解锁失败，identifier:{}", purchaseOrderCode, identifier);
+                }
 
-        purchaseOrderAddData.setStatus(PurchaseOrderStatusEnum.AUDIT.getCode());
-        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+            }catch (Exception e){
+                logger.error("purchaseOrderCode:{} 更新审核采购单，解锁失败，identifier:{}, err:",
+                        purchaseOrderCode, identifier, e);
+                e.printStackTrace();
+            }
+        }
+
         return  ResultUtil.createSuccessResult("提交审核修改采购订单信息成功","");
 
     }

@@ -129,6 +129,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             }
             result.setIsNoticeWarehouseItems(warehouseInfo.getIsNoticeWarehouseItems()!=null?warehouseInfo.getIsNoticeWarehouseItems():"");
             result.setIsNoticeSuccess(noticeSuccess);
+            result.setIsSupportReturn(warehouseInfo.getIsSupportReturn());
             result.setCreateTime(DateUtils.formatDateTime(warehouseInfo.getCreateTime()));
             result.setUpdateTime(DateUtils.formatDateTime(warehouseInfo.getUpdateTime()));
             result.setIsDelete(convertDeleteState(warehouseInfo));
@@ -347,6 +348,9 @@ public class WarehouseBiz implements IWarehouseBiz {
     @WarehouseCacheEvict
     public void saveWarehouse(WarehouseInfo warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(warehouse, "仓库管理模块保存仓库信息失败，仓库信息为空");
+        if (StringUtils.equals(warehouse.getOperationalNature(),OperationalNatureEnum.SELF_SUPPORT.getCode())){
+            AssertUtil.notNull(warehouse.getIsSupportReturn(),"仓库运营类型为自营时,是否支持退货字段不能为空");
+        }
         WarehouseInfo tmp = findWarehouseByName(warehouse.getWarehouseName());
         AssertUtil.isNull(tmp, String.format("仓库名称[name=%s]的数据已存在,请使用其他名称", warehouse.getWarehouseName()));
         ParamsUtil.setBaseDO(warehouse);
@@ -524,8 +528,10 @@ public class WarehouseBiz implements IWarehouseBiz {
     @WarehouseCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouse(WarehouseInfo warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
-
         AssertUtil.notNull(warehouse.getId(), "根据ID修改仓库参数ID为空");
+        if (StringUtils.equals(warehouse.getOperationalNature(),OperationalNatureEnum.SELF_SUPPORT.getCode())){
+            AssertUtil.notNull(warehouse.getIsSupportReturn(),"仓库运营类型为自营时,是否支持退货字段不能为空");
+        }
         WarehouseInfo tmp = findWarehouseByName(warehouse.getWarehouseName());
         if (tmp != null) {
             if (!tmp.getId().equals(warehouse.getId())) {

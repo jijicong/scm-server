@@ -16,6 +16,7 @@ import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.*;
+import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.CommonExceptionEnum;
@@ -46,6 +47,7 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -658,7 +660,9 @@ public class ReportBiz implements IReportBiz {
                 //采购入库
                 if (StringUtils.equals(reportEntryDetail.getOperationType(), StockOperationTypeEnum.PURCHASE.getCode())) {
                     if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
+                        reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
                         reportEntryDetail.setPrice(new BigDecimal(0));
+                        reportEntryDetail.setTotalPrice(new BigDecimal(0));
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
@@ -667,6 +671,7 @@ public class ReportBiz implements IReportBiz {
                             details.add(reportEntryDetail);
                         }
                     } else {
+                        reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
                         reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
@@ -704,6 +709,12 @@ public class ReportBiz implements IReportBiz {
                     reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                     reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
                 }
+            }
+
+            //供应商名称
+            if(StringUtils.isNotBlank(reportEntryDetail.getSupplierCode())){
+                Supplier supplier = supplierService.selectSupplierByCode(reportEntryDetail.getSupplierCode());
+                reportEntryDetail.setSupplierName(supplier == null ? "" : supplier.getSupplierName());
             }
 
             //仓库名称
@@ -821,6 +832,8 @@ public class ReportBiz implements IReportBiz {
 
         for (ReportInventory reportInventory : result) {
 
+            List<ReportInventory> initialQuantityList = new ArrayList<>();
+
             long outboundQuantity = 0;  //销售出库数量
             BigDecimal outboundTotalAmount = new BigDecimal(0); //销售出库实付总金额（元）
             BigDecimal purchaseTotalAmount = new BigDecimal(0); //含税采购总金额（元）
@@ -840,6 +853,7 @@ public class ReportBiz implements IReportBiz {
             long entryTotalQuantity = 0;    //本期入库总数量
             long outboundTotalQuantity = 0; //本期出库总数量
             long balanceTotalQuantity = 0; //期末结存数量
+            long initialQuantity = 0;
 
             for (ReportInventory inventory : reportInventorys) {
                 if (StringUtils.equals(reportInventory.getWarehouseCode(), inventory.getWarehouseCode())
@@ -859,7 +873,9 @@ public class ReportBiz implements IReportBiz {
                     normalToDefective += inventory.getNormalToDefective();
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
-                    balanceTotalQuantity = inventory.getBalanceTotalQuantity();
+
+                    //期初数量,期末数量
+                    initialQuantityList.add(inventory);
 
                     reportInventory.setGoodsType(inventory.getGoodsType());
                     reportInventory.setSpecInfo(inventory.getSpecInfo());
@@ -888,13 +904,14 @@ public class ReportBiz implements IReportBiz {
             } else {
                 reportInventory.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
             }
+
             //默认第一天的期初数量
-            reportInventory.setInitialQuantity(reportInventorys.get(0).getInitialQuantity());
+            reportInventory.setInitialQuantity(initialQuantityList.get(0).getInitialQuantity());
             //默认最后一天的期末数量
-            reportInventory.setBalanceTotalQuantity(balanceTotalQuantity);
+            reportInventory.setBalanceTotalQuantity(initialQuantityList.get(initialQuantityList.size() - 1).getBalanceTotalQuantity());
 
             reportInventory.setEntryTotalQuantity(salesReturnQuantity + purchaseQuantity + allocateInQuantity + inventoryProfitQuantity);
-            reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity);
+            reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity + allocateOutQuantity);
         }
 
         return result;
@@ -953,6 +970,8 @@ public class ReportBiz implements IReportBiz {
                     reportInventory.setWarehouseName(warehouseInfo.getWarehouseName());
                 }
             }
+            //按仓库名称首字母升序
+            Collections.sort(warehouseCodes, (ReportInventory r1, ReportInventory r2) -> Collator.getInstance(Locale.CHINESE).compare(r1.getWarehouseName(), r2.getWarehouseName()));
         }
     }
 
