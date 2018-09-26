@@ -2296,7 +2296,8 @@ public class TrcBiz implements ITrcBiz {
         shopOrderselect.setChannelCode(afterSaleOrderDO.getChannelCode() );
         shopOrderselect.setSellCode(afterSaleOrderDO.getSellCode());
 		ShopOrder shopOrder=shopOrderService.selectOne(shopOrderselect);
-		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+"查询到的订单为空!");
+		AssertUtil.notNull(shopOrder, "根据该订单号"+shopOrderCode+",渠道编码"+afterSaleOrderDO.getChannelCode()+",销售渠道编号"
+                +afterSaleOrderDO.getSellCode()+"查询到的订单为空!");
 		String afterSaleCode=null;
 		//线下退货
 		if(returnScene==returnSceneEnum.STATUS_0.getCode() && afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()) {
@@ -2550,9 +2551,11 @@ public class TrcBiz implements ITrcBiz {
 		//通知wms，新增退货入库单
 		ScmReturnOrderCreateRequest returnOrderCreateRequest=getReturnInOrder(afterSaleCode,warehouseNoticeCode,shopOrder,afterSaleOrderDO,platformOrder,warehouseInfo,returnScene);
 		AppResult<ScmReturnOrderCreateResponse> response=warehouseApiService.returnOrderCreate(returnOrderCreateRequest);
-		if(!StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
-			AssertUtil.notNull(null, response.getDatabuffer());
-		}
+        AssertUtil.isTrue(StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE), response.getDatabuffer());
+        JSONObject result=JSONArray.parseObject(response.getResult().toString());
+        String flg=result.getString("flag");
+        // 1成功 2失败
+        AssertUtil.isTrue(flg.equals("1"),result.get("message").toString());
 		
 		//日志
 		logInfoService.recordLog(new AfterSaleOrder(), afterSaleOrder.getId(), 
