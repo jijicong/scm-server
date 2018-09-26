@@ -439,7 +439,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                     jdStockOutDetail.setOperationType(StockOperationTypeEnum.SALES_OF_OUTBOUND.getCode());
                     jdStockOutDetail.setWarehouseOutboundOrderCode(outboundOrder.getWmsOrderCode());
                     jdStockOutDetail.setPlatformOrderCode(outboundOrder.getPlatformOrderCode());
-                    jdStockOutDetail.setSellChannelCode(outboundOrder.getScmShopOrderCode());
+                    jdStockOutDetail.setSellChannelCode(outboundOrder.getShopOrderCode());
                     jdStockOutDetail.setSellCode(outboundOrder.getSellCode());
                     jdStockOutDetail.setGoodsOrderCode("");
                     jdStockOutDetail.setChannelCode(outboundOrder.getChannelCode());
@@ -448,12 +448,35 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                     jdStockOutDetail.setPayment(new BigDecimal(detail.getActualAmount()/100).setScale(3));
                     jdStockOutDetail.setPlannedQuantity(detail.getShouldSentItemNum());
                     if(StringUtils.isNotBlank(stock.getStockType().get("real_inventory"))){
-                        jdStockOutDetail.setQuantity(Long.valueOf(stock.getStockType().get("real_inventory")));
+                        jdStockOutDetail.setQuantity(Math.abs(Long.valueOf(stock.getStockType().get("real_inventory"))));
                     }
-                    jdStockOutDetail.setWaybillNumber(outboundOrder.getWaybillNumber());
                     jdStockOutDetail.setReceiver(outboundOrder.getReceiverName());
                     jdStockOutDetail.setMobile(outboundOrder.getReceiverPhone());
                     jdStockOutDetail.setAddress(outboundOrder.getReceiverProvince() + outboundOrder.getReceiverCity() + outboundOrder.getReceiverDistrict() + outboundOrder.getReceiverAddress());
+
+                    //通过系统订单号和skuCode查询订单详情
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setScmShopOrderCode(outboundOrder.getScmShopOrderCode());
+                    orderItem.setSkuCode(detail.getSkuCode());
+                    orderItem = orderItemService.selectOne(orderItem);
+                    BigDecimal salesPrice = orderItem.getPrice();
+                    jdStockOutDetail.setPrice(salesPrice);
+                    BigDecimal multiply = salesPrice.multiply(BigDecimal.valueOf(orderItem.getNum()));
+                    jdStockOutDetail.setTotalAmount(multiply.setScale(3, BigDecimal.ROUND_HALF_UP));
+
+                    //销售出库实付总金额（元）
+                    Long actualAmount = detail.getActualAmount() == null ? 0L : detail.getActualAmount();
+                    jdStockOutDetail.setPayment(BigDecimal.valueOf(actualAmount).divide(new BigDecimal(100)));
+
+                    //物流公司
+                    OutboundDetailLogistics outboundDetailLogistics = new OutboundDetailLogistics();
+                    outboundDetailLogistics.setOutboundDetailId(detail.getId());
+                    outboundDetailLogistics = outboundDetailLogisticsService.selectOne(outboundDetailLogistics);
+                    if(outboundDetailLogistics != null){
+                        jdStockOutDetail.setExpress(outboundDetailLogistics.getLogisticsCorporation());
+                        //快递单号
+                        jdStockOutDetail.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
+                    }
 
                     Skus skus = new Skus();
                     skus.setSkuCode(detail.getSkuCode());
