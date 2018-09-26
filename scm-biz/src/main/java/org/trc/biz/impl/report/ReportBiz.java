@@ -606,51 +606,45 @@ public class ReportBiz implements IReportBiz {
 
         List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
         if (flag) {
-
             if (CollectionUtils.isEmpty(result)) {
                 return new Pagenation<>();
             }
-
-            List<ReportEntryDetail> filtrationList = setEntryResultDetail(result, form);
-            return pagingResult(result, filtrationList, page);
+            //需要过滤的数据
+            Map<String, ReportEntryDetail> filtrationMap = setEntryResultDetail(result, form);
+            return pagingResult(result, filtrationMap, page, flag);
 
         } else {
-
             if (CollectionUtils.isEmpty(result)) {
                 return new ArrayList<>();
             }
-            setEntryResultDetail(result, form);
-            return result;
+            Map<String, ReportEntryDetail> filtrationMap = setEntryResultDetail(result, form);
+            return pagingResult(result, filtrationMap, page, flag);
         }
 
     }
 
-    private Pagenation<ReportEntryDetail> pagingResult(List<ReportEntryDetail> result, List<ReportEntryDetail> filtrationList, Pagenation<ReportEntryDetail> page) {
-        if (!CollectionUtils.isEmpty(filtrationList)) {
+    private Object pagingResult(List<ReportEntryDetail> result, Map<String, ReportEntryDetail> filtrationMap, Pagenation<ReportEntryDetail> page, boolean flag) {
+        if (!CollectionUtils.isEmpty(filtrationMap)) {
             Iterator<ReportEntryDetail> iterator = result.iterator();
             while (iterator.hasNext()){
                 ReportEntryDetail reportEntryDetail = iterator.next();
-                for(ReportEntryDetail list : filtrationList){
-                    if(StringUtils.equals(list.getSkuCode(), reportEntryDetail.getSkuCode())
-                            && StringUtils.equals(list.getOrderCode(), reportEntryDetail.getOrderCode())){
-                        iterator.remove();
-                    }
+                if(filtrationMap.get(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode()) != null){
+                    iterator.remove();
                 }
             }
+        }
+        if(flag){
             Map<String, Object> pagingResultMap = PagingResultMap.getPagingResultMap(result, page.getPageNo(), page.getPageSize());
             page.setResult((List<ReportEntryDetail>) pagingResultMap.get("result"));
             page.setTotalCount(Long.valueOf(pagingResultMap.get("totalRowNum").toString()));
             return page;
-        } else {
-            Map<String, Object> pagingResultMap = PagingResultMap.getPagingResultMap(result, page.getPageNo(), page.getPageSize());
-            page.setResult((List<ReportEntryDetail>) pagingResultMap.get("result"));
-            page.setTotalCount(Long.valueOf(pagingResultMap.get("totalRowNum").toString()));
-            return page;
+        }else{
+            return result;
         }
     }
 
-    private List<ReportEntryDetail> setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
-        List<ReportEntryDetail> details = new ArrayList<>();
+    private Map<String, ReportEntryDetail> setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
+        Map<String, ReportEntryDetail> filtrationMap = new HashMap<>();
         for (ReportEntryDetail reportEntryDetail : result) {
 
             //查询库存类型与实际单据入库类型不一致，初始化数据
@@ -668,7 +662,7 @@ public class ReportBiz implements IReportBiz {
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
                         //计划入库和实际入库都为0，不生成报表记录
                         if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            details.add(reportEntryDetail);
+                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
                         }
                     } else {
                         reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
@@ -684,7 +678,7 @@ public class ReportBiz implements IReportBiz {
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
                         //计划入库和实际入库都为0，不生成报表记录
                         if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            details.add(reportEntryDetail);
+                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
                         }
                     } else {
                         reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
@@ -693,7 +687,7 @@ public class ReportBiz implements IReportBiz {
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
                         //计划入库和实际入库都为0，不生成报表记录
                         if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            details.add(reportEntryDetail);
+                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
                         }
                     }
                 }
@@ -737,7 +731,7 @@ public class ReportBiz implements IReportBiz {
                 }
             }
         }
-        return details;
+        return filtrationMap;
     }
 
     /**
