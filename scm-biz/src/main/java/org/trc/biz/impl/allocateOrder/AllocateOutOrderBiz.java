@@ -940,9 +940,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         jdStockOutDetail.setSpecInfo(detail.getSpecNatureInfo());
         jdStockOutDetail.setPlannedQuantity(detail.getPlanAllocateNum());
         jdStockOutDetail.setQuantity(itemNum);
-        jdStockOutDetail.setReceiver(allocateOutOrder.getReceiver());
-        jdStockOutDetail.setMobile(allocateOutOrder.getReceiverMobile());
-        jdStockOutDetail.setAddress(allocateOutOrder.getReceiverProvince() + allocateOutOrder.getReceiverCity() + allocateOutOrder.getReceiverAddress());
         jdStockOutDetail.setBarCode(detail.getBarCode());
         jdStockOutDetail.setGoodsType("");
         int insert = jdStockOutDetailService.insert(jdStockOutDetail);
