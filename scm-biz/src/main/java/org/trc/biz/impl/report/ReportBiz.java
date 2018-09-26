@@ -662,6 +662,7 @@ public class ReportBiz implements IReportBiz {
                     if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
                         reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
                         reportEntryDetail.setPrice(new BigDecimal(0));
+                        reportEntryDetail.setTotalPrice(new BigDecimal(0));
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
