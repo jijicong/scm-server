@@ -3,6 +3,7 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.qimen.api.request.WarehouseinfoQueryRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -2346,6 +2347,12 @@ public class TrcBiz implements ITrcBiz {
 		
 		String returnWarehouseCode=afterSaleOrderDO.getReturnWarehouseCode();
 		AssertUtil.notBlank(returnWarehouseCode, "入库仓库仓库编码不能为空 !");
+        WarehouseInfo selectwl=new WarehouseInfo();
+        selectwl.setCode(returnWarehouseCode);
+        selectwl.setIsValid(ValidEnum.VALID.getCode());
+        selectwl.setIsSupportReturn(Integer.parseInt(ValidEnum.VALID.getCode()));
+        WarehouseInfo warehouseInfo=warehouseInfoService.selectOne(selectwl);
+        AssertUtil.notNull(warehouseInfo,"该仓库未开启或不支持退货!");
 
 		String channelCode=afterSaleOrderDO.getChannelCode();
         AssertUtil.notBlank(channelCode, "渠道编码不能为空 !");
@@ -2790,7 +2797,7 @@ public class TrcBiz implements ITrcBiz {
 			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_2.getCode());
 		}else {
 			afterSaleWarehouseNotice.setReturnScene(returnSceneEnum.STATUS_1.getCode());
-			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_0.getCode());
+            afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_0.getCode());
 			
 		}
 		return afterSaleWarehouseNotice;
