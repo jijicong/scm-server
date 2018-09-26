@@ -16,6 +16,7 @@ import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.*;
+import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.CommonExceptionEnum;
@@ -709,6 +710,12 @@ public class ReportBiz implements IReportBiz {
                 }
             }
 
+            //供应商名称
+            if(StringUtils.isNotBlank(reportEntryDetail.getSupplierCode())){
+                Supplier supplier = supplierService.selectSupplierByCode(reportEntryDetail.getSupplierCode());
+                reportEntryDetail.setSupplierName(supplier == null ? "" : supplier.getSupplierName());
+            }
+
             //仓库名称
             WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(reportEntryDetail.getWarehouseCode());
             if (warehouseInfo != null) {
@@ -824,6 +831,8 @@ public class ReportBiz implements IReportBiz {
 
         for (ReportInventory reportInventory : result) {
 
+            List<ReportInventory> initialQuantityList = new ArrayList<>();
+
             long outboundQuantity = 0;  //销售出库数量
             BigDecimal outboundTotalAmount = new BigDecimal(0); //销售出库实付总金额（元）
             BigDecimal purchaseTotalAmount = new BigDecimal(0); //含税采购总金额（元）
@@ -864,9 +873,8 @@ public class ReportBiz implements IReportBiz {
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
 
-                    initialQuantity = inventory.getInitialQuantity();
-                    //默认最后一天的期末数量
-                    balanceTotalQuantity = inventory.getBalanceTotalQuantity();
+                    //期初数量,期末数量
+                    initialQuantityList.add(inventory);
 
                     reportInventory.setGoodsType(inventory.getGoodsType());
                     reportInventory.setSpecInfo(inventory.getSpecInfo());
@@ -897,9 +905,9 @@ public class ReportBiz implements IReportBiz {
             }
 
             //默认第一天的期初数量
-            reportInventory.setInitialQuantity(initialQuantity);
+            reportInventory.setInitialQuantity(initialQuantityList.get(0).getInitialQuantity());
             //默认最后一天的期末数量
-            reportInventory.setBalanceTotalQuantity(balanceTotalQuantity);
+            reportInventory.setBalanceTotalQuantity(initialQuantityList.get(initialQuantityList.size() - 1).getBalanceTotalQuantity());
 
             reportInventory.setEntryTotalQuantity(salesReturnQuantity + purchaseQuantity + allocateInQuantity + inventoryProfitQuantity);
             reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity + allocateOutQuantity);
