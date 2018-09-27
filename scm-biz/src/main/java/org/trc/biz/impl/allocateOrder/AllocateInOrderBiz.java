@@ -828,7 +828,6 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         jdStockInDetail.setSupplierCode(allocateInOrder.getSupplierCode());
         jdStockInDetail.setOrderCode(allocateInOrder.getAllocateInOrderCode());
         jdStockInDetail.setWarehouseOrderCode(allocateInOrder.getWmsAllocateInOrderCode());
-        jdStockInDetail.setWarehouseOrderCode("");
         jdStockInDetail.setSkuCode(detail.getSkuCode());
         jdStockInDetail.setBarCode(detail.getBarCode());
         jdStockInDetail.setGoodsType("");

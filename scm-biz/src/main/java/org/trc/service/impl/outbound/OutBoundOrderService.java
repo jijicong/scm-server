@@ -53,6 +53,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("outBoundOrderService")
 public class OutBoundOrderService extends BaseService<OutboundOrder, Long> implements IOutBoundOrderService {
@@ -473,11 +474,13 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                     //物流公司
                     OutboundDetailLogistics outboundDetailLogistics = new OutboundDetailLogistics();
                     outboundDetailLogistics.setOutboundDetailId(detail.getId());
-                    outboundDetailLogistics = outboundDetailLogisticsService.selectOne(outboundDetailLogistics);
-                    if(outboundDetailLogistics != null){
-                        jdStockOutDetail.setExpress(outboundDetailLogistics.getLogisticsCorporation());
+                    List<OutboundDetailLogistics> logistics = outboundDetailLogisticsService.select(outboundDetailLogistics);
+                    if(!CollectionUtils.isEmpty(logistics)){
+                        List<String> logisticsCorporations = logistics.stream().map(OutboundDetailLogistics::getLogisticsCorporation).collect(Collectors.toList());
+                        List<String> waybillNumbers = logistics.stream().map(OutboundDetailLogistics::getWaybillNumber).collect(Collectors.toList());
+                        jdStockOutDetail.setExpress(StringUtils.join(logisticsCorporations, ","));
                         //快递单号
-                        jdStockOutDetail.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
+                        jdStockOutDetail.setWaybillNumber(StringUtils.join(waybillNumbers, ","));
                     }
 
                     Skus skus = new Skus();
