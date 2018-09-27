@@ -472,6 +472,8 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                     jdStockOutDetail.setPrice(salesPrice);
                     BigDecimal multiply = salesPrice.multiply(BigDecimal.valueOf(orderItem.getNum()));
                     jdStockOutDetail.setTotalAmount(multiply.setScale(3, BigDecimal.ROUND_HALF_UP));
+                    //商品订单号: 通过订单出库单关联到的order_item表，即字段orderItemCode
+                    jdStockOutDetail.setGoodsOrderCode(orderItem.getOrderItemCode());
 
                     //销售出库实付总金额（元）
                     Long actualAmount = detail.getActualAmount() == null ? 0L : detail.getActualAmount();
