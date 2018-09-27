@@ -1452,7 +1452,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 //物流公司编号
                 String logisticsCode = detailLogistics.getLogisticsCode();
                 Logistic lsc = new Logistic();
-                lsc.setSupplierOrderCode(outboundOrder.getOutboundOrderCode());
+                lsc.setSupplierOrderCode(outboundOrder.getWarehouseOrderCode());
                 lsc.setWaybillNumber(wayBill);
                 // 物流公司名称
                 lsc.setLogisticsCorporation(logisticsName);

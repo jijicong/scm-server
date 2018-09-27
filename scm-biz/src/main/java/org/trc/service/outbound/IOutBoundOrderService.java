@@ -2,6 +2,7 @@ package org.trc.service.outbound;
 
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundOrder;
+import org.trc.form.LogisticNoticeForm;
 import org.trc.form.warehouse.ScmDeliveryOrderDetailResponse;
 import org.trc.service.IBaseService;
 import org.trc.util.AppResult;
@@ -20,5 +21,9 @@ public interface IOutBoundOrderService extends IBaseService<OutboundOrder,Long> 
 
 	void updateItemOrderSupplierOrderStatus(String outboundOrderCode, String warehouseOrderCode);
 
-
+    /**
+     * 设置物流通知sku参数
+     * @param noitce
+     */
+    void setLogistictNoticeSkuInfo(LogisticNoticeForm noitce);
 }

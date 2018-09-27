@@ -3,6 +3,7 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.qimen.api.request.WarehouseinfoQueryRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -2286,7 +2287,6 @@ public class TrcBiz implements ITrcBiz {
         int returnScene=afterSaleOrderDO.getReturnScene();
         //售后类型：0取消发货，1退货
         int afterSaleType=afterSaleOrderDO.getAfterSaleType();
-
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
 		
@@ -2344,15 +2344,6 @@ public class TrcBiz implements ITrcBiz {
 		
 		String shopOrderCode=afterSaleOrderDO.getShopOrderCode();
 		AssertUtil.notBlank(shopOrderCode, "店铺订单号不能为空 !");
-		
-		String returnWarehouseCode=afterSaleOrderDO.getReturnWarehouseCode();
-		AssertUtil.notBlank(returnWarehouseCode, "入库仓库仓库编码不能为空 !");
-
-		String channelCode=afterSaleOrderDO.getChannelCode();
-        AssertUtil.notBlank(channelCode, "渠道编码不能为空 !");
-
-		String sellCode=afterSaleOrderDO.getSellCode();
-        AssertUtil.notBlank(sellCode, "销售渠道不能为空 !");
 
         //退货场景：0实体店退货，1线上商城退货
         int returnScene=afterSaleOrderDO.getReturnScene();
@@ -2360,6 +2351,25 @@ public class TrcBiz implements ITrcBiz {
         //售后类型：0取消发货，1退货
         int afterSaleType=afterSaleOrderDO.getAfterSaleType();
         AssertUtil.isTrue((afterSaleType==0 ||afterSaleType==1),"afterSaleType只能传0或者1");
+		
+		String returnWarehouseCode=afterSaleOrderDO.getReturnWarehouseCode();
+		AssertUtil.notBlank(returnWarehouseCode, "入库仓库仓库编码不能为空 !");
+		//退货才需要传入库编码
+        if(afterSaleType==AfterSaleTypeEnum.RETURN_GOODS.getCode()){
+            WarehouseInfo selectwl=new WarehouseInfo();
+            selectwl.setCode(returnWarehouseCode);
+            selectwl.setIsValid(ValidEnum.VALID.getCode());
+            selectwl.setIsSupportReturn(Integer.parseInt(ValidEnum.VALID.getCode()));
+            WarehouseInfo warehouseInfo=warehouseInfoService.selectOne(selectwl);
+            AssertUtil.notNull(warehouseInfo,"该仓库未开启或不支持退货!");
+        }
+
+		String channelCode=afterSaleOrderDO.getChannelCode();
+        AssertUtil.notBlank(channelCode, "渠道编码不能为空 !");
+
+		String sellCode=afterSaleOrderDO.getSellCode();
+        AssertUtil.notBlank(sellCode, "销售渠道不能为空 !");
+
 
 		List<TaiRanAfterSaleOrderDetail> details=afterSaleOrderDO.getAfterSaleOrderDetailList();
 		AssertUtil.notEmpty(details, "售后单子订单不能为空!");
@@ -2793,7 +2803,7 @@ public class TrcBiz implements ITrcBiz {
 			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_2.getCode());
 		}else {
 			afterSaleWarehouseNotice.setReturnScene(returnSceneEnum.STATUS_1.getCode());
-			afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_0.getCode());
+            afterSaleWarehouseNotice.setStatus(AfterSaleWarehouseNoticeStatusEnum.STATUS_0.getCode());
 			
 		}
 		return afterSaleWarehouseNotice;

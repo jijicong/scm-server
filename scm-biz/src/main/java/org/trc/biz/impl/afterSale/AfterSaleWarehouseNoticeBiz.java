@@ -83,7 +83,7 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
             if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getOperator())) {
             	criteria.andLike("operator", "%" + afterSaleWarehouseNoticeDO.getOperator() + "%");
             }
-			//入库仓库编码 warehouseCode
+			//状态
 			if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getStatus())) {
 				criteria.andEqualTo("status", Integer.parseInt(afterSaleWarehouseNoticeDO.getStatus()));
 			}
