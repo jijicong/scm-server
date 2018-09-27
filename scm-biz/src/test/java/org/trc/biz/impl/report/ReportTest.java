@@ -7,8 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.biz.report.IReportBiz;
+import org.trc.domain.report.ReportInventory;
 import org.trc.form.report.ReportInventoryForm;
+import org.trc.service.report.IReportInventoryService;
 import org.trc.util.Pagenation;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Description〈〉
@@ -22,6 +27,8 @@ public class ReportTest {
 
     @Autowired
     private IReportBiz reportBiz;
+    @Autowired
+    private IReportInventoryService reportInventoryService;
 
     @Test
     public void reportTest(){
@@ -62,5 +69,12 @@ public class ReportTest {
         //form.setSkuCode("SP0201708140000159");
         Object reportPageList = reportBiz.getReportDetailPageList(form, new Pagenation(), false);
         System.out.println(JSON.toJSONString(reportPageList));
+    }
+
+    @Test
+    public void getReportInventoryByWarehouseCodeAndTimeTest(){
+
+        List<ReportInventory> ck00137 = reportInventoryService.getReportInventoryByWarehouseCodeAndTime("CK00137", LocalDate.of(2018, 8, 1), "1");
+        System.out.println(JSON.toJSONString(ck00137));
     }
 }

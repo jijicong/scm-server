@@ -1098,6 +1098,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
 
         }
+        warehouseNotice.setUpdateTime(new Date());
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
         //同步采购单 入库状态
@@ -1463,7 +1464,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                 try {
                                     insertStockDetail(stockMap, warehouseDetail, noticeOrder);
                                 } catch (Exception e) {
-                                    logger.error("JD采购入库，记录库存变动明细失败， 入库单号:{}, e:{}", noticeOrder.getWarehouseNoticeCode(), e);
+                                    logger.error("JD采购入库，记录库存变动明细失败， 入库单号:{}, e:", noticeOrder.getWarehouseNoticeCode(), e);
                                 }
                                 /**
                                  * v2.5
@@ -1570,6 +1571,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     private void insertStockDetail(Map<String,Long> stockMap, WarehouseNoticeDetails warehouseDetail, WarehouseNotice noticeOrder) {
+
+        logger.info("JD采购入库记录库存变动明， 订单编号:{}，变动详情:{}", noticeOrder.getWarehouseCode(), JSON.toJSONString(stockMap));
+
         JdStockInDetail jdStockInDetail = new JdStockInDetail();
         jdStockInDetail.setWarehouseCode(noticeOrder.getWarehouseCode());
         jdStockInDetail.setStockType(QualityTypeEnum.QUALITY.getCode());

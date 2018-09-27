@@ -17,7 +17,6 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.warehouseInfo.IWarehouseInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
-import org.trc.domain.config.LogInfo;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
@@ -1383,6 +1382,27 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             log.error("供应商订单导出异常" + e.getMessage(), e);
             return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.SUPPLIER_ORDER_EXPORT_EXCEPTION.getCode()), ExceptionEnum.SUPPLIER_ORDER_EXPORT_EXCEPTION.getMessage());
         }
+    }
+    
+    /**
+     * @Description: 查询退货仓库map集合
+     * @Author: hzluoxingcheng
+     * @Date: 2018/8/30
+     */ 
+    @Override
+    public Response selectReturnWarehouse() {
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isSupportReturn",1);
+        List<WarehouseInfo> list = warehouseInfoService.selectByExample(example);
+        List<Map<String,String>> rev = new ArrayList<>();
+        for (WarehouseInfo warehouse:list){
+            Map<String,String> map = new HashMap<>();
+            map.put("name",warehouse.getWarehouseName());
+            map.put("code",warehouse.getCode());
+            rev.add(map);
+        }
+        return ResultUtil.createSuccessResult("获取仓库名称成功",rev);
     }
 
 //    private ByteArrayOutputStream saveExceptionExcel(Map<String, String> map, String fileName) throws IOException {

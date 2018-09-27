@@ -16,15 +16,14 @@ import org.trc.domain.System.SellChannel;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.*;
+import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ItemTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.enums.report.GoodsTypeEnum;
-import org.trc.enums.report.StockOperationTypeEnum;
-import org.trc.enums.report.StockTypeEnum;
+import org.trc.enums.report.*;
 import org.trc.exception.ParamValidException;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.service.System.ISellChannelService;
@@ -46,6 +45,7 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.Collator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -341,9 +341,9 @@ public class ReportBiz implements IReportBiz {
         fileName = String.format("【%s】残品总库存%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail2 = new ReportExcelDetail();
         hssfWorkbook = this.reportExcel(reportInventoryList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail2.setStream(stream);
+        ByteArrayOutputStream stream2 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream2);
+        reportExcelDetail2.setStream(stream2);
         reportExcelDetail2.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail2);
 
@@ -353,10 +353,10 @@ public class ReportBiz implements IReportBiz {
         List<ReportEntryDetail> reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品入库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail3 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail3.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode());
+        ByteArrayOutputStream stream3 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream3);
+        reportExcelDetail3.setStream(stream3);
         reportExcelDetail3.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail3);
 
@@ -366,10 +366,10 @@ public class ReportBiz implements IReportBiz {
         reportEntryDetailList = (List<ReportEntryDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品入库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail4 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail4.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportEntryDetailList, fileName, ZeroToNineEnum.TWO.getCode());
+        ByteArrayOutputStream stream4 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream4);
+        reportExcelDetail4.setStream(stream4);
         reportExcelDetail4.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail4);
 
@@ -379,10 +379,10 @@ public class ReportBiz implements IReportBiz {
         List<ReportOutboundDetail> reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】正品出库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail5 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail5.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode());
+        ByteArrayOutputStream stream5 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream5);
+        reportExcelDetail5.setStream(stream5);
         reportExcelDetail5.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail5);
 
@@ -392,10 +392,10 @@ public class ReportBiz implements IReportBiz {
         reportOutboundDetailList = (List<ReportOutboundDetail>) this.getReportPageList(form, null, false);
         fileName = String.format("【%s】残品出库明细%s", warehouseName, reportDate);
         ReportExcelDetail reportExcelDetail6 = new ReportExcelDetail();
-        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.ONE.getCode());
-        stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        reportExcelDetail6.setStream(stream);
+        hssfWorkbook = this.reportExcel(reportOutboundDetailList, fileName, ZeroToNineEnum.THREE.getCode());
+        ByteArrayOutputStream stream6 = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream6);
+        reportExcelDetail6.setStream(stream6);
         reportExcelDetail6.setFileName(fileName);
         reportExcelDetails.add(reportExcelDetail6);
 
@@ -468,7 +468,7 @@ public class ReportBiz implements IReportBiz {
 
         criteria.andEqualTo("stockType", form.getStockType());
 
-        example.setOrderByClause("outbound_time, outbound_order_code DESC");
+        example.setOrderByClause("outbound_time DESC, outbound_order_code ASC");
 
         if (flag) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
@@ -600,55 +600,49 @@ public class ReportBiz implements IReportBiz {
             criteria.andEqualTo("warehouseOrderCode", form.getWarehousePurchaseOrderCode());
         }
 
-        example.setOrderByClause("entry_time, order_code DESC");
+        example.setOrderByClause("entry_time DESC, order_code ASC");
 
         List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
         if (flag) {
-
             if (CollectionUtils.isEmpty(result)) {
                 return new Pagenation<>();
             }
-
-            List<ReportEntryDetail> filtrationList = setEntryResultDetail(result, form);
-            return pagingResult(result, filtrationList, page);
+            //需要过滤的数据
+            Map<String, ReportEntryDetail> filtrationMap = setEntryResultDetail(result, form);
+            return pagingResult(result, filtrationMap, page, flag);
 
         } else {
-
             if (CollectionUtils.isEmpty(result)) {
                 return new ArrayList<>();
             }
-            setEntryResultDetail(result, form);
-            return result;
+            Map<String, ReportEntryDetail> filtrationMap = setEntryResultDetail(result, form);
+            return pagingResult(result, filtrationMap, page, flag);
         }
 
     }
 
-    private Pagenation<ReportEntryDetail> pagingResult(List<ReportEntryDetail> result, List<ReportEntryDetail> filtrationList, Pagenation<ReportEntryDetail> page) {
-        if (!CollectionUtils.isEmpty(filtrationList)) {
+    private Object pagingResult(List<ReportEntryDetail> result, Map<String, ReportEntryDetail> filtrationMap, Pagenation<ReportEntryDetail> page, boolean flag) {
+        if (!CollectionUtils.isEmpty(filtrationMap)) {
             Iterator<ReportEntryDetail> iterator = result.iterator();
             while (iterator.hasNext()){
                 ReportEntryDetail reportEntryDetail = iterator.next();
-                for(ReportEntryDetail list : filtrationList){
-                    if(StringUtils.equals(list.getSkuCode(), reportEntryDetail.getSkuCode())
-                            && StringUtils.equals(list.getOrderCode(), reportEntryDetail.getOrderCode())){
-                        iterator.remove();
-                    }
+                if(filtrationMap.get(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode()) != null){
+                    iterator.remove();
                 }
             }
+        }
+        if(flag){
             Map<String, Object> pagingResultMap = PagingResultMap.getPagingResultMap(result, page.getPageNo(), page.getPageSize());
             page.setResult((List<ReportEntryDetail>) pagingResultMap.get("result"));
             page.setTotalCount(Long.valueOf(pagingResultMap.get("totalRowNum").toString()));
             return page;
-        } else {
-            Map<String, Object> pagingResultMap = PagingResultMap.getPagingResultMap(result, page.getPageNo(), page.getPageSize());
-            page.setResult((List<ReportEntryDetail>) pagingResultMap.get("result"));
-            page.setTotalCount(Long.valueOf(pagingResultMap.get("totalRowNum").toString()));
-            return page;
+        }else{
+            return result;
         }
     }
 
-    private List<ReportEntryDetail> setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
-        List<ReportEntryDetail> details = new ArrayList<>();
+    private Map<String, ReportEntryDetail> setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
+        Map<String, ReportEntryDetail> filtrationMap = new HashMap<>();
         for (ReportEntryDetail reportEntryDetail : result) {
 
             //查询库存类型与实际单据入库类型不一致，初始化数据
@@ -658,15 +652,18 @@ public class ReportBiz implements IReportBiz {
                 //采购入库
                 if (StringUtils.equals(reportEntryDetail.getOperationType(), StockOperationTypeEnum.PURCHASE.getCode())) {
                     if (StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())) {
+                        reportEntryDetail.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
                         reportEntryDetail.setPrice(new BigDecimal(0));
+                        reportEntryDetail.setTotalPrice(new BigDecimal(0));
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
                         //计划入库和实际入库都为0，不生成报表记录
                         if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            details.add(reportEntryDetail);
+                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
                         }
                     } else {
+                        reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
                         reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
@@ -679,7 +676,7 @@ public class ReportBiz implements IReportBiz {
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
                         //计划入库和实际入库都为0，不生成报表记录
                         if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            details.add(reportEntryDetail);
+                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
                         }
                     } else {
                         reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
@@ -688,7 +685,7 @@ public class ReportBiz implements IReportBiz {
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
                         //计划入库和实际入库都为0，不生成报表记录
                         if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            details.add(reportEntryDetail);
+                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
                         }
                     }
                 }
@@ -704,6 +701,12 @@ public class ReportBiz implements IReportBiz {
                     reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                     reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
                 }
+            }
+
+            //供应商名称
+            if(StringUtils.isNotBlank(reportEntryDetail.getSupplierCode())){
+                Supplier supplier = supplierService.selectSupplierByCode(reportEntryDetail.getSupplierCode());
+                reportEntryDetail.setSupplierName(supplier == null ? "" : supplier.getSupplierName());
             }
 
             //仓库名称
@@ -726,7 +729,7 @@ public class ReportBiz implements IReportBiz {
                 }
             }
         }
-        return details;
+        return filtrationMap;
     }
 
     /**
@@ -821,6 +824,8 @@ public class ReportBiz implements IReportBiz {
 
         for (ReportInventory reportInventory : result) {
 
+            List<ReportInventory> initialQuantityList = new ArrayList<>();
+
             long outboundQuantity = 0;  //销售出库数量
             BigDecimal outboundTotalAmount = new BigDecimal(0); //销售出库实付总金额（元）
             BigDecimal purchaseTotalAmount = new BigDecimal(0); //含税采购总金额（元）
@@ -840,6 +845,7 @@ public class ReportBiz implements IReportBiz {
             long entryTotalQuantity = 0;    //本期入库总数量
             long outboundTotalQuantity = 0; //本期出库总数量
             long balanceTotalQuantity = 0; //期末结存数量
+            long initialQuantity = 0;
 
             for (ReportInventory inventory : reportInventorys) {
                 if (StringUtils.equals(reportInventory.getWarehouseCode(), inventory.getWarehouseCode())
@@ -859,7 +865,9 @@ public class ReportBiz implements IReportBiz {
                     normalToDefective += inventory.getNormalToDefective();
                     otherIn += inventory.getOtherIn();
                     otherOut += inventory.getOtherOut();
-                    balanceTotalQuantity = inventory.getBalanceTotalQuantity();
+
+                    //期初数量,期末数量
+                    initialQuantityList.add(inventory);
 
                     reportInventory.setGoodsType(inventory.getGoodsType());
                     reportInventory.setSpecInfo(inventory.getSpecInfo());
@@ -888,13 +896,14 @@ public class ReportBiz implements IReportBiz {
             } else {
                 reportInventory.setStockType(StockTypeEnum.SUBSTANDARD.getCode());
             }
+
             //默认第一天的期初数量
-            reportInventory.setInitialQuantity(reportInventorys.get(0).getInitialQuantity());
+            reportInventory.setInitialQuantity(initialQuantityList.get(0).getInitialQuantity());
             //默认最后一天的期末数量
-            reportInventory.setBalanceTotalQuantity(balanceTotalQuantity);
+            reportInventory.setBalanceTotalQuantity(initialQuantityList.get(initialQuantityList.size() - 1).getBalanceTotalQuantity());
 
             reportInventory.setEntryTotalQuantity(salesReturnQuantity + purchaseQuantity + allocateInQuantity + inventoryProfitQuantity);
-            reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity);
+            reportInventory.setOutboundTotalQuantity(outboundQuantity + supplierReturnOutboundQuantity + inventoryLossesQuantity + allocateOutQuantity);
         }
 
         return result;
@@ -953,6 +962,8 @@ public class ReportBiz implements IReportBiz {
                     reportInventory.setWarehouseName(warehouseInfo.getWarehouseName());
                 }
             }
+            //按仓库名称首字母升序
+            Collections.sort(warehouseCodes, (ReportInventory r1, ReportInventory r2) -> Collator.getInstance(Locale.CHINESE).compare(r1.getWarehouseName(), r2.getWarehouseName()));
         }
     }
 
@@ -989,9 +1000,13 @@ public class ReportBiz implements IReportBiz {
             }
             if(obj instanceof ReportEntryDetail){
                 ((ReportEntryDetail) obj).setEntryTimeValue(DateUtils.formatDateTime(((ReportEntryDetail) obj).getEntryTime()));
+                ((ReportEntryDetail) obj).setOperationType(EntryOperationTypeEnum.
+                        queryNameByCode(((ReportEntryDetail) obj).getOperationType()).getName());
             }
             if(obj instanceof ReportOutboundDetail){
                 ((ReportOutboundDetail) obj).setOutboundTimeValue(DateUtils.formatDateTime(((ReportOutboundDetail) obj).getOutboundTime()));
+                ((ReportOutboundDetail) obj).setOperationType(OutboundOperationTypeEnum.
+                        queryNameByCode(((ReportOutboundDetail) obj).getOperationType()).getName());
             }
         });
         return ExportExcel.generateExcel(info, cellDefinitionList, fileName);

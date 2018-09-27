@@ -866,7 +866,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                     try {
                         insertStockDetail(itemNum, allocateOutOrder, detail);
                     } catch (Exception e) {
-                        logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{},e:{}", allocateOutOrder.getAllocateOutOrderCode(), e);
+                        logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{},e:", allocateOutOrder.getAllocateOutOrderCode(), e);
                     }
                 }
             }
@@ -906,6 +906,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             WarehouseInfo warehouseInfo = new WarehouseInfo();
             warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
             warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+
+            //通知收货
+            if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+                this.noticeReceive(allocateOrder.getAllocateOrderCode());
+            }
+
             logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
                     LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
 
@@ -915,6 +921,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     private void insertStockDetail(Long itemNum, AllocateOutOrder allocateOutOrder, AllocateSkuDetail detail) {
+
+        logger.info("JD调拨出库记录库存变动明， 订单编号:{}, skuCode:{}, 出库数量:{}", allocateOutOrder.getAllocateOutOrderCode(), detail.getSkuCode(), itemNum);
+
         JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
 
         jdStockOutDetail.setOutboundOrderCode(allocateOutOrder.getAllocateOutOrderCode());
@@ -931,9 +940,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         jdStockOutDetail.setSpecInfo(detail.getSpecNatureInfo());
         jdStockOutDetail.setPlannedQuantity(detail.getPlanAllocateNum());
         jdStockOutDetail.setQuantity(itemNum);
-        jdStockOutDetail.setReceiver(allocateOutOrder.getReceiver());
-        jdStockOutDetail.setMobile(allocateOutOrder.getReceiverMobile());
-        jdStockOutDetail.setAddress(allocateOutOrder.getReceiverProvince() + allocateOutOrder.getReceiverCity() + allocateOutOrder.getReceiverAddress());
         jdStockOutDetail.setBarCode(detail.getBarCode());
         jdStockOutDetail.setGoodsType("");
         int insert = jdStockOutDetailService.insert(jdStockOutDetail);
