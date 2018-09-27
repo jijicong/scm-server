@@ -470,7 +470,7 @@ public class ReportBiz implements IReportBiz {
 
         criteria.andEqualTo("stockType", form.getStockType());
 
-        example.setOrderByClause("outbound_time, outbound_order_code DESC");
+        example.setOrderByClause("outbound_time DESC, outbound_order_code ASC");
 
         if (flag) {
             Pagenation<ReportOutboundDetail> pagination = reportOutboundDetailService.pagination(example, page, new QueryModel());
@@ -602,7 +602,7 @@ public class ReportBiz implements IReportBiz {
             criteria.andEqualTo("warehouseOrderCode", form.getWarehousePurchaseOrderCode());
         }
 
-        example.setOrderByClause("entry_time, order_code DESC");
+        example.setOrderByClause("entry_time DESC, order_code ASC");
 
         List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
         if (flag) {
