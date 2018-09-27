@@ -6,13 +6,22 @@ import java.util.List;
  * Created by hzwdx on 2017/7/5.
  */
 public class LogisticNoticeForm extends TrcParam{
-
+    //系统订单号
+    private String scmShopOrderCode;
     //店铺订单编码
     private String shopOrderCode;
     //信息类型:0-物流单号,1-配送信息
     private String type;
     //物流信息
     private List<Logistic> logistics;
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
+    }
 
     public String getShopOrderCode() {
         return shopOrderCode;

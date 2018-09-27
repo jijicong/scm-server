@@ -6,7 +6,8 @@ import java.util.List;
  * Created by hzwdx on 2017/7/7.
  */
 public class ChannelOrderResponse extends TrcParam{
-
+    //系统订单号
+    private String scmShopOrderCode;
     //平台订单编号
     private String platformOrderCode;
     //店铺订单编号
@@ -15,6 +16,14 @@ public class ChannelOrderResponse extends TrcParam{
     private String orderType;
     //订单信息
     private List<SupplierOrderReturn> order;
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
+    }
 
     public String getPlatformOrderCode() {
         return platformOrderCode;

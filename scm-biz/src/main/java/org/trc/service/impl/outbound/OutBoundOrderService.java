@@ -2,6 +2,7 @@ package org.trc.service.impl.outbound;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +34,11 @@ import org.trc.service.goods.ISkuStockService;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impl.TrcService;
 import org.trc.service.impl.config.RequestFlowService;
-import org.trc.service.impl.system.LogisticsCompanyService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
-import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouse.IWarehouseMockService;
@@ -48,13 +47,9 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ParamsUtil;
 import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
-import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
-
-import javax.ws.rs.core.Response;
 
 @Service("outBoundOrderService")
 public class OutBoundOrderService extends BaseService<OutboundOrder, Long> implements IOutBoundOrderService {
@@ -502,7 +497,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
             //设置请求渠道的签名
             TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
             BeanUtils.copyProperties(trcParam, noitce);
-
+            noitce.setScmShopOrderCode(outboundOrder.getScmShopOrderCode());
             // 获取店铺级订单号
             noitce.setShopOrderCode(outboundOrder.getShopOrderCode());
 
@@ -521,7 +516,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
             // 包裹信息列表
             List<Logistic> logisticList = new ArrayList<>();
             Logistic lsc = new Logistic();
-            lsc.setSupplierOrderCode(outboundOrder.getOutboundOrderCode());
+            lsc.setSupplierOrderCode(outboundOrder.getWarehouseOrderCode());
             lsc.setWaybillNumber(expressCode);
             // 物流公司名称
             lsc.setLogisticsCorporation(logisticsName);
@@ -555,6 +550,8 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
             lsc.setSkus(skuList);
             logisticList.add(lsc);
             noitce.setLogistics(logisticList);
+            //设置物流通知sku参数
+            setLogistictNoticeSkuInfo(noitce);
             //物流信息同步给渠道
             String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC,
                     RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(),
@@ -573,6 +570,68 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
         }
 
     }
+
+    /**
+     * 设置物流通知sku参数
+     * @param noitce
+     */
+    @Override
+    public void setLogistictNoticeSkuInfo(LogisticNoticeForm noitce) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.setScmShopOrderCode(noitce.getScmShopOrderCode());
+        List<OrderItem> orderItemList = orderItemService.select(orderItem);
+        if (CollectionUtils.isEmpty(orderItemList)) {
+            return;
+        }
+        Map<String, List<OrderItem>> skuMap = new HashedMap();
+        for (Logistic order : noitce.getLogistics()) {
+            for (SkuInfo skuInfo : order.getSkus()) {
+                if (skuMap.containsKey(skuInfo.getSkuCode())) {
+                    continue;
+                }
+                List<OrderItem> tmpList = new ArrayList<>();
+                for (OrderItem _orderItem : orderItemList) {
+                    if (StringUtils.equals(skuInfo.getSkuCode(), _orderItem.getSkuCode())) {
+                        tmpList.add(_orderItem);
+                    }
+                }
+                skuMap.put(skuInfo.getSkuCode(), tmpList);
+            }
+        }
+        for (Logistic order : noitce.getLogistics()) {
+            for (SkuInfo skuInfo : order.getSkus()) {
+                List<OrderItem> tmpList = skuMap.get(skuInfo.getSkuCode());
+                if (tmpList.size() == 0) {
+                    break;
+                }
+                if (tmpList.size() == 1) {
+                    skuInfo.setOrderItemCode(tmpList.get(0).getOrderItemCode());
+                } else if (tmpList.size() > 1) {
+                    /***
+                     * 此段逻辑是处理商品和对应的赠品sku一样的商品订单
+                     */
+                    OrderItem tmpOrderItem = null;
+                    for (OrderItem orderItem2 : tmpList) {
+                        boolean flag = false;
+                        for (SkuInfo _skuInfo : order.getSkus()) {
+                            if (StringUtils.equals(orderItem2.getSkuCode(), _skuInfo.getSkuCode()) &&
+                                    StringUtils.equals(orderItem2.getOrderItemCode(), _skuInfo.getOrderItemCode())) {
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag) {
+                            tmpOrderItem = orderItem2;
+                        }
+                    }
+                    if (null != tmpOrderItem) {
+                        skuInfo.setOrderItemCode(tmpOrderItem.getOrderItemCode());
+                    }
+                }
+            }
+        }
+    }
+
 
     private String generateLogisticsCode(String logisticsName, String channelCode) {
         String retMsg = "物流公司编码未找到";
