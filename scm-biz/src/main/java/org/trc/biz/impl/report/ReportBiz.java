@@ -23,9 +23,7 @@ import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ItemTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.enums.report.GoodsTypeEnum;
-import org.trc.enums.report.StockOperationTypeEnum;
-import org.trc.enums.report.StockTypeEnum;
+import org.trc.enums.report.*;
 import org.trc.exception.ParamValidException;
 import org.trc.form.report.ReportInventoryForm;
 import org.trc.service.System.ISellChannelService;
@@ -1002,9 +1000,13 @@ public class ReportBiz implements IReportBiz {
             }
             if(obj instanceof ReportEntryDetail){
                 ((ReportEntryDetail) obj).setEntryTimeValue(DateUtils.formatDateTime(((ReportEntryDetail) obj).getEntryTime()));
+                ((ReportEntryDetail) obj).setOperationType(EntryOperationTypeEnum.
+                        queryNameByCode(((ReportEntryDetail) obj).getOperationType()).getName());
             }
             if(obj instanceof ReportOutboundDetail){
                 ((ReportOutboundDetail) obj).setOutboundTimeValue(DateUtils.formatDateTime(((ReportOutboundDetail) obj).getOutboundTime()));
+                ((ReportOutboundDetail) obj).setOperationType(OutboundOperationTypeEnum.
+                        queryNameByCode(((ReportOutboundDetail) obj).getOperationType()).getName());
             }
         });
         return ExportExcel.generateExcel(info, cellDefinitionList, fileName);
