@@ -308,13 +308,17 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		 String noticeCode = resp.getOutboundNoticeCode();
 		 String wmsCode = resp.getWmsEntryReturnNoticeCode();
 
+		PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(wmsCode);
+		if(!StringUtils.equals(notice.getStatus(), PurchaseOutboundNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode())){
+			return;
+		}
+
 		 if (CANCELLED.equals(resp.getStatus())) { // 已取消
 
 			 this.updateByCode(PurchaseOutboundNoticeStatusEnum.CANCEL, null, noticeCode);
 			 detailService.updateByOrderCode(PurchaseOutboundNoticeStatusEnum.CANCEL, noticeCode);
 			 // 日志处理
 			 try {
-				 PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(wmsCode);
 	             WarehouseInfo warehouse = warehouseInfoService.selectOneByCode(notice.getWarehouseCode());
 		         logInfoService.recordLog(notice, notice.getId().toString(), warehouse.getWarehouseName(),
 		        		LogOperationEnum.ENTRY_RETURN_NOTICE_CANCEL.getMessage(), "京东后台取消", null);
@@ -373,9 +377,9 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 				 detailService.updateByDetailId(detailStatus, nowTime, actualQty, detail.getId());
 				 // 记录库存变动明细
 				 try {
-					 insertStockDetail(actualQty, detail, wmsCode);
+					 insertStockDetail(actualQty, detail, notice);
 				 } catch (Exception e) {
-					 logger.error("JD仓采购退货记录库存变动明细失败， 仓库反馈code:{}, e:{}", wmsCode, e);
+					 logger.error("JD仓采购退货记录库存变动明细失败， 仓库反馈code:{}, e:", wmsCode, e);
 				 }
 			 }
 			 if (!CollectionUtils.isEmpty(skuList)) {
@@ -399,7 +403,6 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 
 			 // 日志处理
 			 try {
-				 PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(wmsCode);
 	             WarehouseInfo warehouse = warehouseInfoService.selectOneByCode(notice.getWarehouseCode());
 		         logInfoService.recordLog(notice, notice.getId().toString(), warehouse.getWarehouseName(),
 		        		LogOperationEnum.ENTRY_RETURN_NOTICE_FINISH.getMessage(), remark, null);
@@ -416,8 +419,10 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 
 	}
 
-	private PurchaseOutboundNotice insertStockDetail(long actualQty, PurchaseOutboundDetail detail, String wmsCode) {
-		PurchaseOutboundNotice notice = this.selectOneByEntryOrderCode(wmsCode);
+	private PurchaseOutboundNotice insertStockDetail(long actualQty, PurchaseOutboundDetail detail, PurchaseOutboundNotice notice) {
+
+		logger.info("JD采购出库记录库存变动明， 订单编号:{}, skuCode:{}, 出库数量:{}", detail.getOutboundNoticeCode(), detail.getSkuCode(), actualQty);
+
 		JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
 		jdStockOutDetail.setWarehouseCode(notice.getWarehouseCode());
 		jdStockOutDetail.setOutboundOrderCode(notice.getOutboundNoticeCode());
@@ -432,14 +437,11 @@ public class PurchaseOutboundNoticeService extends BaseService<PurchaseOutboundN
 		jdStockOutDetail.setChannelCode(notice.getChannelCode());
 		jdStockOutDetail.setSkuCode(detail.getSkuCode());
 		jdStockOutDetail.setSpecInfo(detail.getSpecNatureInfo());
-		jdStockOutDetail.setPrice(detail.getPrice());
-		jdStockOutDetail.setTotalAmount(detail.getTotalAmount());
+		//jdStockOutDetail.setPrice(detail.getPrice());
+		//jdStockOutDetail.setTotalAmount(detail.getTotalAmount());
 		jdStockOutDetail.setPlannedQuantity(detail.getOutboundQuantity());
 		jdStockOutDetail.setQuantity(actualQty);
-		jdStockOutDetail.setWaybillNumber("");
-		jdStockOutDetail.setReceiver(notice.getReceiver());
-		jdStockOutDetail.setMobile(notice.getReceiverNumber());
-		jdStockOutDetail.setAddress(notice.getReceiverProvince() + notice.getReceiverCity() + notice.getReceiverArea() + notice.getReceiverAddress());
+		jdStockOutDetail.setOutboundSupplierAmount(detail.getTotalAmount());
 		jdStockOutDetail.setTaxRate(detail.getTaxRate());
 
 		jdStockOutDetailService.insert(jdStockOutDetail);
