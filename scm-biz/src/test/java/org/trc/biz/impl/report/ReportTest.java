@@ -34,10 +34,11 @@ public class ReportTest {
     public void reportTest(){
         ReportInventoryForm form = new ReportInventoryForm();
         form.setReportType("2");
-        form.setDate("2018-08-08");
+        form.setStartDate("2018-07-19");
+        form.setEndDate("2018-07-25");
         form.setStockType("2");
-        form.setWarehouseCode("CK00177");
-        Object reportPageList = reportBiz.getReportPageList(form, new Pagenation(), true);
+        form.setWarehouseCode("CK00184");
+        Object reportPageList = reportBiz.getReportPageList(form, new Pagenation(), false);
         System.out.println(JSON.toJSONString(reportPageList));
     }
 
@@ -45,13 +46,13 @@ public class ReportTest {
     public void getReportPageListTest(){
         ReportInventoryForm form = new ReportInventoryForm();
         form.setReportType("1");
-        form.setStartDate("2018-07-09");
-        form.setEndDate("2018-07-09");
+        form.setStartDate("2018-07-20");
+        form.setEndDate("2018-07-29");
         form.setStockType("1");
-        form.setWarehouseCode("CK00177");
-        form.setSkuName("床上用品尺寸");
+        form.setWarehouseCode("CK00184");
+        //form.setSkuName("床上用品尺寸");
         //form.setBarCode("38");
-        form.setSkuCode("SP0201708140000159");
+        //form.setSkuCode("SP0201708140000159");
         Object reportPageList = reportBiz.getReportDetailPageList(form, new Pagenation(), false);
         System.out.println(JSON.toJSONString(reportPageList));
     }
