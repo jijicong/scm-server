@@ -16,7 +16,6 @@ import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
-import org.trc.service.impl.system.SellChannelService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
