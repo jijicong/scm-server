@@ -2067,7 +2067,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Example brandExample = new Example(Brand.class);
         Example.Criteria brandCriteria = brandExample.createCriteria();
         if(StringUtils.isNotBlank(brandName)){
-            brandCriteria.andLike("name", "%" + brandName + "%");
+            brandCriteria.andEqualTo("name",brandName );
         }
         List<Brand> brandList = brandService.selectByExample(brandExample);
         if (!CollectionUtils.isEmpty(brandList)){
@@ -2117,31 +2117,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         for (Skus skus:  skusList) {
             skuCodes.add(skus.getSkuCode());
         }
-        for (Items items : itemsList) {
-            for (Skus skus : skusList) {
-                if (skus.getItemId().longValue()==items.getId().longValue()){
-                    Long categoryId = items.getCategoryId();
-                    Long brandId = items.getBrandId();
-                    skus.setCategoryId(categoryId);
-                    skus.setBrandId(brandId);
-                    String categoryName="";
-                    try {
-                        categoryName = categoryBiz.getCategoryName(categoryId);
-                    }catch (Exception e){
-                        LOGGER.error(String.format("查询分类%s名称异常", categoryId), e);
-                    }
-                    skus.setCategoryName(categoryName);
-                    Brand brand = new Brand();
-                    brand.setId(brandId);
-                    try {
-                        brand = brandService.selectOne(brand);
-                        skus.setBrandName(brand.getName());
-                    }catch (Exception e){
-                        LOGGER.error(String.format("查询品牌ID%s查询品牌异常", brandId), e);
-                    }
-                }
-            }
-        }
 
         //查询仓库商品信息
         List<WarehouseItemInfo> warehouseItemInfoList = new ArrayList<>();
@@ -2173,8 +2148,42 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,
                         "无数据，请确认【商品管理】中，存在所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
             }
+            return new ArrayList<>();
         }
-        return getPurchaseDetails(warehouseItemInfoList, skusList);
+
+        //设置类目名称和品牌名称
+        List<Skus> filtSkuList=new ArrayList<>();
+        if (!CollectionUtils.isEmpty(warehouseItemInfoList)){
+            for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfoList) {
+                String warehouseItemSkuCode = warehouseItemInfo.getSkuCode();
+                Skus skus = new Skus();
+                skus.setSkuCode(warehouseItemSkuCode);
+                skus = skusService.selectOne(skus);
+
+                Items items = itemsService.selectByPrimaryKey(skus.getItemId());
+                Long categoryId = items.getCategoryId();
+                Long brandId = items.getBrandId();
+                skus.setCategoryId(categoryId);
+                skus.setBrandId(brandId);
+                String categoryName="";
+                try {
+                    categoryName = categoryBiz.getCategoryName(categoryId);
+                }catch (Exception e){
+                    LOGGER.error(String.format("查询分类%s名称异常", categoryId), e);
+                }
+                skus.setCategoryName(categoryName);
+                Brand brand = new Brand();
+                brand.setId(brandId);
+                try {
+                    brand = brandService.selectOne(brand);
+                    skus.setBrandName(brand.getName());
+                }catch (Exception e){
+                    LOGGER.error(String.format("查询品牌ID%s查询品牌异常", brandId), e);
+                }
+                filtSkuList.add(skus);
+            }
+        }
+        return getPurchaseDetails(warehouseItemInfoList, filtSkuList);
     }
 
     private String setConditionSql(List<String> barCodes) {
