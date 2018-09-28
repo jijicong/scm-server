@@ -1098,6 +1098,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
 
         }
+        warehouseNotice.setUpdateTime(new Date());
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
         //同步采购单 入库状态

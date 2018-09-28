@@ -16,7 +16,6 @@ import org.trc.form.afterSale.AfterSaleWarehouseNoticeVO;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeDetailService;
 import org.trc.service.afterSale.IAfterSaleWarehouseNoticeService;
-import org.trc.service.impl.system.SellChannelService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
@@ -83,7 +82,7 @@ public class AfterSaleWarehouseNoticeBiz implements IAfterSaleWarehouseNoticeBiz
             if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getOperator())) {
             	criteria.andLike("operator", "%" + afterSaleWarehouseNoticeDO.getOperator() + "%");
             }
-			//入库仓库编码 warehouseCode
+			//状态
 			if (StringUtils.isNotBlank(afterSaleWarehouseNoticeDO.getStatus())) {
 				criteria.andEqualTo("status", Integer.parseInt(afterSaleWarehouseNoticeDO.getStatus()));
 			}

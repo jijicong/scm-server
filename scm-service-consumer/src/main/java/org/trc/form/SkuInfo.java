@@ -11,6 +11,8 @@ public class SkuInfo {
     private String skuName;
     //购买商品数量
     private Integer num;
+    // 渠道商品订单号
+    private String orderItemCode;
 
     public String getSkuCode() {
         return skuCode;
@@ -34,5 +36,13 @@ public class SkuInfo {
 
     public void setNum(Integer num) {
         this.num = num;
+    }
+
+    public String getOrderItemCode() {
+        return orderItemCode;
+    }
+
+    public void setOrderItemCode(String orderItemCode) {
+        this.orderItemCode = orderItemCode;
     }
 }
