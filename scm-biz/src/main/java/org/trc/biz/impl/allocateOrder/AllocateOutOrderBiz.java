@@ -296,8 +296,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             new Thread(() -> {
                 AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
                 aclUserAccreditInfo.setUserId("admin");
-                List<AclUserAccreditInfo> aclUserAccreditInfos = aclUserAccreditInfoService.select(aclUserAccreditInfo);
-                aclUserAccreditInfo = aclUserAccreditInfos.get(0);
+//                List<AclUserAccreditInfo> aclUserAccreditInfos = aclUserAccreditInfoService.select(aclUserAccreditInfo);
+//                aclUserAccreditInfo = aclUserAccreditInfos.get(0);
                 allocateInOrderBiz.noticeReciveGoods(allocateOrderCode, aclUserAccreditInfo);
             }).start();
         }catch(Exception e){
