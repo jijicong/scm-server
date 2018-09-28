@@ -545,6 +545,8 @@ public class ReportBiz implements IReportBiz {
                 }
             }
 
+            reportOutboundDetail.setResidualQuantity(reportOutboundDetail.getOutboundQuantity() - reportOutboundDetail.getRealQuantity());
+
             //销售渠道名称
             if(sellChannelMap.get(reportOutboundDetail.getSellCode()) != null){
                 reportOutboundDetail.setSellName(sellChannelMap.get(reportOutboundDetail.getSellCode()).getSellName());
