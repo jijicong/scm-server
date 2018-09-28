@@ -13,7 +13,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.report.IReportBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.SellChannel;
-import org.trc.domain.goods.Items;
+import org.trc.domain.category.Category;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.report.*;
 import org.trc.domain.supplier.Supplier;
@@ -21,7 +21,6 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ItemTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.report.*;
 import org.trc.exception.ParamValidException;
@@ -140,6 +139,9 @@ public class ReportBiz implements IReportBiz {
      */
     @Override
     public Object getReportPageList(ReportInventoryForm form, Pagenation page, boolean flag) {
+
+        //入参校验
+        checkParam(form);
 
         //总库存查询
         if (StringUtils.equals(form.getReportType(), ZeroToNineEnum.ONE.getCode())) {
@@ -439,9 +441,6 @@ public class ReportBiz implements IReportBiz {
      */
     private Object getReportOutboundDetailList(ReportInventoryForm form, Pagenation<ReportOutboundDetail> page, boolean flag) {
 
-        //校验时间范围
-        checkParam(form);
-
         Example example = new Example(ReportOutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
 
@@ -521,6 +520,15 @@ public class ReportBiz implements IReportBiz {
     }
 
     private void setOutboundResultDetail(List<ReportOutboundDetail> result, ReportInventoryForm form) {
+        List<SellChannel> sellChannels = sellChannelService.select(new SellChannel());
+        Map<String, SellChannel> sellChannelMap = sellChannels.stream().collect(Collectors.toMap(SellChannel::getSellCode,  sellChannel-> sellChannel));
+
+        List<WarehouseInfo> warehouseInfos = warehouseInfoService.select(new WarehouseInfo());
+        Map<String, WarehouseInfo> warehouseInfoMap = warehouseInfos.stream().collect(Collectors.toMap(WarehouseInfo::getCode, warehouseInfo -> warehouseInfo));
+
+        List<Skus> skuses = skusService.select(new Skus());
+        Map<String, Skus> skusMap = skuses.stream().collect(Collectors.toMap(Skus::getSkuCode, skus -> skus));
+
         for (ReportOutboundDetail reportOutboundDetail : result) {
 
             //销售出库
@@ -537,34 +545,19 @@ public class ReportBiz implements IReportBiz {
                 }
             }
 
-            reportOutboundDetail.setResidualQuantity(reportOutboundDetail.getOutboundQuantity() - reportOutboundDetail.getRealQuantity());
+            //销售渠道名称
+            if(sellChannelMap.get(reportOutboundDetail.getSellCode()) != null){
+                reportOutboundDetail.setSellName(sellChannelMap.get(reportOutboundDetail.getSellCode()).getSellName());
+            }
+
             //仓库名称
-            WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(reportOutboundDetail.getWarehouseCode());
-            if (warehouseInfo != null) {
-                reportOutboundDetail.setWarehouseName(warehouseInfo.getWarehouseName());
+            if(warehouseInfoMap.get(reportOutboundDetail.getWarehouseCode()) != null){
+                reportOutboundDetail.setWarehouseName(warehouseInfoMap.get(reportOutboundDetail.getWarehouseCode()).getWarehouseName());
             }
 
             //sku名称
-            Skus skus = skusService.selectSkuBySkuCode(reportOutboundDetail.getSkuCode());
-            if (skus != null) {
-                reportOutboundDetail.setSkuName(skus.getSkuName());
-                Items item = itemsService.selectOneBySpuCode(skus.getSpuCode());
-                if (item != null) {
-                    //商品类别
-                    if (StringUtils.equals(item.getItemType(), ItemTypeEnum.XIAOTAI.getCode())) {
-                        reportOutboundDetail.setGoodsType(ZeroToNineEnum.ONE.getCode());
-                    } else if (StringUtils.equals(item.getItemType(), ItemTypeEnum.NON_XIAOTAI.getCode())) {
-                        reportOutboundDetail.setGoodsType(ZeroToNineEnum.TWO.getCode());
-                    }
-                }
-            }
-
-            //销售渠道
-            if(StringUtils.isNotBlank(reportOutboundDetail.getSellCode())){
-                SellChannel sellChannel = sellChannelService.selectSellByCode(reportOutboundDetail.getSellCode());
-                if (sellChannel != null) {
-                    reportOutboundDetail.setSellName(sellChannel.getSellName());
-                }
+            if(skusMap.get(reportOutboundDetail.getSkuCode()) != null){
+                reportOutboundDetail.setSkuName(skusMap.get(reportOutboundDetail.getSkuCode()).getSkuName());
             }
         }
     }
@@ -576,9 +569,6 @@ public class ReportBiz implements IReportBiz {
      * @return
      */
     private Object getReportEntryDetailList(ReportInventoryForm form, Pagenation<ReportEntryDetail> page, boolean flag) {
-
-        //校验时间范围
-        checkParam(form);
 
         Example example = new Example(ReportEntryDetail.class);
         Example.Criteria criteria = example.createCriteria();
@@ -602,47 +592,40 @@ public class ReportBiz implements IReportBiz {
 
         example.setOrderByClause("entry_time DESC, order_code ASC");
 
-        List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
+        if(StringUtils.equals(form.getStockType(), StockTypeEnum.QUALITY.getCode())){
+            criteria.andGreaterThan("realQuantity", 0);
+        } else if(StringUtils.equals(form.getStockType(), StockTypeEnum.SUBSTANDARD.getCode())){
+            criteria.andGreaterThan("defectiveQuantity", 0);
+        }
+
         if (flag) {
-            if (CollectionUtils.isEmpty(result)) {
-                return new Pagenation<>();
+            Pagenation<ReportEntryDetail> pagination = reportEntryDetailService.pagination(example, page, new QueryModel());
+            if(CollectionUtils.isEmpty(pagination.getResult())){
+                return pagination;
             }
-            //需要过滤的数据
-            Map<String, ReportEntryDetail> filtrationMap = setEntryResultDetail(result, form);
-            return pagingResult(result, filtrationMap, page, flag);
-
+            setResultProperty(pagination.getResult(), form);
+            return pagination;
         } else {
+            List<ReportEntryDetail> result = reportEntryDetailService.selectByExample(example);
             if (CollectionUtils.isEmpty(result)) {
-                return new ArrayList<>();
+                return result;
             }
-            Map<String, ReportEntryDetail> filtrationMap = setEntryResultDetail(result, form);
-            return pagingResult(result, filtrationMap, page, flag);
-        }
-
-    }
-
-    private Object pagingResult(List<ReportEntryDetail> result, Map<String, ReportEntryDetail> filtrationMap, Pagenation<ReportEntryDetail> page, boolean flag) {
-        if (!CollectionUtils.isEmpty(filtrationMap)) {
-            Iterator<ReportEntryDetail> iterator = result.iterator();
-            while (iterator.hasNext()){
-                ReportEntryDetail reportEntryDetail = iterator.next();
-                if(filtrationMap.get(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode()) != null){
-                    iterator.remove();
-                }
-            }
-        }
-        if(flag){
-            Map<String, Object> pagingResultMap = PagingResultMap.getPagingResultMap(result, page.getPageNo(), page.getPageSize());
-            page.setResult((List<ReportEntryDetail>) pagingResultMap.get("result"));
-            page.setTotalCount(Long.valueOf(pagingResultMap.get("totalRowNum").toString()));
-            return page;
-        }else{
+            setResultProperty(result, form);
             return result;
         }
+
     }
 
-    private Map<String, ReportEntryDetail> setEntryResultDetail(List<ReportEntryDetail> result, ReportInventoryForm form) {
-        Map<String, ReportEntryDetail> filtrationMap = new HashMap<>();
+    private void setResultProperty(List<ReportEntryDetail> result, ReportInventoryForm form) {
+        List<Supplier> suppliers = supplierService.select(new Supplier());
+        Map<String, Supplier> supplierMap = suppliers.stream().collect(Collectors.toMap(Supplier::getSupplierCode, supplier -> supplier));
+
+        List<WarehouseInfo> warehouseInfos = warehouseInfoService.select(new WarehouseInfo());
+        Map<String, WarehouseInfo> warehouseInfoMap = warehouseInfos.stream().collect(Collectors.toMap(WarehouseInfo::getCode, warehouseInfo -> warehouseInfo));
+
+        List<Skus> skuses = skusService.select(new Skus());
+        Map<String, Skus> skusMap = skuses.stream().collect(Collectors.toMap(Skus::getSkuCode, skus -> skus));
+
         for (ReportEntryDetail reportEntryDetail : result) {
 
             //查询库存类型与实际单据入库类型不一致，初始化数据
@@ -658,10 +641,7 @@ public class ReportBiz implements IReportBiz {
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
-                        //计划入库和实际入库都为0，不生成报表记录
-                        if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
-                        }
+
                     } else {
                         reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
@@ -674,19 +654,12 @@ public class ReportBiz implements IReportBiz {
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setRemark("正品入库：" + reportEntryDetail.getNormalQuantity());
-                        //计划入库和实际入库都为0，不生成报表记录
-                        if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
-                        }
+
                     } else {
                         reportEntryDetail.setStockType(StockTypeEnum.QUALITY.getCode());
                         reportEntryDetail.setRealQuantity(reportEntryDetail.getNormalQuantity());
                         reportEntryDetail.setRemark("残品入库：" + reportEntryDetail.getDefectiveQuantity());
                         reportEntryDetail.setResidualQuantity(reportEntryDetail.getEntryQuantity() - reportEntryDetail.getNormalQuantity());
-                        //计划入库和实际入库都为0，不生成报表记录
-                        if (reportEntryDetail.getEntryQuantity() == reportEntryDetail.getRealQuantity()) {
-                            filtrationMap.put(reportEntryDetail.getSkuCode() + reportEntryDetail.getOrderCode(), reportEntryDetail);
-                        }
                     }
                 }
             } else {
@@ -704,33 +677,22 @@ public class ReportBiz implements IReportBiz {
             }
 
             //供应商名称
-            if(StringUtils.isNotBlank(reportEntryDetail.getSupplierCode())){
-                Supplier supplier = supplierService.selectSupplierByCode(reportEntryDetail.getSupplierCode());
-                reportEntryDetail.setSupplierName(supplier == null ? "" : supplier.getSupplierName());
+            if(supplierMap.get(reportEntryDetail.getSupplierCode()) != null){
+                reportEntryDetail.setSupplierName(supplierMap.get(reportEntryDetail.getSupplierCode()).getSupplierName());
             }
 
             //仓库名称
-            WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(reportEntryDetail.getWarehouseCode());
-            if (warehouseInfo != null) {
-                reportEntryDetail.setWarehouseName(warehouseInfo.getWarehouseName());
+            if(warehouseInfoMap.get(reportEntryDetail.getWarehouseCode()) != null){
+                reportEntryDetail.setWarehouseName(warehouseInfoMap.get(reportEntryDetail.getWarehouseCode()).getWarehouseName());
             }
+
             //sku名称
-            Skus skus = skusService.selectSkuBySkuCode(reportEntryDetail.getSkuCode());
-            if (skus != null) {
-                reportEntryDetail.setSkuName(skus.getSkuName());
-                Items item = itemsService.selectOneBySpuCode(skus.getSpuCode());
-                if (item != null) {
-                    //商品类别
-                    if (StringUtils.equals(item.getItemType(), ItemTypeEnum.XIAOTAI.getCode())) {
-                        reportEntryDetail.setGoodsType(ZeroToNineEnum.ONE.getCode());
-                    } else if (StringUtils.equals(item.getItemType(), ItemTypeEnum.NON_XIAOTAI.getCode())) {
-                        reportEntryDetail.setGoodsType(ZeroToNineEnum.TWO.getCode());
-                    }
-                }
+            if(skusMap.get(reportEntryDetail.getSkuCode()) != null){
+                reportEntryDetail.setSkuName(skusMap.get(reportEntryDetail.getSkuCode()).getSkuName());
             }
         }
-        return filtrationMap;
     }
+
 
     /**
      * @param form
@@ -739,9 +701,6 @@ public class ReportBiz implements IReportBiz {
      * @return
      */
     private Object getReportInventoryList(ReportInventoryForm form, Pagenation<ReportInventory> page, boolean flag) {
-
-        //校验时间范围
-        checkParam(form);
 
         List<String> skuCodes = new ArrayList<>();
         if (StringUtils.isNotBlank(form.getSkuName())) {
@@ -787,6 +746,19 @@ public class ReportBiz implements IReportBiz {
     }
 
     private void checkParam(ReportInventoryForm form) {
+
+        if(StringUtils.isBlank(form.getStockType())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "查询库存类型不能为空");
+        }
+
+        if(StringUtils.isBlank(form.getReportType())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "查询报表类型不能为空");
+        }
+
+        if(StringUtils.isBlank(form.getWarehouseCode())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "查询报表仓库不能为空");
+        }
+
         if (StringUtils.isNotBlank(form.getStartDate()) && StringUtils.isNotBlank(form.getEndDate())) {
             LocalDate startDate = LocalDate.parse(form.getStartDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             LocalDate endDate = LocalDate.parse(form.getEndDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -815,7 +787,6 @@ public class ReportBiz implements IReportBiz {
             List<String> barCodes = Arrays.asList(form.getBarCode().split(","));
             String conditionSql = setConditionSql(barCodes);
             criteria.andCondition(conditionSql);
-            //criteria.andEqualTo("barCode", form.getBarCode());
         }
         criteria.andIn("warehouseCode", warehouseCodes);
         criteria.andIn("skuCode", skuCodes);
@@ -925,30 +896,30 @@ public class ReportBiz implements IReportBiz {
     }
 
     private void setResultDetail(List<ReportInventory> result) {
+
+        List<WarehouseInfo> warehouseInfos = warehouseInfoService.select(new WarehouseInfo());
+        Map<String, WarehouseInfo> warehouseInfoMap = warehouseInfos.stream().collect(Collectors.toMap(WarehouseInfo::getCode, warehouseInfo -> warehouseInfo));
+
+        List<Skus> skuses = skusService.select(new Skus());
+        Map<String, Skus> skusMap = skuses.stream().collect(Collectors.toMap(Skus::getSkuCode, skus -> skus));
+
+        List<Category> categories = categoryService.select(new Category());
+        Map<Long, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, category -> category));
+
         for (ReportInventory reportInventory : result) {
-            //仓库名称
-            WarehouseInfo warehouseInfo = warehouseInfoService.selectOneByCode(reportInventory.getWarehouseCode());
-            if (warehouseInfo != null) {
-                reportInventory.setWarehouseName(warehouseInfo.getWarehouseName());
-            }
-            //sku名称
-            Skus skus = skusService.selectSkuBySkuCode(reportInventory.getSkuCode());
-            if (skus != null) {
-                reportInventory.setSkuName(skus.getSkuName());
-                Items item = itemsService.selectOneBySpuCode(skus.getSpuCode());
-                if (item != null) {
-                    //商品类别
-                    if (StringUtils.equals(item.getItemType(), ItemTypeEnum.XIAOTAI.getCode())) {
-                        reportInventory.setGoodsType(ZeroToNineEnum.ONE.getCode());
-                    } else if (StringUtils.equals(item.getItemType(), ItemTypeEnum.NON_XIAOTAI.getCode())) {
-                        reportInventory.setGoodsType(ZeroToNineEnum.TWO.getCode());
-                    }
-                }
-            }
             //所属类目
-            if (StringUtils.isNotBlank(reportInventory.getCategoryId())) {
-                String categoryName = categoryService.selectAllCategoryName(Long.valueOf(reportInventory.getCategoryId()));
-                reportInventory.setCategoryName(categoryName);
+            if (categoryMap.get(Long.valueOf(reportInventory.getCategoryId())) != null) {
+                reportInventory.setCategoryName(categoryMap.get(Long.valueOf(reportInventory.getCategoryId())).getName());
+            }
+
+            //仓库名称
+            if(warehouseInfoMap.get(reportInventory.getWarehouseCode()) != null){
+                reportInventory.setWarehouseName(warehouseInfoMap.get(reportInventory.getWarehouseCode()).getWarehouseName());
+            }
+
+            //sku名称
+            if(skusMap.get(reportInventory.getSkuCode()) != null){
+                reportInventory.setSkuName(skusMap.get(reportInventory.getSkuCode()).getSkuName());
             }
         }
     }
