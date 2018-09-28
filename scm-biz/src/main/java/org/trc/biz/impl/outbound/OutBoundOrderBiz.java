@@ -1480,6 +1480,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 logisticList.add(lsc);
             }
             noitce.setLogistics(logisticList);
+            //设置物流通知sku参数
+            outBoundOrderService.setLogistictNoticeSkuInfo(noitce);
             //物流信息同步给渠道
             String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC,
                     RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(),
