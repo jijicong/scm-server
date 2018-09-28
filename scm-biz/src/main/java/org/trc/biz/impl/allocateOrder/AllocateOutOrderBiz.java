@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
+import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.domain.allocateOrder.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.stock.JdStockOutDetail;
@@ -35,6 +36,7 @@ import org.trc.form.wms.WmsAllocateDetailRequest;
 import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.*;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.stock.IJdStockOutDetailService;
 import org.trc.service.util.ILocationUtilService;
@@ -92,6 +94,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IAllocateInOrderBiz allocateInOrderBiz;
     @Autowired
     private IJdStockOutDetailService jdStockOutDetailService;
+    @Autowired
+    private IAclUserAccreditInfoService aclUserAccreditInfoService;
 
     public final static String SUCCESS = "200";
 
@@ -292,6 +296,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             new Thread(() -> {
                 AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
                 aclUserAccreditInfo.setUserId("admin");
+                List<AclUserAccreditInfo> aclUserAccreditInfos = aclUserAccreditInfoService.select(aclUserAccreditInfo);
+                aclUserAccreditInfo = aclUserAccreditInfos.get(0);
                 allocateInOrderBiz.noticeReciveGoods(allocateOrderCode, aclUserAccreditInfo);
             }).start();
         }catch(Exception e){
