@@ -1,5 +1,6 @@
 package org.trc.form.goods;
 
+import io.swagger.annotations.ApiParam;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -10,36 +11,46 @@ import javax.ws.rs.QueryParam;
  */
 public class SkusForm extends QueryModel {
 
+    @ApiParam(value = "商品SPU编号")
     @QueryParam("spuCode")
     @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
     //商品SKU编号
+    @ApiParam(value = "商品SKU编号")
     @QueryParam("skuCode")
     @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
     //商品名称
+    @ApiParam(value = "商品名称")
     @Length(max = 64, message = "商品名称长度不能超过64个")
     @QueryParam("itemName")
     private String itemName;
     //商品所属分类ID
+    @ApiParam(value = "商品所属分类ID")
     @QueryParam("categoryId")
     private Long categoryId;
     //商品所属品牌ID
+    @ApiParam(value = "商品所属品牌ID")
     @QueryParam("brandId")
     private Long brandId;
     //贸易类型
+    @ApiParam(value = "贸易类型")
     @QueryParam("tradeType")
     private String tradeType;
     //sku名称
+    @ApiParam(value = "sku名称")
     @QueryParam("skuName")
     private String skuName;
     //分类等级
+    @ApiParam(value = "分类等级")
     @QueryParam("categoryLevel")
     private String categoryLevel;
     //条形码
+    @ApiParam(value = "条形码")
     @QueryParam("barCode")
     private String barCode;
     //sku关联状态: 0-未关联,1-已关联
+    @ApiParam(value = "sku关联状态: 0-未关联,1-已关联")
     @QueryParam("skuRelationStatus")
     private String skuRelationStatus;
 

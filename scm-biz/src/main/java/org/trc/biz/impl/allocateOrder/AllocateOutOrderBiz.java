@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
+import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.domain.allocateOrder.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.stock.JdStockOutDetail;
 import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
@@ -20,6 +23,7 @@ import org.trc.enums.*;
 import org.trc.enums.AllocateOrderEnum.AllocateOrderInventoryStatusEnum;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
+import org.trc.enums.report.StockOperationTypeEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
@@ -32,7 +36,9 @@ import org.trc.form.wms.WmsAllocateDetailRequest;
 import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.*;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.jingdong.ICommonService;
+import org.trc.service.stock.IJdStockOutDetailService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
@@ -84,6 +90,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IRealIpService iRealIpService;
     @Autowired
     private IWarehouseMockService warehouseMockService;
+    @Autowired
+    private IAllocateInOrderBiz allocateInOrderBiz;
+    @Autowired
+    private IJdStockOutDetailService jdStockOutDetailService;
+    @Autowired
+    private IAclUserAccreditInfoService aclUserAccreditInfoService;
 
     public final static String SUCCESS = "200";
 
@@ -192,6 +204,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response outFinishCallBack(WmsAllocateOutInRequest req) {
         AssertUtil.notNull(req, "调拨出库回调信息不能为空");
         String allocateOrderCode = req.getAllocateOrderCode();
@@ -271,7 +284,25 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
 
+        if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+            this.noticeReceive(allocateOrderCode);
+        }
+
         return ResultUtil.createSuccessResult("反填调拨出库信息成功！", "");
+    }
+
+    private void noticeReceive(String allocateOrderCode){
+        try{
+            new Thread(() -> {
+                AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
+                aclUserAccreditInfo.setUserId("admin");
+//                List<AclUserAccreditInfo> aclUserAccreditInfos = aclUserAccreditInfoService.select(aclUserAccreditInfo);
+//                aclUserAccreditInfo = aclUserAccreditInfos.get(0);
+                allocateInOrderBiz.noticeReciveGoods(allocateOrderCode, aclUserAccreditInfo);
+            }).start();
+        }catch(Exception e){
+            logger.error("通知收货失败", e);
+        }
     }
 
     //获取状态
@@ -331,27 +362,27 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOrderExtService.setAllocateOrderWarehouseName(outOrder);
 		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
 				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())
-					&& !(AllocateOutOrderStatusEnum.CANCEL.getCode().equals(outOrder.getStatus()) 
+					&& !(AllocateOutOrderStatusEnum.CANCEL.getCode().equals(outOrder.getStatus())
 							&& ZeroToNineEnum.ONE.getCode().equals(outOrder.getIsCancel()) // 手工“取消出库”
 							&& (!DateCheckUtil.checkDate(outOrder.getUpdateTime())))) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");
 		}
 		WarehouseInfo queryWhi = new WarehouseInfo();
-		
+
 		queryWhi.setCode(outOrder.getInWarehouseCode());
 		WarehouseInfo inWarehouse = warehouseInfoService.selectOne(queryWhi);
 		AssertUtil.notNull(inWarehouse, "调入仓库不存在");
-		
+
 		queryWhi.setCode(outOrder.getOutWarehouseCode());
 		WarehouseInfo outWarehouse = warehouseInfoService.selectOne(queryWhi);
 		AssertUtil.notNull(outWarehouse, "调出仓库不存在");
-		
+
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService.getDetailListByOrderCode(outOrder.getAllocateOrderCode());
 
 		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
 
 		String reNoticeOrderCode = null;// 重新发货单号
-		
+
 		commonService.getWarehoueType(outOrder.getOutWarehouseCode(), request);
 
 		if (WarehouseTypeEnum.Zy.getCode().equals(request.getWarehouseType())) {
@@ -417,13 +448,13 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			orderDo.setReciverName(outOrder.getReceiver());//客户姓名
 			orderDo.setReciverMobile(outOrder.getReceiverMobile());//客户手机
 			orderDo.setOrderType(JdDeliverOrderTypeEnum.B2C.getCode()); // b2c
-			
+
 			orderDo.setReciverProvince(getAreaName(inWarehouse.getProvince(), "Province"));// 省
 			orderDo.setReciverCity(getAreaName(inWarehouse.getCity(), "City"));// 城市
 			orderDo.setReciverCountry(getAreaName(inWarehouse.getArea(), "District"));// 区
 			orderDo.setReciverDetailAddress(inWarehouse.getAddress()); // 地址取自仓库
 			orderDo.setOrderMark(jDWmsConstantConfig.getOrderMark());// 订单标记位
-			
+
 			scmDeleveryOrderDOList.add(orderDo);
 			request.setWarehouseType("JD");
 			request.setScmDeleveryOrderDOList(scmDeleveryOrderDOList);
@@ -432,7 +463,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), uerAccredit.getUserId(),
                 LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE.getMessage(), reNoticeOrderCode, null);
-        
+
         String status = null;
         String logOp = null;
         String resultMsg = null;
@@ -456,7 +487,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		}
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), outWarehouse.getWarehouseName(),
         		logOp, errMsg, null);
-		
+
 		allocateOutOrderService.updateOutOrderById(status, id, errMsg, wmsAllocatOutCode, orderSeq);
 		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, outOrder.getAllocateOrderCode());
 		return ResultUtil.createSuccessResult(resultMsg, "");
@@ -837,7 +868,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                         exceptionDetail.add(detail.getSkuCode());
                     }
                     allocateSkuDetailList.add(detail);
-
+                    // 记录库存变动明细
+                    try {
+                        insertStockDetail(itemNum, allocateOutOrder, detail);
+                    } catch (Exception e) {
+                        logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{},e:", allocateOutOrder.getAllocateOutOrderCode(), e);
+                    }
                 }
             }
             allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
@@ -876,11 +912,45 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             WarehouseInfo warehouseInfo = new WarehouseInfo();
             warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
             warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+
+            //通知收货
+            if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+                this.noticeReceive(allocateOrder.getAllocateOrderCode());
+            }
+
             logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
                     LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
 
             logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
                     LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
+        }
+    }
+
+    private void insertStockDetail(Long itemNum, AllocateOutOrder allocateOutOrder, AllocateSkuDetail detail) {
+
+        logger.info("JD调拨出库记录库存变动明， 订单编号:{}, skuCode:{}, 出库数量:{}", allocateOutOrder.getAllocateOutOrderCode(), detail.getSkuCode(), itemNum);
+
+        JdStockOutDetail jdStockOutDetail = new JdStockOutDetail();
+
+        jdStockOutDetail.setOutboundOrderCode(allocateOutOrder.getAllocateOutOrderCode());
+        jdStockOutDetail.setWarehouseCode(allocateOutOrder.getOutWarehouseCode());
+        jdStockOutDetail.setStockType(detail.getInventoryType());
+        jdStockOutDetail.setOperationType(StockOperationTypeEnum.ALLALLOCATE_OUT.getCode());
+        jdStockOutDetail.setWarehouseOutboundOrderCode(allocateOutOrder.getWmsAllocateOutOrderCode());
+        jdStockOutDetail.setPlatformOrderCode("");
+        jdStockOutDetail.setSellChannelCode("");
+        jdStockOutDetail.setSellCode("");
+        jdStockOutDetail.setGoodsOrderCode("");
+        jdStockOutDetail.setChannelCode("");
+        jdStockOutDetail.setSkuCode(detail.getSkuCode());
+        jdStockOutDetail.setSpecInfo(detail.getSpecNatureInfo());
+        jdStockOutDetail.setPlannedQuantity(detail.getPlanAllocateNum());
+        jdStockOutDetail.setQuantity(itemNum);
+        jdStockOutDetail.setBarCode(detail.getBarCode());
+        jdStockOutDetail.setGoodsType("");
+        int insert = jdStockOutDetailService.insert(jdStockOutDetail);
+        if(insert == 0){
+            logger.error("JD订单出库，记录库存变动明细失败， 出库单号:{}", allocateOutOrder.getAllocateOutOrderCode());
         }
     }
 

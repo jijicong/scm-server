@@ -1950,12 +1950,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 StringUtils.isNotBlank(itemNo) || StringUtils.isNotBlank(brandName) || StringUtils.isNotBlank(filterSkuCode)){
             flag = true;
         }
-        //查询供应商相关品牌
+        /*//查询供应商相关品牌
         SupplierBrand supplierBrand = new SupplierBrand();
-        supplierBrand.setSupplierCode(supplierCode);
+        //supplierBrand.setSupplierCode(supplierCode);
         supplierBrand.setIsValid(ValidStateEnum.ENABLE.getCode().toString());
         List<SupplierBrand> supplierBrandList = iSupplierBrandService.select(supplierBrand);
-        AssertUtil.notEmpty(supplierBrandList, String.format("供应商%s没有关联品牌", supplierCode));
+        //AssertUtil.notEmpty(supplierBrandList, String.format("供应商%s没有关联品牌", supplierCode));
+        AssertUtil.notEmpty(supplierBrandList, "启用的供应商信息为空");
         Set<Long> categoryIds = new HashSet<>();
         Set<Long> brandIds = new HashSet<>();
         for(SupplierBrand sb: supplierBrandList){
@@ -1993,13 +1994,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         itemCriteria.andIn("brandId", _brandIds);
         itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         List<Items> itemsList = itemsService.selectByExample(itemExample);
-        /*AssertUtil.notEmpty(itemsList, String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
-                CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));*/
+        *//*AssertUtil.notEmpty(itemsList, String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
+                CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));*//*
         if(CollectionUtils.isEmpty(itemsList)){
             LOGGER.error(String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
                     CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));
             if(!flag){
-                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
+                //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在状态为启用的自采商品！");
             }
             return new ArrayList<PurchaseDetail>();
         }
@@ -2028,7 +2030,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         if(CollectionUtils.isEmpty(skusList)){
             if(!flag){
-                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,"无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
+                //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,"无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在状态为启用的自采商品！");
             }
         }
         List<String> skuCodes = new ArrayList<>();
@@ -2055,7 +2058,66 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                     break;
                 }
             }
+         }
+        }*/
+
+        //V3.3.0取消供应商的过滤条件
+        //查询品牌信息
+        Set<Long> brandIds = new HashSet<>();
+        Example brandExample = new Example(Brand.class);
+        Example.Criteria brandCriteria = brandExample.createCriteria();
+        if(StringUtils.isNotBlank(brandName)){
+            brandCriteria.andEqualTo("name",brandName );
         }
+        List<Brand> brandList = brandService.selectByExample(brandExample);
+        if (!CollectionUtils.isEmpty(brandList)){
+            for (Brand brand : brandList) {
+                brandIds.add(brand.getId());
+            }
+        }
+        Example itemExample = new Example(Items.class);
+        Example.Criteria itemCriteria = itemExample.createCriteria();
+        itemCriteria.andIn("brandId",brandIds);
+        itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        List<Items> itemsList = itemsService.selectByExample(itemExample);
+        if (CollectionUtils.isEmpty(itemsList)){
+            if (!flag){
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,"无数据，请确认【商品管理】中存在状态为启用的自采商品！");
+            }
+        }
+
+        List<Long> itemIds = new ArrayList<>();
+        for(Items items: itemsList){
+            itemIds.add(items.getId());
+        }
+
+        Example skusExample = new Example(Skus.class);
+        Example.Criteria skusCriteria = skusExample.createCriteria();
+        skusCriteria.andIn("itemId", itemIds);
+        skusCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        if(StringUtils.isNotBlank(skuCode)){
+
+            skusCriteria.andIn("skuCode", Arrays.asList(skuCode.split(",")));
+        }
+        if(StringUtils.isNotBlank(skuName)){
+            skusCriteria.andLike("skuName", "%" + skuName + "%");
+        }
+        if(StringUtils.isNotBlank(filterSkuCode)){
+            String[] _skuCodes = filterSkuCode.split(SupplyConstants.Symbol.COMMA);
+            skusCriteria.andNotIn("skuCode", Arrays.asList(_skuCodes));
+        }
+        List<Skus> skusList = skusService.selectByExample(skusExample);
+        if(CollectionUtils.isEmpty(skusList)){
+            if(!flag){
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在状态为启用的自采商品！");
+            }
+        }
+
+        List<String> skuCodes = new ArrayList<>();
+        for (Skus skus:  skusList) {
+            skuCodes.add(skus.getSkuCode());
+        }
+
         //查询仓库商品信息
         List<WarehouseItemInfo> warehouseItemInfoList = new ArrayList<>();
         if(!CollectionUtils.isEmpty(skuCodes)){
@@ -2084,10 +2146,44 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(CollectionUtils.isEmpty(warehouseItemInfoList)){
             if(!flag){
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,
-                        "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
+                        "无数据，请确认【商品管理】中，存在所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！");
+            }
+            return new ArrayList<>();
+        }
+
+        //设置类目名称和品牌名称
+        List<Skus> filtSkuList=new ArrayList<>();
+        if (!CollectionUtils.isEmpty(warehouseItemInfoList)){
+            for (WarehouseItemInfo warehouseItemInfo : warehouseItemInfoList) {
+                String warehouseItemSkuCode = warehouseItemInfo.getSkuCode();
+                Skus skus = new Skus();
+                skus.setSkuCode(warehouseItemSkuCode);
+                skus = skusService.selectOne(skus);
+
+                Items items = itemsService.selectByPrimaryKey(skus.getItemId());
+                Long categoryId = items.getCategoryId();
+                Long brandId = items.getBrandId();
+                skus.setCategoryId(categoryId);
+                skus.setBrandId(brandId);
+                String categoryName="";
+                try {
+                    categoryName = categoryBiz.getCategoryName(categoryId);
+                }catch (Exception e){
+                    LOGGER.error(String.format("查询分类%s名称异常", categoryId), e);
+                }
+                skus.setCategoryName(categoryName);
+                Brand brand = new Brand();
+                brand.setId(brandId);
+                try {
+                    brand = brandService.selectOne(brand);
+                    skus.setBrandName(brand.getName());
+                }catch (Exception e){
+                    LOGGER.error(String.format("查询品牌ID%s查询品牌异常", brandId), e);
+                }
+                filtSkuList.add(skus);
             }
         }
-        return getPurchaseDetails(warehouseItemInfoList, skusList);
+        return getPurchaseDetails(warehouseItemInfoList, filtSkuList);
     }
 
     private String setConditionSql(List<String> barCodes) {

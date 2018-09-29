@@ -1,6 +1,5 @@
 package org.trc.util;
 
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,19 +19,16 @@ public class Pagenation<T> implements Serializable {
     当前页数
      */
     @QueryParam("pageNo")
-    @NotNull
     protected Integer pageNo = 1;
     /*
     开始记录行数
      */
     @QueryParam("start")
-    @NotNull
     protected Integer start = 0;
     /*
     每页记录条数
      */
     @QueryParam("pageSize")
-    @NotNull
     protected Integer pageSize = 10;
 
     // -- 返回结果 --//

@@ -40,4 +40,6 @@ public interface ISupplierService extends IBaseService<Supplier, Long>{
      * @return
      */
     List<Supplier> selectAllSuppliers(String channelCode);
+
+    Supplier selectSupplierByCode(String supplierCode);
 }

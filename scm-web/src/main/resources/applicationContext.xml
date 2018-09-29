@@ -73,8 +73,6 @@
          <!-- 退货出库单详情查询定时任务 -->
         <task:scheduled ref="purchaseOutboundNoticeBiz" method="entryReturnDetailQuery" cron="${entry.return.detail}"/>
 
-        <task:scheduled ref="afterSaleNoticeTaskBiz" method="cancelSendOutGoods" cron="${after.sale.state}"/>
-
 
     </task:scheduled-tasks>
 

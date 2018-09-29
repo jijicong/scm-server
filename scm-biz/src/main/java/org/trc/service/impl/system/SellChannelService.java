@@ -23,4 +23,11 @@ public class SellChannelService extends BaseService<SellChannel,Long> implements
         List<SellChannel> sellChannelList = this.select(sellChannel);
         return sellChannelList;
     }
+
+    @Override
+    public SellChannel selectSellByCode(String sellCode) {
+        SellChannel sellChannel = new SellChannel();
+        sellChannel.setSellCode(sellCode);
+        return this.selectOne(sellChannel);
+    }
 }

@@ -2027,7 +2027,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
         //获取店铺订单
-        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPlatformType(), platformOrder.getPayTime());
+        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPayTime());
         Map<String, Object> map = processOrder(platformOrder, shopOrderList, ZeroToNineEnum.ZERO.getCode(), null,"","","");
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", map);
     }
@@ -3004,6 +3004,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
      */
     private void notifyChannelSubmitOrderResult(WarehouseOrder warehouseOrder){
         ChannelOrderResponse channelOrderResponse = new ChannelOrderResponse();
+        channelOrderResponse.setScmShopOrderCode(warehouseOrder.getScmShopOrderCode());
         channelOrderResponse.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
         channelOrderResponse.setShopOrderCode(warehouseOrder.getShopOrderCode());
         if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode()))
@@ -3026,7 +3027,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         List<SupplierOrderReturn> supplierOrderReturnList = new ArrayList<SupplierOrderReturn>();
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             SupplierOrderReturn supplierOrderReturn = new SupplierOrderReturn();
-            supplierOrderReturn.setSupplyOrderCode(supplierOrderInfo2.getSupplierOrderCode());
+            supplierOrderReturn.setSupplyOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
             supplierOrderReturn.setState(supplierOrderInfo2.getStatus());
             supplierOrderReturn.setMessage(supplierOrderInfo2.getMessage());
             supplierOrderReturn.setSkus(getSupplierOrderReturnSkuInfo(supplierOrderInfo2, orderItemList));
@@ -3044,6 +3045,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
      */
     private void notifyChannelSubmitOrderResult(ExceptionOrder exceptionOrder){
         ChannelOrderResponse channelOrderResponse = new ChannelOrderResponse();
+        channelOrderResponse.setScmShopOrderCode(exceptionOrder.getScmShopOrderCode());
         channelOrderResponse.setPlatformOrderCode(exceptionOrder.getPlatformOrderCode());
         channelOrderResponse.setShopOrderCode(exceptionOrder.getShopOrderCode());
         channelOrderResponse.setOrderType(SupplierOrderTypeEnum.ZC.getCode());//自采订单
@@ -3070,7 +3072,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         if(message.length() > 0){
             supplierOrderReturn.setMessage(message.substring(0, message.length()-1));
         }
-        supplierOrderReturn.setSupplyOrderCode("");
+        supplierOrderReturn.setSupplyOrderCode(exceptionOrder.getScmShopOrderCode());
         supplierOrderReturnList.add(supplierOrderReturn);
         channelOrderResponse.setOrder(supplierOrderReturnList);
         //通知渠道订单结果
@@ -3102,6 +3104,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         }
         ShopOrder shopOrder = tmpshopOrderList.get(0);
         ChannelOrderResponse orderRes = new ChannelOrderResponse();
+        orderRes.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
         orderRes.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
         orderRes.setShopOrderCode(shopOrder.getShopOrderCode());
         orderRes.setOrderType(SupplierOrderTypeEnum.ZC.getCode());//自采订单
@@ -3133,6 +3136,8 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
      * @param channelOrderResponse
      */
     private void noticeChannelOrderResult(ChannelOrderResponse channelOrderResponse){
+        //设置渠道下单通知sku信息
+        channelOrderResponseSkuInfo(channelOrderResponse);
         //设置请求渠道的签名
         TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
         BeanUtils.copyProperties(trcParam, channelOrderResponse);
@@ -3173,6 +3178,70 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             log.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
         }
     }
+
+    /**
+     * 设置渠道下单通知sku信息
+     * @param channelOrderResponse
+     */
+    private void channelOrderResponseSkuInfo(ChannelOrderResponse channelOrderResponse){
+        OrderItem orderItem = new OrderItem();
+        orderItem.setScmShopOrderCode(channelOrderResponse.getScmShopOrderCode());
+        List<OrderItem> orderItemList = orderItemService.select(orderItem);
+        if(CollectionUtils.isEmpty(orderItemList)){
+            return;
+        }
+        Map<String, List<OrderItem>> skuMap = new HashedMap();
+        for(SupplierOrderReturn order: channelOrderResponse.getOrder()){
+            for(SkuInfo skuInfo: order.getSkus()){
+                if(skuMap.containsKey(skuInfo.getSkuCode())){
+                    continue;
+                }
+                List<OrderItem> tmpList = new ArrayList<>();
+                for(OrderItem _orderItem: orderItemList){
+                    if(StringUtils.equals(skuInfo.getSkuCode(), _orderItem.getSkuCode())){
+                        tmpList.add(_orderItem);
+                    }
+                }
+                skuMap.put(skuInfo.getSkuCode(), tmpList);
+            }
+        }
+        for(SupplierOrderReturn order: channelOrderResponse.getOrder()){
+            for(SkuInfo skuInfo: order.getSkus()){
+                List<OrderItem> tmpList = skuMap.get(skuInfo.getSkuCode());
+                if(tmpList.size() == 0){
+                    break;
+                }
+                if(tmpList.size() == 1){
+                    skuInfo.setOrderItemCode(tmpList.get(0).getOrderItemCode());
+                }else if(tmpList.size() > 1){
+                    /***
+                     * 此段逻辑是处理商品和对应的赠品sku一样的商品订单
+                     */
+                    OrderItem tmpOrderItem = null;
+                    for(OrderItem orderItem2: tmpList){
+                        boolean flag = false;
+                        for(SkuInfo _skuInfo: order.getSkus()){
+                            if(StringUtils.equals(orderItem2.getSkuCode(), _skuInfo.getSkuCode()) &&
+                                    StringUtils.equals(orderItem2.getOrderItemCode(), _skuInfo.getOrderItemCode())){
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if(!flag){
+                            tmpOrderItem = orderItem2;
+                        }
+                    }
+                    if(null != tmpOrderItem){
+                        skuInfo.setOrderItemCode(tmpOrderItem.getOrderItemCode());
+                    }
+                }
+            }
+        }
+
+    }
+
+
+
 
     /**
      * 获取供应商订单提交返回结果SKU信息
@@ -3679,13 +3748,14 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         AssertUtil.notEmpty(outboundDetailList, String.format("根据发货单编码[%s]批量查询发货通知单明细信息为空", StringUtils.join(outboundOrderCodes, SupplyConstants.Symbol.COMMA)));
         //组装通知参数
         ChannelOrderResponse orderRes = new ChannelOrderResponse();
+        orderRes.setScmShopOrderCode(outboundOrderList.get(0).getScmShopOrderCode());
         orderRes.setPlatformOrderCode(outboundOrderList.get(0).getPlatformOrderCode());
         orderRes.setShopOrderCode(shopOrderCode);
         orderRes.setOrderType(SupplierOrderTypeEnum.ZC.getCode());//自采订单
         List<SupplierOrderReturn> orderList = new ArrayList<>();
         for (OutboundOrder order : outboundOrderList) {
             SupplierOrderReturn returnOrder = new SupplierOrderReturn();
-            returnOrder.setSupplyOrderCode(order.getOutboundOrderCode());
+            returnOrder.setSupplyOrderCode(order.getWarehouseOrderCode());
             returnOrder.setState(getNoticeOrderStatusByOutboundStatus(order.getStatus()));
             returnOrder.setMessage(order.getMessage());
             List<OutboundDetail> _outboundDetailList = new ArrayList<>();
@@ -4505,6 +4575,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
      */
     private void supplierOrderCancelNotifyChannel(WarehouseOrder warehouseOrder, SupplierOrderInfo supplierOrderInfo, List<OrderItem> orderItemList){
         ChannelOrderResponse channelOrderResponse = new ChannelOrderResponse();
+        channelOrderResponse.setScmShopOrderCode(warehouseOrder.getScmShopOrderCode());
         channelOrderResponse.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
         channelOrderResponse.setShopOrderCode(warehouseOrder.getShopOrderCode());
         if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode()))
@@ -4516,7 +4587,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         //设置订单提交返回信息
         List<SupplierOrderReturn> supplierOrderReturnList = new ArrayList<SupplierOrderReturn>();
         SupplierOrderReturn supplierOrderReturn = new SupplierOrderReturn();
-        supplierOrderReturn.setSupplyOrderCode(supplierOrderInfo.getSupplierOrderCode());
+        supplierOrderReturn.setSupplyOrderCode(supplierOrderInfo.getWarehouseOrderCode());
         supplierOrderReturn.setState(NoticeChannelStatusEnum.CANCEL.getCode());//订单取消
         supplierOrderReturn.setMessage(SUPPLIER_PLATFORM_CANCEL_ORDER);
         supplierOrderReturn.setSkus(getSupplierOrderReturnSkuInfo(supplierOrderInfo, orderItemList));
@@ -4677,13 +4748,16 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             AssertUtil.notEmpty(orderItemList, String.format("根据仓库订单编码[%s]查询仓库订单商品明细信息为空", logisticForm.getWarehouseOrderCode()));
             LogisticNoticeForm logisticNoticeForm = new LogisticNoticeForm();
             BeanUtils.copyProperties(logisticForm, logisticNoticeForm);
+            logisticNoticeForm.setScmShopOrderCode(warehouseOrder.getScmShopOrderCode());
             logisticNoticeForm.setShopOrderCode(warehouseOrder.getShopOrderCode());
             //将LogisticNoticeForm里面的供应商sku编码换成供应链sku编码
             for(Logistic logistic: logisticNoticeForm.getLogistics()){
+                logistic.setSupplierOrderCode(warehouseOrder.getWarehouseOrderCode());
                 for(SkuInfo skuInfo: logistic.getSkus()){
                     for(OrderItem orderItem2: orderItemList){
                         if(StringUtils.equals(skuInfo.getSkuCode(), orderItem2.getSupplierSkuCode())){
                             skuInfo.setSkuCode(orderItem2.getSkuCode());
+                            skuInfo.setOrderItemCode(orderItem2.getOrderItemCode());
                         }
                     }
                 }
@@ -5175,11 +5249,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
 
         platformOrder.setCreateTime(new Date());//创建时间
         platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
-        platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
-        platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
+        //platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
+        //platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
         platformOrder.setUpdateTime(DateUtils.timestampToDate(platformObj.getLong("updateTime")));//修改时间
-        platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
-        platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
+        //platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
+        //platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
         platformOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 
         //适配地址,主要是对直辖市处理
@@ -5261,7 +5335,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
      * @param payTime 支付时间
      * @return
      */
-    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray, String platformType, Date payTime) {
+    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray, Date payTime) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         BigDecimal totalShop = new BigDecimal(0);
         for (Object obj : shopOrderArray) {
@@ -5270,11 +5344,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             ShopOrder shopOrder = JSONObject.parseObject(tmpObj.getString("shopOrder"),ShopOrder.class);
             String scmShopOrderCode = serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
             shopOrder.setScmShopOrderCode(scmShopOrderCode);
-            shopOrder.setPlatformType(platformType);
+            //shopOrder.setPlatformType(platformType);
             shopOrder.setCreateTime(new Date());//创建时间
             shopOrder.setPayTime(payTime);//支付时间
-            shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
-            shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
+            //shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
+            //shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
             shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());//待发货
             //设置店铺金额
             setShopOrderFee(shopOrder, shopOrderObj);
@@ -5336,7 +5410,7 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             orderItem.setDiscountCouponPlatform(orderItemObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
             orderItem.setDiscountFee(orderItemObj.getBigDecimal("discountFee"));//订单优惠总金额
             orderItem.setPostDiscount(orderItemObj.getBigDecimal("postDiscount"));//运费分摊
-            orderItem.setRefundFee(orderItemObj.getBigDecimal("refundFee"));//退款金额
+            //orderItem.setRefundFee(orderItemObj.getBigDecimal("refundFee"));//退款金额
             orderItem.setPriceTax(orderItemObj.getBigDecimal("priceTax"));//商品税费
             orderItem.setPrice(orderItemObj.getBigDecimal("price"));//商品价格
             BigDecimal promotionPrice = orderItemObj.getBigDecimal("promotionPrice");
@@ -5351,10 +5425,10 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
 
             orderItem.setCreateTime(new Date());//创建时间
             orderItem.setPayTime(DateUtils.timestampToDate(orderItemObj.getLong("payTime")));//支付时间
-            orderItem.setConsignTime(DateUtils.timestampToDate(orderItemObj.getLong("consignTime")));//发货时间
-            orderItem.setUpdateTime(DateUtils.timestampToDate(orderItemObj.getLong("updateTime")));//修改时间
-            orderItem.setTimeoutActionTime(DateUtils.timestampToDate(orderItemObj.getLong("timeoutActionTime")));//超时确认时间
-            orderItem.setEndTime(DateUtils.timestampToDate(orderItemObj.getLong("endTime")));//结束时间
+            //orderItem.setConsignTime(DateUtils.timestampToDate(orderItemObj.getLong("consignTime")));//发货时间
+            //orderItem.setUpdateTime(DateUtils.timestampToDate(orderItemObj.getLong("updateTime")));//修改时间
+            //orderItem.setTimeoutActionTime(DateUtils.timestampToDate(orderItemObj.getLong("timeoutActionTime")));//超时确认时间
+            //orderItem.setEndTime(DateUtils.timestampToDate(orderItemObj.getLong("endTime")));//结束时间
             if(orderItem.getSkuCode().startsWith(SP0)){
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_WAREHOUSE_DELIVER.getCode());//等待仓库发货
             }else if(orderItem.getSkuCode().startsWith(SP1)){
@@ -6080,11 +6154,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
         warehouseOrder.setShopId(shopOrder.getShopId());
         warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
         warehouseOrder.setShopName(shopOrder.getShopName());
-        warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
+        //warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
         warehouseOrder.setChannelCode(shopOrder.getChannelCode());
         warehouseOrder.setSellCode(shopOrder.getSellCode());
         warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-        warehouseOrder.setPlatformType(shopOrder.getPlatformType());
+        //warehouseOrder.setPlatformType(shopOrder.getPlatformType());
         warehouseOrder.setUserId(shopOrder.getUserId());
         warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
         warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -6366,11 +6440,11 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             warehouseOrder.setShopId(shopOrder.getShopId());
             warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
             warehouseOrder.setShopName(shopOrder.getShopName());
-            warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
+            //warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
             warehouseOrder.setChannelCode(shopOrder.getChannelCode());
             warehouseOrder.setSellCode(shopOrder.getSellCode());
             warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-            warehouseOrder.setPlatformType(shopOrder.getPlatformType());
+            //warehouseOrder.setPlatformType(shopOrder.getPlatformType());
             warehouseOrder.setUserId(shopOrder.getUserId());
             warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
             warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());

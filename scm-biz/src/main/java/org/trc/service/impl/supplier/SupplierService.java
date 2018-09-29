@@ -49,4 +49,11 @@ public class SupplierService extends BaseService<Supplier, Long> implements ISup
     public List<Supplier> selectAllSuppliers(String channelCode) {
         return supplierMapper.selectAllSuppliers(channelCode);
     }
+
+    @Override
+    public Supplier selectSupplierByCode(String supplierCode) {
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(supplierCode);
+        return supplierMapper.selectOne(supplier);
+    }
 }

@@ -1,6 +1,5 @@
 package org.trc.service.impl.goods;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.goods.Skus;
@@ -44,6 +43,13 @@ public class SkusService extends BaseService<Skus, String> implements ISkusServi
     @Override
     public Set<String> selectSkuListByBarCode(List<String> barCodeList) {
         return skusMapper.selectSkuListByBarCode(barCodeList);
+    }
+
+    @Override
+    public Skus selectSkuBySkuCode(String skuCode) {
+        Skus skus = new Skus();
+        skus.setSkuCode(skuCode);
+        return skusMapper.selectOne(skus);
     }
 
 
