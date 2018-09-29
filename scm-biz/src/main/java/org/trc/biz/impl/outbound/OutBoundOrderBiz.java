@@ -564,6 +564,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundDetailLogistics.setWaybillNumber(expressCode);
                     outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
                     outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                    outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
                     //保存信息
                     outboundDetailLogisticsService.insert(outboundDetailLogistics);
                     //获取实际到货数量
@@ -666,6 +667,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             outboundDetailLogistics.setWaybillNumber(expressCode);
                             outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
                             outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                            outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
                             //保存信息
                             outboundDetailLogisticsService.insert(outboundDetailLogistics);
                             //获取实际到货数量
@@ -710,6 +712,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundDetailLogistics.setWaybillNumber(wayBill);
                     outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
                     outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                    outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
                     //保存信息
                     outboundDetailLogisticsService.insert(outboundDetailLogistics);
 
