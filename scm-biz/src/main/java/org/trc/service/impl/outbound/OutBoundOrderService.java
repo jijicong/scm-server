@@ -361,15 +361,30 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                             outboundDetail = outboundDetailService.selectOne(outboundDetail);
 
                             outboundDetailLogistics = new OutboundDetailLogistics();
-                            outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
-                            outboundDetailLogistics.setLogisticsCorporation(logisticsName);
-                            outboundDetailLogistics.setLogisticsCode(logisticsCode);
-                            outboundDetailLogistics.setItemNum(sentNum);
                             outboundDetailLogistics.setWaybillNumber(expressCode);
-                            outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
-                            outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
-                            //保存信息
-                            outboundDetailLogisticsService.insert(outboundDetailLogistics);
+                            outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                            List<OutboundDetailLogistics> outboundDetailLogisticList =
+                                    outboundDetailLogisticsService.select(outboundDetailLogistics);
+
+                            if(outboundDetailLogisticList != null && outboundDetailLogisticList.size() > 0){
+                                outboundDetailLogistics = outboundDetailLogisticList.get(0);
+                                Long count = sentNum.longValue() + outboundDetailLogistics.getItemNum().longValue();
+                                outboundDetailLogistics.setItemNum(count);
+                                outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                                outboundDetailLogisticsService.updateByPrimaryKey(outboundDetailLogistics);
+                            }else{
+                                outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                                outboundDetailLogistics.setLogisticsCorporation(logisticsName);
+                                outboundDetailLogistics.setLogisticsCode(logisticsCode);
+                                outboundDetailLogistics.setItemNum(sentNum);
+                                outboundDetailLogistics.setWaybillNumber(expressCode);
+                                outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
+                                outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                                outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
+                                //保存信息
+                                outboundDetailLogisticsService.insert(outboundDetailLogistics);
+                            }
+
                             //获取实际到货数量
                             Long count = this.getItemNum(outboundDetail.getId());
                             outboundDetail.setRealSentItemNum(count);
@@ -414,6 +429,7 @@ public class OutBoundOrderService extends BaseService<OutboundOrder, Long> imple
                     outboundDetailLogistics.setWaybillNumber(wayBill);
                     outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
                     outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                    outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
                     //保存信息
                     outboundDetailLogisticsService.insert(outboundDetailLogistics);
 

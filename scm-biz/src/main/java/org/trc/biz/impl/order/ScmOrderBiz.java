@@ -5801,12 +5801,14 @@ public class ScmOrderBiz extends ExcelServiceNew implements IScmOrderBiz {
             for(ScmInventoryQueryResponse response: inventoryQueryItemList){
                 if(StringUtils.equals(priority.getWarehouseCode(), response.getLocalWarehouseCode())){
                     _inventoryQueryItemList.add(response);
-                    break;
                 }
             }
         }
         for(ScmInventoryQueryResponse response: _inventoryQueryItemList){
-            if(response.getQuantity().intValue() >= itemNum){
+            if(response.getQuantity().intValue() >= itemNum &&
+                    InventoryQueryResponseEnum.MARKETABLE.getCode().equals(response.getInventoryType()) &&
+                    JingdongInventoryStateEnum.GOOD.getCode().equals(response.getInventoryStatus())
+                    ){//可销售、正品
                 return response;
             }
         }
